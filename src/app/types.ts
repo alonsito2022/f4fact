@@ -1,0 +1,110 @@
+
+export interface IUser {
+    userID?: number
+    email?: string
+    firstName?: string
+    lastName?: string
+    groups: Array<any>
+    subsidiary?: ISubsidiary,
+    fortnightValue?: number,
+
+    role?: string,
+    roleReadable?: string,
+    code?: number,
+    remuneration?: number,
+    names?: string,
+    document?: string,
+    phone?: string,
+    address?: string,
+    birthDate?: string,
+    phoneOfRelative?: string,
+    startDate?: string,
+    endDate?: string,
+    isActive?: boolean,
+    id?: number
+    subsidiaryId?: number
+
+}
+
+export interface ISubsidiary {
+    id?: number
+    name?: string
+    business_name?: string
+    address?: string
+    serial?: string
+    phone?: string
+    ruc?: string
+}
+
+export interface IWarehouse {
+    id?: number
+    name?: string
+    category?: string
+    categoryReadable?: string
+    subsidiaryId?: number
+    subsidiaryName?: string
+}
+
+
+
+export interface IUnit {
+    id?: number
+    shortName?: string
+    description?: string
+}
+
+export interface IProduct {
+    id: number
+    code: number 
+    name: string
+    stockMin: number 
+    stockMax: number 
+    path: string
+    classification: string
+    classificationReadable?: string
+    isCollected: boolean
+    isPurchased: boolean
+    isManufactured: boolean
+    available: boolean
+    producttariffSet?: IProductTariff
+    totalProductTariff?: number
+}
+
+
+export interface IProductTariff {
+    id: number
+    productId?: number
+    unitId?: number
+    salePrice1?: number 
+    salePrice2?: number 
+    quantityMinimum?: number 
+    productName?: string
+    unitName?: string
+}
+
+export interface IOperation {
+    id?: number
+    turn?: string
+    operationDate?: string
+    operationType?: string
+    operationTypeDisplay?: string
+    operationAction?: string
+    observation?: string
+    user?: IUser
+}
+
+export interface IOperationDetail {
+    id?: number
+    operation?: IOperation
+    productTariff?: IProductTariff
+    price?: number
+    quantity?: number
+    subtotal?: number
+    remainingQuantity?: number
+    remainingPrice?: number
+    remainingPriceTotal?: number
+    batchCode?: number
+    batchStock?: number
+    batchPrice?: number
+    batchPriceTotal?: number
+}

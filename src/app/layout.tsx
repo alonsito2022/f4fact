@@ -1,6 +1,13 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import './styles.css'
+import Providers from './Providers';
+import ReduxProviders from '@/redux/providers';
+import Navbar from './Navbar';
+import Sidebar from './Sidebar';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -15,8 +22,30 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
+
+
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <head>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.css" rel="stylesheet" />
+    </head>
+    <body  className={inter.className}>
+    <Providers>
+      <ReduxProviders>
+        
+            <Navbar/>
+            <Sidebar/>
+            <div className="p-4 sm:ml-64">
+                <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 mt-14">
+                    
+                            {children}
+                      
+                </div>
+            </div>
+            <ToastContainer />
+      </ReduxProviders>
+    </Providers>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
+    </body>
     </html>
   )
 }
