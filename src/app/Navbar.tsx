@@ -30,7 +30,7 @@ function Navbar() {
                         className="w-full h-auto mr-3"
                         width={0}
                         height={0}
-                        sizes="40vw"
+                        sizes="20vw"
                         blurDataURL={'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg'}
                         />
                         <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Portal facturador</span>

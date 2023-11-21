@@ -1,28 +1,17 @@
 
 export interface IUser {
-    userID?: number
+    id?: number
     email?: string
+    document?: string
     firstName?: string
     lastName?: string
     groups: Array<any>
-    subsidiary?: ISubsidiary,
-    fortnightValue?: number,
-
-    role?: string,
-    roleReadable?: string,
-    code?: number,
-    remuneration?: number,
-    names?: string,
-    document?: string,
     phone?: string,
-    address?: string,
-    birthDate?: string,
-    phoneOfRelative?: string,
-    startDate?: string,
-    endDate?: string,
+    password?: string,
+    repeatPassword?: string,
+    role?: string,
+    roleName?: string,
     isActive?: boolean,
-    id?: number
-    subsidiaryId?: number
 
 }
 
