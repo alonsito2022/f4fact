@@ -25,9 +25,7 @@ export default function RootLayout({
 
 
     <html lang="en">
-    <head>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.css" rel="stylesheet" />
-    </head>
+    <head></head>
     <body  className={inter.className}>
     <Providers>
       <ReduxProviders>

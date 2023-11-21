@@ -363,7 +363,7 @@ function ProductPage() {
                             document.getElementById("btn-save-product")!.innerHTML = "Guardar producto";
                             setProduct(initialState);
 
-                    }} className="border block text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800" type="button">
+                    }} className="btn-green" type="button">
                         Crear producto
                     </button>
 
@@ -443,25 +443,25 @@ function ProductPage() {
                 <div className="grid gap-4 mb-4 sm:grid-cols-4">
 
                     <div className="sm:col-span-3">
-                        <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre</label>
-                        <input type="text" name="name" id="name" value={product.name} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Type product name" required />
+                        <label htmlFor="name" className="form-label">Nombre</label>
+                        <input type="text" name="name" id="name" value={product.name} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control" placeholder="Type product name" required />
                     </div>
                     <div>
-                        <label htmlFor="code" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Codigo</label>
-                        <input type="text" name="code" id="code" value={product.code} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Product brand" required />
+                        <label htmlFor="code" className="form-label">Codigo</label>
+                        <input type="text" name="code" id="code" value={product.code} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control" placeholder="Product brand" required />
                     </div>
                     <div>
-                        <label htmlFor="stockMin" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">stock Min.</label>
-                        <input type="number" name="stockMin" id="stockMin" value={product.stockMin} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="$2999" required />
+                        <label htmlFor="stockMin" className="form-label">stock Min.</label>
+                        <input type="number" name="stockMin" id="stockMin" value={product.stockMin} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control" placeholder="$2999" required />
                     </div>
                     <div>
-                        <label htmlFor="stockMax" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">stock Max.</label>
-                        <input type="number" name="stockMax" id="stockMax" value={product.stockMax} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="$2999" required />
+                        <label htmlFor="stockMax" className="form-label">stock Max.</label>
+                        <input type="number" name="stockMax" id="stockMax" value={product.stockMax} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control" placeholder="$2999" required />
                     </div>
 
                     <div className="sm:col-span-2">
-                        <label htmlFor="classification" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Clasificacion</label>
-                        <select name="classification" id="classification" onChange={handleInputChange} value={product.classification.replace("A_", "")} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <label htmlFor="classification" className="form-label">Clasificacion</label>
+                        <select name="classification" id="classification" onChange={handleInputChange} value={product.classification.replace("A_", "")} className="form-control">
                             {options.map((o,k)=>(
                                 <option key={k} value={o.id}>{o.value}</option>
                             ))}
@@ -497,7 +497,7 @@ function ProductPage() {
                  
 
 
-                <button id="btn-save-product" type="submit" className="text-white inline-flex items-center bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 ">
+                <button id="btn-save-product" type="submit" className="btn-blue">
                     <svg className="mr-1 -ml-1 w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd"></path></svg>
                     Actualizar producto
                 </button>

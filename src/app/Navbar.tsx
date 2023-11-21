@@ -28,8 +28,8 @@ function Navbar() {
                         src="/isotipo.png"
                         alt="FlowBite Logo"
                         className="w-full h-auto mr-3"
-                        width={0}
-                        height={0}
+                        width={89}
+                        height={86}
                         sizes="20vw"
                         blurDataURL={'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg'}
                         />
