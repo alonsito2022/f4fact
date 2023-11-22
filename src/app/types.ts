@@ -12,6 +12,8 @@ export interface IUser {
     role?: string,
     roleName?: string,
     isActive?: boolean,
+    avatar?: string | ArrayBuffer | null
+    
 
 }
 

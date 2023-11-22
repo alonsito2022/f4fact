@@ -17,7 +17,8 @@ const initialState = {
     phone: "",
     role: "01",
     roleName: "",
-    isActive: false
+    isActive: false,
+    avatar: ""
 }
 function UserPage() {
     const [users, setUsers] = useState< IUser[]>([]);
@@ -54,13 +55,13 @@ function UserPage() {
     }, []);
     return (
         <>
-            USUARIOS
+         <h6 className="mb-3 text-3xl font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-6xl"><span className="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">USUARIOS</span></h6>   
 
 
     <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
     <div className="flex flex-column sm:flex-row flex-wrap space-y-4 sm:space-y-0 items-center justify-between pb-4">
         <div>
-        <button type="button"  onClick={(e)=>{modal.show();}} className="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 shadow-lg shadow-green-500/50 dark:shadow-lg dark:shadow-green-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Crear usuario</button>
+        <button type="button"  onClick={(e)=>{modal.show();}}  className="btn-green">Crear usuario</button>
         
         </div>
         <div>
