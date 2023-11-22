@@ -22,8 +22,8 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
     const handleCheckboxChange = ({target: { name, checked} }: ChangeEvent<HTMLInputElement>) => {
         setUser({...user, [name]: checked});
     }
-    const handleSaveUser = async (e: MouseEvent<HTMLButtonElement>) => {
-        // e.preventDefault();
+    const handleSaveUser = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         let queryFetch: String = "";
         if(Number(user.id)!==0){
             queryFetch = `
@@ -35,7 +35,7 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
                     }
                 }
             `;
-            //console.log(queryFetch)
+            // console.log(queryFetch)
             await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
                 method: 'POST',
                 headers: { "Content-Type": "application/json"},
@@ -134,7 +134,7 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
                 </button>
             </div>
             <div className="p-4 md:p-5">
-                <form >               
+                <form onSubmit={handleSaveUser}>               
                 <div className="grid md:grid-cols-2 md:gap-6">
                     <div className="relative z-0 w-full mb-6 group">
                         <input type="text" name="firstName" id="firstName" value={user.firstName} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
@@ -151,7 +151,7 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
                         <label htmlFor="document" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Nº Documento</label>
                     </div>
                     <div className="relative z-0 w-full mb-6 group">
-                    <input type="text" name="phone" id="phone" value={user.phone} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                    <input type="text" name="phone" id="phone" value={user.phone?user.phone:''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" "/>
                     <label htmlFor="phone" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Telefono/Celular</label>
                 </div>
                 </div>  
@@ -188,7 +188,7 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
                             {user.avatar?.length? 
                                 <img
-                                src={user.avatar as string}
+                                src={ user.id&&user.avatar?.search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${user.avatar}`:user.avatar}
                                 alt="Imagen seleccionada"
                                 style={{ maxWidth: '100%', maxHeight: '200px' }}
                               />:
@@ -203,7 +203,7 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
                         <input id="avatar" name="avatar" type="file" className="hidden" ref={fileInputRef} onClick={handleFileReset} onChange={handleFileChange} accept="image/*"/>
                     </label>
                 </div> 
-                <button type="button" onClick={handleSaveUser} className="btn-blue">{user.id ? <p>Actualizar Usuario</p> : <p>Crear Usuario</p>}</button>
+                <button type="submit" className="btn-blue">{user.id ? <p>Actualizar Usuario</p> : <p>Crear Usuario</p>}</button>
                 </form>
             </div>
         </div>

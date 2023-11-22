@@ -16,6 +16,18 @@ export interface IUser {
     
 
 }
+export interface ICompany {
+    id?: number
+    ruc?: string
+    businessName?: string
+    address?: string
+    phone?: string
+    email?: string
+    document?: string
+    names?: string
+    logo?: string | ArrayBuffer | null
+    isProduction?: boolean
+}
 
 export interface ISubsidiary {
     id?: number

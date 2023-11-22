@@ -2,23 +2,6 @@ import { IUser} from '@/app/types';
 
 function UserList({users, modal, setModal, user, setUser}:any) {
     async function fetchUserByID(pk: number){
-console.log(`
-{
-    userById(pk: ${pk}){
-        id
-        document
-        firstName
-        lastName
-        email
-        phone
-        role
-        password
-        repeatPassword
-        isActive
-        avatar
-    }
-}
-`)
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
             method: 'POST',
             headers: { "Content-Type": "application/json"},
@@ -37,6 +20,7 @@ console.log(`
                             repeatPassword
                             isActive
                             avatar
+                            avatarUrl
                         }
                     }
                 `
@@ -44,7 +28,15 @@ console.log(`
         })
         .then(res=>res.json())
         .then(data=>{
-            setUser(data.data.userById);
+            // console.log(data.data.userById)
+            // if (data.data.userById.avatar) {
+            //     // Concatenar el dominio con la URL relativa del avatar
+            //     const avatarUrl = `${process.env.NEXT_PUBLIC_BASE_API}/${data.data.userById.avatar}`;
+        
+            //     // Actualizar la propiedad 'avatarUrl' en los datos del usuario
+            //     data.data.userById.avatarUrl = avatarUrl;
+            //   }
+              setUser(data.data.userById);          
         })
     }
     return (
