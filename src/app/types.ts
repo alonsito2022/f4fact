@@ -31,12 +31,13 @@ export interface ICompany {
 
 export interface ISubsidiary {
     id?: number
-    name?: string
-    business_name?: string
-    address?: string
     serial?: string
+    name?: string
+    address?: string   
     phone?: string
-    ruc?: string
+    ubigeo?: string
+    companyId?: number
+    companyName?: string
 }
 
 export interface IWarehouse {

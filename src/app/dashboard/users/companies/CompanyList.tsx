@@ -27,7 +27,7 @@ function CompanyList({companies, modal, setModal, company, setCompany}:any) {
     })
     .then(res=>res.json())
     .then(data=>{
-        // console.log(data.data.userById)
+        console.log(data.data.companyById)
         // if (data.data.userById.avatar) {
         //     // Concatenar el dominio con la URL relativa del avatar
         //     const avatarUrl = `${process.env.NEXT_PUBLIC_BASE_API}/${data.data.userById.avatar}`;
@@ -123,7 +123,7 @@ function CompanyList({companies, modal, setModal, company, setCompany}:any) {
                 <td className="px-6 py-4">
                 {item.logo?  
                   <>
-                  <img className="rounded-full w-50 h-50" src="" alt="image description"/>
+                  <img className="w-10 h-10 p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500" src={ item.id&&(item.logo as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${item.logo}`:item.logo as string} alt="Bordered avatar"/>
                   </>                                 
                   :
                   <>

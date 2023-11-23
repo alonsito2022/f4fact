@@ -2,7 +2,7 @@ import { ChangeEvent, FormEvent ,MouseEvent, useEffect, useRef } from "react";
 import { Modal, ModalOptions } from 'flowbite'
 import { toast } from "react-toastify";
 function CompanyModal({modal, setModal, company, setCompany, initialState, fetchCompanies}:any) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const handleFileReset = () => {
         if (fileInputRef.current) {
           fileInputRef.current.value = ''; // Restablece el valor del input a una cadena vacía para deseleccionar el archivo
@@ -21,12 +21,13 @@ function CompanyModal({modal, setModal, company, setCompany, initialState, fetch
             queryFetch = `
                 mutation{
                     updateCompany(
-                        id:${company.id}, ruc: "${company.ruc}", businessName: "${company.businessName}", address: "${company.address}", email: "${company.email}",phone: "${company.phone}", document: "${company.document}", names: "${company.names}", isProduction: "${company.isProduction}", logo: "${company.logo}"
+                        id:${company.id}, ruc: "${company.ruc}", businessName: "${company.businessName}", address: "${company.address}", email: "${company.email}",phone: "${company.phone}", document: "${company.document}", names: "${company.names}", isProduction: ${company.isProduction}, logo: "${company.logo}"
                     ){
                         message
                     }
                 }
             `;
+            console.log(queryFetch)
             await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
                 method: 'POST',
                 headers: { "Content-Type": "application/json"},
@@ -45,12 +46,13 @@ function CompanyModal({modal, setModal, company, setCompany, initialState, fetch
             queryFetch = `
                 mutation{
                     createCompany(
-                      id:${company.id}, ruc: "${company.ruc}", businessName: "${company.businessName}", address: "${company.address}", email: "${company.email}",phone: "${company.phone}", document: "${company.document}", names: "${company.names}", isProduction: "${company.isProduction}", logo: "${company.logo}"
+                      ruc: "${company.ruc}", businessName: "${company.businessName}", address: "${company.address}", email: "${company.email}",phone: "${company.phone}", document: "${company.document}", names: "${company.names}", isProduction: ${company.isProduction}, logo: "${company.logo}"
                     ){
                         message
                     }
                 }
             `;
+            console.log(queryFetch)
             await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
                 method: 'POST',
                 headers: { "Content-Type": "application/json"},
@@ -79,9 +81,9 @@ function CompanyModal({modal, setModal, company, setCompany, initialState, fetch
             if (e.target?.result) {
                 // console.log(e.target?.result)
             //   setUser({...user, avatar:e.target.result});
-            setCompany((prevUser:any) => ({
-                ...prevUser,
-                avatar: e.target?.result as string // Asegúrate de definir el tipo correcto para e.target.result
+            setCompany((prevCompany:any) => ({
+                ...prevCompany,
+                logo: e.target?.result as string // Asegúrate de definir el tipo correcto para e.target.result
               }));
             }
           };
@@ -160,7 +162,7 @@ function CompanyModal({modal, setModal, company, setCompany, initialState, fetch
                         </div>
                     </div>
                     <div className="flex items-center justify-center w-full mb-2">
-                        <label htmlFor="avatar" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                        <label htmlFor="logo" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                 {company.logo?.length? 
                                     <img
