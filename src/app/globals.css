@@ -3,9 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body{
-  @apply bg-gray-100
-}
 
 input[type="number"]::-webkit-inner-spin-button {
   display: none;
@@ -17,7 +14,11 @@ input[type="number"] {
   -moz-appearance: textfield;
   -webkit-appearance: textfield;
 }
-
+@layer components {
+  
+body{
+  @apply bg-gray-100
+}
 .btn-light-xs{
   @apply px-2.5 py-2.5 text-xs font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-md  hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100  dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700
 }
@@ -138,6 +139,10 @@ input[type="number"] {
 .disabled-form-control-sm {
   @apply block w-full p-2 text-gray-400 bg-gray-200 cursor-not-allowed border border-gray-300 rounded-md  text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500
 }
+
+
+}
+
 .bg-pin-blue{
   background-color: #0573fa;
 }
