@@ -181,7 +181,7 @@ function Navbar() {
 
                         <a href="/dashboard" className="flex ml-2 md:mr-24">
                             <img src="/images/logo.svg" className="h-8 mr-3" alt="FlowBite Logo" />
-                            <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">eFlowbite</span>
+                            <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Facturación</span>
                         </a>
                         {/* <form action="#" method="GET" className="hidden lg:block lg:pl-3.5">
                             <label htmlFor="topbar-search" className="sr-only">Search</label>
