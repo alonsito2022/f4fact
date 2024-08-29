@@ -1,69 +1,58 @@
-import { IUser} from '@/app/types';
+import { ISubsidiary } from '@/app/types';
+import React from 'react'
 
-function UserList({users, modal, setModal, user, setUser}:any) {
-    async function fetchUserByID(pk: number){
-        await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-            method: 'POST',
-            headers: { "Content-Type": "application/json"},
-            body: JSON.stringify({
-                query: `
-                    {
-                        userById(pk: ${pk}){
-                            id
-                            document
-                            firstName
-                            lastName
-                            email
-                            phone
-                            role
-                            password
-                            repeatPassword
-                            isActive
-                            avatar
-                            avatarUrl
-                        }
+function SubsidiaryList({subsidiaries, modal, setModal, subsidiary, setSubsidiary}:any) {
+  async function fetchSubsidiaryByID(pk: number){
+    await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+        method: 'POST',
+        headers: { "Content-Type": "application/json"},
+        body: JSON.stringify({
+            query: `
+                {
+                    subsidiaryById(pk: ${pk}){
+                      id
+                      serial
+                      name
+                      address
+                      phone
+                      ubigeo
+                      companyId
                     }
-                `
-            })
+                }
+            `
         })
-        .then(res=>res.json())
-        .then(data=>{
-            // console.log(data.data.userById)
-            // if (data.data.userById.avatar) {
-            //     // Concatenar el dominio con la URL relativa del avatar
-            //     const avatarUrl = `${process.env.NEXT_PUBLIC_BASE_API}/${data.data.userById.avatar}`;
-        
-            //     // Actualizar la propiedad 'avatarUrl' en los datos del usuario
-            //     data.data.userById.avatarUrl = avatarUrl;
-            //   }
-              setUser(data.data.userById);          
-        })
-    }
-    return (
-        <>
-        <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        console.log(data.data.subsidiaryById)
+        setSubsidiary(data.data.subsidiaryById);          
+    })
+}
+  return (
+    <>
+      <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
                 <th scope="col" className="px-6 py-3">
                     Nº
                 </th>
                 <th scope="col" className="px-6 py-3">
-                    Documento
+                    Serie
                 </th>
                 <th scope="col" className="px-6 py-3">
-                    Nombres
+                    Descripcion
                 </th>
                 <th scope="col" className="px-6 py-3">
-                    Apellidos
+                    Direccion
                 </th>
                 <th scope="col" className="px-6 py-3">
                     Telefono
                 </th>
                 <th scope="col" className="px-6 py-3">
-                    Correo
+                    Ubigeo
                 </th>
                 <th scope="col" className="px-6 py-3">
-                    Rol
+                    Empresa
                 </th>
                 <th scope="col" className="px-6 py-3">
                     <span className="sr-only">Edit</span>
@@ -71,32 +60,32 @@ function UserList({users, modal, setModal, user, setUser}:any) {
             </tr>
         </thead>
         <tbody>
-        {users.map((item:IUser) => 
+        {subsidiaries.map((item:ISubsidiary) => 
             <tr key={item.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                 {item.id}
                 </th>
                 <td className="px-6 py-4">
-                {item.document}
+                {item.serial}
                 </td>
                 <td className="px-6 py-4">
-                {item.firstName}
+                {item.name}
                 </td>
                 <td className="px-6 py-4">
-                {item.lastName}
+                {item.address}
                 </td>
                 <td className="px-6 py-4">
                 {item.phone}
                 </td>
                 <td className="px-6 py-4">
-                {item.email}
+                {item.ubigeo?item.ubigeo:'-'}
                 </td>
                 <td className="px-6 py-4">
-                {item.roleName}
-                </td>
+                {item.companyName}
+                </td>               
                 <td className="px-6 py-4 text-right">
                     <a href="#" className="hover:underline" onClick={ async ()=>{
-                    await fetchUserByID(item.id!);
+                    await fetchSubsidiaryByID(item.id!);
                     modal.show();
                     }}>
                 <svg className="w-6 h-6 text-green-500 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
@@ -108,8 +97,8 @@ function UserList({users, modal, setModal, user, setUser}:any) {
               )}
         </tbody>
     </table>
-        </>
-    )
+    </>
+  )
 }
 
-export default UserList
+export default SubsidiaryList

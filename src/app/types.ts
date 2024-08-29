@@ -12,17 +12,32 @@ export interface IUser {
     role?: string,
     roleName?: string,
     isActive?: boolean,
+    avatar?: string | ArrayBuffer | null
+    
 
+}
+export interface ICompany {
+    id?: number
+    ruc?: string
+    businessName?: string
+    address?: string
+    phone?: string
+    email?: string
+    document?: string
+    names?: string
+    logo?: string | ArrayBuffer | null
+    isProduction?: boolean
 }
 
 export interface ISubsidiary {
     id?: number
-    name?: string
-    business_name?: string
-    address?: string
     serial?: string
+    name?: string
+    address?: string   
     phone?: string
-    ruc?: string
+    ubigeo?: string
+    companyId?: number
+    companyName?: string
 }
 
 export interface IWarehouse {
