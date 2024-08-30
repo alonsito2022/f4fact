@@ -19,15 +19,25 @@ export interface IUser {
 }
 export interface ICompany {
     id?: number
-    ruc?: string
+    typeDoc?: string
+    doc?: string
     businessName?: string
+    shortName?: string
     address?: string
     phone?: string
     email?: string
-    document?: string
-    names?: string
     logo?: string | ArrayBuffer | null
+    userSol?: string
+    keySol?: string
+    limit?: number
+    emissionInvoiceWithPreviousDate?: number
+    emissionReceiptWithPreviousDate?: number
+    includeIgv?: boolean
+    percentageIgv?: number
+    isEnabled?: boolean
     isProduction?: boolean
+    productionDate?: string
+    disabledDate?: string
 }
 
 export interface ISubsidiary {

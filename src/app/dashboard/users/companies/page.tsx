@@ -32,15 +32,25 @@ function ComapnyPage() {
                 {
                     companies {
                         id
-                        ruc
+                        typeDoc
+                        doc
                         businessName
+                        shortName
                         address
-                        email
                         phone
-                        document
-                        names
+                        email
                         logo
+                        userSol
+                        keySol
+                        limit
+                        emissionInvoiceWithPreviousDate
+                        emissionReceiptWithPreviousDate
+                        includeIgv
+                        percentageIgv
+                        isEnabled
                         isProduction
+                        productionDate
+                        disabledDate
                     }
                 }
             `

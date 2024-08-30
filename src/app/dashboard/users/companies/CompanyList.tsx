@@ -44,13 +44,16 @@ function CompanyList({companies, modal, setModal, company, setCompany}:any) {
         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
                 <th scope="col" className="px-6 py-3">
-                    Nº
+                    ID
                 </th>
                 <th scope="col" className="px-6 py-3">
                     Ruc
                 </th>
                 <th scope="col" className="px-6 py-3">
                     Razon Social
+                </th>
+                <th scope="col" className="px-6 py-3">
+                    Nombre 
                 </th>
                 <th scope="col" className="px-6 py-3">
                     Direccion
@@ -62,13 +65,13 @@ function CompanyList({companies, modal, setModal, company, setCompany}:any) {
                     Correo
                 </th>
                 <th scope="col" className="px-6 py-3">
-                    Documento
+                    Limite
                 </th>
                 <th scope="col" className="px-6 py-3">
-                    Nombres Apellidos
+                    Producción
                 </th>
                 <th scope="col" className="px-6 py-3">
-                    Produccion
+                    Estado
                 </th>
                 <th scope="col" className="px-6 py-3">
                     Logo
@@ -85,10 +88,13 @@ function CompanyList({companies, modal, setModal, company, setCompany}:any) {
                 {item.id}
                 </th>
                 <td className="px-6 py-4">
-                {item.ruc}
+                {item.doc}
                 </td>
                 <td className="px-6 py-4">
                 {item.businessName}
+                </td>
+                <td className="px-6 py-4">
+                {item.shortName}
                 </td>
                 <td className="px-6 py-4">
                 {item.address}
@@ -100,13 +106,25 @@ function CompanyList({companies, modal, setModal, company, setCompany}:any) {
                 {item.email}
                 </td>
                 <td className="px-6 py-4">
-                {item.document}
-                </td>
-                <td className="px-6 py-4">
-                {item.names}
+                {item.limit}
                 </td>
                 <td className="px-6 py-4">
                 {item.isProduction?
+                <>
+                <svg className="w-6 h-6 text-green-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
+                </svg>
+                </>
+                :
+                <>
+                <svg className="w-6 h-6 text-red-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z"/>
+                </svg>
+                </>
+                }
+                </td>
+                <td className="px-6 py-4">
+                {item.isEnabled?
                 <>
                 <svg className="w-6 h-6 text-green-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
