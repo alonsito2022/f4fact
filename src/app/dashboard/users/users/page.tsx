@@ -38,6 +38,7 @@ function UserPage() {
                         users {
                             id
                             document
+                            fullName
                             firstName
                             lastName
                             phone

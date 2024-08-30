@@ -136,45 +136,45 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
             <div className="p-4 md:p-5">
                 <form onSubmit={handleSaveUser}>               
                 <div className="grid md:grid-cols-2 md:gap-6">
-                    <div className="relative z-0 w-full mb-6 group">
+                    <div className="relative z-0 w-full mb-3 group">
                         <label htmlFor="firstName" className="form-label-sm">Nombres</label>
                         <input type="text" name="firstName" id="firstName" value={user.firstName} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" autoComplete="off" required />
                     </div>
-                    <div className="relative z-0 w-full mb-6 group">
+                    <div className="relative z-0 w-full mb-3 group">
                         <label htmlFor="lastName" className="form-label-sm">Apellidos</label>
                         <input type="text" name="lastName" id="lastName" value={user.lastName} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" autoComplete="off" required />
                     </div>
                 </div>                
                 <div className="grid md:grid-cols-2 md:gap-6">
-                    <div className="relative z-0 w-full mb-6 group">
+                    <div className="relative z-0 w-full mb-3 group">
                         <label htmlFor="document" className="form-label-sm">Nº Documento</label>
                         <input type="text" name="document" id="document" value={user.document} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" autoComplete="off" required />
                     </div>
-                    <div className="relative z-0 w-full mb-6 group">
+                    <div className="relative z-0 w-full mb-3 group">
                     <label htmlFor="phone" className="form-label-sm">Telefono/Celular</label>
                     <input type="text" name="phone" id="phone" value={user.phone?user.phone:''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" autoComplete="off"/>
                 </div>
                 </div>  
-                <div className="relative z-0 w-full mb-6 group">
+                <div className="relative z-0 w-full mb-3 group">
                     <label htmlFor="email" className="form-label-sm">Email address</label>
                     <input type="email" name="email" id="email" value={user.email} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" autoComplete="off" required />
                 </div>              
                 <div className="grid md:grid-cols-2 md:gap-6">
-                <div className="relative z-0 w-full mb-6 group">
+                <div className="relative z-0 w-full mb-3 group">
                     <label htmlFor="password" className="form-label-sm">Contraseña</label>
                     <input type="password" name="password" id="password" value={user.password} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" autoComplete="off" />
                 </div>
-                    <div className="relative z-0 w-full mb-6 group">
+                    <div className="relative z-0 w-full mb-3 group">
                     <label htmlFor="repeatPassword" className="form-label-sm">Confirmar Contraseña</label>
                     <input type="password" name="repeatPassword" id="repeatPassword" value={user.repeatPassword!} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" autoComplete="off" />
                 </div>
                 </div>                
                 <div className="grid md:grid-cols-2 md:gap-6">
-                    <div className="relative z-0 w-full flex items-center mb-6">
+                    <div className="relative z-0 w-full flex items-center mb-3">
                         <input id="isActive" name="isActive" type="checkbox" checked={user.isActive} onChange={handleCheckboxChange} className="form-check-input"/>
                         <label htmlFor="isActive" className="form-check-label">Estado</label>
                     </div>
-                    <div className="relative z-0 w-full mb-6 group">
+                    <div className="relative z-0 w-full mb-3 group">
                         <label htmlFor="role" className="form-label-sm">Rol Usuario</label>
                         <select id="role" name="role" onChange={handleInputChange} value={user.role?.replace("A_", "")} className="form-control-sm">
                         {options.map((o,k)=>(

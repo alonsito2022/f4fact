@@ -1,4 +1,6 @@
 import { IUser } from '@/app/types';
+import Close from '@/components/icons/Close';
+import Delete from '@/components/icons/Delete';
 import Edit from '@/components/icons/Edit'
 
 function UserList({ users, modal, setModal, user, setUser }: any) {
@@ -68,7 +70,7 @@ function UserList({ users, modal, setModal, user, setUser }: any) {
                             <td className="flex items-center p-2 mr-5 space-x-4 whitespace-nowrap">
                                 <img className="w-10 h-10 rounded-full" src="/images/users/{{ .avatar }}" alt="{{ .name }} avatar"/>
                                 <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                                    <div className="text-base font-semibold text-gray-900 dark:text-white">{item.firstName} {item.lastName}</div>
+                                    <div className="text-base font-semibold text-gray-900 dark:text-white">{item.fullName}</div>
                                     <div className="text-sm font-normal text-gray-500 dark:text-gray-400">{item.email}</div>
                                 </div>
                             </td>
@@ -87,12 +89,17 @@ function UserList({ users, modal, setModal, user, setUser }: any) {
                             <td className="p-3 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                 {item.roleName}
                             </td>
-                            <td className="p-3 text-2xl font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                            <td className="flex items-center p-2 text-2xl space-x-4 whitespace-nowrap">
                                 <a href="#" className="hover:underline" onClick={async () => {
                                     await fetchUserByID(item.id!);
                                     modal.show();
                                 }}>
                                     <Edit />
+                                </a>
+                                <a href="#" className="hover:underline" onClick={async () => {
+                                    await fetchUserByID(item.id!);
+                                }}>
+                                    <Delete />
                                 </a>
                             </td>
                         </tr>
