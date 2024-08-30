@@ -1,7 +1,11 @@
 import { IUser } from '@/app/types';
+import Check from '@/components/icons/Check';
 import Close from '@/components/icons/Close';
+import CloseCircle from '@/components/icons/CloseCircle';
 import Delete from '@/components/icons/Delete';
 import Edit from '@/components/icons/Edit'
+import UserCircle from '@/components/icons/UserCircle';
+import ImageCircle from '@/components/images/ImageCircle';
 
 function UserList({ users, modal, setModal, user, setUser }: any) {
 
@@ -60,21 +64,32 @@ function UserList({ users, modal, setModal, user, setUser }: any) {
                             Rol usuario
                         </th>
                         <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                           Editar
+                            Estado
+                        </th>
+                        <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            Acción
                         </th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                     {users.map((item: IUser) =>
                         <tr key={item.id} className="hover:bg-gray-100 dark:hover:bg-gray-700">
-                            <td className="flex items-center p-2 mr-5 space-x-4 whitespace-nowrap">
-                                <img className="w-10 h-10 rounded-full" src="/images/users/{{ .avatar }}" alt="{{ .name }} avatar"/>
+                            <td className="flex items-center p-1 mr-3 space-x-4 whitespace-nowrap">
+                                {item.avatar?  
+                                    <>
+                                    <ImageCircle src={ item.id&&(item.avatar as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${item.avatar}`:item.avatar as string}/>                   
+                                    </>                                 
+                                    :
+                                    <>
+                                    <UserCircle/>                 
+                                    </>
+                                }
                                 <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
                                     <div className="text-base font-semibold text-gray-900 dark:text-white">{item.fullName}</div>
                                     <div className="text-sm font-normal text-gray-500 dark:text-gray-400">{item.email}</div>
                                 </div>
                             </td>
-                            <td className="p-3 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            <td className="p-3 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                 {item.document}
                             </td>
                             <td className="p-3 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white">
@@ -89,7 +104,18 @@ function UserList({ users, modal, setModal, user, setUser }: any) {
                             <td className="p-3 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                 {item.roleName}
                             </td>
-                            <td className="flex items-center p-2 text-2xl space-x-4 whitespace-nowrap">
+                            <td className="p-3 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                {item.isActive?
+                                <>
+                                <Check/>
+                                </>
+                                :
+                                <>
+                                <CloseCircle/>
+                                </>
+                                }
+                            </td>
+                            <td className="flex items-center justify-center">
                                 <a href="#" className="hover:underline" onClick={async () => {
                                     await fetchUserByID(item.id!);
                                     modal.show();

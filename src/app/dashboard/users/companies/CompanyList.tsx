@@ -1,4 +1,8 @@
 import { ICompany } from '@/app/types';
+import Check from '@/components/icons/Check';
+import CloseCircle from '@/components/icons/CloseCircle';
+import UserCircle from '@/components/icons/UserCircle';
+import ImageCircle from '@/components/images/ImageCircle';
 import React from 'react'
 
 function CompanyList({companies, modal, setModal, company, setCompany}:any) {
@@ -108,46 +112,45 @@ function CompanyList({companies, modal, setModal, company, setCompany}:any) {
                 <td className="px-6 py-4">
                 {item.limit}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-sm">
                 {item.isProduction?
                 <>
-                <svg className="w-6 h-6 text-green-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
-                </svg>
+                <Check/>
                 </>
                 :
                 <>
-                <svg className="w-6 h-6 text-red-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z"/>
-                </svg>
+                 <CloseCircle/>
                 </>
                 }
-                </td>
-                <td className="px-6 py-4">
-                {item.isEnabled?
-                <>
-                <svg className="w-6 h-6 text-green-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                {/* <svg className="w-4 h-4 text-green-600 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
                 </svg>
                 </>
                 :
                 <>
-                <svg className="w-6 h-6 text-red-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 text-red-600 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z"/>
-                </svg>
+                </svg> */}                
+                </td>
+                <td className="px-6 py-4 text-sm">
+                {item.isEnabled?
+                <>
+                <Check/>
+                </>
+                :
+                <>
+                 <CloseCircle/>
                 </>
                 }
                 </td>
                 <td className="px-6 py-4">
                 {item.logo?  
                   <>
-                  <img className="w-10 h-10 p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500" src={ item.id&&(item.logo as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${item.logo}`:item.logo as string} alt="Bordered avatar"/>
+                 <ImageCircle src={ item.id&&(item.logo as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${item.logo}`:item.logo as string}/>                   
                   </>                                 
                   :
                   <>
-                    <svg className="w-8 h-8 mb-0 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                    </svg>
+                  <UserCircle/>                 
                   </>
                 }
                 </td>
