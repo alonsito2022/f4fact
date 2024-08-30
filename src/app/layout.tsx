@@ -2,15 +2,17 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import './styles.css'
-import Providers from './Providers';
-import ReduxProviders from '@/redux/providers';
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
-import Footer from '../components/Footer';
+import AuthProvider from '@/components/providers/AuthProvider';
+import ThemeProvider from '@/components/providers/ThemeProvider';
+import { getServerSession } from "next-auth";
+
+// import Navbar from '../components/Navbar';
+// import Sidebar from '../components/Sidebar';
+// import Footer from '../components/Footer';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import Script from 'next/script'; // Importa el componente Script
-import { getServerSession } from "next-auth";
+
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -24,54 +26,33 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode
 }) {
-    const session = await getServerSession();
-    console.log(session)
-
-    // if (!!session) {
-    //     return(
-    //         <html lang="en" suppressHydrationWarning>
-    //             <head>
-    //                 <Script src="/scripts/theme-toggle.js" strategy="beforeInteractive" />
-    //             </head>
-    //             <body className={`${inter.className} bg-gray-50 dark:bg-gray-800`}><Providers>{children}</Providers></body>
-    //         </html>
-    //     );
-    // }
+    const session = await getServerSession()
     return (
-
-
         <html lang="en" suppressHydrationWarning>
             <head>
-                <Script src="/scripts/theme-toggle.js" strategy="beforeInteractive" />
+                {/* <Script src="/scripts/theme-toggle.js" strategy="beforeInteractive" /> */}
                 {/* <Script src="/scripts/theme-toggle-btn.js"  strategy="beforeInteractive" /> */}
             </head>
-            <body className={`${inter.className} bg-gray-50 dark:bg-gray-800`} >
-                <Providers>
-                    <ReduxProviders>
-
-                        <Navbar />
-                        
-                       
-                            
-                            <div className="flex pt-16 overflow-hidden bg-gray-50 dark:bg-gray-900">
-                                
-                                <Sidebar /> 
-                                <div id="main-content" className="relative w-full h-full overflow-y-auto bg-gray-50 lg:ms-64 dark:bg-gray-900">
-                                    <main>
+            <body className={`${inter.className} bg-gray-50 dark:bg-gray-900 `} >
+                <AuthProvider session={session}>
+                    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                    {/* <ReduxProviders> */}
+                        {/* <Navbar /> */}
+                            {/* <div className="flex pt-16 overflow-hidden bg-gray-50 dark:bg-gray-900"> */}
+                                {/* <Sidebar />  */}
+                                {/* <div id="main-content" className="relative w-full h-full overflow-y-auto bg-gray-50 lg:ms-64 dark:bg-gray-900"> */}
+                                    {/* <main> */}
                                         {children}
-                                    </main>
-                               <Footer />
-                                </div>
-                            </div>
+                                    {/* </main> */}
+                               {/* <Footer /> */}
+                                {/* </div> */}
+                            {/* </div> */}
                             <ToastContainer />
-                        
-
-                      
-                        
-
-                    </ReduxProviders>
-                </Providers>
-                <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
+                    {/* </ReduxProviders> */}
+                    </ThemeProvider>
+                </AuthProvider>
+                
+                {/* <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script> */}
             </body>
         </html>
     )

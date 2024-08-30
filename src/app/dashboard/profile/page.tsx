@@ -91,7 +91,7 @@ function ProfilePage() {
             </div>
 
             
-            <pre className='p-4 text-white'>
+            <pre className='p-4 text-white text-xs'>
                 {
                     JSON.stringify(
                         { session, status }, null, 2
@@ -100,7 +100,7 @@ function ProfilePage() {
             </pre>
 
 
-            <button className='bg-zinc-800 px-4 py-2 block mb-2 text-white' onClick={() => { signOut(); }}>logout</button>
+            {/* <button className='bg-zinc-800 px-4 py-2 block mb-2 text-white' onClick={() => { signOut(); }}>logout</button> */}
         </div>
     )
 }

@@ -11,6 +11,7 @@ export interface IUser {
     repeatPassword?: string,
     role?: string,
     roleName?: string,
+    fullName?: string,
     isActive?: boolean,
     avatar?: string | ArrayBuffer | null
     

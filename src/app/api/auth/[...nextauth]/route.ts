@@ -9,28 +9,49 @@ const handler = NextAuth({
         CredentialsProvider({
             name: "Credentials",
             credentials: {
-                email: { label: "Email", type: "email", placeholder: "jsmith" },
-                password: { label: "Password", type: "password", placeholder: "******" }
+                email: { label: "Email", type: "email" },
+                password: { label: "Password", type: "password" }
             },
             async authorize(credentials, req) {
 
-                const apiTokenResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/users/auth/login/`, {
+                let queryfecth = `
+                    mutation {
+                        tokenAuth(email: "${credentials?.email}", password: "${credentials?.password}") {
+                            token
+                            payload
+                            refreshToken
+                            refreshExpiresIn
+                            user{
+                                id
+                                username
+                                fullName
+                            }
+                        }
+                    }
+                `;
+                const apiUserResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
                     method: 'POST',
-                    body: JSON.stringify(credentials),
-                    headers: { "Content-Type": "application/json" }
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        query: queryfecth
+                    })
                 });
-                if(apiTokenResponse.status!==200) throw new Error("Invalid credentials");
-                
-                const tokenObtained = await apiTokenResponse.json()
-                
-                const apiUserResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/users/api/get_user/`, {
-                    method: 'GET',
-                    headers: {  Authorization: `Bearer ${tokenObtained?.access}`, "Content-Type": "application/json" }
-                });
-                const user = await apiUserResponse.json()
-                console.log(user)
+
+                const data: any = await apiUserResponse.json();
+
+                console.log("data", data)
                 // If no error and we have user data, return it
-                if (apiUserResponse.ok && user) {
+                if (apiUserResponse.ok && data) {
+                    const user = {
+                        "id": data.data.tokenAuth.user.id,
+                        "username": data.data.tokenAuth.user.username,
+                        "fullName": data.data.tokenAuth.user.fullName,
+                        "email": data.data.tokenAuth.payload.email,
+                        "refreshToken": data.data.tokenAuth.refreshToken,
+                        "token": data.data.tokenAuth.token,
+                        "exp": data.data.tokenAuth?.payload.exp,
+                        "origIat": data.data.tokenAuth?.payload.origIat
+                    }
                     return user
                 }
                 // Return null if user data could not be retrieved
@@ -38,16 +59,21 @@ const handler = NextAuth({
             }
         })
     ],
+    session: {
+        strategy: "jwt",
+        // maxAge: 5 * 60, // 5 minutos en segundos
+        maxAge: 24 * 60 * 60, // 24 hours
+    },
     callbacks: {
-        jwt({ account, token, user, profile, session }) {
-          if(user) token.user=user;
-          return token;
+        async jwt({ token, user }) {
+            if (user) {
+                token.user = user;
+            }
+            return token;
         },
-        session({ session, token }) {
-
+        async session({ session, token }) {
             session.user = token.user as any;
-            return session
-           
+            return session;
         }
     },
     pages: {
