@@ -868,6 +868,10 @@ body {
   --tw-ring-color: rgb(59 130 246 / var(--tw-ring-opacity));
 }
 
+.form-control-sm:focus-visible {
+  outline-color: #3b82f6;
+}
+
 .form-control-sm:is(.dark *) {
   --tw-border-opacity: 1;
   border-color: rgb(75 85 99 / var(--tw-border-opacity));

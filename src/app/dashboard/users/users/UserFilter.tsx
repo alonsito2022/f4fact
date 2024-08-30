@@ -33,7 +33,7 @@ function UserFilter({searchTerm, setSearchTerm, modal}:any) {
                     </div>
                 </div>
             </div>
-            <button id="createProductButton" type="button" onClick={(e) => { modal.show(); }} className="btn-green">Crear usuario</button>
+            <button id="createProductButton" type="button" onClick={(e) => { modal.show(); }} className="btn-blue">Crear usuario</button>
         </div>
     )
 }

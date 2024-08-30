@@ -94,7 +94,8 @@ function UserList({ users, modal, setModal, user, setUser }: any) {
                                     await fetchUserByID(item.id!);
                                     modal.show();
                                 }}>
-                                    <Edit /></a>
+                                    <Edit />
+                                </a>
                             </td>
                         </tr>
                     )}
