@@ -28,7 +28,7 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
         if(Number(user.id)!==0){
             queryFetch = `
                 mutation{
-                    updateUser(id:${user.id}, document: "${user.document}", firstName: "${user.firstName}",lastName: "${user.lastName}",phone: "${user.phone}", email: "${user.email}", password: "${user.password}", repeatPassword: "${user.repeatPassword}", role: "${user.role}", isActive: ${user.isActive}, avatar:"${user.avatar}", avatarUrl:"${user.avatarUrl}")
+                    updateUser(id:${user.id}, document: "${user.document}", firstName: "${user.firstName}",lastName: "${user.lastName}",phone: "${user.phone}", email: "${user.email}", password: "${user.password}", repeatPassword: "${user.repeatPassword}", role: "${user.role}", isActive: ${user.isActive}, avatar:"${user.avatar}", avatarUrl:"${user.avatarUrl === undefined?"":user.avatarUrl}")
                     {
                         message
                     }
@@ -53,7 +53,7 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
             queryFetch = `
                 mutation{
                     createUser(
-                        document: "${user.document}", firstName: "${user.firstName}",lastName: "${user.lastName}",phone: "${user.phone}", email: "${user.email}", password: "${user.password}", repeatPassword: "${user.repeatPassword}", role: "${user.role}", isActive: ${user.isActive}, avatar:"${user.avatar}", avatarUrl:"${user.avatarUrl}"
+                        document: "${user.document}", firstName: "${user.firstName}",lastName: "${user.lastName}",phone: "${user.phone}", email: "${user.email}", password: "${user.password}", repeatPassword: "${user.repeatPassword}", role: "${user.role}", isActive: ${user.isActive}, avatar:"${user.avatar}", avatarUrl:"${user.avatarUrl === undefined?"":user.avatarUrl}"
                     ){
                         message
                     }
