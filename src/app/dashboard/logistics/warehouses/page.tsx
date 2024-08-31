@@ -1,44 +1,37 @@
 "use client";
-import { ChangeEvent, FormEvent ,useState, useEffect } from "react";
+import { useState, useEffect, useMemo  } from "react";
 import WarehouseList from './WarehouseList'
 import WarehouseForm from "./WarehouseForm";
+import WarehouseFilter from "./WarehouseFilter";
 import Breadcrumb from "@/components/Breadcrumb"
 import { Modal, ModalOptions } from 'flowbite'
-import Add from '@/components/icons/Add'
-
-export interface IWarehouse {
-    id?: number
-    name?: string
-    category?: string
-    categoryReadable?: string
-    subsidiaryId?: number
-    subsidiaryName?: string
-    truckId?: number
-    truckLicensePlate?: string
-}
+import { useSession } from 'next-auth/react'
+import { IUser, IWarehouse } from '@/app/types';
 
 
 const initialState = {
     id: 0,
     name: "",
     subsidiaryId: 0,
-    truckId: 0,
-    truckLicensePlate: "",
     category: "NA",
 }
 
 function WarehousePage() {
     const [warehouse, setWarehouse] = useState(initialState);
-    const [warehouses, setWarehouses] = useState< IWarehouse[]>([]);
-    const [modal, setModal] = useState< Modal | any>(null);
+    const [warehouses, setWarehouses] = useState<IWarehouse[]>([]);
+    const [modal, setModal] = useState<Modal | any>(null);
+    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [searchField, setSearchField] = useState<'name' | 'subsidiaryName'>('name');
+    const [accessToken, setAccessToken] = useState<string>('');
+    const { data: session } = useSession();
+    const u = session?.user as IUser;
 
-    async function fetchWarehouses(){
-        // const token = Cookies.get('accessToken');
+    async function fetchWarehouses() {
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
-                // "Authorization": `JWT ${Cookies.get('accessToken')}`
+                "Authorization": `JWT ${accessToken}`
             },
             body: JSON.stringify({
                 query: `
@@ -48,26 +41,26 @@ function WarehousePage() {
                             name
                             category
                             categoryReadable
-                            truckLicensePlate
                             subsidiaryName
                         }
                     }
                 `
             })
         })
-        .then(res=>res.json())
-        .then(data=>{
-            setWarehouses(data.data.allWarehouses);
-        })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data.data.allWarehouses)
+                setWarehouses(data.data.allWarehouses);
+            })
     }
 
-    async function fetchWarehouseById(pk: number=0){
+    async function fetchWarehouseById(pk: number = 0) {
 
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
-                // "Authorization": `JWT ${Cookies.get('accessToken')}`
+                "Authorization": `JWT ${accessToken}`
             },
             body: JSON.stringify({
                 query: `
@@ -77,57 +70,74 @@ function WarehousePage() {
                             name
                             category
                             subsidiaryId
-                            truckLicensePlate
                         }
                     }
                 `
             })
         })
-        .then(res=>res.json())
-        .then(data=>{
-            setWarehouse(data.data.warehouseById);
-        })
+            .then(res => res.json())
+            .then(data => {
+                setWarehouse(data.data.warehouseById);
+            })
     }
 
     useEffect(() => {
-        
-        if(modal == null){
+        if (u !== undefined && u.token != undefined)
+            setAccessToken(u.token);
+    }, [u])
+
+    useEffect(() => {
+
+        if (modal == null) {
 
             const $targetEl = document.getElementById('defaultModal');
             const options: ModalOptions = {
                 placement: 'bottom-right',
                 backdrop: 'static',
                 backdropClasses: 'bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
-                closable: false ,
+                closable: false,
 
             };
 
             setModal(new Modal($targetEl, options))
         }
-        
+
+
+
     }, []);
+
+    useEffect(() => {
+        if (accessToken.length > 0) {
+            fetchWarehouses();
+        }
+    }, [accessToken]);
+
+    const filteredWarehouses = useMemo(() => {
+        return warehouses.filter((w:IWarehouse) => searchField === "name" ? w?.name?.toLowerCase().includes(searchTerm.toLowerCase()) : w?.subsidiaryName?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [searchTerm, searchField, warehouses]);
 
     return (
         <>
-        
-            <Breadcrumb section={"Logística"} article={"Almacenes"} />
-
-            <div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-3">
-                <div className="flex items-center justify-end bg-gray-200 p-2 border border-gray-200">
-                    <button id="btn-new" onClick={(e)=>{
-                        modal.show();
-                        document.getElementById("modal-title")!.innerHTML = "Nuevo Almacen";
-                        document.getElementById("btn-save")!.innerHTML = "Guardar Almacen";
-                        setWarehouse(initialState);
-
-                    }} className="btn-blue border px-5 py-2 inline-flex" type="button">
-                    <Add />Crear Almacen 
-                    </button>
+            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
+                <div className="w-full mb-1">
+                    <Breadcrumb section={"Activos"} article={"Almacenes"} />
+                    <WarehouseFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} searchField={searchField} setSearchField={setSearchField} modal={modal} initialState={initialState} setWarehouse={setWarehouse} />
                 </div>
-                <WarehouseList warehouses={warehouses} modal={modal} fetchWarehouseById={fetchWarehouseById} />
             </div>
 
-            <WarehouseForm modal={modal} warehouse={warehouse} setWarehouse={setWarehouse} fetchWarehouses={fetchWarehouses} initialState={initialState} />
+            <div className="flex flex-col">
+                <div className="overflow-x-auto">
+                    <div className="inline-block min-w-full align-middle">
+                        <div className="overflow-hidden shadow">
+                            <WarehouseList filteredWarehouses={filteredWarehouses} modal={modal} fetchWarehouseById={fetchWarehouseById} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <WarehouseForm modal={modal} warehouse={warehouse} setWarehouse={setWarehouse} fetchWarehouses={fetchWarehouses} initialState={initialState} accessToken={accessToken} />
         </>
     )
 }

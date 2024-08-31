@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import Edit from '@/components/icons/Edit'
-import { IWarehouse } from '@/app/types';
+import { IUnit, IWarehouse } from '@/app/types';
 
-function WarehouseList({ filteredWarehouses, modal, fetchWarehouseById }: any) {
+function UnitList({ filteredUnits, modal, fetchUnitById }: any) {
     const [hostname, setHostname] = useState("");
 
     useEffect(() => {
@@ -10,30 +10,28 @@ function WarehouseList({ filteredWarehouses, modal, fetchWarehouseById }: any) {
             setHostname(`${process.env.NEXT_PUBLIC_BASE_API}`)
         }
     }, [hostname]);
-    
     return (
-        <>
-            <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
+        <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
                 <thead className="bg-gray-100 dark:bg-gray-700">
                     <tr>
                         <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">ID </th>
                         <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">NOMBRE</th>
-                        <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">CATEGORIA</th>
-                        <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">SEDE</th>
+                        <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">DESCRIPCION</th>
+                        <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">CODIGO SUNAT</th>
                         <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">ACCION</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredWarehouses?.map((item: IWarehouse) =>
+                    {filteredUnits?.map((item: IUnit) =>
                         <tr key={item.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                             <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">{item.id}</td>
-                            <td className="px-4 py-2">{item.name}</td>
-                            <td className="px-4 py-2">{item.categoryReadable}</td>
-                            <td className="px-4 py-2">{item.subsidiaryName}</td>
+                            <td className="px-4 py-2">{item.shortName}</td>
+                            <td className="px-4 py-2">{item.description}</td>
+                            <td className="px-4 py-2">{item.code}</td>
                             <td className="px-4 py-2">
                                 <>
                                     <a href="#" className="hover:underline" onClick={async () => {
-                                        await fetchWarehouseById(item.id);
+                                        await fetchUnitById(item.id);
                                         modal.show();
                                     }}>
                                         <Edit />
@@ -46,8 +44,7 @@ function WarehouseList({ filteredWarehouses, modal, fetchWarehouseById }: any) {
                     )}
                 </tbody>
             </table>
-        </>
     )
 }
 
-export default WarehouseList
+export default UnitList
