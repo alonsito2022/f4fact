@@ -3,39 +3,8 @@ import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import Save from '@/components/icons/Save';
 
-function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, initialState, accessToken }: any) {
+function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, initialState, accessToken, typeAffectations }: any) {
     const [units, setUnits] = useState<IUnit[]>([]);
-    const [typeAffectations, setTypeAffectations] = useState<ITypeAffectation[]>([]);
-
-    async function fetchTypeAffectations() {
-        console.log(accessToken)
-        await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `JWT ${accessToken}`
-            },
-            body: JSON.stringify({
-                query: `
-                    query {
-                        allTypeAffectations {
-                            id
-                            code
-                            name
-                            affectCode
-                            affectName
-                            affectType
-                        }
-                    }
-                `
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            console.log(data.data.allTypeAffectations)
-            setTypeAffectations(data.data.allTypeAffectations);
-        })
-    }
 
     async function fetchUnits() {
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
@@ -108,18 +77,17 @@ function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, init
                         name: "",
 
                         available: true,
-                        subjectPerception: false,
-                        typeAffectationId: 0,
-
                         activeType: "01",
                         ean: "",
-                        deactivationReason: "",
                         weightInKilograms: 0,
-
+                        
                         minimumUnitId: 0,
                         maximumUnitId: 0,
                         minimumFactor: 1,
                         maximumFactor: 0,
+
+                        typeAffectationId: 0,
+                        subjectPerception: false,
                         observation: ""
                     });
                     modal.hide();
@@ -155,25 +123,22 @@ function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, init
                     setProduct({
                         ...product,
                         id: 0,
-                        name: "",
                         code: "",
-                        supplierId: 0,
-                        lineId: 0,
-                        subLineId: 0,
+                        name: "",
 
                         available: true,
-                        subjectPerception: false,
-                        exemptFromIgv: false,
                         activeType: "01",
                         ean: "",
-                        deactivationReason: "",
                         weightInKilograms: 0,
-
+                        
                         minimumUnitId: 0,
                         maximumUnitId: 0,
                         minimumFactor: 1,
                         maximumFactor: 0,
-                        observation: "",
+                        
+                        typeAffectationId: 0,
+                        subjectPerception: false,
+                        observation: ""
                     });
                     modal.hide();
                     fetchProductsByCriteria();
@@ -186,7 +151,7 @@ function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, init
 
         if (accessToken.length > 0) {
             fetchUnits();
-            fetchTypeAffectations();
+            
         }
     }, [accessToken]);
 
@@ -289,19 +254,19 @@ function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, init
 
 
                                     <div className="sm:col-span-3 mb-2">
-                                        <input id="subjectPerception" name="subjectPerception" checked={product.subjectPerception} type="checkbox" onChange={handleCheckboxChange} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                        <label htmlFor="subjectPerception" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Sujeto a percepcion</label>
+                                        <input id="subjectPerception3" name="subjectPerception" checked={product.subjectPerception} type="checkbox" onChange={handleCheckboxChange} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                        <label htmlFor="subjectPerception3" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Sujeto a percepcion</label>
                                     </div>
 
                                     <div className="sm:col-span-3 mb-2">
-                                        <input id="available" name="available" checked={product.available} type="checkbox" onChange={handleCheckboxChange} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                        <label htmlFor="available" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Activo</label>
+                                        <input id="available3" name="available" checked={product.available} type="checkbox" onChange={handleCheckboxChange} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                        <label htmlFor="available3" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Activo</label>
                                     </div>
 
                                     <div className="sm:col-span-6 mb-2">
-                                        <label htmlFor="observation" className="form-label">Observación</label>
+                                        <label htmlFor="observation3" className="form-label">Observación</label>
                                         <textarea
-                                            id="observation"
+                                            id="observation3"
                                             name='observation'
                                             rows={5}
                                             className='form-control-sm'

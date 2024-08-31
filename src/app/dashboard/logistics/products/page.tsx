@@ -3,10 +3,11 @@ import { useState, useEffect, useMemo  } from "react";
 import ProductList from './ProductList'
 import ProductForm from "./ProductForm";
 import ProductFilter from "./ProductFilter";
+import ProductCriteriaForm from "./ProductCriteriaForm";
 import Breadcrumb from "@/components/Breadcrumb"
 import { Modal, ModalOptions } from 'flowbite'
 import { useSession } from 'next-auth/react'
-import { IUser, IProduct } from '@/app/types';
+import { IUser, IProduct, ITypeAffectation } from '@/app/types';
 import { toast } from "react-toastify";
 
 const initialState = {
@@ -15,8 +16,6 @@ const initialState = {
     code: "",
 
     available: true,
-    subjectPerception: false,
-    
     activeType: "01",
     ean: "",
     weightInKilograms: 0,
@@ -26,6 +25,9 @@ const initialState = {
     maximumFactor: "",
     minimumFactor: "1",
 
+    typeAffectationId: 0,
+    typeAffectationName: "",
+    subjectPerception: false,
     observation: "",
 }
 
@@ -38,15 +40,18 @@ const initialStateFilterObj = {
     available: "A",
     activeType: "01", 
     subjectPerception: false, 
-    exemptFromIgv: false
+    typeAffectationId: 0,
 }
 function ProductPage() {
     const [products, setProducts] = useState< IProduct[]>([]);
     const [product, setProduct] = useState(initialState);
     const [modal, setModal] = useState<Modal | any>(null);
+    const [modalCriteria, setModalCriteria] = useState<Modal | any>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [searchField, setSearchField] = useState<'name' | 'code' | 'ean'>('code');
     const [accessToken, setAccessToken] = useState<string>('');
+    const [typeAffectations, setTypeAffectations] = useState<ITypeAffectation[]>([]);
+
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
     const { data: session } = useSession();
     const u = session?.user as IUser;
@@ -57,44 +62,34 @@ function ProductPage() {
                         allProducts(
                             criteria: "${filterObj.criteria}",
                             searchText: "${filterObj.searchText}",
-                            productLineId: ${filterObj.lineId},
-                            productSubLineId: ${filterObj.subLineId},
-                            supplierId: ${filterObj.supplierId},
                             available: "${filterObj.available}",
                             activeType: "${filterObj.activeType}",
                             subjectPerception: ${filterObj.subjectPerception},
-                            exemptFromIgv: ${filterObj.exemptFromIgv}
+                            typeAffectationId: ${filterObj.typeAffectationId}
                         ){
                             id
                             code
                             name
-                            activationDate
-                            subjectPerception
-                            exemptFromIgv
+                            available
                             activeType
                             activeTypeReadable
                             ean
                             weightInKilograms
-                            supplierId
-                            subLineId
-                            lineId
+                            
                             minimumUnitId
                             maximumUnitId
-                            lineName
-                            subLineName
-                            supplierName
                             minimumUnitName
                             maximumUnitName
                             maximumFactor
                             minimumFactor
-                            available
-                            deactivationReason
+
+                            typeAffectationId
+                            typeAffectationName
+                            subjectPerception
                             observation
                         }
                     }
-                `
-                console.log(queryFetch)
-
+                `;
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
             method: 'POST',
             headers: {
@@ -113,6 +108,31 @@ function ProductPage() {
     }
 
     async function fetchProductById(pk: number=0){
+        const queryFetch = `
+                    {
+                        productById(pk: ${pk}){
+                            id
+                            code
+                            name
+
+                            available
+                            activeType
+                            ean
+                            weightInKilograms
+                            
+                            minimumUnitId
+                            maximumUnitId
+                            maximumFactor
+                            minimumFactor
+
+                            typeAffectationId
+                            typeAffectationName
+                            subjectPerception
+                            observation
+                        }
+                    }
+                `
+                console.log(queryFetch)
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
             method: 'POST',
             headers: {
@@ -120,32 +140,7 @@ function ProductPage() {
                 "Authorization": `JWT ${accessToken}`
             },
             body: JSON.stringify({
-                query: `
-                    {
-                        productById(pk: ${pk}){
-                            id
-                            code
-                            name
-                            activationDate
-                            subjectPerception
-                            exemptFromIgv
-                            activeType
-                            activeTypeReadable
-                            ean
-                            weightInKilograms
-                            supplierId
-                            subLineId
-                            lineId
-                            minimumUnitId
-                            maximumUnitId
-                            maximumFactor
-                            minimumFactor
-                            available
-                            deactivationReason
-                            observation
-                        }
-                    }
-                `
+                query: queryFetch
             })
         })
         .then(res=>res.json())
@@ -168,11 +163,41 @@ function ProductPage() {
     }
 
     
+    async function fetchTypeAffectations() {
+        console.log(accessToken)
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `JWT ${accessToken}`
+            },
+            body: JSON.stringify({
+                query: `
+                    query {
+                        allTypeAffectations {
+                            id
+                            code
+                            name
+                            affectCode
+                            affectName
+                            affectType
+                        }
+                    }
+                `
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log(data.data.allTypeAffectations)
+            setTypeAffectations(data.data.allTypeAffectations);
+        })
+    }
+
     const filteredProducts = useMemo(() => {
-        return products.filter((w:IProduct) => searchField === "name" ? w?.name?.toLowerCase().includes(searchTerm.toLowerCase()) : w?.code?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        return products?.filter((w:IProduct) => searchField === "name" ? w?.name?.toLowerCase().includes(searchTerm.toLowerCase()) : w?.code?.toString().toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [searchTerm, searchField, products]);
-    
+
     useEffect(() => {
         if (u !== undefined && u.token != undefined)
             setAccessToken(u.token);
@@ -193,16 +218,38 @@ function ProductPage() {
 
             setModal(new Modal($targetEl, options))
         }
+        
+        if(modalCriteria == null){
+
+            const $targetE2 = document.getElementById('modalCriteria');
+            const options: ModalOptions = {
+                placement: 'bottom-right',
+                backdrop: 'static',
+                backdropClasses: 'bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
+                closable: false ,
+
+            };
+
+            setModalCriteria(new Modal($targetE2))
+        }
 
   
     }, []);
+
+    useEffect(() => {
+
+        if (accessToken.length > 0) {
+
+            fetchTypeAffectations();
+        }
+    }, [accessToken]);
 
     return (
         <>
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
                 <div className="w-full mb-1">
                     <Breadcrumb section={"Activos"} article={"Productos"} />
-                    <ProductFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} searchField={searchField} setSearchField={setSearchField} modal={modal} initialState={initialState} setProduct={setProduct} />
+                    <ProductFilter modalCriteria={modalCriteria} searchTerm={searchTerm} setSearchTerm={setSearchTerm} searchField={searchField} setSearchField={setSearchField} modal={modal} initialState={initialState} setProduct={setProduct}  fetchProductsByCriteria={fetchProductsByCriteria} />
                 </div>
             </div>
 
@@ -217,7 +264,8 @@ function ProductPage() {
             </div>
 
 
-            <ProductForm modal={modal} product={product} setProduct={setProduct} fetchProductsByCriteria={fetchProductsByCriteria} initialState={initialState} accessToken={accessToken} />
+            <ProductForm modal={modal} product={product} setProduct={setProduct} fetchProductsByCriteria={fetchProductsByCriteria} initialState={initialState} accessToken={accessToken} typeAffectations={typeAffectations} />
+            <ProductCriteriaForm modalCriteria={modalCriteria} filterObj={filterObj} setFilterObj={setFilterObj} typeAffectations={typeAffectations} fetchProductsByCriteria={fetchProductsByCriteria} />
         </>
     )
     

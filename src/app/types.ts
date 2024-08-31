@@ -86,6 +86,8 @@ export interface IProduct {
     code: string 
     ean: string 
     name: string
+    observation: string
+    activeType: string
     stockMin: number 
     stockMax: number 
     path: string
@@ -95,9 +97,11 @@ export interface IProduct {
     isPurchased: boolean
     isManufactured: boolean
     available: boolean
+    subjectPerception: boolean
     producttariffSet?: IProductTariff
     totalProductTariff?: number
     typeAffectationId?: number
+    typeAffectationName?: string
 }
 
 
