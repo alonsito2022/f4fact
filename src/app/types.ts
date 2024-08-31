@@ -65,7 +65,14 @@ export interface IWarehouse {
     subsidiaryName?: string
 }
 
-
+export interface ITypeAffectation {
+    id?: number
+    code?: string
+    name?: string
+    affectCode?: string
+    affectName?: string
+    affectType?: string
+}
 
 export interface IUnit {
     id?: number
@@ -90,6 +97,7 @@ export interface IProduct {
     available: boolean
     producttariffSet?: IProductTariff
     totalProductTariff?: number
+    typeAffectationId?: number
 }
 
 

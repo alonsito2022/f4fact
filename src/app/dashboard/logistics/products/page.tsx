@@ -172,6 +172,30 @@ function ProductPage() {
         return products.filter((w:IProduct) => searchField === "name" ? w?.name?.toLowerCase().includes(searchTerm.toLowerCase()) : w?.code?.toString().toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [searchTerm, searchField, products]);
+    
+    useEffect(() => {
+        if (u !== undefined && u.token != undefined)
+            setAccessToken(u.token);
+    }, [u])
+
+    useEffect(() => {
+        
+        if(modal == null){
+
+            const $targetEl = document.getElementById('defaultModal');
+            const options: ModalOptions = {
+                placement: 'bottom-right',
+                backdrop: 'static',
+                backdropClasses: 'bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
+                closable: false ,
+
+            };
+
+            setModal(new Modal($targetEl, options))
+        }
+
+  
+    }, []);
 
     return (
         <>
