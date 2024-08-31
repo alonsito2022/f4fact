@@ -146,7 +146,7 @@ function CompanyList({companies, modal, setModal, company, setCompany}:any) {
                 <td className="px-6 py-4">
                 {item.logo?  
                   <>
-                 <ImageCircle src={ item.id&&(item.logo as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${item.logo}`:item.logo as string}/>                   
+                 <ImageCircle image={ item.id&&(item.logo as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${item.logo}`:item.logo as string}/>                   
                   </>                                 
                   :
                   <>

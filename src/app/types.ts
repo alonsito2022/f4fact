@@ -14,7 +14,7 @@ export interface IUser {
     fullName?: string,
     isActive?: boolean,
     avatar?: string | ArrayBuffer | null,
-
+    avatarUrl?: string
     refreshToken?: string,
     token?: string,
     exp?: number,

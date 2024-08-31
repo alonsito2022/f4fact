@@ -10,11 +10,7 @@ import ImageCircle from '@/components/images/ImageCircle';
 function UserList({ users, modal, setModal, user, setUser }: any) {
 
     async function fetchUserByID(pk: number) {
-        await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-            method: 'POST',
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                query: `
+        let querys = `
                     {
                         userById(pk: ${pk}){
                             id
@@ -32,6 +28,12 @@ function UserList({ users, modal, setModal, user, setUser }: any) {
                         }
                     }
                 `
+        console.log(querys)
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                query: querys
             })
         })
             .then(res => res.json())
@@ -75,9 +77,9 @@ function UserList({ users, modal, setModal, user, setUser }: any) {
                     {users.map((item: IUser) =>
                         <tr key={item.id} className="hover:bg-gray-100 dark:hover:bg-gray-700">
                             <td className="flex items-center p-1 mr-3 space-x-4 whitespace-nowrap">
-                                {item.avatar?  
+                                {item.avatarUrl?  
                                     <>
-                                    <ImageCircle src={ item.id&&(item.avatar as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${item.avatar}`:item.avatar as string}/>                   
+                                    <ImageCircle image={ item.id&&(item.avatarUrl as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${item.avatarUrl}`:item.avatarUrl as string}/>                   
                                     </>                                 
                                     :
                                     <>

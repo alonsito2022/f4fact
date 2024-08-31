@@ -25,10 +25,13 @@ const handler = NextAuth({
                                 id
                                 username
                                 fullName
+                                avatar
+                                avatarUrl
                             }
                         }
                     }
                 `;
+                console.log(queryfecth)
                 const apiUserResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
                     method: 'POST',
                     headers: { "Content-Type": "application/json" },
@@ -39,7 +42,7 @@ const handler = NextAuth({
 
                 const data: any = await apiUserResponse.json();
 
-                console.log("data", data)
+                console.log("data", data.data.tokenAuth.user)
                 // If no error and we have user data, return it
                 if (apiUserResponse.ok && data) {
                     const user = {
@@ -47,6 +50,7 @@ const handler = NextAuth({
                         "username": data.data.tokenAuth.user.username,
                         "fullName": data.data.tokenAuth.user.fullName,
                         "email": data.data.tokenAuth.payload.email,
+                        "avatarUrl": data.data.tokenAuth.user.avatarUrl,
                         "refreshToken": data.data.tokenAuth.refreshToken,
                         "token": data.data.tokenAuth.token,
                         "exp": data.data.tokenAuth?.payload.exp,

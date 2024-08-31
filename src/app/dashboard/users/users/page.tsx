@@ -29,24 +29,28 @@ function UserPage() {
     const [searchTerm, setSearchTerm] = useState<string>('');
 
     async function fetchUsers() {
+        let querys= `
+        {
+            users {
+                id
+                document
+                fullName
+                firstName
+                lastName
+                phone
+                email
+                roleName
+                avatar
+                avatarUrl
+            }
+        }
+    `
+    console.log(querys)
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                query: `
-                    {
-                        users {
-                            id
-                            document
-                            fullName
-                            firstName
-                            lastName
-                            phone
-                            email
-                            roleName
-                        }
-                    }
-                `
+                query: querys
             })
         })
             .then(res => res.json())

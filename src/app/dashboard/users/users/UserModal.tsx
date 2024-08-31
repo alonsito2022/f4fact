@@ -28,14 +28,13 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
         if(Number(user.id)!==0){
             queryFetch = `
                 mutation{
-                    updateUser(
-                        id:${user.id}, document: "${user.document}", firstName: "${user.firstName}",lastName: "${user.lastName}",phone: "${user.phone}", email: "${user.email}", password: "${user.password}", repeatPassword: "${user.repeatPassword}", role: "${user.role}", isActive: ${user.isActive}, avatar:"${user.avatar}"
-                    ){
+                    updateUser(id:${user.id}, document: "${user.document}", firstName: "${user.firstName}",lastName: "${user.lastName}",phone: "${user.phone}", email: "${user.email}", password: "${user.password}", repeatPassword: "${user.repeatPassword}", role: "${user.role}", isActive: ${user.isActive}, avatar:"${user.avatar}", avatarUrl:"${user.avatarUrl}")
+                    {
                         message
                     }
                 }
             `;
-            // console.log(queryFetch)
+            console.log(queryFetch)
             await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
                 method: 'POST',
                 headers: { "Content-Type": "application/json"},
@@ -54,7 +53,7 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
             queryFetch = `
                 mutation{
                     createUser(
-                        document: "${user.document}", firstName: "${user.firstName}",lastName: "${user.lastName}",phone: "${user.phone}", email: "${user.email}", password: "${user.password}", repeatPassword: "${user.repeatPassword}", role: "${user.role}", isActive: ${user.isActive}, avatar:"${user.avatar}"
+                        document: "${user.document}", firstName: "${user.firstName}",lastName: "${user.lastName}",phone: "${user.phone}", email: "${user.email}", password: "${user.password}", repeatPassword: "${user.repeatPassword}", role: "${user.role}", isActive: ${user.isActive}, avatar:"${user.avatar}", avatarUrl:"${user.avatarUrl}"
                     ){
                         message
                     }
@@ -91,7 +90,7 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
             //   setUser({...user, avatar:e.target.result});
             setUser((prevUser:any) => ({
                 ...prevUser,
-                avatar: e.target?.result as string // Asegúrate de definir el tipo correcto para e.target.result
+                avatarUrl: e.target?.result as string // Asegúrate de definir el tipo correcto para e.target.result
               }));
             }
           };
@@ -184,11 +183,11 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
                      </div>
                 </div>
                 <div className="flex items-center justify-center w-full mb-2">
-                    <label htmlFor="avatar" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                    <label htmlFor="avatarUrl" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            {user.avatar?.length? 
+                            {user.avatarUrl?.length? 
                                 <img
-                                src={ user.id&&user.avatar?.search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${user.avatar}`:user.avatar}
+                                src={ user.id&&user.avatarUrl?.search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${user.avatarUrl}`:user.avatarUrl}
                                 alt="Imagen seleccionada"
                                 style={{ maxWidth: '100%', maxHeight: '200px' }}
                             />:
@@ -200,7 +199,7 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
                                 <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
                             </> }  
                         </div>
-                        <input id="avatar" name="avatar" type="file" className="hidden" ref={fileInputRef} onClick={handleFileReset} onChange={handleFileChange} accept="image/*"/>
+                        <input id="avatarUrl" name="avatarUrl" type="file" className="hidden" ref={fileInputRef} onClick={handleFileReset} onChange={handleFileChange} accept="image/*"/>
                     </label>
                 </div> 
                 <button type="submit" className="btn-blue">{user.id ? <p>Actualizar Usuario</p> : <p>Crear Usuario</p>}</button>

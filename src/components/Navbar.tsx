@@ -5,6 +5,8 @@ import { signOut, useSession } from 'next-auth/react';
 import { IUser } from '@/app/types';
 import React, { useState, useEffect } from 'react';
 import ThemeToggle from '@/components/ThemeToggle';
+import ImageCircle from './images/ImageCircle';
+import UserCircle from './icons/UserCircle';
 function Navbar() {
 
     // const session = await getServerSession();
@@ -297,7 +299,16 @@ function Navbar() {
                             <div>
                                 <button type="button" className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" id="user-menu-button-2" aria-expanded="false" data-dropdown-toggle="dropdown-2">
                                     <span className="sr-only">Open user menu</span>
-                                    <img className="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo" />
+                                    {/* <img className="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo" /> */}
+                                    {u?.avatarUrl?  
+                                    <>
+                                    <ImageCircle image={ u?.id&&(u?.avatarUrl as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${u?.avatarUrl}`:u?.avatarUrl as string}/>                   
+                                    </>                                 
+                                    :
+                                    <>
+                                    <UserCircle/>                 
+                                    </>
+                                }
                                 </button>
                             </div>
                            
