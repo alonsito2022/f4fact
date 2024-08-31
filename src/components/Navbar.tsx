@@ -300,15 +300,15 @@ function Navbar() {
                                 <button type="button" className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" id="user-menu-button-2" aria-expanded="false" data-dropdown-toggle="dropdown-2">
                                     <span className="sr-only">Open user menu</span>
                                     <img className="w-8 h-8 rounded-full" src={u?.avatar != null ? `${process.env.NEXT_PUBLIC_BASE_API}/media/users/${u?.avatar}`: "https://flowbite.com/docs/images/people/profile-picture-5.jpg"} alt="user photo" />
-                                    {/* {u?.avatar?  
+                                    {/* {u?.avatarUrl?  
                                     <>
-                                    <ImageCircle image={ u?.id&&(u?.avatar as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${u?.avatar}`:u?.avatar as string}/>                   
+                                    <ImageCircle image={ u?.id&&(u?.avatarUrl as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${u?.avatarUrl}`:u?.avatarUrl as string}/>                   
                                     </>                                 
                                     :
                                     <>
                                     <UserCircle/>                 
-                                    </>
-                                } */}
+                                    </> */}
+                                }
                                 </button>
                             </div>
                            

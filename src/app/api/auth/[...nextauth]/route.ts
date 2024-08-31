@@ -51,6 +51,7 @@ const handler = NextAuth({
                         "fullName": data.data.tokenAuth.user.fullName,
                         "email": data.data.tokenAuth.payload.email,
                         "avatar": data.data.tokenAuth.user.avatar,
+                        // "avatarUrl": data.data.tokenAuth.user.avatarUrl,
                         "refreshToken": data.data.tokenAuth.refreshToken,
                         "token": data.data.tokenAuth.token,
                         "exp": data.data.tokenAuth?.payload.exp,

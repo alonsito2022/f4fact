@@ -106,7 +106,7 @@ function UnitPage() {
     }, []);
 
     const filteredUnits = useMemo(() => {
-        return units.filter((n:IUnit) => searchField === "shortName" ? n?.shortName?.toLowerCase().includes(searchTerm.toLowerCase()) : n?.code?.toLowerCase().includes(searchTerm.toLowerCase())
+        return units?.filter((n:IUnit) => searchField === "shortName" ? n?.shortName?.toLowerCase().includes(searchTerm.toLowerCase()) : n?.code?.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [searchTerm, searchField, units]);
 

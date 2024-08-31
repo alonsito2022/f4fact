@@ -48,6 +48,7 @@ function UnitForm({ modal, unit, setUnit, fetchUnits, initialState, accessToken 
                     }
                 }
             `;
+            console.log(queryFetch)
             await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
                 method: 'POST',
                 headers: {
