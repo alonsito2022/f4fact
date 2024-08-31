@@ -308,7 +308,6 @@ function Navbar() {
                                     <>
                                     <UserCircle/>                 
                                     </> */}
-                                }
                                 </button>
                             </div>
                            
