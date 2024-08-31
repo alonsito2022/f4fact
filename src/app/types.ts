@@ -13,7 +13,12 @@ export interface IUser {
     roleName?: string,
     fullName?: string,
     isActive?: boolean,
-    avatar?: string | ArrayBuffer | null
+    avatar?: string | ArrayBuffer | null,
+
+    refreshToken?: string,
+    token?: string,
+    exp?: number,
+    origIat?: number,
     
 
 }
@@ -66,11 +71,13 @@ export interface IUnit {
     id?: number
     shortName?: string
     description?: string
+    code?: string
 }
 
 export interface IProduct {
     id: number
-    code: number 
+    code: string 
+    ean: string 
     name: string
     stockMin: number 
     stockMax: number 
