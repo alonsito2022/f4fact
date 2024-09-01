@@ -82,8 +82,8 @@ function WarehousePage() {
     }
 
     useEffect(() => {
-        if (u !== undefined && u.token != undefined)
-            setAccessToken(u.token);
+        if (u !== undefined && u.accessToken != undefined)
+            setAccessToken(u.accessToken);
     }, [u])
 
     useEffect(() => {

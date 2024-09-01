@@ -16,7 +16,7 @@ export interface IUser {
     avatar?: string | ArrayBuffer | null,
     avatarUrl?: string
     refreshToken?: string,
-    token?: string,
+    accessToken?: string,
     exp?: number,
     origIat?: number,
     

@@ -7,13 +7,15 @@ import React, { useState, useEffect } from 'react';
 import ThemeToggle from '@/components/ThemeToggle';
 import ImageCircle from './images/ImageCircle';
 import UserCircle from './icons/UserCircle';
+import { useRouter } from 'next/navigation'
+
 function Navbar() {
 
     // const session = await getServerSession();
     const { data: session } = useSession();
     const u = session?.user as IUser;
     const [mounted, setMounted] = useState(false)
-
+    const router = useRouter();
     const handleToggleSidebarMobile  = () => {
         
     const sidebar = document.getElementById('sidebar');
@@ -331,7 +333,7 @@ function Navbar() {
                                         <a href="/dashboard/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Earnings</a>
                                     </li>
                                     <li>
-                                        <a onClick={()=>signOut()} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer" role="menuitem">Cerrar Sesión</a>
+                                        <a onClick={()=>{signOut({ redirect: false }).then(() => {router.push("/dashboard");});}} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer" role="menuitem">Cerrar Sesión</a>
                                     </li>
                                 </ul>
                             </div>

@@ -1,10 +1,18 @@
 "use client"
+// import { useEffect } from 'react';
 import { IUser } from '@/app/types';
 import { useSession, signOut } from 'next-auth/react'
+// import { useRouter } from 'next/navigation'
 
 function ProfilePage() {
     const { data: session, status } = useSession();
     const u = session?.user as IUser;
+    // const router = useRouter();
+    // useEffect(() => {
+    //     if (status === 'unauthenticated') {
+    //         router.push('/login');
+    //     }
+    // }, [status, router]);
     return (
         <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
             <div className="mb-4 col-span-full xl:mb-2">

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Edit from '@/components/icons/Edit'
 import { IUnit, IWarehouse } from '@/app/types';
 
-function UnitList({ filteredUnits, modal, fetchUnitById }: any) {
+function UnitList({ filteredUnits, modal, setUnit, unit }: any) {
     const [hostname, setHostname] = useState("");
 
     useEffect(() => {
@@ -31,7 +31,8 @@ function UnitList({ filteredUnits, modal, fetchUnitById }: any) {
                             <td className="px-4 py-2">
                                 <>
                                     <a href="#" className="hover:underline" onClick={async () => {
-                                        await fetchUnitById(item.id);
+                                        // await fetchUnitById(item.id);
+                                        setUnit({...unit, id: item.id})
                                         modal.show();
                                     }}>
                                         <Edit />
