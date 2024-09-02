@@ -102,6 +102,20 @@ export interface IProduct {
     totalProductTariff?: number
     typeAffectationId?: number
     typeAffectationName?: string
+
+    priceWithIgv1 : number
+    priceWithoutIgv1 : number
+
+    priceWithIgv2 : number
+    priceWithoutIgv2 : number
+
+    priceWithIgv3 : number
+    priceWithoutIgv3 : number
+    
+    minimumUnitId : number
+    maximumUnitId : number
+    maximumFactor : number
+    minimumFactor : number
 }
 
 
@@ -109,11 +123,13 @@ export interface IProductTariff {
     id: number
     productId?: number
     unitId?: number
-    salePrice1?: number 
-    salePrice2?: number 
+    priceWithIgv?: number 
+    priceWithoutIgv?: number 
     quantityMinimum?: number 
     productName?: string
     unitName?: string
+    typePrice?: string
+    factor?: string
 }
 
 export interface IOperation {

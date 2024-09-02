@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo  } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import ProductList from './ProductList'
 import ProductForm from "./ProductForm";
 import ProductFilter from "./ProductFilter";
@@ -9,6 +9,7 @@ import { Modal, ModalOptions } from 'flowbite'
 import { useSession } from 'next-auth/react'
 import { IUser, IProduct, ITypeAffectation } from '@/app/types';
 import { toast } from "react-toastify";
+import { gql, useLazyQuery, useQuery } from "@apollo/client";
 
 const initialState = {
     id: 0,
@@ -20,15 +21,23 @@ const initialState = {
     ean: "",
     weightInKilograms: 0,
 
-    minimumUnitId: 0,
-    maximumUnitId: 0,
-    maximumFactor: "",
-    minimumFactor: "1",
-
     typeAffectationId: 0,
-    typeAffectationName: "",
     subjectPerception: false,
     observation: "",
+
+    priceWithIgv1: 0,
+    priceWithoutIgv1: 0,
+
+    priceWithIgv2: 0,
+    priceWithoutIgv2: 0,
+
+    priceWithIgv3: 0,
+    priceWithoutIgv3: 0,
+
+    minimumUnitId: 0,
+    maximumUnitId: 0,
+    maximumFactor: "1",
+    minimumFactor: "1",
 }
 
 const initialStateFilterObj = {
@@ -38,12 +47,47 @@ const initialStateFilterObj = {
     lineId: 0,
     subLineId: 0,
     available: "A",
-    activeType: "01", 
-    subjectPerception: false, 
+    activeType: "01",
+    subjectPerception: false,
     typeAffectationId: 0,
+    limit: 50
 }
+
+const PRODUCTS_QUERY = gql`
+    query ($criteria: String!, $searchText: String!, $available: String!, $activeType: String!, $subjectPerception: Boolean!, $typeAffectationId: Int!, $limit: Int!) {
+        allProducts(
+            criteria: $criteria
+            searchText: $searchText
+            available: $available
+            activeType: $activeType
+            subjectPerception: $subjectPerception
+            typeAffectationId: $typeAffectationId
+            limit: $limit
+        ) {
+            id
+            code
+            name
+            available
+            activeType
+            activeTypeReadable
+            ean
+            weightInKilograms
+            minimumUnitId
+            maximumUnitId
+            minimumUnitName
+            maximumUnitName
+            maximumFactor
+            minimumFactor
+            typeAffectationId
+            typeAffectationName
+            subjectPerception
+            observation
+        }
+    }
+`;
+
 function ProductPage() {
-    const [products, setProducts] = useState< IProduct[]>([]);
+    const [products, setProducts] = useState<IProduct[]>([]);
     const [product, setProduct] = useState(initialState);
     const [modal, setModal] = useState<Modal | any>(null);
     const [modalCriteria, setModalCriteria] = useState<Modal | any>(null);
@@ -54,60 +98,112 @@ function ProductPage() {
 
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
     const { data: session } = useSession();
+    const [jwtToken, setJwtToken] = useState<string | null>(null);
     const u = session?.user as IUser;
 
-    async function fetchProductsByCriteria(){
-        const queryFetch = `
-                    query {
-                        allProducts(
-                            criteria: "${filterObj.criteria}",
-                            searchText: "${filterObj.searchText}",
-                            available: "${filterObj.available}",
-                            activeType: "${filterObj.activeType}",
-                            subjectPerception: ${filterObj.subjectPerception},
-                            typeAffectationId: ${filterObj.typeAffectationId}
-                        ){
-                            id
-                            code
-                            name
-                            available
-                            activeType
-                            activeTypeReadable
-                            ean
-                            weightInKilograms
-                            
-                            minimumUnitId
-                            maximumUnitId
-                            minimumUnitName
-                            maximumUnitName
-                            maximumFactor
-                            minimumFactor
+    useEffect(() => {
+        if (session?.user) {
+            const user = session.user as IUser;
+            setJwtToken(user.accessToken as string);
+        }
+    }, [session]);
 
-                            typeAffectationId
-                            typeAffectationName
-                            subjectPerception
-                            observation
-                        }
-                    }
-                `;
-        await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-            method: 'POST',
+    const { loading: productsLoading, error: productsError, data: productsData } = useQuery(PRODUCTS_QUERY, {
+        context: {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `JWT ${accessToken}`
+                "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
             },
-            body: JSON.stringify({
-                query: queryFetch
-            })
-        })
-        .then(res=>res.json())
-        .then(data=>{
-            setProducts(data.data.allProducts);
-            toast(`Se encontraron ${data.data.allProducts.length} resultados.`, { hideProgressBar: true, autoClose: 2000, type: 'info' })
-        })
-    }
+        },
+        skip: !jwtToken, // Esto evita que la consulta se ejecute si no hay token
+        variables: {
+            criteria: filterObj.criteria, searchText: filterObj.searchText,
+            available: filterObj.available, activeType: filterObj.activeType,
+            subjectPerception: filterObj.subjectPerception, typeAffectationId: Number(filterObj.typeAffectationId), limit: Number(filterObj.limit)
+        },
+        onError: (err) => console.error("Error in products:", err),
+    });
 
-    async function fetchProductById(pk: number=0){
+    const [productsQuery, { loading, error, data }] = useLazyQuery(PRODUCTS_QUERY, {
+        onCompleted: (data) => {
+          if (data.allProducts) {
+            console.log(data.allProducts)
+            setProducts(data?.allProducts)
+          }
+        }
+      });
+
+    const fetchProducts = () => {
+        setProducts([]);
+        productsQuery({
+            variables: {
+                criteria: filterObj.criteria, searchText: filterObj.searchText,
+                available: filterObj.available, activeType: filterObj.activeType,
+                subjectPerception: filterObj.subjectPerception, typeAffectationId: Number(filterObj.typeAffectationId), limit: Number(filterObj.limit)
+            },
+        });
+
+    };
+
+    useEffect(() => {
+        if (productsData?.allProducts)
+            setProducts(productsData?.allProducts)
+    }, [productsData]);
+
+    // async function fetchProducts() {
+    //     const queryFetch = `
+    //                 query {
+    //                     allProducts(
+    //                         criteria: "${filterObj.criteria}",
+    //                         searchText: "${filterObj.searchText}",
+    //                         available: "${filterObj.available}",
+    //                         activeType: "${filterObj.activeType}",
+    //                         subjectPerception: ${filterObj.subjectPerception},
+    //                         typeAffectationId: ${filterObj.typeAffectationId},
+    //                         limit: ${filterObj.limit},
+    //                     ){
+    //                         id
+    //                         code
+    //                         name
+    //                         available
+    //                         activeType
+    //                         activeTypeReadable
+    //                         ean
+    //                         weightInKilograms
+                            
+    //                         minimumUnitId
+    //                         maximumUnitId
+    //                         minimumUnitName
+    //                         maximumUnitName
+    //                         maximumFactor
+    //                         minimumFactor
+
+    //                         typeAffectationId
+    //                         typeAffectationName
+    //                         subjectPerception
+    //                         observation
+    //                     }
+    //                 }
+    //             `;
+    //     console.log(queryFetch)
+    //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+    //         method: 'POST',
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //             "Authorization": `JWT ${accessToken}`
+    //         },
+    //         body: JSON.stringify({
+    //             query: queryFetch
+    //         })
+    //     })
+    //         .then(res => res.json())
+    //         .then(data => {
+    //             setProducts(data.data.allProducts);
+    //             toast(`Se encontraron ${data.data.allProducts.length} resultados.`, { hideProgressBar: true, autoClose: 2000, type: 'info' })
+    //         })
+    // }
+
+    async function fetchProductById(pk: number = 0) {
         const queryFetch = `
                     {
                         productById(pk: ${pk}){
@@ -132,7 +228,7 @@ function ProductPage() {
                         }
                     }
                 `
-                console.log(queryFetch)
+        console.log(queryFetch)
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
             method: 'POST',
             headers: {
@@ -143,26 +239,26 @@ function ProductPage() {
                 query: queryFetch
             })
         })
-        .then(res=>res.json())
-        .then(data=>{
-            if(data.data.productById){
-                console.log(data.data.productById)
-                let product = data.data.productById;
-                if(!product.minimumUnitId){
-                    product.minimumUnitId = 0
-                    product.maximumUnitId = 0
-                    product.maximumFactor = 0
-                    product.minimumFactor = 1
+            .then(res => res.json())
+            .then(data => {
+                if (data.data.productById) {
+                    console.log(data.data.productById)
+                    let product = data.data.productById;
+                    if (!product.minimumUnitId) {
+                        product.minimumUnitId = 0
+                        product.maximumUnitId = 0
+                        product.maximumFactor = 0
+                        product.minimumFactor = 1
+                    }
+                    product.maximumFactor = Number(product.maximumFactor);
+                    product.minimumFactor = Number(product.minimumFactor);
+                    setProduct(product);
                 }
-                product.maximumFactor = Number(product.maximumFactor);
-                product.minimumFactor = Number(product.minimumFactor);
-                setProduct(product);
-            }
-            
-        })
+
+            })
     }
 
-    
+
     async function fetchTypeAffectations() {
         console.log(accessToken)
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
@@ -186,15 +282,15 @@ function ProductPage() {
                 `
             })
         })
-        .then(res => res.json())
-        .then(data => {
-            console.log(data.data.allTypeAffectations)
-            setTypeAffectations(data.data.allTypeAffectations);
-        })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data.data.allTypeAffectations)
+                setTypeAffectations(data.data.allTypeAffectations);
+            })
     }
 
     const filteredProducts = useMemo(() => {
-        return products?.filter((w:IProduct) => searchField === "name" ? w?.name?.toLowerCase().includes(searchTerm.toLowerCase()) : w?.code?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        return products?.filter((w: IProduct) => searchField === "name" ? w?.name?.toLowerCase().includes(searchTerm.toLowerCase()) : w?.code?.toString().toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [searchTerm, searchField, products]);
 
@@ -204,42 +300,40 @@ function ProductPage() {
     }, [u])
 
     useEffect(() => {
-        
-        if(modal == null){
+
+        if (modal == null) {
 
             const $targetEl = document.getElementById('defaultModal');
             const options: ModalOptions = {
                 placement: 'bottom-right',
                 backdrop: 'static',
                 backdropClasses: 'bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
-                closable: false ,
+                closable: false,
 
             };
 
             setModal(new Modal($targetEl, options))
         }
-        
-        if(modalCriteria == null){
+
+        if (modalCriteria == null) {
 
             const $targetE2 = document.getElementById('modalCriteria');
             const options: ModalOptions = {
                 placement: 'bottom-right',
                 backdrop: 'static',
                 backdropClasses: 'bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
-                closable: false ,
+                closable: false,
 
             };
 
             setModalCriteria(new Modal($targetE2))
         }
 
-  
+
     }, []);
 
     useEffect(() => {
-
         if (accessToken.length > 0) {
-
             fetchTypeAffectations();
         }
     }, [accessToken]);
@@ -249,7 +343,8 @@ function ProductPage() {
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
                 <div className="w-full mb-1">
                     <Breadcrumb section={"Activos"} article={"Productos"} />
-                    <ProductFilter modalCriteria={modalCriteria} searchTerm={searchTerm} setSearchTerm={setSearchTerm} searchField={searchField} setSearchField={setSearchField} modal={modal} initialState={initialState} setProduct={setProduct}  fetchProductsByCriteria={fetchProductsByCriteria} />
+                    <ProductFilter filterObj={filterObj} setFilterObj={setFilterObj} modalCriteria={modalCriteria} searchTerm={searchTerm} setSearchTerm={setSearchTerm} searchField={searchField} setSearchField={setSearchField} modal={modal} initialState={initialState} 
+                    setProduct={setProduct} fetchProducts={fetchProducts} />
                 </div>
             </div>
 
@@ -264,11 +359,11 @@ function ProductPage() {
             </div>
 
 
-            <ProductForm modal={modal} product={product} setProduct={setProduct} fetchProductsByCriteria={fetchProductsByCriteria} initialState={initialState} accessToken={accessToken} typeAffectations={typeAffectations} />
-            <ProductCriteriaForm modalCriteria={modalCriteria} filterObj={filterObj} setFilterObj={setFilterObj} typeAffectations={typeAffectations} fetchProductsByCriteria={fetchProductsByCriteria} />
+            <ProductForm modal={modal} product={product} setProduct={setProduct} initialState={initialState} accessToken={accessToken} typeAffectations={typeAffectations} />
+            <ProductCriteriaForm modalCriteria={modalCriteria} filterObj={filterObj} setFilterObj={setFilterObj} typeAffectations={typeAffectations} fetchProducts={fetchProducts} />
         </>
     )
-    
+
 }
 
 export default ProductPage

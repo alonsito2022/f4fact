@@ -1,9 +1,39 @@
-import { IUnit, ITypeAffectation } from "@/app/types";
+import { IUnit, ITypeAffectation, IProduct } from "@/app/types";
 import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import Save from '@/components/icons/Save';
+import ProductTariffForm from './ProductTariffForm';
+import { DocumentNode, gql, useMutation } from "@apollo/client";
 
-function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, initialState, accessToken, typeAffectations }: any) {
+const ADD_PRODUCT = gql`
+    mutation ($code: String!, $name: String!, $available: Boolean!, $activeType: String!, $ean: String!, $weightInKilograms: Float!, $typeAffectationId: Int!, $subjectPerception: Boolean!, $observation: String!, $priceWithIgv1: Float!, $priceWithoutIgv1: Float!, $priceWithIgv2: Float!, $priceWithoutIgv2: Float!, $priceWithIgv3: Float!, $priceWithoutIgv3: Float!, $minimumUnitId: Int!, $maximumUnitId: Int!, $maximumFactor: Int!, $minimumFactor: Int!) {
+        createProduct(
+            code: $code
+            name: $name
+            available: $available
+            activeType: $activeType
+            ean: $ean
+            weightInKilograms: $weightInKilograms
+            typeAffectationId: $typeAffectationId
+            subjectPerception: $subjectPerception
+            observation: $observation
+            priceWithIgv1: $priceWithIgv1
+            priceWithoutIgv1: $priceWithoutIgv1
+            priceWithIgv2: $priceWithIgv2
+            priceWithoutIgv2: $priceWithoutIgv2
+            priceWithIgv3: $priceWithIgv3
+            priceWithoutIgv3: $priceWithoutIgv3
+            minimumUnitId: $minimumUnitId
+            maximumUnitId: $maximumUnitId
+            maximumFactor: $maximumFactor
+            minimumFactor: $minimumFactor
+        ) {
+            message
+        }
+    }
+`;
+
+function ProductForm({ modal, product, setProduct, initialState, accessToken, typeAffectations }: any) {
     const [units, setUnits] = useState<IUnit[]>([]);
 
     async function fetchUnits() {
@@ -24,14 +54,55 @@ function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, init
                 `
             })
         })
-        .then(res => res.json())
-        .then(data => {
-            setUnits(data.data.allUnits);
-        })
+            .then(res => res.json())
+            .then(data => {
+                setUnits(data.data.allUnits);
+            })
     }
+
+    useEffect(() => {
+
+        if (accessToken.length > 0) {
+            fetchUnits();
+
+        }
+    }, [accessToken]);
+
+    function useCustomMutation(mutation: DocumentNode) {
+        const getAuthContext = () => ({
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": accessToken ? `JWT ${accessToken}` : "",
+            },
+        });
+
+        return useMutation(mutation, {
+            context: getAuthContext(),
+            // refetchQueries: () => [{ query: refetchQuery, context: getAuthContext() }],
+            onError: (err) => console.error("Error in unit:", err), // Log the error for debugging
+        });
+    }
+
+    const [createProduct] = useCustomMutation(ADD_PRODUCT);
 
     const handleInputChange = ({ target: { name, value } }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setProduct({ ...product, [name]: value });
+    }
+
+    const handleInputChangeQuantityMinimum = ({ target: { name, value } }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const formattedValue = value.replace(/[^0-9]/g, '').slice(0, 6);
+        const numberValue = parseFloat(formattedValue);
+
+        if (formattedValue === "" || (numberValue >= 1 && numberValue <= 999999)) {
+            // Si está dentro del rango, asigna el valor normal
+            setProduct({ ...product, [name]: numberValue || 1 });
+        } else {
+            // Si está fuera de rango, asigna el valor por defecto (1)
+            setProduct({ ...product, [name]: 1 });
+            // Mostrar un mensaje de error al usuario (opcional)
+            console.error("El valor debe estar entre 1 y 999999.99. Se ha establecido el valor mínimo en 1.");
+        }
+        setProduct({ ...product, [name]: formattedValue });
     }
 
     const handleCheckboxChange = ({ target: { name, checked } }: ChangeEvent<HTMLInputElement>) => {
@@ -41,119 +112,116 @@ function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, init
     const handleSaveProduct = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (Number(product.minimumFactor) === 0) {
-            toast('Por favor ingrese un factor para la unidad minima.', { hideProgressBar: true, autoClose: 2000, type: 'warning' })
-            return;
-        }
+        // if (Number(product.minimumFactor) === 0) {
+        //     toast('Por favor ingrese un factor para la unidad minima.', { hideProgressBar: true, autoClose: 2000, type: 'warning' })
+        //     return;
+        // }
 
-        let queryFetch: String = "";
         if (Number(product.id) !== 0) {
-            queryFetch = `
-                mutation{
-                    updateProduct(id:${product.id}, code: "${product.code}", name: "${product.name}", 
-                    available: ${product.available}, activeType: "${product.activeType.replace("A_", "")}", ean: "${product.ean}", weightInKilograms: ${product.weightInKilograms}, 
-                    maximumFactor: ${Number(product.maximumFactor)},minimumFactor: ${Number(product.minimumFactor)}, minimumUnitId: ${product.minimumUnitId}, maximumUnitId: ${product.maximumUnitId}, 
-                    typeAffectationId: ${product.typeAffectationId}, subjectPerception: ${product.subjectPerception}, observation: "${product.observation}"){
-                        message
-                    }
-                }
-            `;
-            console.log(queryFetch)
-            await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `JWT ${accessToken}`
-                },
-                body: JSON.stringify({ query: queryFetch })
+
+        } else {
+            const values = { 
+                code: product.code,
+                name: product.name, 
+                available: product.available, 
+                activeType: product.activeType, 
+                ean: product.ean, 
+                weightInKilograms: Number(product.weightInKilograms), 
+                typeAffectationId: Number(product.typeAffectationId), 
+                subjectPerception: product.subjectPerception, 
+                observation: product.observation, 
+
+                priceWithIgv1: Number(product.priceWithIgv1), 
+                priceWithoutIgv1: Number(product.priceWithoutIgv1), 
+
+                priceWithIgv2: Number(product.priceWithIgv2), 
+                priceWithoutIgv2: Number(product.priceWithoutIgv2), 
+
+                priceWithIgv3: Number(product.priceWithIgv3), 
+                priceWithoutIgv3: Number(product.priceWithoutIgv3), 
+
+                minimumUnitId: Number(product.minimumUnitId), 
+                maximumUnitId: Number(product.maximumUnitId), 
+                maximumFactor: Number(product.maximumFactor), 
+                minimumFactor: Number(product.minimumFactor)
+             }
+             console.log(values)
+            const { data, errors } = await createProduct({
+                variables: values
             })
-                .then(res => res.json())
-                .then(data => {
-                    toast(data.data.updateProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-                    setProduct({
-                        ...product,
-                        id: 0,
-                        code: "",
-                        name: "",
-
-                        available: true,
-                        activeType: "01",
-                        ean: "",
-                        weightInKilograms: 0,
-                        
-                        minimumUnitId: 0,
-                        maximumUnitId: 0,
-                        minimumFactor: 1,
-                        maximumFactor: 0,
-
-                        typeAffectationId: 0,
-                        subjectPerception: false,
-                        observation: ""
-                    });
-                    modal.hide();
-                    fetchProductsByCriteria();
-
-                }).catch(e => console.log(e))
+            if (errors) {
+                toast(errors.toString(), { hideProgressBar: true, autoClose: 2000, type: 'error' });
+            }else{
+                toast(data.createProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
+                setProduct(initialState);
+                modal.hide();
+            }
         }
-        else {
 
-            queryFetch = `
-                mutation{
-                    createProduct(code: "${product.code}", name: "${product.name}", 
-                    available: ${product.available}, activeType: "${product.activeType.replace("A_", "")}", ean: "${product.ean}", weightInKilograms: ${product.weightInKilograms}, 
-                    maximumFactor: ${Number(product.maximumFactor)},minimumFactor: ${Number(product.minimumFactor)}, minimumUnitId: ${product.minimumUnitId}, maximumUnitId: ${product.maximumUnitId}, 
-                    typeAffectationId: ${product.typeAffectationId}, subjectPerception: ${product.subjectPerception}, observation: "${product.observation}"){
-                        message
-                    }
-                }
-            `;
-            console.log(queryFetch)
+        // let queryFetch: String = "";
+        // if (Number(product.id) !== 0) {
+        //     queryFetch = `
+        //         mutation{
+        //             updateProduct(id:${product.id}, code: "${product.code}", name: "${product.name}", 
+        //             available: ${product.available}, activeType: "${product.activeType.replace("A_", "")}", ean: "${product.ean}", weightInKilograms: ${product.weightInKilograms}, 
+        //             maximumFactor: ${Number(product.maximumFactor)},minimumFactor: ${Number(product.minimumFactor)}, minimumUnitId: ${product.minimumUnitId}, maximumUnitId: ${product.maximumUnitId}, 
+        //             typeAffectationId: ${product.typeAffectationId}, subjectPerception: ${product.subjectPerception}, observation: "${product.observation}"){
+        //                 message
+        //             }
+        //         }
+        //     `;
+        //     console.log(queryFetch)
+        //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+        //         method: 'POST',
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //             "Authorization": `JWT ${accessToken}`
+        //         },
+        //         body: JSON.stringify({ query: queryFetch })
+        //     })
+        //         .then(res => res.json())
+        //         .then(data => {
+        //             toast(data.data.updateProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
+        //             setProduct(initialState);
+        //             modal.hide();
+        //             fetchProductsByCriteria();
 
-            await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `JWT ${accessToken}`
-                },
-                body: JSON.stringify({ query: queryFetch })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    toast(data.data.createProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-                    setProduct({
-                        ...product,
-                        id: 0,
-                        code: "",
-                        name: "",
+        //         }).catch(e => console.log(e))
+        // }
+        // else {
 
-                        available: true,
-                        activeType: "01",
-                        ean: "",
-                        weightInKilograms: 0,
-                        
-                        minimumUnitId: 0,
-                        maximumUnitId: 0,
-                        minimumFactor: 1,
-                        maximumFactor: 0,
-                        
-                        typeAffectationId: 0,
-                        subjectPerception: false,
-                        observation: ""
-                    });
-                    modal.hide();
-                    fetchProductsByCriteria();
+        //     queryFetch = `
+        //         mutation{
+        //             createProduct(code: "${product.code}", name: "${product.name}", 
+        //             available: ${product.available}, activeType: "${product.activeType.replace("A_", "")}", ean: "${product.ean}", weightInKilograms: ${product.weightInKilograms}, 
+        //             maximumFactor: ${Number(product.maximumFactor)},minimumFactor: ${Number(product.minimumFactor)}, minimumUnitId: ${product.minimumUnitId}, maximumUnitId: ${product.maximumUnitId}, 
+        //             typeAffectationId: ${product.typeAffectationId}, subjectPerception: ${product.subjectPerception}, observation: "${product.observation}"){
+        //                 message
+        //             }
+        //         }
+        //     `;
+        //     console.log(queryFetch)
 
-                }).catch(e => console.log(e))
-        }
+        //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+        //         method: 'POST',
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //             "Authorization": `JWT ${accessToken}`
+        //         },
+        //         body: JSON.stringify({ query: queryFetch })
+        //     })
+        //         .then(res => res.json())
+        //         .then(data => {
+        //             toast(data.data.createProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
+        //             setProduct(initialState);
+        //             modal.hide();
+        //             fetchProductsByCriteria();
+
+        //         }).catch(e => console.log(e))
+        // }
     }
 
-    useEffect(() => {
 
-        if (accessToken.length > 0) {
-            fetchUnits();
-            
-        }
-    }, [accessToken]);
 
     return (
         <>
@@ -164,7 +232,7 @@ function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, init
 
                         <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white" id="modal-title">
-                            {Number(product.id) > 0 ? "Editar" : "Registrar nuevo producto"}
+                                {Number(product.id) > 0 ? "Editar" : "Registrar nuevo producto"}
                             </h3>
                             <button type="button" id="btn-close-modal"
                                 className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
@@ -184,7 +252,7 @@ function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, init
 
                                     <div className="sm:col-span-2">
                                         <label htmlFor="code" className="form-label">Codigo</label>
-                                        <input type="text" name="code" id="code" maxLength={20} value={product.code || ""} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" required autoComplete="off" />
+                                        <input type="text" name="code" id="code" maxLength={20} value={product.code || ""} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" autoComplete="off" />
                                     </div>
 
                                     <div className="sm:col-span-4">
@@ -203,13 +271,13 @@ function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, init
 
                                     <div className="sm:col-span-2">
                                         <label htmlFor="ean" className="form-label">EAN</label>
-                                        <input type="text" name="ean" id="ean" maxLength={20} value={product.ean} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" required />
+                                        <input type="text" name="ean" id="ean" maxLength={20} value={product.ean} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" />
                                     </div>
 
 
                                     <div className="sm:col-span-2">
                                         <label htmlFor="weightInKilograms" className="form-label">Peso (Kg)</label>
-                                        <input type="number" name="weightInKilograms" id="weightInKilograms" value={product.weightInKilograms} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" required />
+                                        <input type="number" name="weightInKilograms" id="weightInKilograms" value={product.weightInKilograms} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" />
                                     </div>
 
 
@@ -224,43 +292,45 @@ function ProductForm({ modal, product, setProduct, fetchProductsByCriteria, init
                                     </div>
 
                                     <div className="sm:col-span-3">
-                                        <label htmlFor="minimumUnitId" className="form-label">Unidad Minima</label>
-                                        <select name="minimumUnitId" id="minimumUnitId" onChange={handleInputChange} value={product.minimumUnitId} className="form-control-sm" required>
-                                            <option value={0}>Elegir unidad</option>
-                                            {units?.map((o: IUnit, k: number) => (
-                                                <option key={k} value={o.id}>{o.shortName}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="sm:col-span-3">
-                                        <label htmlFor="maximumUnitId" className="form-label">Unidad Maxima</label>
-                                        <select name="maximumUnitId" id="maximumUnitId" onChange={handleInputChange} value={product.maximumUnitId} className="form-control-sm" required>
-                                            <option value={0}>Elegir unidad</option>
-                                            {units?.map((o: IUnit, k: number) => (
-                                                <option key={k} value={o.id}>{o.shortName}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                    <label htmlFor="minimumUnitId" className="form-label">UdM Minima</label>
+                                    <select name="minimumUnitId" id="minimumUnitId" onChange={handleInputChange} value={product.minimumUnitId} className="form-control-sm" required>
+                                        <option value={0}>Elegir unidad</option>
+                                        {units?.map((o: IUnit,k: number)=>(
+                                            <option key={k} value={o.id}>{o.shortName}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="sm:col-span-3">
+                                    <label htmlFor="maximumUnitId" className="form-label">UdM Maxima</label>
+                                    <select name="maximumUnitId" id="maximumUnitId" onChange={handleInputChange} value={product.maximumUnitId} className="form-control-sm" required>
+                                        <option value={0}>Elegir unidad</option>
+                                        {units?.map((o: IUnit,k: number)=>(
+                                            <option key={k} value={o.id}>{o.shortName}</option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                                    <div className="sm:col-span-3">
-                                        <label htmlFor="minimumFactor" className="form-label">Factor Minimo</label>
-                                        <input type="number" name="minimumFactor" id="minimumFactor" value={product.minimumFactor} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" required />
-                                    </div>
+                                <div className="sm:col-span-3">
+                                    <label htmlFor="minimumFactor" className="form-label">Factor de conversión Minimo</label>
+                                    <input type="number" name="minimumFactor" id="minimumFactor" value={product.minimumFactor} onChange={handleInputChangeQuantityMinimum} onFocus={(e) => e.target.select()} className="form-control-sm"  required />
+                                </div>
 
-                                    <div className="sm:col-span-3">
-                                        <label htmlFor="maximumFactor" className="form-label">Factor Maximo</label>
-                                        <input type="number" name="maximumFactor" id="maximumFactor" value={product.maximumFactor} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" required />
-                                    </div>
+                                <div className="sm:col-span-3">
+                                    <label htmlFor="maximumFactor" className="form-label">Factor de conversión Maximo</label>
+                                    <input type="number" name="maximumFactor" id="maximumFactor" value={product.maximumFactor} onChange={handleInputChangeQuantityMinimum} onFocus={(e) => e.target.select()} className="form-control-sm"  required />
+                                </div>
 
 
-                                    <div className="sm:col-span-3 mb-2">
-                                        <input id="subjectPerception3" name="subjectPerception" checked={product.subjectPerception} type="checkbox" onChange={handleCheckboxChange} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                        <label htmlFor="subjectPerception3" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Sujeto a percepcion</label>
-                                    </div>
+                                    <ProductTariffForm setProduct={setProduct} product={product} accessToken={accessToken} />
 
                                     <div className="sm:col-span-3 mb-2">
-                                        <input id="available3" name="available" checked={product.available} type="checkbox" onChange={handleCheckboxChange} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                        <label htmlFor="available3" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Activo</label>
+                                        <input id="available3" name="available" checked={product.available} type="checkbox" onChange={handleCheckboxChange} className="form-check-input" />
+                                        <label htmlFor="available3" className="form-check-label">Activo</label>
+                                    </div>
+
+                                    <div className="sm:col-span-3 mb-2">
+                                        <input id="subjectPerception3" name="subjectPerception" checked={product.subjectPerception} type="checkbox" onChange={handleCheckboxChange} className="form-check-input" />
+                                        <label htmlFor="subjectPerception3" className="form-check-label">Sujeto a percepcion</label>
                                     </div>
 
                                     <div className="sm:col-span-6 mb-2">

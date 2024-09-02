@@ -1,7 +1,7 @@
 import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import { IUnit, ITypeAffectation } from "@/app/types";
 
-function ProductCriteriaForm({ modalCriteria, filterObj, setFilterObj, typeAffectations, fetchProductsByCriteria }: any) {
+function ProductCriteriaForm({ modalCriteria, filterObj, setFilterObj, typeAffectations, fetchProducts }: any) {
 
 
     const handleInputChange = ({ target: { name, value } }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -88,7 +88,7 @@ function ProductCriteriaForm({ modalCriteria, filterObj, setFilterObj, typeAffec
 
                             <button onClick={() => { modalCriteria.hide() }} type="button" className=" btn-dark">Cerrar</button>
 
-                            <button onClick={() => { modalCriteria.hide(), fetchProductsByCriteria() }} type="button" className=" btn-default">Buscar</button>
+                            <button onClick={() => { modalCriteria.hide(), fetchProducts() }} type="button" className=" btn-default">Buscar</button>
                         </div>
                     </div>
                 </div>
