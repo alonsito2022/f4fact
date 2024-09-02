@@ -108,47 +108,53 @@ function ProductPage() {
         }
     }, [session]);
 
-    const { loading: productsLoading, error: productsError, data: productsData } = useQuery(PRODUCTS_QUERY, {
+    // const { loading: productsLoading, error: productsError, data: productsData } = useQuery(PRODUCTS_QUERY, {
+    //     context: {
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //             "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
+    //         },
+    //     },
+    //     skip: !jwtToken, // Esto evita que la consulta se ejecute si no hay token
+    //     variables: {
+    //         criteria: filterObj.criteria, searchText: filterObj.searchText,
+    //         available: filterObj.available, activeType: filterObj.activeType,
+    //         subjectPerception: filterObj.subjectPerception, typeAffectationId: Number(filterObj.typeAffectationId), limit: Number(filterObj.limit)
+    //     },
+    //     onError: (err) => console.error("Error in products:", err),
+    // });
+
+    const [productsQuery, { loading: filteredProductsLoading, error: filteredProductsError, data: filteredProductsData }] = useLazyQuery(PRODUCTS_QUERY, {
         context: {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
             },
         },
-        skip: !jwtToken, // Esto evita que la consulta se ejecute si no hay token
         variables: {
             criteria: filterObj.criteria, searchText: filterObj.searchText,
             available: filterObj.available, activeType: filterObj.activeType,
             subjectPerception: filterObj.subjectPerception, typeAffectationId: Number(filterObj.typeAffectationId), limit: Number(filterObj.limit)
         },
-        onError: (err) => console.error("Error in products:", err),
-    });
-
-    const [productsQuery, { loading, error, data }] = useLazyQuery(PRODUCTS_QUERY, {
         onCompleted: (data) => {
           if (data.allProducts) {
-            console.log(data.allProducts)
             setProducts(data?.allProducts)
           }
-        }
+        },
+        onError: (err) => console.error("Error in products:", err),
       });
+
 
     const fetchProducts = () => {
         setProducts([]);
-        productsQuery({
-            variables: {
-                criteria: filterObj.criteria, searchText: filterObj.searchText,
-                available: filterObj.available, activeType: filterObj.activeType,
-                subjectPerception: filterObj.subjectPerception, typeAffectationId: Number(filterObj.typeAffectationId), limit: Number(filterObj.limit)
-            },
-        });
+        productsQuery();
 
     };
 
-    useEffect(() => {
-        if (productsData?.allProducts)
-            setProducts(productsData?.allProducts)
-    }, [productsData]);
+    // useEffect(() => {
+    //     if (productsData?.allProducts)
+    //         setProducts(productsData?.allProducts)
+    // }, [productsData]);
 
     // async function fetchProducts() {
     //     const queryFetch = `
@@ -260,12 +266,11 @@ function ProductPage() {
 
 
     async function fetchTypeAffectations() {
-        console.log(accessToken)
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `JWT ${accessToken}`
+                "Authorization": `JWT ${jwtToken}`
             },
             body: JSON.stringify({
                 query: `
@@ -284,7 +289,6 @@ function ProductPage() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log(data.data.allTypeAffectations)
                 setTypeAffectations(data.data.allTypeAffectations);
             })
     }
@@ -333,16 +337,16 @@ function ProductPage() {
     }, []);
 
     useEffect(() => {
-        if (accessToken.length > 0) {
+        if (jwtToken) {
             fetchTypeAffectations();
         }
-    }, [accessToken]);
+    }, [jwtToken]);
 
     return (
         <>
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
                 <div className="w-full mb-1">
-                    <Breadcrumb section={"Activos"} article={"Productos"} />
+                    <Breadcrumb section={"Productos"} article={"Productos"} />
                     <ProductFilter filterObj={filterObj} setFilterObj={setFilterObj} modalCriteria={modalCriteria} searchTerm={searchTerm} setSearchTerm={setSearchTerm} searchField={searchField} setSearchField={setSearchField} modal={modal} initialState={initialState} 
                     setProduct={setProduct} fetchProducts={fetchProducts} />
                 </div>
@@ -352,14 +356,18 @@ function ProductPage() {
                 <div className="overflow-x-auto">
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden shadow">
-                            <ProductList filteredProducts={filteredProducts} modal={modal} fetchProductById={fetchProductById} />
+                        {filteredProductsLoading ? <div>Cargando...</div> : 
+                        filteredProductsError? <div>Error: No autorizado o error en la consulta. {filteredProductsError.message}</div> 
+                        : <ProductList filteredProducts={filteredProducts} modal={modal} setProduct={setProduct} jwtToken={jwtToken} />}
+                            
                         </div>
                     </div>
                 </div>
             </div>
 
 
-            <ProductForm modal={modal} product={product} setProduct={setProduct} initialState={initialState} accessToken={accessToken} typeAffectations={typeAffectations} />
+            <ProductForm modal={modal} product={product} setProduct={setProduct} initialState={initialState} 
+            jwtToken={jwtToken} typeAffectations={typeAffectations} PRODUCTS_QUERY={PRODUCTS_QUERY} filterObj={filterObj} />
             <ProductCriteriaForm modalCriteria={modalCriteria} filterObj={filterObj} setFilterObj={setFilterObj} typeAffectations={typeAffectations} fetchProducts={fetchProducts} />
         </>
     )

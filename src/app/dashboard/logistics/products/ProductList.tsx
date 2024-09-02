@@ -1,9 +1,38 @@
 import { useState, useEffect } from "react";
 import Edit from '@/components/icons/Edit'
 import { IProduct } from '@/app/types';
+import { gql, useLazyQuery } from "@apollo/client";
+import { toast } from "react-toastify";
 
 
-function ProductList({ filteredProducts, modal, fetchProductById }: any) {
+const PRODUCT_QUERY = gql`
+    query ($pk: ID!) {
+        productById(pk: $pk) {
+            id
+            name
+            code
+            available
+            activeType
+            ean
+            weightInKilograms
+            typeAffectationId
+            subjectPerception
+            observation
+            priceWithIgv1
+            priceWithoutIgv1
+            priceWithIgv2
+            priceWithoutIgv2
+            priceWithIgv3
+            priceWithoutIgv3
+            minimumUnitId
+            maximumUnitId
+            maximumFactor
+            minimumFactor
+        }
+    }
+`;
+
+function ProductList({ filteredProducts, modal, setProduct, jwtToken }: any) {
     const [hostname, setHostname] = useState("");
 
     useEffect(() => {
@@ -11,7 +40,27 @@ function ProductList({ filteredProducts, modal, fetchProductById }: any) {
             setHostname(`${process.env.NEXT_PUBLIC_BASE_API}`)
         }
     }, [hostname]);
+
+    const [productQuery, { loading: foundProductLoading, error: foundProductError, data: foundProductData }] = useLazyQuery(PRODUCT_QUERY, {
+        context: {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
+            },
+        },
+    });
+
+      const handleEditProduct = async (productId: number) => {
+        const { data, error } = await productQuery({ variables: { pk: Number(productId) } });
+        if (error) {
+            toast(error?.message, { hideProgressBar: true, autoClose: 2000, type: 'error' });
+        }else{
+            setProduct(data.productById);
+            modal.show();
+        }
+      };
     
+
     return (
         <>
             <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
@@ -33,10 +82,7 @@ function ProductList({ filteredProducts, modal, fetchProductById }: any) {
                             <td className="px-4 py-2">{item.ean}</td>
                             <td className="px-4 py-2">
                                 <>
-                                    <a href="#" className="hover:underline" onClick={async () => {
-                                        await fetchProductById(item.id);
-                                        modal.show();
-                                    }}>
+                                    <a href="#" className="hover:underline" onClick={() => handleEditProduct(item.id)}>
                                         <Edit />
                                     </a>
 

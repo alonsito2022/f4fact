@@ -119,12 +119,16 @@ function UnitPage() {
         return units?.filter((n:IUnit) => searchField === "shortName" ? n?.shortName?.toLowerCase().includes(searchTerm.toLowerCase()) : n?.code?.toLowerCase().includes(searchTerm.toLowerCase()));
     }, [searchTerm, searchField, units]);
 
+    useEffect(() => {
+
+    },[]);
+
     return (
         <>
 
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
                 <div className="w-full mb-1">
-                    <Breadcrumb section={"Activos"} article={"Unidades"} />
+                    <Breadcrumb section={"Productos"} article={"Unidades"} />
                     <UnitFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} searchField={searchField} setSearchField={setSearchField} modal={modal} initialState={initialState} setUnit={setUnit} />
                 </div>
             </div>
@@ -133,7 +137,7 @@ function UnitPage() {
                 <div className="overflow-x-auto">
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden shadow">
-                            {unitsLoading ? <div>Cargando...</div> : unitsError? <div>Error: No autorizado o error en la consulta</div> : <UnitList filteredUnits={filteredUnits} modal={modal} setUnit={setUnit} unit={unit} />}
+                            {unitsLoading ? <div>Cargando...</div> : unitsError? <div>Error: No autorizado o error en la consulta. {unitsError.message}</div> : <UnitList filteredUnits={filteredUnits} modal={modal} setUnit={setUnit} unit={unit} />}
                         </div>
                     </div>
                 </div>

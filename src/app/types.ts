@@ -141,6 +141,10 @@ export interface IOperation {
     operationAction?: string
     observation?: string
     user?: IUser
+    emitDate?: string
+    type?: string
+    number?: number
+    serial?: string
 }
 
 export interface IOperationDetail {

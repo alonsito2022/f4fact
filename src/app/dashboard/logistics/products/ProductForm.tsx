@@ -33,7 +33,36 @@ const ADD_PRODUCT = gql`
     }
 `;
 
-function ProductForm({ modal, product, setProduct, initialState, accessToken, typeAffectations }: any) {
+const UPDATE_PRODUCT = gql`
+    mutation ($id: ID!, $code: String!, $name: String!, $available: Boolean!, $activeType: String!, $ean: String!, $weightInKilograms: Float!, $typeAffectationId: Int!, $subjectPerception: Boolean!, $observation: String!, $priceWithIgv1: Float!, $priceWithoutIgv1: Float!, $priceWithIgv2: Float!, $priceWithoutIgv2: Float!, $priceWithIgv3: Float!, $priceWithoutIgv3: Float!, $minimumUnitId: Int!, $maximumUnitId: Int!, $maximumFactor: Int!, $minimumFactor: Int!) {
+        updateProduct(
+            id: $id
+            code: $code
+            name: $name
+            available: $available
+            activeType: $activeType
+            ean: $ean
+            weightInKilograms: $weightInKilograms
+            typeAffectationId: $typeAffectationId
+            subjectPerception: $subjectPerception
+            observation: $observation
+            priceWithIgv1: $priceWithIgv1
+            priceWithoutIgv1: $priceWithoutIgv1
+            priceWithIgv2: $priceWithIgv2
+            priceWithoutIgv2: $priceWithoutIgv2
+            priceWithIgv3: $priceWithIgv3
+            priceWithoutIgv3: $priceWithoutIgv3
+            minimumUnitId: $minimumUnitId
+            maximumUnitId: $maximumUnitId
+            maximumFactor: $maximumFactor
+            minimumFactor: $minimumFactor
+        ) {
+            message
+        }
+    }
+`;
+
+function ProductForm({ modal, product, setProduct, initialState, jwtToken, typeAffectations, PRODUCTS_QUERY, filterObj }: any) {
     const [units, setUnits] = useState<IUnit[]>([]);
 
     async function fetchUnits() {
@@ -41,7 +70,7 @@ function ProductForm({ modal, product, setProduct, initialState, accessToken, ty
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `JWT ${accessToken}`
+                "Authorization": `JWT ${jwtToken}`
             },
             body: JSON.stringify({
                 query: `
@@ -62,28 +91,38 @@ function ProductForm({ modal, product, setProduct, initialState, accessToken, ty
 
     useEffect(() => {
 
-        if (accessToken.length > 0) {
+        if (jwtToken) {
             fetchUnits();
 
         }
-    }, [accessToken]);
+    }, [jwtToken]);
 
-    function useCustomMutation(mutation: DocumentNode) {
+    function useCustomMutation(mutation: DocumentNode, refetchQuery: DocumentNode) {
         const getAuthContext = () => ({
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": accessToken ? `JWT ${accessToken}` : "",
-            },
+                "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
+            }
+        });
+
+        const getVariables = () => ({
+
+
+                criteria: filterObj.criteria, searchText: filterObj.searchText,
+                available: filterObj.available, activeType: filterObj.activeType,
+                subjectPerception: filterObj.subjectPerception, typeAffectationId: Number(filterObj.typeAffectationId), limit: Number(filterObj.limit)
+            
         });
 
         return useMutation(mutation, {
             context: getAuthContext(),
-            // refetchQueries: () => [{ query: refetchQuery, context: getAuthContext() }],
+            refetchQueries: () => [{ query: refetchQuery, context: getAuthContext(), variables: getVariables()}],
             onError: (err) => console.error("Error in unit:", err), // Log the error for debugging
         });
     }
 
-    const [createProduct] = useCustomMutation(ADD_PRODUCT);
+    const [createProduct] = useCustomMutation(ADD_PRODUCT, PRODUCTS_QUERY);
+    const [updateProduct] = useCustomMutation(UPDATE_PRODUCT, PRODUCTS_QUERY);
 
     const handleInputChange = ({ target: { name, value } }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setProduct({ ...product, [name]: value });
@@ -118,7 +157,44 @@ function ProductForm({ modal, product, setProduct, initialState, accessToken, ty
         // }
 
         if (Number(product.id) !== 0) {
+            const values = {
+                id: Number(product.id),
+                code: product.code,
+                name: product.name, 
+                available: product.available, 
+                activeType: String(product.activeType).replace("A_", ""), 
+                ean: product.ean, 
+                weightInKilograms: Number(product.weightInKilograms), 
+                typeAffectationId: Number(product.typeAffectationId), 
+                subjectPerception: product.subjectPerception, 
+                observation: product.observation, 
 
+                priceWithIgv1: Number(product.priceWithIgv1), 
+                priceWithoutIgv1: Number(product.priceWithoutIgv1), 
+
+                priceWithIgv2: Number(product.priceWithIgv2), 
+                priceWithoutIgv2: Number(product.priceWithoutIgv2), 
+
+                priceWithIgv3: Number(product.priceWithIgv3), 
+                priceWithoutIgv3: Number(product.priceWithoutIgv3), 
+
+                minimumUnitId: Number(product.minimumUnitId), 
+                maximumUnitId: Number(product.maximumUnitId), 
+                maximumFactor: Number(product.maximumFactor), 
+                minimumFactor: Number(product.minimumFactor)
+            }
+            
+            const { data, errors } = await updateProduct({
+                variables: values
+            })
+            console.log(data, errors )
+            if (errors) {
+                toast(errors.toString(), { hideProgressBar: true, autoClose: 2000, type: 'error' });
+            }else{
+                toast(data.updateProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
+                setProduct(initialState);
+                modal.hide();
+            }
         } else {
             const values = { 
                 code: product.code,
@@ -144,8 +220,7 @@ function ProductForm({ modal, product, setProduct, initialState, accessToken, ty
                 maximumUnitId: Number(product.maximumUnitId), 
                 maximumFactor: Number(product.maximumFactor), 
                 minimumFactor: Number(product.minimumFactor)
-             }
-             console.log(values)
+            }
             const { data, errors } = await createProduct({
                 variables: values
             })
@@ -175,7 +250,7 @@ function ProductForm({ modal, product, setProduct, initialState, accessToken, ty
         //         method: 'POST',
         //         headers: {
         //             "Content-Type": "application/json",
-        //             "Authorization": `JWT ${accessToken}`
+        //             "Authorization": `JWT ${jwtToken}`
         //         },
         //         body: JSON.stringify({ query: queryFetch })
         //     })
@@ -206,7 +281,7 @@ function ProductForm({ modal, product, setProduct, initialState, accessToken, ty
         //         method: 'POST',
         //         headers: {
         //             "Content-Type": "application/json",
-        //             "Authorization": `JWT ${accessToken}`
+        //             "Authorization": `JWT ${jwtToken}`
         //         },
         //         body: JSON.stringify({ query: queryFetch })
         //     })
@@ -321,7 +396,7 @@ function ProductForm({ modal, product, setProduct, initialState, accessToken, ty
                                 </div>
 
 
-                                    <ProductTariffForm setProduct={setProduct} product={product} accessToken={accessToken} />
+                                    <ProductTariffForm setProduct={setProduct} product={product} />
 
                                     <div className="sm:col-span-3 mb-2">
                                         <input id="available3" name="available" checked={product.available} type="checkbox" onChange={handleCheckboxChange} className="form-check-input" />
