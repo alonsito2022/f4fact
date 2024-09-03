@@ -4,7 +4,6 @@ import Add from '@/components/icons/Add'
 
 function WarehouseFilter({searchTerm, setSearchTerm, searchField, setSearchField, modal, initialState, setWarehouse}:any) {
 
-  
     const handleInputSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
     };

@@ -1,23 +1,263 @@
 "use client";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, ChangeEvent } from "react";
 import Breadcrumb from "@/components/Breadcrumb";
-
+import { IProduct, ISupplier } from "@/app/types";
+import Search from '@/components/icons/Search';
+import Add from '@/components/icons/Add';
+import Save from '@/components/icons/Save';
+const today = new Date().toISOString().split('T')[0];
+const initialStatePurchase = {
+    id: 0,
+    serial: "0",
+    correlative: "0",
+    emitDate: today,
+    supplierName: "",
+    vatRate: "",
+    documentType: "",
+    currencyType: "PEN",
+    exchangeRate: "",
+}
+const initialStatePurchaseDetail = {
+    id: 0,
+    productEan: "",
+    productCode: "",
+    unitName: "",
+    unitMinName: "",
+    maximumFactor: 0,
+    productName: "",
+    productTariffId: 0,
+    oldPrice: 0,
+    quantity: "",
+    newPrice: "",
+    subtotal: "",
+    temporaryId: 0,
+    expireDate: today,
+}
 function NewPurchasePage() {
+    const [purchase, setPurchase] = useState(initialStatePurchase);
+    const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
+    const [purchaseDetail, setPurchaseDetail] = useState(initialStatePurchaseDetail);
+    const [products, setProducts] = useState<IProduct[]>([]);
+
+    const handleInputChangeEntry = (event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = event.target;
+        setPurchase({ ...purchase, [name]: value });
+    }
+
+    const handleInputChangeEntryDetail = (event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = event.target;
+        setPurchaseDetail({ ...purchaseDetail, [name]: value });
+    }
     return (
         <>
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
                 <div className="w-full mb-1">
                     <Breadcrumb section={"Compras"} article={"Nueva Compra"} />
-                    
+
                 </div>
             </div>
 
             <div className="flex flex-col">
                 <div className="overflow-x-auto">
-                    <div className="inline-block min-w-full align-middle">
-                        <div className="overflow-hidden shadow">
-                            
-                            
+                    <div className="inline-block min-w-full align-middle  lg:justify-start">
+                        <div className="overflow-hidden shadow lg:max-w-4xl">
+
+                            <div className="p-4 md:p-5 space-y-4">
+
+                                <form >
+
+                                    <input type="hidden" name="id" id="id" value={purchase.id} />
+
+                                    <div className="grid gap-2 grid-cols-4">
+
+                                        <div className="sm:col-span-4">
+                                            <label className="text-sm">Proveedor</label>
+                                            <div className="relative w-full">
+                                                <input type="search" className="form-search-input-sm"
+                                                    maxLength={200}
+                                                    value={purchase.supplierName}
+                                                    name="supplierName"
+                                                    onChange={handleInputChangeEntry}
+                                                    onFocus={(e) => e.target.select()}
+                                                    autoComplete="off"
+                                                    placeholder="Buscar Proveedor..." list="supplierNameList" required />
+                                                <datalist id="supplierNameList">
+                                                    {suppliers?.map((n: ISupplier, index: number) => (
+                                                        <option key={index} data-key={n.id} data-code={n.code} data-doc={n.documentNumber} value={n.names} />
+                                                    ))}
+                                                </datalist>
+                                                <button type="button" className="form-search-button-sm">
+                                                    <Add /><span className="sr-only">Search</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                    <div className="grid gap-2 grid-cols-4">
+
+                                        <div className="sm:col-span-1">
+                                            <label htmlFor="vatRate" className="text-sm">IGV %</label>
+                                            <select value={purchase.vatRate} name="vatRate" onChange={handleInputChangeEntry} className="form-control-sm">
+                                                <option value={1}>18%</option>
+                                                <option value={2}>10% (Ley 31556)</option>
+                                                <option value={3}>4% (IVAP)</option>
+                                            </select>
+                                        </div>
+                                        <div className="sm:col-span-2">
+                                            <label htmlFor="documentType" className="text-sm">Tipo documento</label>
+                                            <select value={purchase.documentType} name="documentType" onChange={handleInputChangeEntry} className="form-control-sm">
+                                                <option value={0} disabled>Tipo documento</option>
+                                                <option value={"01"}>FACTURA ELECTRÓNICA</option>
+                                                <option value={"03"}>BOLETA DE VENTA ELECTRÓNICA</option>
+                                                <option value={"07"}>NOTA DE CRÉDITO ELECTRÓNICA</option>
+                                                <option value={"08"}>NOTA DE DÉBITO ELECTRÓNICA</option>
+                                                <option value={"09"}>GUIA DE REMISIÓN REMITENTE</option>
+                                            </select>
+                                        </div>
+
+
+                                        <div className="sm:col-span-1">
+                                            <label htmlFor="emitDate" className="text-sm">Fecha emisión</label>
+                                            <input type="date"
+                                                name="emitDate"
+                                                id="emitDate"
+                                                value={purchase.emitDate}
+                                                onChange={handleInputChangeEntry}
+                                                onFocus={(e) => e.target.select()}
+                                                className="form-control-sm"
+                                                required
+                                            />
+                                        </div>
+
+                                    </div>
+                                    <div className="grid gap-2 grid-cols-4">
+
+                                        <div className="sm:col-span-1">
+                                            <label htmlFor="currencyType" className="text-sm">Moneda</label>
+                                            <select value={purchase.currencyType} name="currencyType" onChange={handleInputChangeEntry} className="form-control-sm">
+                                                <option value={0} disabled>Moneda</option>
+                                                <option value={"PEN"}>S/ PEN - SOLES</option>
+                                                <option value={"USD"}>US$ USD - DÓLARES AMERICANOS</option>
+                                                <option value={"EUR"}>€ EUR - EUROS</option>
+                                                <option value={"GBP"}>£ GBP - LIBRA ESTERLINA</option>
+                                            </select>
+                                        </div>
+
+
+                                        <div className="sm:col-span-1">
+                                            <label htmlFor="exchangeRate" className="text-sm">Tipo de cambio</label>
+                                            <input type="text"
+                                                name="exchangeRate"
+                                                id="exchangeRate"
+                                                maxLength={10}
+                                                value={purchase.exchangeRate}
+                                                onChange={handleInputChangeEntry}
+                                                onFocus={(e) => e.target.select()}
+                                                className="form-control-sm"
+                                                disabled
+                                                autoComplete="off"
+                                            />
+                                        </div>
+
+                                        <div className="sm:col-span-1">
+                                            <label htmlFor="serial" className="text-sm">Serie</label>
+                                            <input type="text"
+                                                name="serial"
+                                                id="serial"
+                                                maxLength={6}
+                                                value={purchase.serial || ""}
+                                                onChange={handleInputChangeEntry}
+                                                onFocus={(e) => e.target.select()}
+                                                className="form-control-sm"
+                                                disabled
+                                                autoComplete="off"
+                                            />
+                                        </div>
+
+                                        <div className="sm:col-span-1">
+                                            <label htmlFor="correlative" className="text-sm">Numero</label>
+                                            <input type="text"
+                                                name="correlative"
+                                                id="correlative"
+                                                maxLength={10}
+                                                value={purchase.correlative}
+                                                onChange={handleInputChangeEntry}
+                                                onFocus={(e) => e.target.select()}
+                                                className="form-control-sm"
+                                                disabled
+                                                autoComplete="off"
+                                            />
+                                        </div>
+
+                                    </div>
+                                    <div className="grid gap-2 grid-cols-4">
+
+                                        <div className="sm:col-span-4">
+                                            <label htmlFor="productName" className="text-sm">Buscar Producto o Servicio</label>
+                                            <div className="relative w-full">
+                                                <input type="search" className="form-search-input-sm"
+                                                    maxLength={100}
+                                                    value={purchaseDetail.productName}
+                                                    name="productName"
+                                                    onChange={handleInputChangeEntryDetail}
+                                                    onFocus={(e) => e.target.select()}
+                                                    autoComplete="off"
+                                                    placeholder="Buscar Producto..." list="productNameList" required />
+                                                <datalist id="productNameList">
+                                                    {products?.map((n: IProduct, index: number) => (
+                                                        <option key={index} data-key={n.id} value={n.name} data-ean={n.ean ? n.ean : ""} data-unit-min-name={n.minimumUnitName} data-max-factor={n.maximumFactor} />
+                                                    ))}
+                                                </datalist>
+                                                <button type="button" className="form-search-button-sm">
+                                                    <Add /><span className="sr-only">Search</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div className="flex justify-end py-2">
+                                        <button type="button" className="btn-blue px-5 py-2 inline-flex items-center gap-2 ">
+                                            <Add /> AGREGAR ITEM
+                                        </button>
+                                    </div>
+
+
+                                    <div className="grid grid-cols-4">
+                                        <div className="sm:col-span-3 text-right">% Descuento Global</div><div className="sm:col-span-1 text-right">0</div>
+
+                                        <div className="sm:col-span-3 text-right">Descuento Global (-) {purchase.currencyType === "PEN" ? "S/" : purchase.currencyType === "USD" ? "US$" : purchase.currencyType === "EUR" ? "€" : purchase.currencyType === "GBP" ? "£" : null}</div><div className="sm:col-span-1 text-right">00.00</div>
+
+                                        <div className="sm:col-span-3 text-right">Descuento por Item (-) {purchase.currencyType === "PEN" ? "S/" : purchase.currencyType === "USD" ? "US$" : purchase.currencyType === "EUR" ? "€" : purchase.currencyType === "GBP" ? "£" : null}</div><div className="sm:col-span-1 text-right">00.00</div>
+
+                                        <div className="sm:col-span-3 text-right">Descuento Total (-) {purchase.currencyType === "PEN" ? "S/" : purchase.currencyType === "USD" ? "US$" : purchase.currencyType === "EUR" ? "€" : purchase.currencyType === "GBP" ? "£" : null}</div><div className="sm:col-span-1 text-right">00.00</div>
+
+                                        <div className="sm:col-span-3 text-right">Exonerada {purchase.currencyType === "PEN" ? "S/" : purchase.currencyType === "USD" ? "US$" : purchase.currencyType === "EUR" ? "€" : purchase.currencyType === "GBP" ? "£" : null}</div><div className="sm:col-span-1 text-right">00.00</div>
+
+                                        <div className="sm:col-span-3 text-right">Inafecta {purchase.currencyType === "PEN" ? "S/" : purchase.currencyType === "USD" ? "US$" : purchase.currencyType === "EUR" ? "€" : purchase.currencyType === "GBP" ? "£" : null}</div><div className="sm:col-span-1 text-right">00.00</div>
+
+                                        <div className="sm:col-span-3 text-right">IGV {purchase.currencyType === "PEN" ? "S/" : purchase.currencyType === "USD" ? "US$" : purchase.currencyType === "EUR" ? "€" : purchase.currencyType === "GBP" ? "£" : null}</div><div className="sm:col-span-1 text-right">00.00</div>
+
+                                        <div className="sm:col-span-3 text-right">Gratuita {purchase.currencyType === "PEN" ? "S/" : purchase.currencyType === "USD" ? "US$" : purchase.currencyType === "EUR" ? "€" : purchase.currencyType === "GBP" ? "£" : null}</div><div className="sm:col-span-1 text-right">00.00</div>
+
+                                        <div className="sm:col-span-3 text-right">Otros Cargos {purchase.currencyType === "PEN" ? "S/" : purchase.currencyType === "USD" ? "US$" : purchase.currencyType === "EUR" ? "€" : purchase.currencyType === "GBP" ? "£" : null}</div><div className="sm:col-span-1 text-right">00.00</div>
+
+                                        <div className="sm:col-span-3 text-right">Total {purchase.currencyType === "PEN" ? "S/" : purchase.currencyType === "USD" ? "US$" : purchase.currencyType === "EUR" ? "€" : purchase.currencyType === "GBP" ? "£" : null}</div><div className="sm:col-span-1 text-right">00.00</div>
+
+
+                                    </div>
+                                    <div className="flex justify-end py-2">
+                                        <button type="button" className="btn-green px-5 py-2 inline-flex items-center gap-2">
+                                            <Save />CONTINUAR CON EL PAGO
+                                        </button></div>
+
+                                </form>
+
+
+
+
+                            </div>
+
                         </div>
                     </div>
                 </div>

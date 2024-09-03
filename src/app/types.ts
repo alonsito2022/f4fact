@@ -45,6 +45,61 @@ export interface ICompany {
     disabledDate?: string
 }
 
+export interface ISupplier {
+    id: number
+    code: string
+    documentTypeReadable?: string
+    documentType?: string
+    documentNumber?: string
+    names?: string
+    phone?: string
+    email: string
+    isClient?: boolean
+    isSupplier: boolean
+    nationality?: string
+    creditLine: number
+    businessTypeId?: number
+    typeTradeId?: number
+    typeTradeName?: String
+    isEnabled: boolean
+    role?: string
+    roleReadable?: string
+    personaddressSet?: Array<ISupplierAddress>
+    checked?: boolean
+    economicActivityMain?: number
+    economicActivitySecondary1?: number
+    economicActivityMainReadable?: string
+    economicActivitySecondary1Readable?: string
+}
+
+export interface ISupplierAddress {
+    id: number
+    districtName: string
+    provinceName: string
+    departmentName: string
+    address: string
+    latitude: number
+    longitude: number
+    pinCode: string
+    person: ISupplier
+    district: IDistrict
+
+}
+export interface IDepartment {
+    id: number
+    description: string
+}
+
+export interface IProvince {
+    id: number
+    description: string
+}
+
+export interface IDistrict {
+    id: number
+    description: string
+}
+
 export interface ISubsidiary {
     id?: number
     serial?: string
@@ -116,6 +171,9 @@ export interface IProduct {
     maximumUnitId : number
     maximumFactor : number
     minimumFactor : number
+
+    minimumUnitName?: String
+    maximumUnitName?: String
 }
 
 
