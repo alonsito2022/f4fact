@@ -1,22 +1,32 @@
 "use client";
-import { useState, useEffect, useMemo, ChangeEvent } from "react";
+import { useState, useEffect, useMemo, ChangeEvent, FormEvent } from "react";
 import Breadcrumb from "@/components/Breadcrumb";
-import { IProduct, ISupplier } from "@/app/types";
+import { IProduct, ISupplier, IUser } from "@/app/types";
 import Search from '@/components/icons/Search';
 import Add from '@/components/icons/Add';
 import Save from '@/components/icons/Save';
+import { Modal, ModalOptions } from 'flowbite'
+import { useQuery, gql } from "@apollo/client";
+import PersonForm from "@/app/dashboard/persons/PersonForm";
+import { useSession } from 'next-auth/react'
+import PurchaseDetailForm from "../PurchaseDetailForm";
+
+
 const today = new Date().toISOString().split('T')[0];
+
 const initialStatePurchase = {
     id: 0,
     serial: "0",
     correlative: "0",
     emitDate: today,
     supplierName: "",
-    vatRate: "",
-    documentType: "",
+    supplierId: 0,
+    igvType: 18,
+    documentType: "1",
     currencyType: "PEN",
-    exchangeRate: "",
+    saleExchangeRate: "",
 }
+
 const initialStatePurchaseDetail = {
     id: 0,
     productEan: "",
@@ -33,20 +43,104 @@ const initialStatePurchaseDetail = {
     temporaryId: 0,
     expireDate: today,
 }
+
+const initialStatePerson = {
+    id: 0,
+    names: "",
+    shortName: "",
+    phone: "",
+    email: "",
+    address: "",
+    country: "PE",
+    countryReadable: "PERÚ",
+    districtId: "040601",
+    provinceId: "0406",
+    departmentId: "04",
+    districtName: "",
+    documentType: "6",
+    documentNumber: "",
+    isEnabled: true,
+    isSupplier: true,
+    isClient: false,
+    economicActivityMain: 0,
+}
+
+const PEOPLE_QUERY = gql`
+    query{
+        allSuppliers{
+            names
+            id
+            address
+            documentNumber
+        }
+    }
+`;
+
 function NewPurchasePage() {
     const [purchase, setPurchase] = useState(initialStatePurchase);
     const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
     const [purchaseDetail, setPurchaseDetail] = useState(initialStatePurchaseDetail);
     const [products, setProducts] = useState<IProduct[]>([]);
+    const [person, setPerson] = useState(initialStatePerson);
+    const [modalAddPerson, setModalAddPerson] = useState<Modal | any>(null);
+    const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
+    const { data: session } = useSession();
+    const [jwtToken, setJwtToken] = useState<string | null>(null);
+
+    const getAuthContext = () => ({
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
+        },
+    });
+    
+    const { loading: peopleLoading, error: peopleError, data: peopleData } = useQuery(PEOPLE_QUERY, {
+        context: getAuthContext(),
+        skip: !jwtToken,
+    });
 
     const handleInputChangeEntry = (event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = event.target;
-        setPurchase({ ...purchase, [name]: value });
+
+
+        if (name === "supplierName" && event.target instanceof HTMLInputElement) {
+            const dataList = event.target.list;
+            if (dataList) {
+                const option = Array.from(dataList.options).find(option => option.value === value);
+                if (option) {
+                    const selectedId = option.getAttribute("data-key");
+                    setPurchase({ ...purchase, supplierId: Number(selectedId), supplierName: value });
+                } else {
+                    setPurchase({ ...purchase, supplierId: 0, supplierName: "" });
+                }
+            } else {
+                console.log('sin datalist')
+            }
+        }else if(name === "igvType" && event.target instanceof HTMLSelectElement){
+            setPurchase({ ...purchase, igvType: Number(value) });
+        }else{
+            setPurchase({ ...purchase, [name]: value });
+        }
+
+        
+
+        
     }
 
     const handleInputChangeEntryDetail = (event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = event.target;
         setPurchaseDetail({ ...purchaseDetail, [name]: value });
+    }
+
+    useEffect(() => {
+        if (session?.user) {
+            const user = session.user as IUser;
+            setJwtToken(user.accessToken as string);
+        }
+    }, [session]);
+    const handleSavePurchase = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        console.log("purchase", purchase)
     }
     return (
         <>
@@ -64,7 +158,7 @@ function NewPurchasePage() {
 
                             <div className="p-4 md:p-5 space-y-4">
 
-                                <form >
+                                <form   onSubmit={handleSavePurchase}>
 
                                     <input type="hidden" name="id" id="id" value={purchase.id} />
 
@@ -73,20 +167,21 @@ function NewPurchasePage() {
                                         <div className="sm:col-span-4">
                                             <label className="text-sm">Proveedor</label>
                                             <div className="relative w-full">
-                                                <input type="search" className="form-search-input-sm"
+                                                <input type="text" className="form-search-input-sm"
                                                     maxLength={200}
                                                     value={purchase.supplierName}
                                                     name="supplierName"
                                                     onChange={handleInputChangeEntry}
                                                     onFocus={(e) => e.target.select()}
                                                     autoComplete="off"
+                                                    disabled={peopleLoading}
                                                     placeholder="Buscar Proveedor..." list="supplierNameList" required />
                                                 <datalist id="supplierNameList">
-                                                    {suppliers?.map((n: ISupplier, index: number) => (
-                                                        <option key={index} data-key={n.id} data-code={n.code} data-doc={n.documentNumber} value={n.names} />
+                                                    {peopleData?.allSuppliers?.map((n: ISupplier, index: number) => (
+                                                        <option key={index} data-key={n.id} value={`${n.documentNumber} ${n.names}`} />
                                                     ))}
                                                 </datalist>
-                                                <button type="button" className="form-search-button-sm">
+                                                <button type="button" className="form-search-button-sm" onClick={(e) => { modalAddPerson.show(); setPerson(initialStatePerson); }}>
                                                     <Add /><span className="sr-only">Search</span>
                                                 </button>
                                             </div>
@@ -97,17 +192,16 @@ function NewPurchasePage() {
                                     <div className="grid gap-2 grid-cols-4">
 
                                         <div className="sm:col-span-1">
-                                            <label htmlFor="vatRate" className="text-sm">IGV %</label>
-                                            <select value={purchase.vatRate} name="vatRate" onChange={handleInputChangeEntry} className="form-control-sm">
-                                                <option value={1}>18%</option>
-                                                <option value={2}>10% (Ley 31556)</option>
-                                                <option value={3}>4% (IVAP)</option>
+                                            <label htmlFor="igvType" className="text-sm">IGV %</label>
+                                            <select value={purchase.igvType} name="igvType" onChange={handleInputChangeEntry} className="form-control-sm" required>
+                                                <option value={18}>18%</option>
+                                                <option value={10}>10% (Ley 31556)</option>
+                                                <option value={4}>4% (IVAP)</option>
                                             </select>
                                         </div>
                                         <div className="sm:col-span-2">
                                             <label htmlFor="documentType" className="text-sm">Tipo documento</label>
-                                            <select value={purchase.documentType} name="documentType" onChange={handleInputChangeEntry} className="form-control-sm">
-                                                <option value={0} disabled>Tipo documento</option>
+                                            <select value={purchase.documentType} name="documentType" onChange={handleInputChangeEntry} className="form-control-sm" required>
                                                 <option value={"01"}>FACTURA ELECTRÓNICA</option>
                                                 <option value={"03"}>BOLETA DE VENTA ELECTRÓNICA</option>
                                                 <option value={"07"}>NOTA DE CRÉDITO ELECTRÓNICA</option>
@@ -146,16 +240,16 @@ function NewPurchasePage() {
 
 
                                         <div className="sm:col-span-1">
-                                            <label htmlFor="exchangeRate" className="text-sm">Tipo de cambio</label>
+                                            <label htmlFor="saleExchangeRate" className="text-sm">Tipo de cambio</label>
                                             <input type="text"
-                                                name="exchangeRate"
-                                                id="exchangeRate"
+                                                name="saleExchangeRate"
+                                                id="saleExchangeRate"
                                                 maxLength={10}
-                                                value={purchase.exchangeRate}
+                                                value={purchase.saleExchangeRate}
                                                 onChange={handleInputChangeEntry}
                                                 onFocus={(e) => e.target.select()}
                                                 className="form-control-sm"
-                                                disabled
+                                                
                                                 autoComplete="off"
                                             />
                                         </div>
@@ -170,7 +264,7 @@ function NewPurchasePage() {
                                                 onChange={handleInputChangeEntry}
                                                 onFocus={(e) => e.target.select()}
                                                 className="form-control-sm"
-                                                disabled
+                                                
                                                 autoComplete="off"
                                             />
                                         </div>
@@ -185,7 +279,7 @@ function NewPurchasePage() {
                                                 onChange={handleInputChangeEntry}
                                                 onFocus={(e) => e.target.select()}
                                                 className="form-control-sm"
-                                                disabled
+                                                
                                                 autoComplete="off"
                                             />
                                         </div>
@@ -217,7 +311,7 @@ function NewPurchasePage() {
 
                                     </div>
                                     <div className="flex justify-end py-2">
-                                        <button type="button" className="btn-blue px-5 py-2 inline-flex items-center gap-2 ">
+                                        <button type="button" className="btn-blue px-5 py-2 inline-flex items-center gap-2 " onClick={(e) => { modalAddDetail.show(); setPurchaseDetail(initialStatePurchaseDetail); }}>
                                             <Add /> AGREGAR ITEM
                                         </button>
                                     </div>
@@ -247,7 +341,7 @@ function NewPurchasePage() {
 
                                     </div>
                                     <div className="flex justify-end py-2">
-                                        <button type="button" className="btn-green px-5 py-2 inline-flex items-center gap-2">
+                                        <button type="submit" className="btn-green px-5 py-2 inline-flex items-center gap-2">
                                             <Save />CONTINUAR CON EL PAGO
                                         </button></div>
 
@@ -262,6 +356,8 @@ function NewPurchasePage() {
                     </div>
                 </div>
             </div>
+            <PurchaseDetailForm modalAddDetail={modalAddDetail} setModalAddDetail={setModalAddDetail} purchaseDetail={purchaseDetail} />
+            <PersonForm modalAddPerson={modalAddPerson} setModalAddPerson={setModalAddPerson} person={person} setPerson={setPerson} jwtToken={jwtToken} />
         </>
     )
 }

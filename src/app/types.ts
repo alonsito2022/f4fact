@@ -47,29 +47,38 @@ export interface ICompany {
 
 export interface ISupplier {
     id: number
+    documentNumber?: string
+    documentType?: string
+    names?: string
+    shortName?: string
+    address: string
+
+    departmentId: string
+    provinceId: string
+    districtId: string
+    countryReadable: string
+    country: string
+    economicActivityMain?: number
+    economicActivityMainReadable?: string
+    email: string
+    phone?: string    
+    isSupplier: boolean
+    isEnabled: boolean
+    
+    isClient?: boolean
     code: string
     documentTypeReadable?: string
-    documentType?: string
-    documentNumber?: string
-    names?: string
-    phone?: string
-    email: string
-    isClient?: boolean
-    isSupplier: boolean
+    typeTradeName?: String
     nationality?: string
     creditLine: number
     businessTypeId?: number
     typeTradeId?: number
-    typeTradeName?: String
-    isEnabled: boolean
     role?: string
     roleReadable?: string
     personaddressSet?: Array<ISupplierAddress>
     checked?: boolean
-    economicActivityMain?: number
-    economicActivitySecondary1?: number
-    economicActivityMainReadable?: string
-    economicActivitySecondary1Readable?: string
+   
+
 }
 
 export interface ISupplierAddress {
@@ -176,6 +185,25 @@ export interface IProduct {
     maximumUnitName?: String
 }
 
+export interface INationality {
+    code: string 
+    name: string  
+}
+
+export interface IEconomicActivity {
+    code: string 
+    name: string 
+}
+
+export interface IDocumentType {
+    code: string 
+    name: string 
+}
+
+export interface ICountry {
+    code: string 
+    name: string 
+}
 
 export interface IProductTariff {
     id: number
