@@ -7,6 +7,7 @@ export const ApolloWrapper = ({ children }: { children: ReactNode }) => {
     const client = new ApolloClient({
         uri: `${process.env.NEXT_PUBLIC_BASE_API}/graphql`,
         cache: new InMemoryCache(),
+        connectToDevTools: true,  // Apollo Client Devtools
     });
     return <ApolloProvider client={client}>{children}</ApolloProvider>;
 };

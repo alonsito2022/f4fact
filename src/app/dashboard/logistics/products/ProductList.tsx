@@ -32,7 +32,7 @@ const PRODUCT_QUERY = gql`
     }
 `;
 
-function ProductList({ filteredProducts, modal, setProduct, jwtToken }: any) {
+function ProductList({ filteredProducts, modalProduct, setProduct, jwtToken }: any) {
     const [hostname, setHostname] = useState("");
 
     useEffect(() => {
@@ -56,7 +56,7 @@ function ProductList({ filteredProducts, modal, setProduct, jwtToken }: any) {
             toast(error?.message, { hideProgressBar: true, autoClose: 2000, type: 'error' });
         }else{
             setProduct(data.productById);
-            modal.show();
+            modalProduct.show();
         }
       };
     

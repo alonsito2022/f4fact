@@ -1,6 +1,6 @@
 import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
-import { getToken } from "next-auth/jwt";
+import { getToken, JWT } from "next-auth/jwt";
 
 
 // export async function middleware(req: any) {
@@ -27,7 +27,7 @@ import { getToken } from "next-auth/jwt";
 
 export default withAuth(
     function middleware(req) {
-        const token = req.nextauth.token;
+        const token = req.nextauth.token as JWT;
         const { pathname, host } = req.nextUrl;
         // console.log("token", token)
         // console.log("pathname", pathname)
@@ -36,6 +36,9 @@ export default withAuth(
         // if (req.nextUrl.pathname === '/login' && req.session) {
         //     return NextResponse.redirect(new URL('/', req.url)); // Redirige al home si ya está autenticado
         // }
+        // console.log("token.now", new Date());
+        // console.log("token.iat", token.iat, new Date(Number(token.iat) * 1000));
+        // console.log("token.exp", token.exp, new Date(Number(token.exp) * 1000));
 
         // Si el usuario está autenticado y está intentando acceder a /login, redirige a /dashboard
         if (token && pathname === "/login") {

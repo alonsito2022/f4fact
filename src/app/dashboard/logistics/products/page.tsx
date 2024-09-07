@@ -5,13 +5,12 @@ import ProductForm from "./ProductForm";
 import ProductFilter from "./ProductFilter";
 import ProductCriteriaForm from "./ProductCriteriaForm";
 import Breadcrumb from "@/components/Breadcrumb"
-import { Modal, ModalOptions } from 'flowbite'
 import { useSession } from 'next-auth/react'
 import { IUser, IProduct, ITypeAffectation } from '@/app/types';
-import { toast } from "react-toastify";
+import { Modal, ModalOptions } from 'flowbite'
 import { gql, useLazyQuery, useQuery } from "@apollo/client";
 
-const initialState = {
+const initialStateProduct = {
     id: 0,
     name: "",
     code: "",
@@ -46,7 +45,7 @@ const initialStateFilterObj = {
     supplierId: 0,
     lineId: 0,
     subLineId: 0,
-    available: "A",
+    available: true,
     activeType: "01",
     subjectPerception: false,
     typeAffectationId: 0,
@@ -54,7 +53,7 @@ const initialStateFilterObj = {
 }
 
 const PRODUCTS_QUERY = gql`
-    query ($criteria: String!, $searchText: String!, $available: String!, $activeType: String!, $subjectPerception: Boolean!, $typeAffectationId: Int!, $limit: Int!) {
+    query ($criteria: String!, $searchText: String!, $available: Boolean!, $activeType: String!, $subjectPerception: Boolean!, $typeAffectationId: Int!, $limit: Int!) {
         allProducts(
             criteria: $criteria
             searchText: $searchText
@@ -88,8 +87,8 @@ const PRODUCTS_QUERY = gql`
 
 function ProductPage() {
     const [products, setProducts] = useState<IProduct[]>([]);
-    const [product, setProduct] = useState(initialState);
-    const [modal, setModal] = useState<Modal | any>(null);
+    const [product, setProduct] = useState(initialStateProduct);
+    const [modalProduct, setModalProduct] = useState<Modal | any>(null);
     const [modalCriteria, setModalCriteria] = useState<Modal | any>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [searchField, setSearchField] = useState<'name' | 'code' | 'ean'>('code');
@@ -303,38 +302,7 @@ function ProductPage() {
             setAccessToken(u.accessToken);
     }, [u])
 
-    useEffect(() => {
 
-        if (modal == null) {
-
-            const $targetEl = document.getElementById('defaultModal');
-            const options: ModalOptions = {
-                placement: 'bottom-right',
-                backdrop: 'static',
-                backdropClasses: 'bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
-                closable: false,
-
-            };
-
-            setModal(new Modal($targetEl, options))
-        }
-
-        if (modalCriteria == null) {
-
-            const $targetE2 = document.getElementById('modalCriteria');
-            const options: ModalOptions = {
-                placement: 'bottom-right',
-                backdrop: 'static',
-                backdropClasses: 'bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
-                closable: false,
-
-            };
-
-            setModalCriteria(new Modal($targetE2))
-        }
-
-
-    }, []);
 
     useEffect(() => {
         if (jwtToken) {
@@ -347,7 +315,7 @@ function ProductPage() {
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
                 <div className="w-full mb-1">
                     <Breadcrumb section={"Productos"} article={"Productos"} />
-                    <ProductFilter filterObj={filterObj} setFilterObj={setFilterObj} modalCriteria={modalCriteria} searchTerm={searchTerm} setSearchTerm={setSearchTerm} searchField={searchField} setSearchField={setSearchField} modal={modal} initialState={initialState} 
+                    <ProductFilter filterObj={filterObj} setFilterObj={setFilterObj} modalCriteria={modalCriteria} searchTerm={searchTerm} setSearchTerm={setSearchTerm} searchField={searchField} setSearchField={setSearchField} modalProduct={modalProduct} initialStateProduct={initialStateProduct} 
                     setProduct={setProduct} fetchProducts={fetchProducts} />
                 </div>
             </div>
@@ -358,7 +326,7 @@ function ProductPage() {
                         <div className="overflow-hidden shadow">
                         {filteredProductsLoading ? <div>Cargando...</div> : 
                         filteredProductsError? <div>Error: No autorizado o error en la consulta. {filteredProductsError.message}</div> 
-                        : <ProductList filteredProducts={filteredProducts} modal={modal} setProduct={setProduct} jwtToken={jwtToken} />}
+                        : <ProductList filteredProducts={filteredProducts} modalProduct={modalProduct} setProduct={setProduct} jwtToken={jwtToken} />}
                             
                         </div>
                     </div>
@@ -366,9 +334,9 @@ function ProductPage() {
             </div>
 
 
-            <ProductForm modal={modal} product={product} setProduct={setProduct} initialState={initialState} 
+            <ProductForm modalProduct={modalProduct} setModalProduct={setModalProduct} product={product} setProduct={setProduct} initialStateProduct={initialStateProduct} 
             jwtToken={jwtToken} typeAffectations={typeAffectations} PRODUCTS_QUERY={PRODUCTS_QUERY} filterObj={filterObj} />
-            <ProductCriteriaForm modalCriteria={modalCriteria} filterObj={filterObj} setFilterObj={setFilterObj} typeAffectations={typeAffectations} fetchProducts={fetchProducts} />
+            <ProductCriteriaForm modalCriteria={modalCriteria} setModalCriteria={setModalCriteria} filterObj={filterObj} setFilterObj={setFilterObj} typeAffectations={typeAffectations} fetchProducts={fetchProducts} />
         </>
     )
 

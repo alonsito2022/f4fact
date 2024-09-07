@@ -10,6 +10,7 @@ import { useQuery, gql } from "@apollo/client";
 import PersonForm from "@/app/dashboard/persons/PersonForm";
 import { useSession } from 'next-auth/react'
 import PurchaseDetailForm from "../PurchaseDetailForm";
+import ProductForm from "../../logistics/products/ProductForm";
 
 
 const today = new Date().toISOString().split('T')[0];
@@ -53,8 +54,8 @@ const initialStatePerson = {
     address: "",
     country: "PE",
     countryReadable: "PERÚ",
-    districtId: "040601",
-    provinceId: "0406",
+    districtId: "040101",
+    provinceId: "0401",
     departmentId: "04",
     districtName: "",
     documentType: "6",
@@ -63,6 +64,35 @@ const initialStatePerson = {
     isSupplier: true,
     isClient: false,
     economicActivityMain: 0,
+}
+
+const initialStateProduct = {
+    id: 0,
+    name: "",
+    code: "",
+
+    available: true,
+    activeType: "01",
+    ean: "",
+    weightInKilograms: 0,
+
+    typeAffectationId: 0,
+    subjectPerception: false,
+    observation: "",
+
+    priceWithIgv1: 0,
+    priceWithoutIgv1: 0,
+
+    priceWithIgv2: 0,
+    priceWithoutIgv2: 0,
+
+    priceWithIgv3: 0,
+    priceWithoutIgv3: 0,
+
+    minimumUnitId: 0,
+    maximumUnitId: 0,
+    maximumFactor: "1",
+    minimumFactor: "1",
 }
 
 const PEOPLE_QUERY = gql`
@@ -78,11 +108,13 @@ const PEOPLE_QUERY = gql`
 
 function NewPurchasePage() {
     const [purchase, setPurchase] = useState(initialStatePurchase);
+    const [product, setProduct] = useState(initialStateProduct);
     const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
     const [purchaseDetail, setPurchaseDetail] = useState(initialStatePurchaseDetail);
     const [products, setProducts] = useState<IProduct[]>([]);
     const [person, setPerson] = useState(initialStatePerson);
     const [modalAddPerson, setModalAddPerson] = useState<Modal | any>(null);
+    const [modalProduct, setModalProduct] = useState<Modal | any>(null);
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
     const { data: session } = useSession();
     const [jwtToken, setJwtToken] = useState<string | null>(null);
@@ -93,7 +125,7 @@ function NewPurchasePage() {
             "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
         },
     });
-    
+
     const { loading: peopleLoading, error: peopleError, data: peopleData } = useQuery(PEOPLE_QUERY, {
         context: getAuthContext(),
         skip: !jwtToken,
@@ -111,20 +143,20 @@ function NewPurchasePage() {
                     const selectedId = option.getAttribute("data-key");
                     setPurchase({ ...purchase, supplierId: Number(selectedId), supplierName: value });
                 } else {
-                    setPurchase({ ...purchase, supplierId: 0, supplierName: "" });
+                    setPurchase({ ...purchase, supplierId: 0, supplierName: value });
                 }
             } else {
                 console.log('sin datalist')
             }
-        }else if(name === "igvType" && event.target instanceof HTMLSelectElement){
+        } else if (name === "igvType" && event.target instanceof HTMLSelectElement) {
             setPurchase({ ...purchase, igvType: Number(value) });
-        }else{
+        } else {
             setPurchase({ ...purchase, [name]: value });
         }
 
-        
 
-        
+
+
     }
 
     const handleInputChangeEntryDetail = (event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
@@ -158,33 +190,40 @@ function NewPurchasePage() {
 
                             <div className="p-4 md:p-5 space-y-4">
 
-                                <form   onSubmit={handleSavePurchase}>
+                                <form onSubmit={handleSavePurchase}>
 
                                     <input type="hidden" name="id" id="id" value={purchase.id} />
 
                                     <div className="grid gap-2 grid-cols-4">
+                                        peopleError
 
                                         <div className="sm:col-span-4">
-                                            <label className="text-sm">Proveedor</label>
-                                            <div className="relative w-full">
-                                                <input type="text" className="form-search-input-sm"
-                                                    maxLength={200}
-                                                    value={purchase.supplierName}
-                                                    name="supplierName"
-                                                    onChange={handleInputChangeEntry}
-                                                    onFocus={(e) => e.target.select()}
-                                                    autoComplete="off"
-                                                    disabled={peopleLoading}
-                                                    placeholder="Buscar Proveedor..." list="supplierNameList" required />
-                                                <datalist id="supplierNameList">
-                                                    {peopleData?.allSuppliers?.map((n: ISupplier, index: number) => (
-                                                        <option key={index} data-key={n.id} value={`${n.documentNumber} ${n.names}`} />
-                                                    ))}
-                                                </datalist>
-                                                <button type="button" className="form-search-button-sm" onClick={(e) => { modalAddPerson.show(); setPerson(initialStatePerson); }}>
-                                                    <Add /><span className="sr-only">Search</span>
-                                                </button>
-                                            </div>
+                                            {peopleError ? <div>Error: No autorizado o error en la consulta. {peopleError.message}</div> :
+                                                <>
+                                                    <label className="text-sm">Proveedor</label>
+                                                    <div className="relative w-full">
+                                                        <input type="text" className="form-search-input-sm"
+                                                            maxLength={200}
+                                                            value={purchase.supplierName}
+                                                            name="supplierName"
+                                                            onChange={handleInputChangeEntry}
+                                                            onFocus={(e) => e.target.select()}
+                                                            autoComplete="off"
+                                                            disabled={peopleLoading}
+                                                            placeholder="Buscar Proveedor..." list="supplierNameList" required />
+                                                        <datalist id="supplierNameList">
+                                                            {peopleData?.allSuppliers?.map((n: ISupplier, index: number) => (
+                                                                <option key={index} data-key={n.id} value={`${n.documentNumber} ${n.names}`} />
+                                                            ))}
+                                                        </datalist>
+                                                        <button type="button" className="form-search-button-sm" onClick={(e) => { modalAddPerson.show(); setPerson(initialStatePerson); }}>
+                                                            <Add /><span className="sr-only">Search</span>
+                                                        </button>
+                                                    </div>
+                                                </>
+
+                                            }
+
                                         </div>
 
 
@@ -249,7 +288,7 @@ function NewPurchasePage() {
                                                 onChange={handleInputChangeEntry}
                                                 onFocus={(e) => e.target.select()}
                                                 className="form-control-sm"
-                                                
+
                                                 autoComplete="off"
                                             />
                                         </div>
@@ -264,7 +303,7 @@ function NewPurchasePage() {
                                                 onChange={handleInputChangeEntry}
                                                 onFocus={(e) => e.target.select()}
                                                 className="form-control-sm"
-                                                
+
                                                 autoComplete="off"
                                             />
                                         </div>
@@ -279,7 +318,7 @@ function NewPurchasePage() {
                                                 onChange={handleInputChangeEntry}
                                                 onFocus={(e) => e.target.select()}
                                                 className="form-control-sm"
-                                                
+
                                                 autoComplete="off"
                                             />
                                         </div>
@@ -303,8 +342,8 @@ function NewPurchasePage() {
                                                         <option key={index} data-key={n.id} value={n.name} data-ean={n.ean ? n.ean : ""} data-unit-min-name={n.minimumUnitName} data-max-factor={n.maximumFactor} />
                                                     ))}
                                                 </datalist>
-                                                <button type="button" className="form-search-button-sm">
-                                                    <Add /><span className="sr-only">Search</span>
+                                                <button type="button" className="form-search-button-sm" onClick={(e) => { modalProduct.show(); setPurchaseDetail(initialStatePurchaseDetail); }}>
+                                                    <Add />
                                                 </button>
                                             </div>
                                         </div>
@@ -357,7 +396,9 @@ function NewPurchasePage() {
                 </div>
             </div>
             <PurchaseDetailForm modalAddDetail={modalAddDetail} setModalAddDetail={setModalAddDetail} purchaseDetail={purchaseDetail} />
-            <PersonForm modalAddPerson={modalAddPerson} setModalAddPerson={setModalAddPerson} person={person} setPerson={setPerson} jwtToken={jwtToken} />
+            <PersonForm modalAddPerson={modalAddPerson} setModalAddPerson={setModalAddPerson} person={person} setPerson={setPerson} jwtToken={jwtToken} 
+            PEOPLE_QUERY={PEOPLE_QUERY} purchase={purchase} setPurchase={setPurchase} />
+            <ProductForm modalProduct={modalProduct} setModalProduct={setModalProduct} product={product} setProduct={setProduct} initialStateProduct={initialStateProduct}  />
         </>
     )
 }

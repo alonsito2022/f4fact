@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import createApolloClient from "@/lib/apollo-client";
 import { gql } from "@apollo/client";
 import { JWT } from "next-auth/jwt";
+import { User  } from "next-auth";
 
 const TOKEN_AUTH_MUTATION = gql`
     mutation TokenAuth($email: String!, $password: String!) {
@@ -21,6 +22,16 @@ const TOKEN_AUTH_MUTATION = gql`
     }
 `;
 
+interface ExtendedUser extends User {
+    iat: number;
+    exp: number;
+}
+
+interface ExtendedSession extends Session {
+    iat: number;
+    exp: number;
+}
+
 const handler = NextAuth({
     providers: [
         CredentialsProvider({
@@ -35,15 +46,20 @@ const handler = NextAuth({
                 }
                 const client = createApolloClient();
                 try {
-                    const { data } = await client.mutate({
+                    const values = {
+                        email: credentials.email,
+                        password: credentials.password,
+                    }
+                    // console.log(values)
+                    const { data, errors } = await client.mutate({
                         mutation: TOKEN_AUTH_MUTATION,
-                        variables: {
-                            email: credentials.email,
-                            password: credentials.password,
-                        },
+                        variables: values,
                     });
+                    if(errors)
+                        console.log(errors.toString())
 
                     if (data.tokenAuth && data.tokenAuth.token) {
+                        console.log("payload", data.tokenAuth?.payload)
                         return {
                             id: data.tokenAuth.user.id,
                             fullName: data.tokenAuth.user.fullName,
@@ -51,6 +67,8 @@ const handler = NextAuth({
                             avatar: data.tokenAuth.user.avatar,
                             accessToken: data.tokenAuth.token,
                             // ... cualquier otro dato del usuario que quieras incluir
+                            exp: data.tokenAuth?.payload.exp,
+                            iat: data.tokenAuth?.payload.origIat
                         };
                     } else {
                         throw new Error("Authentication failed");
@@ -113,14 +131,27 @@ const handler = NextAuth({
     },
     callbacks: {
         
-        async jwt({ token, user }) {
-            if (user) {
-                token.user = user;
+        async jwt({ token, user }: {token: JWT; user: User}) {
+            const usr = user as ExtendedUser;
+            if (usr) {
+                token.user = usr;
+                token.iat = usr.iat;
+                token.exp = usr.exp;
             }
             return token;
         },
-        async session({ session, token }) {
-            session.user = token.user as any;
+        async session({ session, token }: {session: Session, token: JWT}) {
+            // const ses = session as ExtendedSession;
+            // console.log("expires", session.expires)
+            // if (token.exp){
+            //     // Convertir el tiempo UNIX a ISODateString
+            //     const expiresAt = new Date(Number(token.exp) * 1000).toISOString();
+            //     session.expires = expiresAt; // Asignar nueva fecha de expiración
+            // }
+            // console.log("expires 2", session.expires)
+            session.user = token.user as ExtendedUser;
+            // ses.ag = Number(token.iat)
+            // ses.exp = Number(token.exp)
             // session.accessToken = token.user.accessToken as any;
             return session;
         },

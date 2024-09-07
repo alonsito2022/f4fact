@@ -1,8 +1,28 @@
 import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import { IUnit, ITypeAffectation } from "@/app/types";
+import { Modal, ModalOptions } from 'flowbite'
 
-function ProductCriteriaForm({ modalCriteria, filterObj, setFilterObj, typeAffectations, fetchProducts }: any) {
+function ProductCriteriaForm({ modalCriteria, setModalCriteria, filterObj, setFilterObj, typeAffectations, fetchProducts }: any) {
+    
+    useEffect(() => {
 
+ 
+        if (modalCriteria == null) {
+
+            const $targetE2 = document.getElementById('modalCriteria');
+            const options: ModalOptions = {
+                placement: 'bottom-right',
+                backdrop: 'static',
+                backdropClasses: 'bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
+                closable: false,
+
+            };
+
+            setModalCriteria(new Modal($targetE2))
+        }
+
+
+    }, []);
 
     const handleInputChange = ({ target: { name, value } }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFilterObj({ ...filterObj, [name]: value });

@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import Save from '@/components/icons/Save';
 import ProductTariffForm from './ProductTariffForm';
 import { DocumentNode, gql, useMutation } from "@apollo/client";
+import { Modal, ModalOptions } from 'flowbite';
 
 const ADD_PRODUCT = gql`
     mutation ($code: String!, $name: String!, $available: Boolean!, $activeType: String!, $ean: String!, $weightInKilograms: Float!, $typeAffectationId: Int!, $subjectPerception: Boolean!, $observation: String!, $priceWithIgv1: Float!, $priceWithoutIgv1: Float!, $priceWithIgv2: Float!, $priceWithoutIgv2: Float!, $priceWithIgv3: Float!, $priceWithoutIgv3: Float!, $minimumUnitId: Int!, $maximumUnitId: Int!, $maximumFactor: Int!, $minimumFactor: Int!) {
@@ -62,7 +63,7 @@ const UPDATE_PRODUCT = gql`
     }
 `;
 
-function ProductForm({ modal, product, setProduct, initialState, jwtToken, typeAffectations, PRODUCTS_QUERY, filterObj }: any) {
+function ProductForm({ modalProduct, setModalProduct, product, setProduct, initialStateProduct, jwtToken, typeAffectations, PRODUCTS_QUERY, filterObj }: any) {
     const [units, setUnits] = useState<IUnit[]>([]);
 
     async function fetchUnits() {
@@ -192,8 +193,8 @@ function ProductForm({ modal, product, setProduct, initialState, jwtToken, typeA
                 toast(errors.toString(), { hideProgressBar: true, autoClose: 2000, type: 'error' });
             }else{
                 toast(data.updateProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-                setProduct(initialState);
-                modal.hide();
+                setProduct(initialStateProduct);
+                modalProduct.hide();
             }
         } else {
             const values = { 
@@ -228,8 +229,8 @@ function ProductForm({ modal, product, setProduct, initialState, jwtToken, typeA
                 toast(errors.toString(), { hideProgressBar: true, autoClose: 2000, type: 'error' });
             }else{
                 toast(data.createProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-                setProduct(initialState);
-                modal.hide();
+                setProduct(initialStateProduct);
+                modalProduct.hide();
             }
         }
 
@@ -257,7 +258,7 @@ function ProductForm({ modal, product, setProduct, initialState, jwtToken, typeA
         //         .then(res => res.json())
         //         .then(data => {
         //             toast(data.data.updateProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-        //             setProduct(initialState);
+        //             setProduct(initialStateProduct);
         //             modal.hide();
         //             fetchProductsByCriteria();
 
@@ -288,7 +289,7 @@ function ProductForm({ modal, product, setProduct, initialState, jwtToken, typeA
         //         .then(res => res.json())
         //         .then(data => {
         //             toast(data.data.createProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-        //             setProduct(initialState);
+        //             setProduct(initialStateProduct);
         //             modal.hide();
         //             fetchProductsByCriteria();
 
@@ -296,11 +297,29 @@ function ProductForm({ modal, product, setProduct, initialState, jwtToken, typeA
         // }
     }
 
+    useEffect(() => {
 
+        if (modalProduct == null) {
+
+            const $targetEl = document.getElementById('modalProduct');
+            const options: ModalOptions = {
+                placement: 'bottom-right',
+                backdrop: 'static',
+                backdropClasses: 'bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
+                closable: false,
+
+            };
+
+            setModalProduct(new Modal($targetEl, options))
+        }
+
+      
+
+    }, []);
 
     return (
         <>
-            <div id="defaultModal" tabIndex={-1} aria-hidden="true" className="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full">
+            <div id="modalProduct" tabIndex={-1} aria-hidden="true" className="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full">
                 <div className="relative w-full max-w-lg max-h-full">
 
                     <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
@@ -311,7 +330,7 @@ function ProductForm({ modal, product, setProduct, initialState, jwtToken, typeA
                             </h3>
                             <button type="button" id="btn-close-modal"
                                 className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                onClick={() => { modal.hide(); }} >
+                                onClick={() => { modalProduct.hide(); }} >
                                 <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
                                 <span className="sr-only">Close modal</span>
                             </button>

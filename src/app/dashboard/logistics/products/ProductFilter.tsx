@@ -3,7 +3,7 @@ import { ChangeEvent, FormEvent, useState, useEffect, useMemo } from "react";
 import Add from '@/components/icons/Add'
 import Filter from '@/components/icons/Filter'
 
-function ProductFilter({ filterObj, setFilterObj, modalCriteria, searchTerm, setSearchTerm, searchField, setSearchField, modal, initialState, setProduct, fetchProducts }: any) {
+function ProductFilter({ filterObj, setFilterObj, modalCriteria, searchTerm, setSearchTerm, searchField, setSearchField, modalProduct, initialStateProduct, setProduct, fetchProducts }: any) {
 
     const handleInputSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
@@ -73,7 +73,7 @@ function ProductFilter({ filterObj, setFilterObj, modalCriteria, searchTerm, set
 
             <div className="flex items-center w-full sm:justify-end gap-2">
                 <button id="btn-search" type="button" className="btn-blue px-5 py-3 inline-flex items-center gap-2" onClick={handleClickButton}><Filter />Filtrar</button>
-                <button id="createProductButton" type="button" onClick={(e) => { modal.show(); setProduct(initialState); }} className="btn-blue px-5 py-3 inline-flex items-center gap-2"><Add />Crear producto</button>
+                <button id="createProductButton" type="button" onClick={(e) => { modalProduct.show(); setProduct(initialStateProduct); }} className="btn-blue px-5 py-3 inline-flex items-center gap-2"><Add />Crear producto</button>
             </div>
         </div>
     )

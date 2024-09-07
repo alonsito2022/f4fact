@@ -41,6 +41,12 @@ const ADD_PERSON_MUTATION = gql`
         ) {
             message
             success
+            person{
+                id
+                names
+                address
+                documentNumber
+            }
         }
     }
 `;
@@ -99,7 +105,8 @@ const DISTRICTS_QUERY = gql`
     }
 `;
 
-function PersonForm({ modalAddPerson, setModalAddPerson, person, setPerson, jwtToken, PEOPLE_QUERY }: any) {
+function PersonForm({ modalAddPerson, setModalAddPerson, person, setPerson, jwtToken, 
+    PEOPLE_QUERY, purchase, setPurchase }: any) {
 
     const getAuthContext = () => ({
         headers: {
@@ -109,6 +116,7 @@ function PersonForm({ modalAddPerson, setModalAddPerson, person, setPerson, jwtT
     });
     const [addPerson] = useMutation(ADD_PERSON_MUTATION, {
         context: getAuthContext(),
+        refetchQueries: () => [{ query: PEOPLE_QUERY, context: getAuthContext(), }],
         onError: (err) => console.error("Error in person mutation:", err), // Log the error for debugging
     });
 
@@ -295,10 +303,14 @@ function PersonForm({ modalAddPerson, setModalAddPerson, person, setPerson, jwtT
                 toast(errors.toString(), { hideProgressBar: true, autoClose: 2000, type: 'error' });
             }else{
                 if(data.createPerson.success){
-                    toast(data.createPerson.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
+                    toast(data.createPerson.message, { hideProgressBar: true, autoClose: 2000, type: 'success' });
+                    const p = data.createPerson.person;
+                    if(p)
+                        setPurchase({...purchase, supplierId: Number(p.id), supplierName: `${p.documentNumber} ${p.names}`})
+                    
                     modalAddPerson.hide();
                 }else{
-                    toast(data.createPerson.message, { hideProgressBar: true, autoClose: 2000, type: 'error' })
+                    toast(data.createPerson.message, { hideProgressBar: true, autoClose: 2000, type: 'error' });
                 }
             }
         }
