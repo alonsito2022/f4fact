@@ -231,6 +231,9 @@ export interface IOperation {
     type?: string
     number?: number
     serial?: string
+
+    operationdetailSet?: Array<IOperationDetail>
+
 }
 
 export interface IOperationDetail {

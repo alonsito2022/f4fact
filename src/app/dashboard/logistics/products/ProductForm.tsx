@@ -3,7 +3,7 @@ import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import Save from '@/components/icons/Save';
 import ProductTariffForm from './ProductTariffForm';
-import { DocumentNode, gql, useMutation } from "@apollo/client";
+import { DocumentNode, gql, useMutation, useQuery } from "@apollo/client";
 import { Modal, ModalOptions } from 'flowbite';
 
 const ADD_PRODUCT = gql`
@@ -30,6 +30,13 @@ const ADD_PRODUCT = gql`
             minimumFactor: $minimumFactor
         ) {
             message
+            product {
+                id
+                name
+                ean
+                minimumUnitName
+                maximumFactor
+            }
         }
     }
 `;
@@ -63,41 +70,31 @@ const UPDATE_PRODUCT = gql`
     }
 `;
 
-function ProductForm({ modalProduct, setModalProduct, product, setProduct, initialStateProduct, jwtToken, typeAffectations, PRODUCTS_QUERY, filterObj }: any) {
-    const [units, setUnits] = useState<IUnit[]>([]);
-
-    async function fetchUnits() {
-        await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `JWT ${jwtToken}`
-            },
-            body: JSON.stringify({
-                query: `
-                    query {
-                        allUnits {
-                            id
-                            shortName
-                        }
-                    }
-                `
-            })
-        })
-            .then(res => res.json())
-            .then(data => {
-                setUnits(data.data.allUnits);
-            })
-    }
-
-    useEffect(() => {
-
-        if (jwtToken) {
-            fetchUnits();
-
+const UNIT_QUERY = gql`
+    query {
+        allUnits {
+            id
+            shortName
+            code
+            description
         }
-    }, [jwtToken]);
+    }
+`;
 
+function ProductForm({ modalProduct, setModalProduct, product, setProduct, initialStateProduct, jwtToken, typeAffectationsData, PRODUCTS_QUERY, productFilterObj }: any) {
+    
+    const getAuthContext = () => ({
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
+        },
+    });
+
+    const { loading: unitsLoading, error: unitsError, data: unitsData } = useQuery(UNIT_QUERY, {
+        context: getAuthContext(),
+        skip: !jwtToken,
+    });
+    
     function useCustomMutation(mutation: DocumentNode, refetchQuery: DocumentNode) {
         const getAuthContext = () => ({
             headers: {
@@ -107,12 +104,9 @@ function ProductForm({ modalProduct, setModalProduct, product, setProduct, initi
         });
 
         const getVariables = () => ({
-
-
-                criteria: filterObj.criteria, searchText: filterObj.searchText,
-                available: filterObj.available, activeType: filterObj.activeType,
-                subjectPerception: filterObj.subjectPerception, typeAffectationId: Number(filterObj.typeAffectationId), limit: Number(filterObj.limit)
-            
+                criteria: productFilterObj.criteria, searchText: productFilterObj.searchText,
+                available: productFilterObj.available, activeType: productFilterObj.activeType,
+                subjectPerception: productFilterObj.subjectPerception, typeAffectationId: Number(productFilterObj.typeAffectationId), limit: Number(productFilterObj.limit)
         });
 
         return useMutation(mutation, {
@@ -229,72 +223,16 @@ function ProductForm({ modalProduct, setModalProduct, product, setProduct, initi
                 toast(errors.toString(), { hideProgressBar: true, autoClose: 2000, type: 'error' });
             }else{
                 toast(data.createProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-                setProduct(initialStateProduct);
+                const pdt = data.createProduct.product;
+                if(pdt)
+                    setProduct({...product, 
+                        id: pdt.id,
+                        name: pdt.name,
+                        minimumUnitName: pdt.minimumUnitName,
+                        maximumFactor: pdt.maximumFactor});
                 modalProduct.hide();
             }
         }
-
-        // let queryFetch: String = "";
-        // if (Number(product.id) !== 0) {
-        //     queryFetch = `
-        //         mutation{
-        //             updateProduct(id:${product.id}, code: "${product.code}", name: "${product.name}", 
-        //             available: ${product.available}, activeType: "${product.activeType.replace("A_", "")}", ean: "${product.ean}", weightInKilograms: ${product.weightInKilograms}, 
-        //             maximumFactor: ${Number(product.maximumFactor)},minimumFactor: ${Number(product.minimumFactor)}, minimumUnitId: ${product.minimumUnitId}, maximumUnitId: ${product.maximumUnitId}, 
-        //             typeAffectationId: ${product.typeAffectationId}, subjectPerception: ${product.subjectPerception}, observation: "${product.observation}"){
-        //                 message
-        //             }
-        //         }
-        //     `;
-        //     console.log(queryFetch)
-        //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-        //         method: 'POST',
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "Authorization": `JWT ${jwtToken}`
-        //         },
-        //         body: JSON.stringify({ query: queryFetch })
-        //     })
-        //         .then(res => res.json())
-        //         .then(data => {
-        //             toast(data.data.updateProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-        //             setProduct(initialStateProduct);
-        //             modal.hide();
-        //             fetchProductsByCriteria();
-
-        //         }).catch(e => console.log(e))
-        // }
-        // else {
-
-        //     queryFetch = `
-        //         mutation{
-        //             createProduct(code: "${product.code}", name: "${product.name}", 
-        //             available: ${product.available}, activeType: "${product.activeType.replace("A_", "")}", ean: "${product.ean}", weightInKilograms: ${product.weightInKilograms}, 
-        //             maximumFactor: ${Number(product.maximumFactor)},minimumFactor: ${Number(product.minimumFactor)}, minimumUnitId: ${product.minimumUnitId}, maximumUnitId: ${product.maximumUnitId}, 
-        //             typeAffectationId: ${product.typeAffectationId}, subjectPerception: ${product.subjectPerception}, observation: "${product.observation}"){
-        //                 message
-        //             }
-        //         }
-        //     `;
-        //     console.log(queryFetch)
-
-        //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-        //         method: 'POST',
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "Authorization": `JWT ${jwtToken}`
-        //         },
-        //         body: JSON.stringify({ query: queryFetch })
-        //     })
-        //         .then(res => res.json())
-        //         .then(data => {
-        //             toast(data.data.createProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-        //             setProduct(initialStateProduct);
-        //             modal.hide();
-        //             fetchProductsByCriteria();
-
-        //         }).catch(e => console.log(e))
-        // }
     }
 
     useEffect(() => {
@@ -303,7 +241,7 @@ function ProductForm({ modalProduct, setModalProduct, product, setProduct, initi
 
             const $targetEl = document.getElementById('modalProduct');
             const options: ModalOptions = {
-                placement: 'bottom-right',
+                placement: 'top-center',
                 backdrop: 'static',
                 backdropClasses: 'bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
                 closable: false,
@@ -319,11 +257,13 @@ function ProductForm({ modalProduct, setModalProduct, product, setProduct, initi
 
     return (
         <>
-            <div id="modalProduct" tabIndex={-1} aria-hidden="true" className="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full">
-                <div className="relative w-full max-w-lg max-h-full">
-
+            {/* Large Modal */}
+            <div id="modalProduct" tabIndex={-1} aria-hidden="true" 
+            className="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                <div className="relative w-full max-w-4xl max-h-full">
+                {/* Modal content */}
                     <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
-
+                        {/* Modal header */}
                         <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white" id="modal-title">
                                 {Number(product.id) > 0 ? "Editar" : "Registrar nuevo producto"}
@@ -337,81 +277,81 @@ function ProductForm({ modalProduct, setModalProduct, product, setProduct, initi
                         </div>
 
                         <form onSubmit={handleSaveProduct}>
-
+                            {/* Modal body */}
                             <div className="p-4 md:p-5 space-y-4">
                                 <input type="hidden" name="id" id="id" value={product.id} />
 
 
                                 <div className="grid gap-4 mb-4 sm:grid-cols-6">
 
-                                    <div className="sm:col-span-2">
-                                        <label htmlFor="code" className="form-label">Codigo</label>
-                                        <input type="text" name="code" id="code" maxLength={20} value={product.code || ""} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" autoComplete="off" />
-                                    </div>
-
                                     <div className="sm:col-span-4">
-                                        <label htmlFor="name" className="form-label">Nombre</label>
-                                        <input type="text" name="name" id="name" maxLength={100} value={product.name} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" placeholder="Escriba un nombre aquí" required autoComplete="off" />
+                                        <label htmlFor="name" className="form-label">Nombre del producto o servicio</label>
+                                        <input type="text" name="name" id="name" maxLength={100} value={product.name} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control" placeholder="Escriba un nombre aquí" required autoComplete="off" />
                                     </div>
 
                                     <div className="sm:col-span-2">
                                         <label htmlFor="activeType" className="form-label">Tipo</label>
-                                        <select name="activeType" id="activeType" onChange={handleInputChange} value={product.activeType.replace("A_", "")} className="form-control-sm" required>
+                                        <select name="activeType" id="activeType" onChange={handleInputChange} value={product.activeType.replace("A_", "")} className="form-control" required>
                                             <option value={"01"}>PRODUCTO</option>
                                             <option value={"02"}>REGALO</option>
                                             <option value={"03"}>SERVICIO</option>
                                         </select>
                                     </div>
 
-                                    <div className="sm:col-span-2">
+                                    <div className="sm:col-span-2 hidden">
+                                        <label htmlFor="code" className="form-label">Código Producto Sunat</label>
+                                        <input type="text" name="code" id="code" maxLength={20} value={product.code || ""} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control" autoComplete="off" />
+                                    </div>
+
+                                    <div className="sm:col-span-2 hidden">
                                         <label htmlFor="ean" className="form-label">EAN</label>
-                                        <input type="text" name="ean" id="ean" maxLength={20} value={product.ean} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" />
+                                        <input type="text" name="ean" id="ean" maxLength={20} value={product.ean} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control" />
                                     </div>
 
 
-                                    <div className="sm:col-span-2">
+                                    <div className="sm:col-span-2 hidden">
                                         <label htmlFor="weightInKilograms" className="form-label">Peso (Kg)</label>
-                                        <input type="number" name="weightInKilograms" id="weightInKilograms" value={product.weightInKilograms} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" />
+                                        <input type="number" name="weightInKilograms" id="weightInKilograms" value={product.weightInKilograms} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control" />
                                     </div>
 
 
                                     <div className="sm:col-span-6">
                                         <label htmlFor="typeAffectationId" className="form-label">Tipo afectacion</label>
-                                        <select name="typeAffectationId" id="typeAffectationId" onChange={handleInputChange} value={product.typeAffectationId} className="form-control-sm" required>
+                                        <select name="typeAffectationId" id="typeAffectationId" onChange={handleInputChange} value={product.typeAffectationId} className="form-control" required>
                                             <option value={0}>Elegir tipo de afectacion</option>
-                                            {typeAffectations?.map((o: ITypeAffectation, k: number) => (
+                                            {typeAffectationsData?.allTypeAffectations?.map((o: ITypeAffectation, k: number) => (
                                                 <option key={k} value={o.id}>{o.name}</option>
                                             ))}
                                         </select>
                                     </div>
 
                                     <div className="sm:col-span-3">
-                                    <label htmlFor="minimumUnitId" className="form-label">UdM Minima</label>
-                                    <select name="minimumUnitId" id="minimumUnitId" onChange={handleInputChange} value={product.minimumUnitId} className="form-control-sm" required>
+                                    <label htmlFor="minimumUnitId" className="form-label">Unidad de medida SUNAT Minima</label>
+                                    <select name="minimumUnitId" id="minimumUnitId" onChange={handleInputChange} value={product.minimumUnitId} className="form-control" required>
                                         <option value={0}>Elegir unidad</option>
-                                        {units?.map((o: IUnit,k: number)=>(
-                                            <option key={k} value={o.id}>{o.shortName}</option>
+                                        {unitsData?.allUnits?.map((o: IUnit,k: number)=>(
+                                            <option key={k} value={o.id}>{`${o.shortName} - ${o.description}`}</option>
                                         ))}
                                     </select>
                                 </div>
                                 <div className="sm:col-span-3">
-                                    <label htmlFor="maximumUnitId" className="form-label">UdM Maxima</label>
-                                    <select name="maximumUnitId" id="maximumUnitId" onChange={handleInputChange} value={product.maximumUnitId} className="form-control-sm" required>
+                                    <label htmlFor="maximumUnitId" className="form-label">Unidad de medida SUNAT Maxima</label>
+                                    <select name="maximumUnitId" id="maximumUnitId" onChange={handleInputChange} value={product.maximumUnitId} className="form-control" required>
                                         <option value={0}>Elegir unidad</option>
-                                        {units?.map((o: IUnit,k: number)=>(
-                                            <option key={k} value={o.id}>{o.shortName}</option>
+                                        {unitsData?.allUnits?.map((o: IUnit,k: number)=>(
+                                            <option key={k} value={o.id}>{`${o.shortName} - ${o.description}`}</option>
                                         ))}
                                     </select>
                                 </div>
 
                                 <div className="sm:col-span-3">
                                     <label htmlFor="minimumFactor" className="form-label">Factor de conversión Minimo</label>
-                                    <input type="number" name="minimumFactor" id="minimumFactor" value={product.minimumFactor} onChange={handleInputChangeQuantityMinimum} onFocus={(e) => e.target.select()} className="form-control-sm"  required />
+                                    <input type="number" name="minimumFactor" id="minimumFactor" value={product.minimumFactor} onChange={handleInputChangeQuantityMinimum} onFocus={(e) => e.target.select()} className="form-control"  required />
                                 </div>
 
                                 <div className="sm:col-span-3">
                                     <label htmlFor="maximumFactor" className="form-label">Factor de conversión Maximo</label>
-                                    <input type="number" name="maximumFactor" id="maximumFactor" value={product.maximumFactor} onChange={handleInputChangeQuantityMinimum} onFocus={(e) => e.target.select()} className="form-control-sm"  required />
+                                    <input type="number" name="maximumFactor" id="maximumFactor" value={product.maximumFactor} onChange={handleInputChangeQuantityMinimum} onFocus={(e) => e.target.select()} className="form-control"  required />
                                 </div>
 
 
@@ -433,7 +373,7 @@ function ProductForm({ modalProduct, setModalProduct, product, setProduct, initi
                                             id="observation3"
                                             name='observation'
                                             rows={5}
-                                            className='form-control-sm'
+                                            className='form-control'
                                             maxLength={500}
                                             onChange={handleInputChange}
                                             value={product.observation || ""}

@@ -258,24 +258,24 @@ function PersonForm({ modalAddPerson, setModalAddPerson, person, setPerson, jwtT
         e.preventDefault();
         
         if (person?.documentNumber.length === 0) {
-            toast('Por favor ingrese un número (RUC, DNI, Etc).', { hideProgressBar: true, autoClose: 2000, type: 'warning' })
+            toast('Por favor ingrese un número (RUC, DNI, Etc).', { hideProgressBar: true, autoClose: 2000, type: 'warning' });
             return;
         }
         if (person?.documentType === "6" && person?.documentNumber.length !== 11) {
-            toast('Por favor ingrese un número RUC valido.', { hideProgressBar: true, autoClose: 2000, type: 'warning' })
+            toast('Por favor ingrese un número RUC valido.', { hideProgressBar: true, autoClose: 2000, type: 'warning' });
             return;
         }
 
         if (person?.documentType === "1" && person?.documentNumber.length !== 8) {
-            toast('Por favor ingrese un número DNI valido.', { hideProgressBar: true, autoClose: 2000, type: 'warning' })
+            toast('Por favor ingrese un número DNI valido.', { hideProgressBar: true, autoClose: 2000, type: 'warning' });
             return;
         }
         if (person?.names.length === 0) {
-            toast('Por favor ingrese una razón social o nombre completo.', { hideProgressBar: true, autoClose: 2000, type: 'warning' })
+            toast('Por favor ingrese una razón social o nombre completo.', { hideProgressBar: true, autoClose: 2000, type: 'warning' });
             return;
         }
         if (person?.documentType === "6" && person?.address.length === 0) {
-            toast('Por favor ingrese una direccion valida.', { hideProgressBar: true, autoClose: 2000, type: 'warning' })
+            toast('Por favor ingrese una direccion valida.', { hideProgressBar: true, autoClose: 2000, type: 'warning' });
             return;
         }        
         

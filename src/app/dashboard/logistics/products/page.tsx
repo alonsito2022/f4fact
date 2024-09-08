@@ -39,7 +39,7 @@ const initialStateProduct = {
     minimumFactor: "1",
 }
 
-const initialStateFilterObj = {
+const initialStateProductFilterObj = {
     criteria: "name",
     searchText: "",
     supplierId: 0,
@@ -84,6 +84,19 @@ const PRODUCTS_QUERY = gql`
         }
     }
 `;
+    
+const TYPE_AFFECTATION_QUERY = gql`
+    query {
+        allTypeAffectations {
+            id
+            code
+            name
+            affectCode
+            affectName
+            affectType
+        }
+    }
+`;
 
 function ProductPage() {
     const [products, setProducts] = useState<IProduct[]>([]);
@@ -92,10 +105,7 @@ function ProductPage() {
     const [modalCriteria, setModalCriteria] = useState<Modal | any>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [searchField, setSearchField] = useState<'name' | 'code' | 'ean'>('code');
-    const [accessToken, setAccessToken] = useState<string>('');
-    const [typeAffectations, setTypeAffectations] = useState<ITypeAffectation[]>([]);
-
-    const [filterObj, setFilterObj] = useState(initialStateFilterObj);
+    const [productFilterObj, setProductFilterObj] = useState(initialStateProductFilterObj);
     const { data: session } = useSession();
     const [jwtToken, setJwtToken] = useState<string | null>(null);
     const u = session?.user as IUser;
@@ -107,33 +117,25 @@ function ProductPage() {
         }
     }, [session]);
 
-    // const { loading: productsLoading, error: productsError, data: productsData } = useQuery(PRODUCTS_QUERY, {
-    //     context: {
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //             "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
-    //         },
-    //     },
-    //     skip: !jwtToken, // Esto evita que la consulta se ejecute si no hay token
-    //     variables: {
-    //         criteria: filterObj.criteria, searchText: filterObj.searchText,
-    //         available: filterObj.available, activeType: filterObj.activeType,
-    //         subjectPerception: filterObj.subjectPerception, typeAffectationId: Number(filterObj.typeAffectationId), limit: Number(filterObj.limit)
-    //     },
-    //     onError: (err) => console.error("Error in products:", err),
-    // });
+    const getAuthContext = () => ({
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
+        },
+    });
+
+    const { loading: typeAffectationsLoading, error: typeAffectationsError, data: typeAffectationsData } = useQuery(TYPE_AFFECTATION_QUERY, {
+        context: getAuthContext(),
+        skip: !jwtToken, // Esto evita que la consulta se ejecute si no hay token
+        onError: (err) => console.error("Error in typeAffectations:", err),
+    });
 
     const [productsQuery, { loading: filteredProductsLoading, error: filteredProductsError, data: filteredProductsData }] = useLazyQuery(PRODUCTS_QUERY, {
-        context: {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
-            },
-        },
+        context: getAuthContext(),
         variables: {
-            criteria: filterObj.criteria, searchText: filterObj.searchText,
-            available: filterObj.available, activeType: filterObj.activeType,
-            subjectPerception: filterObj.subjectPerception, typeAffectationId: Number(filterObj.typeAffectationId), limit: Number(filterObj.limit)
+            criteria: productFilterObj.criteria, searchText: productFilterObj.searchText,
+            available: productFilterObj.available, activeType: productFilterObj.activeType,
+            subjectPerception: productFilterObj.subjectPerception, typeAffectationId: Number(productFilterObj.typeAffectationId), limit: Number(productFilterObj.limit)
         },
         onCompleted: (data) => {
           if (data.allProducts) {
@@ -150,172 +152,17 @@ function ProductPage() {
 
     };
 
-    // useEffect(() => {
-    //     if (productsData?.allProducts)
-    //         setProducts(productsData?.allProducts)
-    // }, [productsData]);
-
-    // async function fetchProducts() {
-    //     const queryFetch = `
-    //                 query {
-    //                     allProducts(
-    //                         criteria: "${filterObj.criteria}",
-    //                         searchText: "${filterObj.searchText}",
-    //                         available: "${filterObj.available}",
-    //                         activeType: "${filterObj.activeType}",
-    //                         subjectPerception: ${filterObj.subjectPerception},
-    //                         typeAffectationId: ${filterObj.typeAffectationId},
-    //                         limit: ${filterObj.limit},
-    //                     ){
-    //                         id
-    //                         code
-    //                         name
-    //                         available
-    //                         activeType
-    //                         activeTypeReadable
-    //                         ean
-    //                         weightInKilograms
-                            
-    //                         minimumUnitId
-    //                         maximumUnitId
-    //                         minimumUnitName
-    //                         maximumUnitName
-    //                         maximumFactor
-    //                         minimumFactor
-
-    //                         typeAffectationId
-    //                         typeAffectationName
-    //                         subjectPerception
-    //                         observation
-    //                     }
-    //                 }
-    //             `;
-    //     console.log(queryFetch)
-    //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-    //         method: 'POST',
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //             "Authorization": `JWT ${accessToken}`
-    //         },
-    //         body: JSON.stringify({
-    //             query: queryFetch
-    //         })
-    //     })
-    //         .then(res => res.json())
-    //         .then(data => {
-    //             setProducts(data.data.allProducts);
-    //             toast(`Se encontraron ${data.data.allProducts.length} resultados.`, { hideProgressBar: true, autoClose: 2000, type: 'info' })
-    //         })
-    // }
-
-    async function fetchProductById(pk: number = 0) {
-        const queryFetch = `
-                    {
-                        productById(pk: ${pk}){
-                            id
-                            code
-                            name
-
-                            available
-                            activeType
-                            ean
-                            weightInKilograms
-                            
-                            minimumUnitId
-                            maximumUnitId
-                            maximumFactor
-                            minimumFactor
-
-                            typeAffectationId
-                            typeAffectationName
-                            subjectPerception
-                            observation
-                        }
-                    }
-                `
-        console.log(queryFetch)
-        await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `JWT ${accessToken}`
-            },
-            body: JSON.stringify({
-                query: queryFetch
-            })
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.data.productById) {
-                    console.log(data.data.productById)
-                    let product = data.data.productById;
-                    if (!product.minimumUnitId) {
-                        product.minimumUnitId = 0
-                        product.maximumUnitId = 0
-                        product.maximumFactor = 0
-                        product.minimumFactor = 1
-                    }
-                    product.maximumFactor = Number(product.maximumFactor);
-                    product.minimumFactor = Number(product.minimumFactor);
-                    setProduct(product);
-                }
-
-            })
-    }
-
-
-    async function fetchTypeAffectations() {
-        await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `JWT ${jwtToken}`
-            },
-            body: JSON.stringify({
-                query: `
-                    query {
-                        allTypeAffectations {
-                            id
-                            code
-                            name
-                            affectCode
-                            affectName
-                            affectType
-                        }
-                    }
-                `
-            })
-        })
-            .then(res => res.json())
-            .then(data => {
-                setTypeAffectations(data.data.allTypeAffectations);
-            })
-    }
-
     const filteredProducts = useMemo(() => {
         return products?.filter((w: IProduct) => searchField === "name" ? w?.name?.toLowerCase().includes(searchTerm.toLowerCase()) : w?.code?.toString().toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [searchTerm, searchField, products]);
-
-    useEffect(() => {
-        if (u !== undefined && u.accessToken != undefined)
-            setAccessToken(u.accessToken);
-    }, [u])
-
-
-
-    useEffect(() => {
-        if (jwtToken) {
-            fetchTypeAffectations();
-        }
-    }, [jwtToken]);
 
     return (
         <>
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
                 <div className="w-full mb-1">
                     <Breadcrumb section={"Productos"} article={"Productos"} />
-                    <ProductFilter filterObj={filterObj} setFilterObj={setFilterObj} modalCriteria={modalCriteria} searchTerm={searchTerm} setSearchTerm={setSearchTerm} searchField={searchField} setSearchField={setSearchField} modalProduct={modalProduct} initialStateProduct={initialStateProduct} 
+                    <ProductFilter productFilterObj={productFilterObj} setProductFilterObj={setProductFilterObj} modalCriteria={modalCriteria} searchTerm={searchTerm} setSearchTerm={setSearchTerm} searchField={searchField} setSearchField={setSearchField} modalProduct={modalProduct} initialStateProduct={initialStateProduct} 
                     setProduct={setProduct} fetchProducts={fetchProducts} />
                 </div>
             </div>
@@ -335,8 +182,8 @@ function ProductPage() {
 
 
             <ProductForm modalProduct={modalProduct} setModalProduct={setModalProduct} product={product} setProduct={setProduct} initialStateProduct={initialStateProduct} 
-            jwtToken={jwtToken} typeAffectations={typeAffectations} PRODUCTS_QUERY={PRODUCTS_QUERY} filterObj={filterObj} />
-            <ProductCriteriaForm modalCriteria={modalCriteria} setModalCriteria={setModalCriteria} filterObj={filterObj} setFilterObj={setFilterObj} typeAffectations={typeAffectations} fetchProducts={fetchProducts} />
+            jwtToken={jwtToken} typeAffectationsData={typeAffectationsData} PRODUCTS_QUERY={PRODUCTS_QUERY} productFilterObj={productFilterObj} />
+            <ProductCriteriaForm modalCriteria={modalCriteria} setModalCriteria={setModalCriteria} productFilterObj={productFilterObj} setProductFilterObj={setProductFilterObj} typeAffectationsData={typeAffectationsData} fetchProducts={fetchProducts} />
         </>
     )
 

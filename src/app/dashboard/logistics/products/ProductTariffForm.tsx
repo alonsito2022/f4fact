@@ -80,55 +80,55 @@ function ProductTariffForm({ setProduct, product }: any) {
 
     return (
         <>
-            <div className="sm:col-span-6">
+            <div className="sm:col-span-3">
 
                 <fieldset className="border p-4 dark:border-gray-500 border-gray-200 rounded">
                     <legend className=" text-xs">Para la venta (Opcional)</legend>
                     <div className="grid grid-cols-4 gap-4">
 
                         <div className="sm:col-span-4">
-                            <label htmlFor="priceWithoutIgv3" className="form-label-sm">VALOR VENTA unitario SIN IGV (al que se venderá)</label>
+                            <label htmlFor="priceWithoutIgv3" className="form-label">VALOR VENTA unitario SIN IGV (al que se venderá)</label>
                             <input type='number' name='priceWithoutIgv3'
                                 onWheel={(e) => e.currentTarget.blur()}
                                 value={product.priceWithoutIgv3}
                                 onChange={e => handleInputChangeProductTariff(e)} onFocus={(e) => e.target.select()}
-                                className='form-control-sm' />
+                                className='form-control' />
                         </div>
 
                         <div className="sm:col-span-4">
-                            <label htmlFor="priceWithIgv3" className="form-label-sm">PRECIO VENTA unitario CON IGV (al que se venderá)</label>
+                            <label htmlFor="priceWithIgv3" className="form-label">PRECIO VENTA unitario CON IGV (al que se venderá)</label>
                             <input type='number' name='priceWithIgv3'
                                 onWheel={(e) => e.currentTarget.blur()}
                                 value={product.priceWithIgv3}
                                 onChange={e => handleInputChangeProductTariff(e)} onFocus={(e) => e.target.select()}
-                                className='form-control-sm' />
+                                className='form-control' />
                         </div>
                     </div>
                 </fieldset>
             </div>
 
-            <div className="sm:col-span-6">
+            <div className="sm:col-span-3">
 
                 <fieldset className="border p-4 dark:border-gray-500 border-gray-200 rounded">
                     <legend className=" text-xs">Para la compra (Opcional)</legend>
                     <div className="grid grid-cols-4 gap-4">
 
                         <div className="sm:col-span-4">
-                            <label htmlFor="priceWithoutIgv1" className="form-label-sm">COSTO unitario SIN IGV (costo de compra)</label>
+                            <label htmlFor="priceWithoutIgv1" className="form-label">COSTO unitario SIN IGV (costo de compra)</label>
                             <input type='number' name='priceWithoutIgv1'
                                 onWheel={(e) => e.currentTarget.blur()}
                                 value={product.priceWithoutIgv1}
                                 onChange={e => handleInputChangeProductTariff(e)} onFocus={(e) => e.target.select()}
-                                className='form-control-sm' />
+                                className='form-control' />
                         </div>
 
                         <div className="sm:col-span-4">
-                            <label htmlFor="priceWithIgv1" className="form-label-sm">PRECIO COMPRA unitario CON IGV (al que se compró)</label>
+                            <label htmlFor="priceWithIgv1" className="form-label">PRECIO COMPRA unitario CON IGV (al que se compró)</label>
                             <input type='number' name='priceWithIgv1'
                                 onWheel={(e) => e.currentTarget.blur()}
                                 value={product.priceWithIgv1}
                                 onChange={e => handleInputChangeProductTariff(e)} onFocus={(e) => e.target.select()}
-                                className='form-control-sm' />
+                                className='form-control' />
                         </div>
                     </div>
                 </fieldset>

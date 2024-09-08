@@ -3,7 +3,7 @@ import { ChangeEvent, FormEvent, useState, useEffect, useMemo } from "react";
 import Add from '@/components/icons/Add'
 import Filter from '@/components/icons/Filter'
 
-function ProductFilter({ filterObj, setFilterObj, modalCriteria, searchTerm, setSearchTerm, searchField, setSearchField, modalProduct, initialStateProduct, setProduct, fetchProducts }: any) {
+function ProductFilter({ productFilterObj, setProductFilterObj, modalCriteria, searchTerm, setSearchTerm, searchField, setSearchField, modalProduct, initialStateProduct, setProduct, fetchProducts }: any) {
 
     const handleInputSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
@@ -23,8 +23,8 @@ function ProductFilter({ filterObj, setFilterObj, modalCriteria, searchTerm, set
                         <label className="flex items-center">Registros</label>
 
                         <select
-                            value={filterObj.limit}
-                            onChange={(e) => setFilterObj({ ...filterObj, limit: e.target.value })}
+                            value={productFilterObj.limit}
+                            onChange={(e) => setProductFilterObj({ ...productFilterObj, limit: e.target.value })}
                             className=" form-control"
                         >
                             <option value={50}>50</option>

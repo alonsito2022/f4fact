@@ -2,7 +2,7 @@ import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import { IUnit, ITypeAffectation } from "@/app/types";
 import { Modal, ModalOptions } from 'flowbite'
 
-function ProductCriteriaForm({ modalCriteria, setModalCriteria, filterObj, setFilterObj, typeAffectations, fetchProducts }: any) {
+function ProductCriteriaForm({ modalCriteria, setModalCriteria, productFilterObj, setProductFilterObj, typeAffectationsData, fetchProducts }: any) {
     
     useEffect(() => {
 
@@ -25,11 +25,11 @@ function ProductCriteriaForm({ modalCriteria, setModalCriteria, filterObj, setFi
     }, []);
 
     const handleInputChange = ({ target: { name, value } }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        setFilterObj({ ...filterObj, [name]: value });
+        setProductFilterObj({ ...productFilterObj, [name]: value });
     }
 
     const handleCheckboxChange = ({ target: { name, checked } }: ChangeEvent<HTMLInputElement>) => {
-        setFilterObj({ ...filterObj, [name]: checked });
+        setProductFilterObj({ ...productFilterObj, [name]: checked });
     }
 
     return (
@@ -54,7 +54,7 @@ function ProductCriteriaForm({ modalCriteria, setModalCriteria, filterObj, setFi
                         <div className="grid items-end gap-3 md:grid-cols-6">
                             <div className="sm:col-span-2">
                                 <label htmlFor="criteria" className="form-label">Seleccione criterio</label>
-                                <select name="criteria" id="criteria" onChange={handleInputChange} value={filterObj.criteria} className="form-control-sm" required>
+                                <select name="criteria" id="criteria" onChange={handleInputChange} value={productFilterObj.criteria} className="form-control-sm" required>
                                     <option value={"name"}>Nombre</option>
                                     <option value={"code"}>Codigo</option>
                                     <option value={"ean"}>Ean</option>
@@ -66,7 +66,7 @@ function ProductCriteriaForm({ modalCriteria, setModalCriteria, filterObj, setFi
                                 <input
                                     type="search"
                                     name="searchText"
-                                    value={filterObj.searchText}
+                                    value={productFilterObj.searchText}
                                     onChange={handleInputChange}
                                     onFocus={(e) => e.target.select()}
                                     autoComplete="off"
@@ -76,7 +76,7 @@ function ProductCriteriaForm({ modalCriteria, setModalCriteria, filterObj, setFi
                             <div className="sm:col-span-2">
                                 <label htmlFor="activeType2" className="form-label">Tipo mercaderia</label>
                                 <select id="activeType2"
-                                    name="activeType" value={filterObj.activeType} onChange={handleInputChange}
+                                    name="activeType" value={productFilterObj.activeType} onChange={handleInputChange}
                                     className="form-control-sm">
                                     <option value={"01"}>PRODUCTO</option>
                                     <option value={"02"}>REGALO</option>
@@ -87,9 +87,9 @@ function ProductCriteriaForm({ modalCriteria, setModalCriteria, filterObj, setFi
 
                             <div className="sm:col-span-4">
                                 <label htmlFor="typeAffectationId" className="form-label">Tipo afectacion</label>
-                                <select name="typeAffectationId" onChange={handleInputChange} value={filterObj.typeAffectationId} className="form-control-sm" required>
+                                <select name="typeAffectationId" onChange={handleInputChange} value={productFilterObj.typeAffectationId} className="form-control-sm" required>
                                     <option value={0}>Elegir tipo de afectacion</option>
-                                    {typeAffectations?.map((o: ITypeAffectation, k: number) => (
+                                    {typeAffectationsData?.allTypeAffectations?.map((o: ITypeAffectation, k: number) => (
                                         <option key={k} value={o.id}>{o.name}</option>
                                     ))}
                                 </select>
@@ -97,7 +97,7 @@ function ProductCriteriaForm({ modalCriteria, setModalCriteria, filterObj, setFi
 
 
                             <div className="sm:col-span-4 mb-2">
-                                <input id="subjectPerception2" name="subjectPerception" checked={filterObj.subjectPerception} type="checkbox" onChange={handleCheckboxChange} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                <input id="subjectPerception2" name="subjectPerception" checked={productFilterObj.subjectPerception} type="checkbox" onChange={handleCheckboxChange} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
                                 <label htmlFor="subjectPerception2" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Sujeto a percepcion</label>
                             </div>
 

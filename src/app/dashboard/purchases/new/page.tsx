@@ -26,23 +26,32 @@ const initialStatePurchase = {
     documentType: "1",
     currencyType: "PEN",
     saleExchangeRate: "",
+    
+    operationdetailSet: []
 }
 
 const initialStatePurchaseDetail = {
     id: 0,
-    productEan: "",
-    productCode: "",
-    unitName: "",
-    unitMinName: "",
-    maximumFactor: 0,
+    productId: 0,
     productName: "",
-    productTariffId: 0,
-    oldPrice: 0,
+ 
     quantity: "",
-    newPrice: "",
-    subtotal: "",
-    temporaryId: 0,
-    expireDate: today,
+
+    unitValue: "",
+    unitPrice: "",
+    igvPercentage: "",
+    discountPercentage: "",
+    totalDiscount: "",
+    totalValue: "",
+    totalIgv: "",
+    totalAmount: "",
+    totalPerception: "",
+    totalToPay: "",
+
+    typeAffectationId: 0,
+    productTariffId: 0,
+    remainingQuantity: 0,
+
 }
 
 const initialStatePerson = {
@@ -95,6 +104,19 @@ const initialStateProduct = {
     minimumFactor: "1",
 }
 
+const initialStateProductFilterObj = {
+    criteria: "name",
+    searchText: "",
+    supplierId: 0,
+    lineId: 0,
+    subLineId: 0,
+    available: true,
+    activeType: "01",
+    subjectPerception: false,
+    typeAffectationId: 0,
+    limit: 50
+}
+
 const PEOPLE_QUERY = gql`
     query{
         allSuppliers{
@@ -106,10 +128,55 @@ const PEOPLE_QUERY = gql`
     }
 `;
 
+const PRODUCTS_QUERY = gql`
+    query ($criteria: String!, $searchText: String!, $available: Boolean!, $activeType: String!, $subjectPerception: Boolean!, $typeAffectationId: Int!, $limit: Int!) {
+        allProducts(
+            criteria: $criteria
+            searchText: $searchText
+            available: $available
+            activeType: $activeType
+            subjectPerception: $subjectPerception
+            typeAffectationId: $typeAffectationId
+            limit: $limit
+        ) {
+            id
+            code
+            name
+            available
+            activeType
+            activeTypeReadable
+            ean
+            weightInKilograms
+            minimumUnitId
+            maximumUnitId
+            minimumUnitName
+            maximumUnitName
+            maximumFactor
+            minimumFactor
+            typeAffectationId
+            typeAffectationName
+            subjectPerception
+            observation
+        }
+    }
+`;
+
+const TYPE_AFFECTATION_QUERY = gql`
+    query {
+        allTypeAffectations {
+            id
+            code
+            name
+            affectCode
+            affectName
+            affectType
+        }
+    }
+`;
 function NewPurchasePage() {
     const [purchase, setPurchase] = useState(initialStatePurchase);
     const [product, setProduct] = useState(initialStateProduct);
-    const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
+    const [productFilterObj, setProductFilterObj] = useState(initialStateProductFilterObj);
     const [purchaseDetail, setPurchaseDetail] = useState(initialStatePurchaseDetail);
     const [products, setProducts] = useState<IProduct[]>([]);
     const [person, setPerson] = useState(initialStatePerson);
@@ -125,15 +192,29 @@ function NewPurchasePage() {
             "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
         },
     });
-
+    const getVariables = () => ({
+            criteria: productFilterObj.criteria, searchText: productFilterObj.searchText,
+            available: productFilterObj.available, activeType: productFilterObj.activeType,
+            subjectPerception: productFilterObj.subjectPerception, typeAffectationId: Number(productFilterObj.typeAffectationId), limit: Number(productFilterObj.limit)
+    });
     const { loading: peopleLoading, error: peopleError, data: peopleData } = useQuery(PEOPLE_QUERY, {
         context: getAuthContext(),
         skip: !jwtToken,
     });
 
+    const { loading: typeAffectationsLoading, error: typeAffectationsError, data: typeAffectationsData } = useQuery(TYPE_AFFECTATION_QUERY, {
+        context: getAuthContext(),
+        skip: !jwtToken,
+    });
+
+    const { loading: productsLoading, error: productsError, data: productsData } = useQuery(PRODUCTS_QUERY, {
+        context: getAuthContext(),
+        variables: getVariables(),
+        skip: !jwtToken,
+    });
+
     const handleInputChangeEntry = (event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = event.target;
-
 
         if (name === "supplierName" && event.target instanceof HTMLInputElement) {
             const dataList = event.target.list;
@@ -155,15 +236,31 @@ function NewPurchasePage() {
         }
 
 
-
-
     }
 
     const handleInputChangeEntryDetail = (event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = event.target;
         setPurchaseDetail({ ...purchaseDetail, [name]: value });
     }
+    const handleInputChangeProduct = (event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = event.target;
+        if (name === "name" && event.target instanceof HTMLInputElement){
+            const dataList = event.target.list;
+            if (dataList) {
+                const option = Array.from(dataList.options).find(option => option.value === value);
+                if (option) {
+                    const selectedId = option.getAttribute("data-key");
+                    setProduct({ ...product, id: Number(selectedId), name: value });
+                } else {
+                    setProduct({ ...product, id: 0, name: value });
+                }
+            } else {
+                console.log('sin datalist')
+            }
+        }else
+            setProduct({ ...product, [name]: value });
 
+    }
     useEffect(() => {
         if (session?.user) {
             const user = session.user as IUser;
@@ -327,22 +424,23 @@ function NewPurchasePage() {
                                     <div className="grid gap-2 grid-cols-4">
 
                                         <div className="sm:col-span-4">
-                                            <label htmlFor="productName" className="text-sm">Buscar Producto o Servicio</label>
+                                            <label className="text-sm">Buscar Producto o Servicio</label>
                                             <div className="relative w-full">
-                                                <input type="search" className="form-search-input-sm"
+                                                <input type="text" className="form-search-input-sm"
                                                     maxLength={100}
-                                                    value={purchaseDetail.productName}
-                                                    name="productName"
-                                                    onChange={handleInputChangeEntryDetail}
+                                                    value={product.name}
+                                                    name="name"
+                                                    onChange={handleInputChangeProduct}
                                                     onFocus={(e) => e.target.select()}
                                                     autoComplete="off"
+                                                    disabled={productsLoading}
                                                     placeholder="Buscar Producto..." list="productNameList" required />
                                                 <datalist id="productNameList">
-                                                    {products?.map((n: IProduct, index: number) => (
-                                                        <option key={index} data-key={n.id} value={n.name} data-ean={n.ean ? n.ean : ""} data-unit-min-name={n.minimumUnitName} data-max-factor={n.maximumFactor} />
+                                                    {productsData?.allProducts?.map((n: IProduct, index: number) => (
+                                                        <option key={index} data-key={n.id} value={n.name} />
                                                     ))}
                                                 </datalist>
-                                                <button type="button" className="form-search-button-sm" onClick={(e) => { modalProduct.show(); setPurchaseDetail(initialStatePurchaseDetail); }}>
+                                                <button type="button" className="form-search-button-sm" onClick={(e) => { modalProduct.show(); setProduct(initialStateProduct); }}>
                                                     <Add />
                                                 </button>
                                             </div>
@@ -395,10 +493,9 @@ function NewPurchasePage() {
                     </div>
                 </div>
             </div>
-            <PurchaseDetailForm modalAddDetail={modalAddDetail} setModalAddDetail={setModalAddDetail} purchaseDetail={purchaseDetail} />
-            <PersonForm modalAddPerson={modalAddPerson} setModalAddPerson={setModalAddPerson} person={person} setPerson={setPerson} jwtToken={jwtToken} 
-            PEOPLE_QUERY={PEOPLE_QUERY} purchase={purchase} setPurchase={setPurchase} />
-            <ProductForm modalProduct={modalProduct} setModalProduct={setModalProduct} product={product} setProduct={setProduct} initialStateProduct={initialStateProduct}  />
+            <PersonForm modalAddPerson={modalAddPerson} setModalAddPerson={setModalAddPerson} person={person} setPerson={setPerson} jwtToken={jwtToken} PEOPLE_QUERY={PEOPLE_QUERY} purchase={purchase} setPurchase={setPurchase} />
+            <ProductForm modalProduct={modalProduct} setModalProduct={setModalProduct} product={product} setProduct={setProduct} jwtToken={jwtToken} initialStateProduct={initialStateProduct} typeAffectationsData={typeAffectationsData} PRODUCTS_QUERY={PRODUCTS_QUERY} productFilterObj={productFilterObj} />
+            <PurchaseDetailForm modalAddDetail={modalAddDetail} setModalAddDetail={setModalAddDetail} purchaseDetail={purchaseDetail} setPurchaseDetail={setPurchaseDetail} purchase={purchase} setPurchase={setPurchase} jwtToken={jwtToken} typeAffectationsData={typeAffectationsData} productsData={productsData} />
         </>
     )
 }
