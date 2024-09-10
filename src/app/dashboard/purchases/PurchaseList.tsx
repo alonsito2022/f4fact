@@ -27,15 +27,15 @@ function PurchaseList({purchases} : any) {
                     {purchases?.map((item: IOperation) =>
                         <tr key={item.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                             <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">{item.emitDate}</td>
-                            <td className="px-4 py-2">{item.type}</td>
+                            <td className="px-4 py-2">{item.documentType}</td>
                             <td className="px-4 py-2">{item.serial}</td>
-                            <td className="px-4 py-2">{item.number}</td>
-                            <td className="px-4 py-2">{item.number}</td>
-                            <td className="px-4 py-2">{item.number}</td>
-                            <td className="px-4 py-2">{item.number}</td>
+                            <td className="px-4 py-2">{item.correlative}</td>
+                            <td className="px-4 py-2">{item.totalAmount}</td>
+                            <td className="px-4 py-2">{item.totalFree}</td>
+                            <td className="px-4 py-2">{item.totalIgv}</td>
                             <td className="px-4 py-2">
                                 <>
-                                    <a href="#" className="hover:underline" onClick={() => handleEditProduct(Number(item.id))}>
+                                    <a className="hover:underline cursor-pointer" onClick={() => handleEditProduct(Number(item.id))}>
                                         <Edit />
                                     </a>
 

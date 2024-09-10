@@ -2,21 +2,22 @@ import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import Save from '@/components/icons/Save';
 import { Modal, ModalOptions } from 'flowbite'
-import { IOperation, IProduct, ITypeAffectation } from "@/app/types";
+import { IOperation, IOperationDetail, IProduct, ITypeAffectation } from "@/app/types";
 import { gql, useLazyQuery } from "@apollo/client";
 
 const PRODUCT_DETAIL_QUERY = gql`
     query ($productId: Int!) {
         productDetailByProductId(productId: $productId) {
             remainingQuantity
-            priceWithoutIgv3
-            priceWithIgv3
-            productTariffId
+            priceWithoutIgv1
+            priceWithIgv1
+            productTariffId1
+            typeAffectationId
         }
     }
 `;
 
-function PurchaseDetailForm({ modalAddDetail, setModalAddDetail, purchaseDetail, setPurchaseDetail, purchase, setPurchase, jwtToken, typeAffectationsData, productsData }: any) {
+function PurchaseDetailForm({ modalAddDetail, setModalAddDetail, product, setProduct, purchaseDetail, setPurchaseDetail, purchase, setPurchase, jwtToken, initialStateProduct, initialStatePurchaseDetail, typeAffectationsData, productsData }: any) {
 
     const getAuthContext = () => ({
         headers: {
@@ -25,30 +26,12 @@ function PurchaseDetailForm({ modalAddDetail, setModalAddDetail, purchaseDetail,
         },
     });
 
-    const [productDetailQuery] = useLazyQuery(PRODUCT_DETAIL_QUERY, {
-        context: getAuthContext(), variables: { productId: Number(purchaseDetail.productId) },
-        onCompleted: (data) => {
-            const productDetail = data.productDetailByProductId;
-            if (productDetail) {
-                let totalValue = (Number(productDetail.priceWithoutIgv3) * Number(purchaseDetail.quantity)) - Number(purchaseDetail.totalDiscount);
-                let igvPercentage = Number(purchase.igvType);
-                let totalIgv = totalValue * igvPercentage * 0.01;
-                let totalAmount = totalValue + totalIgv;
-                setPurchaseDetail({
-                    ...purchaseDetail,
-                    productTariffId: Number(productDetail.productTariffId),
-                    unitValue: Number(productDetail.priceWithoutIgv3).toFixed(2),
-                    unitPrice: Number(productDetail.priceWithIgv3).toFixed(2),
-                    igvPercentage: Number(igvPercentage).toFixed(2),
-                    totalValue: Number(totalValue).toFixed(2),
-                    totalIgv: Number(totalIgv).toFixed(2),
-                    totalAmount: Number(totalAmount).toFixed(2),
-                    remainingQuantity: Number(productDetail.remainingQuantity),
-                });
-            }
-        },
-        onError: (err) => console.error("Error in products:", err),
-    });
+    const [productDetailQuery] = useLazyQuery(PRODUCT_DETAIL_QUERY);
+
+    // useEffect(() => {
+    //     if(Number(purchaseDetail.productId)>0)
+    //     console.log(" useEffect purchaseDetail", purchaseDetail)
+    // }, [purchaseDetail.productId]);
 
     useEffect(() => {
         if (modalAddDetail == null) {
@@ -62,49 +45,73 @@ function PurchaseDetailForm({ modalAddDetail, setModalAddDetail, purchaseDetail,
             setModalAddDetail(new Modal($targetEl, options))
         }
     }, []);
+    
 
     useEffect(() => {
-        if (Number(purchaseDetail.productId))
-            productDetailQuery();
-    }, [purchaseDetail.productId]);
-
-    const handleAddDetail = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (purchaseDetail?.typeAffectationId === 0) {
-            toast('Por favor ingrese un tipo de afectacion.', { hideProgressBar: true, autoClose: 2000, type: 'warning' })
-            return;
+        if (Number(product.id) > 0){
+            productDetailQuery({
+                context: getAuthContext(), 
+                variables: { productId: Number(product.id) }, 
+                fetchPolicy: 'network-only',  // Siempre hace una nueva consulta ignorando el caché
+                onCompleted: (data) => {
+                    const productDetail = data.productDetailByProductId;
+                    if (productDetail) {
+                        let totalValue = (Number(productDetail.priceWithoutIgv1) * Number(purchaseDetail.quantity)) - Number(purchaseDetail.totalDiscount);
+                        let foundTypeAffectation = typeAffectationsData?.allTypeAffectations?.find((ta: ITypeAffectation)=> Number(ta.id) === Number(productDetail.typeAffectationId))
+                        let code = foundTypeAffectation !== null ? foundTypeAffectation.code : "10";
+                        let igvPercentage = code === "10" ? Number(purchase.igvType) : 0;
+                        let totalIgv = totalValue * igvPercentage * 0.01;
+                        let totalAmount = totalValue + totalIgv;
+                        setPurchaseDetail({...purchaseDetail,
+                            productTariffId: Number(productDetail.productTariffId1),
+                            productId: Number(product.id), 
+                            productName: product.name,
+                            unitValue: Number(productDetail.priceWithoutIgv1).toFixed(2),
+                            unitPrice: Number(productDetail.priceWithIgv1).toFixed(2),
+                            igvPercentage: Number(igvPercentage).toFixed(2),
+                            totalValue: Number(totalValue).toFixed(2),
+                            totalIgv: Number(totalIgv).toFixed(2),
+                            totalAmount: Number(totalAmount).toFixed(2),
+                            remainingQuantity: Number(productDetail.remainingQuantity),
+                            typeAffectationId: Number(productDetail.typeAffectationId)
+                        });
+                    }
+                },
+                
+                onError: (err) => console.error("Error in products:", err),
+            });
         }
-        if (Number(purchaseDetail?.quantity) === 0) {
-            toast('Por favor ingrese una cantidad.', { hideProgressBar: true, autoClose: 2000, type: 'warning' })
-            return;
-        }
-        console.log("purchaseDetail", purchaseDetail)
-        setPurchase((prevEntry: IOperation) => ({
-            ...prevEntry, operationdetailSet: [...prevEntry.operationdetailSet!, purchaseDetail]
-        }));
+    }, [product.id]);
 
-        modalAddDetail.hide();
-    }
 
     const handleInputChangePurchaseDetail = async (event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = event.target;
+
         if (name === "productName" && event.target instanceof HTMLInputElement) {
             const dataList = event.target.list;
             if (dataList) {
                 const option = Array.from(dataList.options).find(option => option.value === value);
+                
                 if (option) {
+                    
                     const selectedId = option.getAttribute("data-key");
-                    setPurchaseDetail({ ...purchaseDetail, productId: Number(selectedId), productName: value });
+                    const selectedValue = option.getAttribute("value");
+                    // console.log("option", option, selectedId, selectedValue)
+                    // setPurchaseDetail({ ...purchaseDetail, productId: Number(selectedId), productName: value });
+                    setProduct({...product, id: Number(selectedId), name: selectedValue});
 
                 } else {
-                    setPurchaseDetail({ ...purchaseDetail, [name]: value, productId: 0 });
+                    // setPurchaseDetail({ ...purchaseDetail, [name]: value, productId: 0 });
+                    setProduct({...product, id: 0, name: ""});
                 }
             } else {
                 console.log('sin datalist')
             }
         } else if (name === "quantity") {
             let totalValue = (Number(purchaseDetail.unitValue) * Number(value)) - Number(purchaseDetail.totalDiscount);
-            let igvPercentage = Number(purchase.igvType);
+            let foundTypeAffectation = typeAffectationsData?.allTypeAffectations?.find((ta: ITypeAffectation)=> Number(ta.id) === Number(purchaseDetail.typeAffectationId))
+            let code = foundTypeAffectation !== null ? foundTypeAffectation.code : "10";
+            let igvPercentage = code === "10" ? Number(purchase.igvType) : 0;
             let totalIgv = totalValue * igvPercentage * 0.01;
             let totalAmount = totalValue + totalIgv;
             const formattedValue = value.replace(/[^0-9]/g, '').slice(0, 6);
@@ -118,7 +125,9 @@ function PurchaseDetailForm({ modalAddDetail, setModalAddDetail, purchaseDetail,
             });
         } else if (name === "totalDiscount") {
             let totalValue = (Number(purchaseDetail.unitValue) * Number(purchaseDetail.quantity)) - Number(value);
-            let igvPercentage = Number(purchase.igvType);
+            let foundTypeAffectation = typeAffectationsData?.allTypeAffectations?.find((ta: ITypeAffectation)=> Number(ta.id) === Number(purchaseDetail.typeAffectationId))
+            let code = foundTypeAffectation !== null ? foundTypeAffectation.code : "10";
+            let igvPercentage = code === "10" ? Number(purchase.igvType) : 0;
             let totalIgv = totalValue * igvPercentage * 0.01;
             let totalAmount = totalValue + totalIgv;
             // Limitar a 6 dígitos enteros y 2 decimales (máximo 999999.99)
@@ -138,8 +147,48 @@ function PurchaseDetailForm({ modalAddDetail, setModalAddDetail, purchaseDetail,
             });
 
 
+        }else if(name === "typeAffectationId"){
+            
+            let foundTypeAffectation = typeAffectationsData?.allTypeAffectations?.find((ta: ITypeAffectation)=> Number(ta.id) === Number(value))
+            let code = foundTypeAffectation !== null ? foundTypeAffectation.code : "10";
+            let igvPercentage = code === "10" ? Number(purchase.igvType) : 0;
+            let totalIgv = purchaseDetail.totalValue * igvPercentage * 0.01;
+            let totalAmount = purchaseDetail.totalValue + totalIgv;
+            setPurchaseDetail({ ...purchaseDetail, [name]: value, igvPercentage: igvPercentage, totalIgv: totalIgv, totalAmount: totalAmount });
         } else
             setPurchaseDetail({ ...purchaseDetail, [name]: value });
+    }
+
+    const handleAddDetail = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (purchaseDetail?.typeAffectationId === 0) {
+            toast('Por favor ingrese un tipo de afectacion.', { hideProgressBar: true, autoClose: 2000, type: 'warning' })
+            return;
+        }
+        if (Number(purchaseDetail?.quantity) === 0) {
+            toast('Por favor ingrese una cantidad.', { hideProgressBar: true, autoClose: 2000, type: 'warning' })
+            return;
+        }
+        if(Number(purchaseDetail?.temporaryId)>0){
+
+            // Combina la eliminación y la edición en una sola operación
+            const newPurchaseDetail = {...purchaseDetail, temporaryId: purchaseDetail.temporaryId};
+
+            setPurchase((prevPurchase: IOperation) => ({...prevPurchase,
+                operationdetailSet: prevPurchase?.operationdetailSet?.map((detail: IOperationDetail) =>
+                    detail.temporaryId === newPurchaseDetail.temporaryId ? newPurchaseDetail : detail
+                )
+            }));
+
+        }else{
+            let newPurchaseDetail = {...purchaseDetail, temporaryId: purchase.operationdetailSet.length + 1};
+            setPurchase((prevPurchase: IOperation) => ({...prevPurchase, operationdetailSet: [...prevPurchase.operationdetailSet!, newPurchaseDetail]}));
+            
+        }
+
+        setPurchaseDetail(initialStatePurchaseDetail);
+        setProduct(initialStateProduct);
+        modalAddDetail.hide();
     }
 
     return (
@@ -152,7 +201,7 @@ function PurchaseDetailForm({ modalAddDetail, setModalAddDetail, purchaseDetail,
                         {/* Modal header */}
                         <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                             <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-                                Detalle de la LINEA o ITEM
+                                Detalle de la LINEA o ITEM {purchaseDetail.temporaryId}
                             </h3>
                             <button type="button" onClick={() => { modalAddDetail.hide(); }} className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
                                 <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
@@ -169,10 +218,10 @@ function PurchaseDetailForm({ modalAddDetail, setModalAddDetail, purchaseDetail,
                                 <div className="grid grid-cols-6 gap-4">
 
                                     <div className="sm:col-span-4">
-                                        <label htmlFor="productName" className="form-label">Producto - Servicio (CATÁLOGO)</label>
+                                        <label className="form-label">Producto - Servicio (CATÁLOGO)</label>
                                         <input type="text" name="productName" maxLength={100}
                                             onFocus={(e) => e.target.select()}
-                                            value={purchaseDetail.productName}
+                                            value={product.name}
                                             onChange={handleInputChangePurchaseDetail}
                                             className="form-control" list="productList" autoComplete="off" required />
                                         <datalist id="productList">

@@ -205,6 +205,11 @@ export interface ICountry {
     name: string 
 }
 
+export interface IWayPay {
+    code: number 
+    name: string 
+}
+
 export interface IProductTariff {
     id: number
     productId?: number
@@ -220,22 +225,71 @@ export interface IProductTariff {
 
 export interface IOperation {
     id?: number
-    turn?: string
-    operationDate?: string
-    operationType?: string
-    operationTypeDisplay?: string
-    operationAction?: string
-    observation?: string
-    user?: IUser
-    emitDate?: string
-    type?: string
-    number?: number
     serial?: string
+    correlative?: string
+    emitDate?: string
+    supplierName?: string
+    supplierId?: number
+    igvType?: number
+    documentType?: string
+    currencyType?: string
+    saleExchangeRate?: string
+    // observation?: string
+    // user?: IUser
+    // type?: string
 
     operationdetailSet?: Array<IOperationDetail>
+    cashflowSet?: Array<ICashFlow>
+
+
+    discountForItem: string
+    discountGlobal: string
+    discountPercentageGlobal: string
+    totalDiscount: string
+    totalTaxed: string
+    totalUnaffected: string
+    totalExonerated: string
+    totalIgv: string
+    totalFree: string
+    totalAmount: string
+    totalPerception: string
+    totalToPay: string
+
+
+    // id: 0,
+    // serial: "0",
+    // correlative: "0",
+    // emitDate: today,
+    // supplierName: "",
+    // supplierId: 0,
+    // igvType: 18,
+    // documentType: "1",
+    // currencyType: "PEN",
+    // saleExchangeRate: "",
+
+    // operationdetailSet: [],
+    // discountForItem: "",
+    // discountGlobal: "",
+    // discountPercentageGlobal: "",
+    // totalDiscount: "",
+    // totalTaxed: "",
+    // totalUnaffected: "",
+    // totalExonerated: "",
+    // totalIgv: "",
+    // totalFree: "",
+    // totalAmount: "",
+    // totalPerception: "",
+    // totalToPay: "",
 
 }
 
+export interface ICashFlow {
+    id?: number
+    temporaryId?: number
+    total?: number
+    description: string
+    wayPay: number
+}
 export interface IOperationDetail {
     id?: number
     operation?: IOperation
@@ -246,8 +300,13 @@ export interface IOperationDetail {
     remainingQuantity?: number
     remainingPrice?: number
     remainingPriceTotal?: number
-    batchCode?: number
-    batchStock?: number
-    batchPrice?: number
-    batchPriceTotal?: number
+    productId?: number
+    productName?: string
+    unitValue?: number
+    unitPrice?: number
+    totalValue?: number
+    totalIgv?: number
+    totalDiscount?: number
+    temporaryId?: number
+    typeAffectationId?: number
 }
