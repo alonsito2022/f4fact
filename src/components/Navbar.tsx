@@ -128,7 +128,7 @@ function Navbar() {
 
 
         <nav className="fixed z-30 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-            <div className=" bg-red-300 dark:bg-red-500 text-center p-2">Hoy, {formatDate(new Date())}, se presenta intermitencia en los servidores de la SUNAT. La obtención del PDF y CDR podría demorar, sin embargo puede seguir facturando. Nuestro sistema los enviará automáticamente cuando sea posible.</div>
+            <div className=" bg-red-300 dark:bg-red-500 text-center p-1 text-sm">Hoy, {formatDate(new Date())}, se presenta intermitencia en los servidores de la SUNAT. La obtención del PDF y CDR podría demorar, sin embargo puede seguir facturando. Nuestro sistema los enviará automáticamente cuando sea posible.</div>
             <div className="px-3 py-3 lg:px-5 lg:pl-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center justify-start">

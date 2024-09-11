@@ -11,7 +11,7 @@ export default function DashboardLayout({
         <ReduxProviders>
             {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem> */}
             <Navbar />
-            <div className="flex pt-16 overflow-hidden bg-gray-50 dark:bg-gray-900">
+            <div className="flex pt-20 overflow-hidden bg-gray-50 dark:bg-gray-900">
                 <Sidebar />
                 <div id="main-content" className="relative w-full h-full overflow-y-auto lg:ms-64 bg-gray-50 dark:bg-gray-900">
                     <main>
