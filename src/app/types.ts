@@ -290,6 +290,7 @@ export interface ICashFlow {
     description: string
     wayPay: number
 }
+
 export interface IOperationDetail {
     id?: number
     operation?: IOperation
@@ -309,4 +310,11 @@ export interface IOperationDetail {
     totalDiscount?: number
     temporaryId?: number
     typeAffectationId?: number
+    productTariffId?: number
+    igvPercentage?: number
+    perceptionPercentage?: number
+    discountPercentage?: number
+    totalAmount?: number
+    totalToPay?: number
+    totalPerception?: number
 }

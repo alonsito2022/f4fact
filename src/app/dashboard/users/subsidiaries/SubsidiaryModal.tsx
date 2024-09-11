@@ -144,7 +144,7 @@ function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialSta
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <label htmlFor="companyId" className="sr-only">Empresa</label>
                         <select id="companyId" name="companyId" onChange={handleInputChange} value={subsidiary.companyId} className="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
-                        {companies.map((o,k)=>(
+                        {companies?.map((o,k)=>(
                                 <option key={k} value={o.id}>{o.businessName}</option>
                             ))}
                         </select>

@@ -1,12 +1,81 @@
-import { ICashFlow, IOperation, IWayPay } from '@/app/types';
+import { ICashFlow, IOperation, IOperationDetail, IWayPay } from '@/app/types';
 import Add from '@/components/icons/Add';
 import Delete from '@/components/icons/Delete';
 import Save from '@/components/icons/Save';
+import { DocumentNode, gql, useMutation } from '@apollo/client';
 import { Modal, ModalOptions } from 'flowbite';
 import React, { ChangeEvent, useEffect, useState } from 'react'
+import { toast } from 'react-toastify';
 
-function WayPayForm({ modalWayPay, setModalWayPay, cashFlow, setCashFlow, initialStateCashFlow, purchase, setPurchase, wayPaysData }: any) {
-    
+
+const CREATE_PURCHASE_MUTATION = gql`
+  mutation CreatePurchase($serial: String!, $correlative: Int!, $documentType: String!, $currencyType: String!, $saleExchangeRate: Float!, $emitDate: String!, $supplierId: Int!, $productTariffIdSet: [Int!]!, $typeAffectationIdSet: [Int!]!, $quantitySet: [Int!]!, $unitValueSet: [Float!]!, $unitPriceSet: [Float!]!, $discountPercentageSet: [Float!]!, $igvPercentageSet: [Float!]!, $perceptionPercentageSet: [Float!]!, $totalDiscountSet: [Float!]!, $totalValueSet: [Float!]!, $totalIgvSet: [Float!]!, $totalAmountSet: [Float!]!, $totalPerceptionSet: [Float!]!, $totalToPaySet: [Float!]!, $wayPaySet: [Int!]!, $totalSet: [Float!]!, $descriptionSet: [String!]!, $discountForItem: Float!, $discountGlobal: Float!, $discountPercentageGlobal: Float!, $igvType: Int!, $totalDiscount: Float!, $totalTaxed: Float!, $totalUnaffected: Float!, $totalExonerated: Float!, $totalIgv: Float!, $totalFree: Float!, $totalAmount: Float!, $totalPerception: Float!, $totalToPay: Float!, $totalPayed: Float!, $totalTurned: Float!) {
+  createPurchase(
+    serial: $serial
+    correlative: $correlative
+    documentType: $documentType
+    currencyType: $currencyType
+    saleExchangeRate: $saleExchangeRate
+    emitDate: $emitDate
+    supplierId: $supplierId
+    productTariffIdSet: $productTariffIdSet
+    typeAffectationIdSet: $typeAffectationIdSet
+    quantitySet: $quantitySet
+    unitValueSet: $unitValueSet
+    unitPriceSet: $unitPriceSet
+    discountPercentageSet: $discountPercentageSet
+    igvPercentageSet: $igvPercentageSet
+    perceptionPercentageSet: $perceptionPercentageSet
+    totalDiscountSet: $totalDiscountSet
+    totalValueSet: $totalValueSet
+    totalIgvSet: $totalIgvSet
+    totalAmountSet: $totalAmountSet
+    totalPerceptionSet: $totalPerceptionSet
+    totalToPaySet: $totalToPaySet
+    wayPaySet: $wayPaySet
+    totalSet: $totalSet
+    descriptionSet: $descriptionSet
+    discountForItem: $discountForItem
+    discountGlobal: $discountGlobal
+    discountPercentageGlobal: $discountPercentageGlobal
+    igvType: $igvType
+    totalDiscount: $totalDiscount
+    totalTaxed: $totalTaxed
+    totalUnaffected: $totalUnaffected
+    totalExonerated: $totalExonerated
+    totalIgv: $totalIgv
+    totalFree: $totalFree
+    totalAmount: $totalAmount
+    totalPerception: $totalPerception
+    totalToPay: $totalToPay
+    totalPayed: $totalPayed
+    totalTurned: $totalTurned
+  ) {
+    message
+    error
+  }
+}
+`;
+
+function WayPayForm({ modalWayPay, setModalWayPay, cashFlow, setCashFlow, initialStateCashFlow, initialStatePurchase, purchase, setPurchase, jwtToken, wayPaysData }: any) {
+
+    function useCustomMutation(mutation: DocumentNode) {
+        const getAuthContext = () => ({
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
+            },
+        });
+
+        return useMutation(mutation, {
+            context: getAuthContext(),
+            // refetchQueries: () => [{ query: refetchQuery, context: getAuthContext() }],
+            onError: (err) => console.error("Error in unit:", err), // Log the error for debugging
+        });
+    }
+
+    const [createPurchase] = useCustomMutation(CREATE_PURCHASE_MUTATION);
+
     useEffect(() => {
         if (modalWayPay == null) {
             const $targetEl = document.getElementById('modalWayPay');
@@ -19,6 +88,7 @@ function WayPayForm({ modalWayPay, setModalWayPay, cashFlow, setCashFlow, initia
             setModalWayPay(new Modal($targetEl, options))
         }
     }, []);
+
     const handleInputChangeWayPay = ({ target: { name, value } }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         if (name === "wayPay") {
             setCashFlow({ ...cashFlow, wayPay: Number(value) })
@@ -26,11 +96,13 @@ function WayPayForm({ modalWayPay, setModalWayPay, cashFlow, setCashFlow, initia
             setCashFlow({ ...cashFlow, [name]: value })
         }
     }
+
     const handleAddWayPay = () => {
         let newCashFlow = { ...cashFlow, temporaryId: purchase.cashflowSet.length + 1 };
         setPurchase((prevPurchase: IOperation) => ({ ...prevPurchase, cashflowSet: [...prevPurchase.cashflowSet!, newCashFlow] }));
         setCashFlow(initialStateCashFlow)
     }
+
     const handleRemoveCashFlow = async (indexToRemove: number) => {
 
         setPurchase((prevPurchase: any) => ({
@@ -39,9 +111,100 @@ function WayPayForm({ modalWayPay, setModalWayPay, cashFlow, setCashFlow, initia
 
     };
 
+    // const [createPurchase] = useMutation(CREATE_PURCHASE_MUTATION);
+
     const handleSavePurchase = async () => {
-        console.log("purchase", purchase)
-        modalWayPay.hide(); 
+
+
+        try {
+
+            const variables = {
+                serial: purchase.serial,
+                correlative: parseInt(purchase.correlative),
+                documentType: purchase.documentType,
+                currencyType: purchase.currencyType,
+                saleExchangeRate: parseFloat(purchase.saleExchangeRate) || 0,
+                emitDate: purchase.emitDate,
+
+                supplierId: parseInt(purchase.supplierId),
+
+                productTariffIdSet: purchase.operationdetailSet.map((item: any) => item.productTariffId),
+                typeAffectationIdSet: purchase.operationdetailSet.map((item: any) => item.typeAffectationId),
+                quantitySet: purchase.operationdetailSet.map((item: any) => parseInt(item.quantity)),
+
+                unitValueSet: purchase.operationdetailSet.map((item: any) => parseFloat(item.unitValue)),
+                unitPriceSet: purchase.operationdetailSet.map((item: any) => parseFloat(item.unitPrice)),
+                discountPercentageSet: purchase.operationdetailSet.map((item: any) => parseFloat(item.discountPercentage) || 0),
+                igvPercentageSet: purchase.operationdetailSet.map((item: any) => parseFloat(item.igvPercentage)),
+                perceptionPercentageSet: purchase.operationdetailSet.map((item: any) => parseFloat(item.totalPerception) || 0),
+
+                totalDiscountSet: purchase.operationdetailSet.map((item: any) => parseFloat(item.totalDiscount) || 0),
+                totalValueSet: purchase.operationdetailSet.map((item: any) => parseFloat(item.totalValue)),
+                totalIgvSet: purchase.operationdetailSet.map((item: any) => parseFloat(item.totalIgv)),
+                totalAmountSet: purchase.operationdetailSet.map((item: any) => parseFloat(item.totalAmount)),
+                totalPerceptionSet: purchase.operationdetailSet.map((item: any) => parseFloat(item.totalPerception) || 0),
+                totalToPaySet: purchase.operationdetailSet.map((item: any) => parseFloat(item.totalToPay) || 0),
+
+                wayPaySet: purchase.cashflowSet.map((item: any) => item.wayPay),
+                totalSet: purchase.cashflowSet.map((item: any) => item.total),
+                descriptionSet: purchase.cashflowSet.map((item: any) => item.description || ""),
+
+                discountForItem: parseFloat(purchase.discountForItem) || 0,
+                discountGlobal: parseFloat(purchase.discountGlobal) || 0,
+                discountPercentageGlobal: parseFloat(purchase.discountPercentageGlobal) || 0,
+                igvType: purchase.igvType,
+
+                totalDiscount: parseFloat(purchase.totalDiscount) || 0,
+                totalTaxed: parseFloat(purchase.totalTaxed),
+                totalUnaffected: parseFloat(purchase.totalUnaffected),
+                totalExonerated: parseFloat(purchase.totalExonerated),
+                totalIgv: parseFloat(purchase.totalIgv),
+                totalFree: parseFloat(purchase.totalFree) || 0,
+                totalAmount: parseFloat(purchase.totalAmount),
+
+                totalPerception: parseFloat(purchase.totalPerception) || 0,
+                totalToPay: parseFloat(purchase.totalToPay),
+                totalPayed: parseFloat(purchase.totalPayed),
+                totalTurned: parseFloat(purchase.totalTurned) || 0,
+            }
+
+
+            // console.log(variables)
+
+            // const response = await createPurchase({
+            //     variables: variables,
+            // });
+
+            // console.log(response.data.createPurchase.message);
+
+
+            console.log("purchase", purchase)
+            
+
+            const { data, errors } = await createPurchase({
+                variables: variables
+            })
+
+            if (errors) {
+                toast(errors.toString(), { hideProgressBar: true, autoClose: 2000, type: 'error' });
+            }else{
+                if(data.createPurchase.error){
+                    toast(data.createPurchase.message, { hideProgressBar: true, autoClose: 2000, type: 'error' })
+                }
+                else{
+                    toast(data.createPurchase.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
+                    setPurchase(initialStatePurchase);
+                    modalWayPay.hide();
+                }
+                
+            }
+
+
+
+        } catch (error) {
+            console.error("Error creating purchase:", error);
+        }
+
     }
 
 
@@ -63,6 +226,7 @@ function WayPayForm({ modalWayPay, setModalWayPay, cashFlow, setCashFlow, initia
             totalPayed: Number(totalPayed).toFixed(2)
         }));
     }
+
     return (
         <>
 
@@ -117,34 +281,34 @@ function WayPayForm({ modalWayPay, setModalWayPay, cashFlow, setCashFlow, initia
 
                         </div>
                         <button className="btn-blue ms-4 inline-flex items-center gap-2" onClick={handleAddWayPay}><Add />Agregar medio de pago</button>
-                        {purchase?.cashflowSet?.length > 0 ? 
-                        <div className=" overflow-hidden shadow">
-                            <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
-                                <thead className="bg-gray-100 dark:bg-gray-700">
-                                    <tr>
-                                        <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">TIPO</th>
-                                        <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">IMPORTE</th>
-                                        <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">NOTA</th>
-                                        <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {purchase?.cashflowSet?.map((item: ICashFlow, c: number) =>
-                                        <tr key={c} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                            <td className="px-4 py-2">{wayPaysData?.allWayPays?.find((w: IWayPay) => w.code === item.wayPay)?.name || item.wayPay}</td>
-                                            <td className="px-4 py-2">{item.total}</td>
-                                            <td className="px-4 py-2">{item.description}</td>
-                                            <td className="px-4 py-2">
-                                                <a className="hover:underline cursor-pointer" onClick={() => handleRemoveCashFlow(Number(item?.temporaryId))}><Delete /></a>
-                                            </td>
+                        {purchase?.cashflowSet?.length > 0 ?
+                            <div className=" overflow-hidden shadow">
+                                <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
+                                    <thead className="bg-gray-100 dark:bg-gray-700">
+                                        <tr>
+                                            <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">TIPO</th>
+                                            <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">IMPORTE</th>
+                                            <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">NOTA</th>
+                                            <th scope="col" className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"></th>
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>: null}
+                                    </thead>
+                                    <tbody>
+                                        {purchase?.cashflowSet?.map((item: ICashFlow, c: number) =>
+                                            <tr key={c} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                <td className="px-4 py-2">{wayPaysData?.allWayPays?.find((w: IWayPay) => w.code === item.wayPay)?.name || item.wayPay}</td>
+                                                <td className="px-4 py-2">{item.total}</td>
+                                                <td className="px-4 py-2">{item.description}</td>
+                                                <td className="px-4 py-2">
+                                                    <a className="hover:underline cursor-pointer" onClick={() => handleRemoveCashFlow(Number(item?.temporaryId))}><Delete /></a>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div> : null}
 
                         <div className="p-4 md:p-5 space-y-4">
-                        <fieldset className="border p-2 dark:border-gray-500 border-gray-200 rounded">
+                            <fieldset className="border p-2 dark:border-gray-500 border-gray-200 rounded">
                                 <div className="grid grid-cols-3 gap-2 ">
 
 
@@ -166,12 +330,12 @@ function WayPayForm({ modalWayPay, setModalWayPay, cashFlow, setCashFlow, initia
 
                                 </div>
                             </fieldset>
-                            </div>
+                        </div>
 
                         {/* Modal footer */}
                         <div className="flex items-center p-4 md:p-5 space-x-3 rtl:space-x-reverse border-t border-gray-200 rounded-b dark:border-gray-600">
-                        <button type="button" onClick={() => { modalWayPay.hide(); }} className="btn-dark px-5 py-2 inline-flex items-center gap-2">Cerrar</button>
-                        <button type="button" onClick={handleSavePurchase} className="btn-green px-5 py-2 inline-flex items-center gap-2"> <Save />Crear Compra</button>
+                            <button type="button" onClick={() => { modalWayPay.hide(); }} className="btn-dark px-5 py-2 inline-flex items-center gap-2">Cerrar</button>
+                            <button type="button" onClick={handleSavePurchase} className="btn-green px-5 py-2 inline-flex items-center gap-2"> <Save />Crear Compra</button>
 
                         </div>
                     </div>

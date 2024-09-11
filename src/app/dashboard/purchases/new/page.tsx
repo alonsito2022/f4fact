@@ -685,7 +685,7 @@ function NewPurchasePage() {
             <ProductForm modalProduct={modalProduct} setModalProduct={setModalProduct} product={product} setProduct={setProduct} jwtToken={jwtToken} initialStateProduct={initialStateProduct} typeAffectationsData={typeAffectationsData} PRODUCTS_QUERY={PRODUCTS_QUERY} productFilterObj={productFilterObj} />
             <PurchaseDetailForm modalAddDetail={modalAddDetail} setModalAddDetail={setModalAddDetail} product={product} setProduct={setProduct} purchaseDetail={purchaseDetail} setPurchaseDetail={setPurchaseDetail} purchase={purchase} setPurchase={setPurchase}
                 jwtToken={jwtToken} initialStateProduct={initialStateProduct} initialStatePurchaseDetail={initialStatePurchaseDetail} typeAffectationsData={typeAffectationsData} productsData={productsData} />
-            <WayPayForm modalWayPay={modalWayPay} setModalWayPay={setModalWayPay} cashFlow={cashFlow} setCashFlow={setCashFlow} initialStateCashFlow={initialStateCashFlow} purchase={purchase} setPurchase={setPurchase} wayPaysData={wayPaysData} />
+            <WayPayForm modalWayPay={modalWayPay} setModalWayPay={setModalWayPay} cashFlow={cashFlow} setCashFlow={setCashFlow} initialStateCashFlow={initialStateCashFlow} initialStatePurchase={initialStatePurchase} purchase={purchase} setPurchase={setPurchase} jwtToken={jwtToken} wayPaysData={wayPaysData} />
         </>
     )
 }
