@@ -123,16 +123,16 @@ function CompanyModal({modal, setModal, company, setCompany, initialState, fetch
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">
                             <input type="text" name="doc" id="doc" value={company.doc} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-                            <label htmlFor="doc" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Numero Ruc</label>
+                            <label htmlFor="doc" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Numero ruc</label>
                         </div>
                         <div className="relative z-0 w-full mb-6 group">
-                            <input type="text" name="businessName" id="businessName" value={company.businessName} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-                            <label htmlFor="businessName" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Razon Social</label>
-                        </div>
-                    </div>
-                    <div className="relative z-0 w-full mb-6 group">
                             <input type="text" name="shortName" id="shortName" value={company.shortName} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label htmlFor="shortName" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Nombre comercial</label>
+                        </div>
+                    </div>
+                    <div className="relative z-0 w-full mb-6 group">                           
+                            <input type="text" name="businessName" id="businessName" value={company.businessName} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <label htmlFor="businessName" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Razon Social</label>
                     </div>     
                     <div className="relative z-0 w-full mb-6 group">
                             <input type="text" name="address" id="address" value={company.address} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
@@ -168,17 +168,52 @@ function CompanyModal({modal, setModal, company, setCompany, initialState, fetch
                             <input type="number" step={1} min={0} name="limit" id="limit" value={company.limit!} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-right text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" "/>
                             <label htmlFor="limit" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Limite comprobantes</label>
                         </div>
-                    </div>                
+                    </div>     
+                    {/* <div className="grid md:grid-cols-2 md:gap-6"> */}
+                    <fieldset className=' border-spacing-1 grid md:grid-cols-2 md:gap-6'>
+                    <legend className=' text-blue-600 font-semibold mb-3'>Emision con fecha anterior</legend>
+                        <div className="relative z-0 w-full mb-6 group">
+                        <input type="number" step={1} min={0} max={7} name="emissionInvoiceWithPreviousDate" id="emissionInvoiceWithPreviousDate" value={company.emissionInvoiceWithPreviousDate} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" "/>
+                            <label htmlFor="emissionInvoiceWithPreviousDate" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Días atras(Facturas)</label>
+                        </div>
+                        <div className="relative z-0 w-full mb-6 group">
+                            <input type="number" step={1} min={0} max={7} name="emissionReceiptWithPreviousDate" id="emissionReceiptWithPreviousDate" value={company.emissionReceiptWithPreviousDate!} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-right text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" "/>
+                            <label htmlFor="emissionReceiptWithPreviousDate" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Días atras(Boletas)</label>
+                        </div>
+                        </fieldset>
+                    {/* </div>   */}
                     <div className="grid md:grid-cols-2 md:gap-6">
-                        <div className="relative z-0 w-full flex items-center mb-6">
-                            <input id="isProduction" name="isProduction" type="checkbox" checked={company.isProduction} onChange={handleCheckboxChange} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"/>
-                            <label htmlFor="isProduction" className="ms-2 text-sm font-medium text-gray-400 dark:text-gray-500">Produccion</label>
+                        <div className="relative z-0 w-full flex items-center mb-1">
+                            <label className="inline-flex items-center mb-1 cursor-pointer">
+                            <input type="checkbox" value="" id="includeIgv" name="includeIgv" className="sr-only peer" checked={company.includeIgv} onChange={handleCheckboxChange}/>
+                            <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                            <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Incluir IGV</span>
+                            </label>
+                        </div>
+                        <div className="relative z-0 w-full mb-1 group">
+                            <select value={company.percentageIgv} name="percentageIgv" onChange={handleInputChange} className="block py-2.5 px-0 w-full text-right text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" required>
+                                {/* <option selected>Porcentaje IGV %</option> */}
+                                <option value={18}>18%</option>
+                                <option value={10}>10% (Ley 31556)</option>
+                                <option value={4}>4% (IVAP)</option>
+                            </select>
+                            <label htmlFor="percentageIgv" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Porcentaje IGV %</label>
                         </div>
                     </div>
+                    <div className="grid md:grid-cols-1 md:gap-2">
+                        <div className="relative z-0 w-full flex items-center mb-1">
+                            <label className="inline-flex items-center mb-1 cursor-pointer">
+                            <input type="checkbox" value="" id="isEnabled" name="isEnabled" className="sr-only peer" checked={company.isEnabled} onChange={handleCheckboxChange}/>
+                            <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                            <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Estado Activo</span>
+                            </label>
+                        </div>
+                    </div>
+                    
                     <div className="flex items-center justify-center w-full mb-2">
                         <label htmlFor="logo" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                {company.logo?.length? 
+                                {company?.logo?.length? 
                                     <img
                                     src={ company.id&&company.logo?.search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${company.logo}`:company.logo}
                                     alt="Imagen seleccionada"
@@ -195,6 +230,10 @@ function CompanyModal({modal, setModal, company, setCompany, initialState, fetch
                             <input id="logo" name="logo" type="file" className="hidden" ref={fileInputRef} onClick={handleFileReset} onChange={handleFileChange} accept="image/*"/>
                         </label>
                     </div> 
+                    <div className="grid md:grid-cols-1 md:gap-2">
+                    <label className="block mt-2 text-sm font-medium text-gray-900 dark:text-white" htmlFor="default_size">Certificado Digital</label>
+                    <input className="block w-full mb-5 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" id="default_size" type="file"/>
+                    </div>
                     <button type="submit" className="btn-blue">{company.id ? <p>Actualizar Datos Empresa</p> : <p>Crear Datos Empresa</p>}</button>
                     </form>
                 </div>
