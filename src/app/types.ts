@@ -31,7 +31,7 @@ export interface ICompany {
     address?: string
     phone?: string
     email?: string
-    logo?: string | ArrayBuffer | null
+    logo?: string | ArrayBuffer | null    
     userSol?: string
     keySol?: string
     limit?: number
@@ -43,6 +43,15 @@ export interface ICompany {
     isProduction?: boolean
     productionDate?: string
     disabledDate?: string
+    passwordSignature?: string
+    certification?: string | ArrayBuffer | null
+    certificationExpirationDate?: string
+    withStock?: boolean
+    catalog?: boolean
+    invoiceF?: boolean
+    invoiceB?: boolean
+    guide?: boolean
+    app?: boolean
 }
 
 export interface ISupplier {

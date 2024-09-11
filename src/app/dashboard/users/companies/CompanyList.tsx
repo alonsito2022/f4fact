@@ -97,7 +97,7 @@ function CompanyList({companies, modal, setModal, company, setCompany}:any) {
             </tr>
         </thead>
         <tbody>
-        {companies.map((item:ICompany) => 
+        {companies?.map((item:ICompany) => 
             <tr key={item.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-700">
                 <th scope="row" className="px-2 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                 {item.id}
