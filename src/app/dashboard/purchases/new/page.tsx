@@ -27,7 +27,7 @@ const initialStatePurchase = {
     supplierName: "",
     supplierId: 0,
     igvType: 18,
-    documentType: "1",
+    documentType: "01",
     currencyType: "PEN",
     saleExchangeRate: "",
 

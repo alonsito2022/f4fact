@@ -96,12 +96,6 @@ function ProductForm({ modalProduct, setModalProduct, product, setProduct, initi
     });
     
     function useCustomMutation(mutation: DocumentNode, refetchQuery: DocumentNode) {
-        const getAuthContext = () => ({
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
-            }
-        });
 
         const getVariables = () => ({
                 criteria: productFilterObj.criteria, searchText: productFilterObj.searchText,
@@ -225,11 +219,7 @@ function ProductForm({ modalProduct, setModalProduct, product, setProduct, initi
                 toast(data.createProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
                 const pdt = data.createProduct.product;
                 if(pdt)
-                    setProduct({...product, 
-                        id: pdt.id,
-                        name: pdt.name,
-                        minimumUnitName: pdt.minimumUnitName,
-                        maximumFactor: pdt.maximumFactor});
+                    setProduct({...product, id: pdt.id, name: pdt.name});
                 modalProduct.hide();
             }
         }
