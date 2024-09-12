@@ -5,10 +5,10 @@ import Search from '@/components/icons/Search'
 import Filter from '@/components/icons/Filter'
 import { useRouter } from 'next/navigation'
 
-function PurchaseFilter({setFilterObj, filterObj}: any) {
+function PurchaseFilter({setFilterObj, filterObj, purchasesQuery, filteredPurchasesLoading}: any) {
     const router = useRouter();
     const handleClickButton = async () => {
-
+        purchasesQuery();
     }
     
     const handleInputChange = ({target: {name, value} }: ChangeEvent<HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement>) => {
@@ -60,7 +60,7 @@ function PurchaseFilter({setFilterObj, filterObj}: any) {
             </div>
 
             <div className="flex items-center w-full sm:justify-end gap-2">
-                <button id="btn-search" type="button" className="btn-blue px-5 py-3 inline-flex items-center gap-2" onClick={handleClickButton}><Filter />Filtrar</button>
+                <button id="btn-search" type="button" className="btn-blue px-5 py-3 inline-flex items-center gap-2" onClick={handleClickButton} disabled={filteredPurchasesLoading}><Filter />Filtrar</button>
                 <button id="createProductButton" type="button" onClick={() => {router.push(`/dashboard/purchases/new`, { scroll: false });}} className="btn-blue px-5 py-3 inline-flex items-center gap-2"><Add />Crear compra</button>
             </div>
         </div>
