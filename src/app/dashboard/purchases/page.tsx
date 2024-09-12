@@ -8,20 +8,9 @@ import { useSession } from "next-auth/react";
 import { IUser } from "@/app/types";
 const today = new Date().toISOString().split('T')[0];
 const initialStateFilterObj = {
-    criteria: "name",
-    documentType: "",
-    searchText: "",
-    supplierName: "",
     startDate: today,
     endDate: today,
     supplierId: 0,
-    lineId: 0,
-    subLineId: 0,
-    available: "A",
-    activeType: "01",
-    subjectPerception: false,
-    typeAffectationId: 0,
-    limit: 50
 }
 
 const PURCHASES_QUERY = gql`
@@ -29,6 +18,8 @@ const PURCHASES_QUERY = gql`
         allPurchases(supplierId: $supplierId, startDate: $startDate, endDate: $endDate) {
             id
             emitDate
+            operationDate
+            currencyType
             documentType
             serial
             correlative
@@ -40,6 +31,9 @@ const PURCHASES_QUERY = gql`
             totalFree
             totalIgv
             totalToPay
+            supplier{
+                names
+            }
         }
     }
 `;
@@ -63,26 +57,30 @@ function PurchasePage() {
             "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
         },
     });
-    const [productsQuery, { loading: filteredProductsLoading, error: filteredProductsError, data: filteredProductsData }] = useLazyQuery(PURCHASES_QUERY, {
+
+    const [purchasesQuery, { loading: filteredPurchasesLoading, error: filteredPurchasesError, data: filteredPurchasesData }] = useLazyQuery(PURCHASES_QUERY, {
         context: getAuthContext(),
         variables: {
-            criteria: filterObj.criteria, searchText: filterObj.searchText,
-            available: filterObj.available, activeType: filterObj.activeType,
-            subjectPerception: filterObj.subjectPerception, typeAffectationId: Number(filterObj.typeAffectationId), limit: Number(filterObj.limit)
+            supplierId: filterObj.supplierId, startDate: filterObj.startDate, endDate: filterObj.endDate,
         },
-        onCompleted: (data) => {
-        //   if (data.allProducts) {
-        //     setProducts(data?.allProducts)
-        //   }
+        fetchPolicy: 'network-only',
+        onCompleted(data) {
+            console.log("object", data)
         },
-        onError: (err) => console.error("Error in products:", err),
+        onError: (err) => console.error("Error in purchases:", err),
       });
+
+// useEffect(() => {
+//     console.log("jwtToken", jwtToken)
+//     if(filterObj.startDate !== null && filterObj.endDate !== null && jwtToken) purchasesQuery();
+// }, []);
+
     return (
         <>
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
                 <div className="w-full mb-1">
                     <Breadcrumb section={"Compras"} article={"Compras"} />
-                    <PurchaseFilter setFilterObj={setFilterObj} filterObj={filterObj}/>
+                    <PurchaseFilter setFilterObj={setFilterObj} filterObj={filterObj} purchasesQuery={purchasesQuery} filteredPurchasesLoading={filteredPurchasesLoading}/>
                 </div>
             </div>
 
@@ -90,7 +88,9 @@ function PurchasePage() {
                 <div className="overflow-x-auto">
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden shadow">
-                            <PurchaseList/>
+                            
+                            {filteredPurchasesError ? <div>{filteredPurchasesError.message}</div> : <PurchaseList filteredPurchasesData={filteredPurchasesData} />}
+                            
                             
                         </div>
                     </div>

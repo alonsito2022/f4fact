@@ -217,9 +217,10 @@ function ProductForm({ modalProduct, setModalProduct, product, setProduct, initi
                 toast(errors.toString(), { hideProgressBar: true, autoClose: 2000, type: 'error' });
             }else{
                 toast(data.createProduct.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-                const pdt = data.createProduct.product;
-                if(pdt)
-                    setProduct({...product, id: pdt.id, name: pdt.name});
+                // const pdt = data.createProduct.product;
+                // if(pdt)
+                //     setProduct({...product, id: pdt.id, name: pdt.name});
+                setProduct(initialStateProduct);
                 modalProduct.hide();
             }
         }

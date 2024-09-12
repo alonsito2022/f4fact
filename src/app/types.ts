@@ -237,6 +237,7 @@ export interface IOperation {
     serial?: string
     correlative?: string
     emitDate?: string
+    operationDate?: string
     supplierName?: string
     supplierId?: number
     igvType?: number
@@ -244,7 +245,7 @@ export interface IOperation {
     currencyType?: string
     saleExchangeRate?: string
     // observation?: string
-    // user?: IUser
+    supplier?: ISupplier
     // type?: string
 
     operationdetailSet?: Array<IOperationDetail>
