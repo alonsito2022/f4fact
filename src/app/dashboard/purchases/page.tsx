@@ -11,6 +11,7 @@ const initialStateFilterObj = {
     startDate: today,
     endDate: today,
     supplierId: 0,
+    supplierName: "",
 }
 
 const PURCHASES_QUERY = gql`
@@ -80,7 +81,7 @@ function PurchasePage() {
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
                 <div className="w-full mb-1">
                     <Breadcrumb section={"Compras"} article={"Compras"} />
-                    <PurchaseFilter setFilterObj={setFilterObj} filterObj={filterObj} purchasesQuery={purchasesQuery} filteredPurchasesLoading={filteredPurchasesLoading}/>
+                    <PurchaseFilter setFilterObj={setFilterObj} filterObj={filterObj} purchasesQuery={purchasesQuery} filteredPurchasesLoading={filteredPurchasesLoading} jwtToken={jwtToken}/>
                 </div>
             </div>
 

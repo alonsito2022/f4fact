@@ -105,7 +105,7 @@ const DISTRICTS_QUERY = gql`
     }
 `;
 
-function PersonForm({ modalAddPerson, setModalAddPerson, person, setPerson, jwtToken, 
+function SupplierForm({ modalAddPerson, setModalAddPerson, person, setPerson, jwtToken, 
     PEOPLE_QUERY, purchase, setPurchase }: any) {
 
     const getAuthContext = () => ({
@@ -540,4 +540,4 @@ function PersonForm({ modalAddPerson, setModalAddPerson, person, setPerson, jwtT
     )
 }
 
-export default PersonForm
+export default SupplierForm
