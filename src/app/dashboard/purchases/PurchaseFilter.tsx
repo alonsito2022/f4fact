@@ -4,16 +4,56 @@ import Add from '@/components/icons/Add'
 import Search from '@/components/icons/Search'
 import Filter from '@/components/icons/Filter'
 import { useRouter } from 'next/navigation'
+import { gql, useQuery } from "@apollo/client";
+import { ISupplier } from "@/app/types";
 
-function PurchaseFilter({setFilterObj, filterObj, purchasesQuery, filteredPurchasesLoading}: any) {
+const SUPPLIERS_QUERY = gql`
+    query{
+        allSuppliers{
+            names
+            id
+            address
+            documentNumber
+        }
+    }
+`;
+
+function PurchaseFilter({setFilterObj, filterObj, purchasesQuery, filteredPurchasesLoading, jwtToken}: any) {
     const router = useRouter();
     const handleClickButton = async () => {
         purchasesQuery();
     }
     
-    const handleInputChange = ({target: {name, value} }: ChangeEvent<HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement>) => {
-        setFilterObj({...filterObj, [name]: value});
+    const handleInputChange = (event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = event.target;
+
+        if (name === "supplierName" && event.target instanceof HTMLInputElement) {
+            const dataList = event.target.list;
+            if (dataList) {
+                const option = Array.from(dataList.options).find(option => option.value === value);
+                if (option) {
+                    const selectedId = option.getAttribute("data-key");
+                    setFilterObj({ ...filterObj, supplierId: Number(selectedId), supplierName: value });
+                } else {
+                    setFilterObj({ ...filterObj, supplierId: 0, supplierName: value });
+                }
+            } else {
+                console.log('sin datalist')
+            }
+        } else
+            setFilterObj({...filterObj, [name]: value});
     }
+    const getAuthContext = () => ({
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
+        },
+    });
+    const { loading: suppliersLoading, error: suppliersError, data: suppliersData } = useQuery(SUPPLIERS_QUERY, {
+        context: getAuthContext(),
+        skip: !jwtToken,
+    });
+
     return (
         <div className="items-center justify-between block sm:flex md:divide-x md:divide-gray-100 dark:divide-gray-700">
 
@@ -28,10 +68,19 @@ function PurchaseFilter({setFilterObj, filterObj, purchasesQuery, filteredPurcha
                             <option value={150}>NOTA DE CRÉDITO ELECTRÓNICA</option>
                             <option value={200}>NOTA DE DÉBITO ELECTRÓNICA</option>
                         </select>
-                        
-                        <input type="search" name="supplierName" onChange={handleInputChange} value={filterObj.supplierName} 
-                            className="filter-form-control lg:w-96"
-                            placeholder="Buscar por proveedor" />
+                        {suppliersError ? <div>Error: No autorizado o error en la consulta. {suppliersError.message}</div> :
+                            <>
+                                <input type="search" name="supplierName" onChange={handleInputChange} value={filterObj.supplierName} 
+                                onFocus={(e) => e.target.select()} autoComplete="off" disabled={suppliersLoading}
+                                className="filter-form-control lg:w-96" list="supplierList"
+                                placeholder="Buscar por proveedor" />
+                                <datalist id="supplierList">
+                                                        {suppliersData?.allSuppliers?.map((n: ISupplier, index: number) => (
+                                                            <option key={index} data-key={n.id} value={`${n.documentNumber} ${n.names}`} />
+                                                        ))}
+                                                    </datalist>
+                            </>
+                        }
                         
                         <input type="date" name="startDate" onChange={handleInputChange} value={filterObj.startDate}
                             className="filter-form-control" />

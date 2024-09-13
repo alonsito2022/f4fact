@@ -9,7 +9,7 @@ import Delete from '@/components/icons/Delete';
 import Save from '@/components/icons/Save';
 import { Modal, ModalOptions } from 'flowbite'
 import { useQuery, gql } from "@apollo/client";
-import PersonForm from "@/app/dashboard/persons/PersonForm";
+import SupplierForm from "@/app/dashboard/persons/SupplierForm";
 import { useSession } from 'next-auth/react'
 import PurchaseDetailForm from "../PurchaseDetailForm";
 import ProductForm from "../../logistics/products/ProductForm";
@@ -144,7 +144,7 @@ const initialStateCashFlow = {
     description: ""
 }
 
-const PEOPLE_QUERY = gql`
+const SUPPLIERS_QUERY = gql`
     query{
         allSuppliers{
             names
@@ -242,7 +242,7 @@ function NewPurchasePage() {
         skip: !jwtToken,
     });
 
-    const { loading: peopleLoading, error: peopleError, data: peopleData } = useQuery(PEOPLE_QUERY, {
+    const { loading: suppliersLoading, error: suppliersError, data: suppliersData } = useQuery(SUPPLIERS_QUERY, {
         context: getAuthContext(),
         skip: !jwtToken,
     });
@@ -441,7 +441,7 @@ function NewPurchasePage() {
                                 <div className="grid gap-2 grid-cols-4">
 
                                     <div className="sm:col-span-4">
-                                        {peopleError ? <div>Error: No autorizado o error en la consulta. {peopleError.message}</div> :
+                                        {suppliersError ? <div>Error: No autorizado o error en la consulta. {suppliersError.message}</div> :
                                             <>
                                                 <label className="text-sm">Proveedor</label>
                                                 <div className="relative w-full">
@@ -452,10 +452,10 @@ function NewPurchasePage() {
                                                         onChange={handleInputChangeEntry}
                                                         onFocus={(e) => e.target.select()}
                                                         autoComplete="off"
-                                                        disabled={peopleLoading}
+                                                        disabled={suppliersLoading}
                                                         placeholder="Buscar Proveedor..." list="supplierNameList" required />
                                                     <datalist id="supplierNameList">
-                                                        {peopleData?.allSuppliers?.map((n: ISupplier, index: number) => (
+                                                        {suppliersData?.allSuppliers?.map((n: ISupplier, index: number) => (
                                                             <option key={index} data-key={n.id} value={`${n.documentNumber} ${n.names}`} />
                                                         ))}
                                                     </datalist>
@@ -681,7 +681,7 @@ function NewPurchasePage() {
                     </div>
                 </div>
             </div>
-            <PersonForm modalAddPerson={modalAddPerson} setModalAddPerson={setModalAddPerson} person={person} setPerson={setPerson} jwtToken={jwtToken} PEOPLE_QUERY={PEOPLE_QUERY} purchase={purchase} setPurchase={setPurchase} />
+            <SupplierForm modalAddPerson={modalAddPerson} setModalAddPerson={setModalAddPerson} person={person} setPerson={setPerson} jwtToken={jwtToken} SUPPLIERS_QUERY={SUPPLIERS_QUERY} purchase={purchase} setPurchase={setPurchase} />
             <ProductForm modalProduct={modalProduct} setModalProduct={setModalProduct} product={product} setProduct={setProduct} jwtToken={jwtToken} initialStateProduct={initialStateProduct} typeAffectationsData={typeAffectationsData} PRODUCTS_QUERY={PRODUCTS_QUERY} productFilterObj={productFilterObj} />
             <PurchaseDetailForm modalAddDetail={modalAddDetail} setModalAddDetail={setModalAddDetail} product={product} setProduct={setProduct} purchaseDetail={purchaseDetail} setPurchaseDetail={setPurchaseDetail} purchase={purchase} setPurchase={setPurchase}
                 jwtToken={jwtToken} initialStateProduct={initialStateProduct} initialStatePurchaseDetail={initialStatePurchaseDetail} typeAffectationsData={typeAffectationsData} productsData={productsData} />
