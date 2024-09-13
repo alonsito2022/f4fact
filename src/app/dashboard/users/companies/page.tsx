@@ -10,17 +10,36 @@ import Breadcrumb from "@/components/Breadcrumb";
 import CompanyFilter from "./CompanyFilter";
 const initialState = {
   id: 0,
-  ruc: "",
+  typeDoc: "6",
+  doc: "",
+  shortName: "",
   businessName: "",
   address: "",
   email: "",
   phone: "",
-  document: "",
-  names: "",
+  logo: "",
+  userSol: "",
+  keySol: "",
+  limit: 500,
+  emissionInvoiceWithPreviousDate: 0,
+  emissionReceiptWithPreviousDate: 0,
+  includeIgv: false,
+  percentageIgv: 18,
+  isEnabled: false,
   isProduction: false,
-  logo: ""
+  productionDate: "",
+  disabledDate: "",
+  passwordSignature: "",
+  certification: null,
+  certificationExpirationDate: "",
+  withStock: false,
+  catalog: false,
+  invoiceF: false,
+  invoiceB: false,
+  guide: false,
+  app: false
 }
-function ComapnyPage() {
+function CompanyPage() {
   const [companies, setCompanies] = useState<ICompany[]>([]);
   const [modal, setModal] = useState<Modal | any>(null);
   const [company, setCompany] = useState(initialState);
@@ -84,13 +103,12 @@ function ComapnyPage() {
               {
                   searchCompanies(search: "${searchTerm}") {
                     id
-                    ruc
+                    typeDoc
+                    doc
                     businessName
                     address
                     email
                     phone
-                    document
-                    names
                     logo
                     isProduction
                   }
@@ -130,4 +148,4 @@ function ComapnyPage() {
   )
 }
 
-export default ComapnyPage
+export default CompanyPage

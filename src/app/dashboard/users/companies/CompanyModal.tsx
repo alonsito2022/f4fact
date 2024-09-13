@@ -34,110 +34,370 @@ function CompanyModal({ modal, setModal, company, setCompany, initialState, fetc
     }
     const handleSaveCompany = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        let queryFetch: String = "";
+        const formData = new FormData();
+
+        // Agregar todos los campos como en tu consulta original
+        formData.append("id", company.id);
+        formData.append("typeDoc", "6");
+        formData.append("doc", company.doc);
+        formData.append("shortName", company.shortName);
+        formData.append("businessName", company.businessName);
+        formData.append("address", company.address);
+        formData.append("email", company.email);
+        formData.append("phone", company.phone);
+        formData.append("logo", company.logo);
+        formData.append("userSol", company.userSol);
+        formData.append("keySol", company.keySol);
+        formData.append("limit", company.limit.toString());
+        formData.append("emissionInvoiceWithPreviousDate", company.emissionInvoiceWithPreviousDate.toString());
+        formData.append("emissionReceiptWithPreviousDate", company.emissionReceiptWithPreviousDate.toString());
+        formData.append("includeIgv", company.includeIgv.toString());
+        formData.append("percentageIgv", company.percentageIgv.toString());
+        formData.append("isEnabled", company.isEnabled.toString());
+        formData.append("isProduction", company.isProduction.toString());
+        formData.append("passwordSignature", company.passwordSignature);
+        formData.append("certificationExpirationDate", company.certificationExpirationDate);
+        formData.append("withStock", company.withStock.toString());
+        formData.append("catalog", company.catalog.toString());
+        formData.append("invoiceF", company.invoiceF.toString());
+        formData.append("invoiceB", company.invoiceB.toString());
+        formData.append("guide", company.guide.toString());
+        formData.append("app", company.app.toString());
+    
+        // Agregar el archivo si existe
+        if (company.certification) {
+            formData.append("certification", company.certification); // Aquí se agrega el archivo
+        }
+    
+        // Define la consulta GraphQL basada en la existencia del ID
+        let mutation = '';
         if (Number(company.id) !== 0) {
-            queryFetch = `
-                mutation{
+            mutation = `
+                mutation UpdateCompany(
+                    $id: ID!,
+                    $typeDoc: String,
+                    $doc: String,
+                    $shortName: String,
+                    $businessName: String,
+                    $address: String,
+                    $email: String,
+                    $phone: String,
+                    $logo: String,
+                    $userSol: String,
+                    $keySol: String,
+                    $limit: Int,
+                    $emissionInvoiceWithPreviousDate: Int,
+                    $emissionReceiptWithPreviousDate: Int,
+                    $includeIgv: Boolean,
+                    $percentageIgv: Int,
+                    $isEnabled: Boolean,
+                    $isProduction: Boolean,
+                    $passwordSignature: String,
+                    $certification: Upload,
+                    $certificationExpirationDate: String,
+                    $withStock: Boolean,
+                    $catalog: Boolean,
+                    $invoiceF: Boolean,
+                    $invoiceB: Boolean,
+                    $guide: Boolean,
+                    $app: Boolean
+                ) {
                     updateCompany(
-                        id:${company.id}, 
-                        typeDoc:"6",
-                        doc: "${company.doc}", 
-                        shortName: "${company.shortName}", 
-                        businessName: "${company.businessName}", 
-                        address: "${company.address}", 
-                        email: "${company.email}",
-                        phone: "${company.phone}",
-                        userSol: "${company.userSol}",
-                        keySol: "${company.keySol}",
-                        limit: ${company.limit},
-                        emissionInvoiceWithPreviousDate: "${company.emissionInvoiceWithPreviousDate}",
-                        emissionReceiptWithPreviousDate: "${company.emissionReceiptWithPreviousDate}",
-                        logo: "${company.logo}"                       
-                        includeIgv: ${company.includeIgv},
-                        percentageIgv: ${company.percentageIgv},
-                        isEnabled: ${company.isEnabled},
-                        isProduction: ${company.isProduction},
-                        passwordSignature: "${company.passwordSignature}",
-                        certification: "${company.logo}",
-                        certificationExpirationDate: "${company.certificationExpirationDate}",
-                        withStock: ${company.withStock},
-                        catalog: ${company.catalog},
-                        invoiceF: ${company.invoiceF},
-                        invoiceB: ${company.invoiceB},
-                        guide: ${company.guide},
-                        app: ${company.app},
-                    ){
+                        id: $id,
+                        typeDoc: $typeDoc,
+                        doc: $doc,
+                        shortName: $shortName,
+                        businessName: $businessName,
+                        address: $address,
+                        email: $email,
+                        phone: $phone,
+                        logo: $logo,
+                        userSol: $userSol,
+                        keySol: $keySol,
+                        limit: $limit,
+                        emissionInvoiceWithPreviousDate: $emissionInvoiceWithPreviousDate,
+                        emissionReceiptWithPreviousDate: $emissionReceiptWithPreviousDate,
+                        includeIgv: $includeIgv,
+                        percentageIgv: $percentageIgv,
+                        isEnabled: $isEnabled,
+                        isProduction: $isProduction,
+                        passwordSignature: $passwordSignature,
+                        certification: $certification,
+                        certificationExpirationDate: $certificationExpirationDate,
+                        withStock: $withStock,
+                        catalog: $catalog,
+                        invoiceF: $invoiceF,
+                        invoiceB: $invoiceB,
+                        guide: $guide,
+                        app: $app
+                    ) {
                         message
                     }
                 }
             `;
-            console.log(queryFetch)
-            await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-                method: 'POST',
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query: queryFetch })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    toast(data.data.updateCompany.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-                    setCompany(initialState);
-                    fetchCompanies();
-                    modal.hide();
-
-                }).catch(e => console.log(e))
-        }
-        else {
-            queryFetch = `
-                mutation{
+        } else {
+            mutation = `
+                mutation CreateCompany(
+                    $typeDoc: String,
+                    $doc: String,
+                    $shortName: String,
+                    $businessName: String,
+                    $address: String,
+                    $email: String,
+                    $phone: String,
+                    $logo: String,
+                    $userSol: String,
+                    $keySol: String,
+                    $limit: Int,
+                    $emissionInvoiceWithPreviousDate: Int,
+                    $emissionReceiptWithPreviousDate: Int,
+                    $includeIgv: Boolean,
+                    $percentageIgv: Int,
+                    $isEnabled: Boolean,
+                    $isProduction: Boolean,
+                    $passwordSignature: String,
+                    $certification: Upload,
+                    $certificationExpirationDate: String,
+                    $withStock: Boolean,
+                    $catalog: Boolean,
+                    $invoiceF: Boolean,
+                    $invoiceB: Boolean,
+                    $guide: Boolean,
+                    $app: Boolean
+                ) {
                     createCompany(
-                        typeDoc:"6",
-                        doc: "${company.doc}", 
-                        shortName: "${company.shortName}", 
-                        businessName: "${company.businessName}", 
-                        address: "${company.address}", 
-                        email: "${company.email}",
-                        phone: "${company.phone}",
-                        userSol: "${company.userSol}",
-                        keySol: "${company.keySol}",
-                        limit: ${company.limit},
-                        emissionInvoiceWithPreviousDate: "${company.emissionInvoiceWithPreviousDate}",
-                        emissionReceiptWithPreviousDate: "${company.emissionReceiptWithPreviousDate}",
-                        logo: "${company.logo}"                       
-                        includeIgv: ${company.includeIgv},
-                        percentageIgv: ${company.percentageIgv},
-                        isEnabled: ${company.isEnabled},
-                        isProduction: ${company.isProduction},
-                        passwordSignature: "${company.passwordSignature}",
-                        certification: "${company.logo}",
-                        certificationExpirationDate: "${company.certificationExpirationDate}",
-                        withStock: ${company.withStock},
-                        catalog: ${company.catalog},
-                        invoiceF: ${company.invoiceF},
-                        invoiceB: ${company.invoiceB},
-                        guide: ${company.guide},
-                        app: ${company.app},
-                    ){
+                        typeDoc: $typeDoc,
+                        doc: $doc,
+                        shortName: $shortName,
+                        businessName: $businessName,
+                        address: $address,
+                        email: $email,
+                        phone: $phone,
+                        logo: $logo,
+                        userSol: $userSol,
+                        keySol: $keySol,
+                        limit: $limit,
+                        emissionInvoiceWithPreviousDate: $emissionInvoiceWithPreviousDate,
+                        emissionReceiptWithPreviousDate: $emissionReceiptWithPreviousDate,
+                        includeIgv: $includeIgv,
+                        percentageIgv: $percentageIgv,
+                        isEnabled: $isEnabled,
+                        isProduction: $isProduction,
+                        passwordSignature: $passwordSignature,
+                        certification: $certification,
+                        certificationExpirationDate: $certificationExpirationDate,
+                        withStock: $withStock,
+                        catalog: $catalog,
+                        invoiceF: $invoiceF,
+                        invoiceB: $invoiceB,
+                        guide: $guide,
+                        app: $app
+                    ) {
                         message
                     }
                 }
             `;
-            console.log(queryFetch)
-            await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+        }
+    
+        // Añade la consulta al FormData
+        formData.append('operations', JSON.stringify({ query: mutation }));
+        formData.append('map', JSON.stringify({
+            '0': ['variables.certification']
+        }));
+    
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
                 method: 'POST',
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query: queryFetch })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    toast(data.data.createCompany.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
+                body: formData
+            });
+    
+            const result = await response.json();
+            console.log("Full Response:", result);
+    
+            // Verifica si hay errores en la respuesta
+            if (result.errors) {
+                console.error("GraphQL Errors:", result.errors);
+            } else {
+                // Verifica si el resultado de la consulta contiene datos
+                if (result.data) {
+                    const message = Number(company.id) !== 0 
+                        ? result.data.updateCompany?.message
+                        : result.data.createCompany?.message;
+                    toast(message, { hideProgressBar: true, autoClose: 2000, type: 'success' });
                     setCompany(initialState);
                     fetchCompanies();
                     modal.hide();
-                }).catch(e => console.log(e))
+                } else {
+                    console.error("Response Data Missing:", result.data);
+                }
+            }
+        } catch (error) {
+            console.error("Fetch Error:", error);
         }
+    };
+        // let queryFetch: String = "";
+        // if (Number(company.id) !== 0) {
+        //     queryFetch = `
+        //         mutation{
+        //             updateCompany(
+        //                 id:${company.id}, 
+        //                 typeDoc:"6",
+        //                 doc: "${company.doc}", 
+        //                 shortName: "${company.shortName}", 
+        //                 businessName: "${company.businessName}", 
+        //                 address: "${company.address}", 
+        //                 email: "${company.email}",
+        //                 phone: "${company.phone}",
+        //                 userSol: "${company.userSol}",
+        //                 keySol: "${company.keySol}",
+        //                 limit: ${company.limit},
+        //                 emissionInvoiceWithPreviousDate: ${company.emissionInvoiceWithPreviousDate},
+        //                 emissionReceiptWithPreviousDate: ${company.emissionReceiptWithPreviousDate},
+        //                 logo: "${company.logo}",                       
+        //                 includeIgv: ${company.includeIgv},
+        //                 percentageIgv: ${company.percentageIgv},
+        //                 isEnabled: ${company.isEnabled},
+        //                 isProduction: ${company.isProduction},
+        //                 passwordSignature: "${company.passwordSignature}",
+        //                 certification: "${company.certification}",
+        //                 certificationExpirationDate: "${company.certificationExpirationDate}",
+        //                 withStock: ${company.withStock},
+        //                 catalog: ${company.catalog},
+        //                 invoiceF: ${company.invoiceF},
+        //                 invoiceB: ${company.invoiceB},
+        //                 guide: ${company.guide},
+        //                 app: ${company.app},
+        //             ){
+        //                 message
+        //             }
+        //         }
+        //     `;
+        //     console.log(queryFetch)
+        //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+        //         method: 'POST',
+        //         headers: { "Content-Type": "application/json" },
+        //         body: JSON.stringify({ query: queryFetch })
+        //     })
+        //         .then(res => res.json())
+        //         .then(data => {
+        //             toast(data.data.updateCompany.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
+        //             setCompany(initialState);
+        //             fetchCompanies();
+        //             modal.hide();
+
+        //         }).catch(e => console.log(e))
+        // }
+        // else {
+        //     queryFetch = `
+        //         mutation{
+        //             createCompany(
+        //                 typeDoc:"6",
+        //                 doc: "${company.doc}", 
+        //                 shortName: "${company.shortName}", 
+        //                 businessName: "${company.businessName}", 
+        //                 address: "${company.address}", 
+        //                 email: "${company.email}",
+        //                 phone: "${company.phone}",
+        //                 userSol: "${company.userSol}",
+        //                 keySol: "${company.keySol}",
+        //                 limit: ${company.limit},
+        //                 emissionInvoiceWithPreviousDate: ${company.emissionInvoiceWithPreviousDate},
+        //                 emissionReceiptWithPreviousDate: ${company.emissionReceiptWithPreviousDate},
+        //                 logo: "${company.logo}",                       
+        //                 includeIgv: ${company.includeIgv},
+        //                 percentageIgv: ${company.percentageIgv},
+        //                 isEnabled: ${company.isEnabled},
+        //                 isProduction: ${company.isProduction},
+        //                 passwordSignature: "${company.passwordSignature}",
+        //                 certification: "${company.logo}",
+        //                 certificationExpirationDate: "${company.certificationExpirationDate}",
+        //                 withStock: ${company.withStock},
+        //                 catalog: ${company.catalog},
+        //                 invoiceF: ${company.invoiceF},
+        //                 invoiceB: ${company.invoiceB},
+        //                 guide: ${company.guide},
+        //                 app: ${company.app},
+        //             ){
+        //                 message
+        //             }
+        //         }
+        //     `;
+        //     console.log(queryFetch)
+        //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+        //         method: 'POST',
+        //         headers: { "Content-Type": "application/json" },
+        //         body: JSON.stringify({ query: queryFetch })
+        //     })
+        //         .then(res => res.json())
+        //         .then(data => {
+        //             toast(data.data.createCompany.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
+        //             setCompany(initialState);
+        //             fetchCompanies();
+        //             modal.hide();
+        //         }).catch(e => console.log(e))
+        // }
 
 
-    }
+
+
+        // const formData = new FormData();
+        // formData.append("id", company.id);
+        // formData.append("typeDoc", "6");
+        // formData.append("doc", company.doc);
+        // formData.append("shortName", company.shortName);
+        // formData.append("businessName", company.businessName);
+        // formData.append("address", company.address);
+        // formData.append("email", company.email);
+        // formData.append("phone", company.phone);
+        // formData.append("logo", company.logo);
+        // formData.append("userSol", company.userSol);
+        // formData.append("keySol", company.keySol);
+        // formData.append("limit", company.limit.toString());
+        // formData.append("emissionInvoiceWithPreviousDate", company.emissionInvoiceWithPreviousDate.toString());
+        // formData.append("emissionReceiptWithPreviousDate", company.emissionReceiptWithPreviousDate.toString());
+        // formData.append("includeIgv", company.includeIgv.toString());
+        // formData.append("percentageIgv", company.percentageIgv.toString());
+        // formData.append("isEnabled", company.isEnabled.toString());
+        // formData.append("isProduction", company.isProduction.toString());
+        // formData.append("passwordSignature", company.passwordSignature);
+        // formData.append("certificationExpirationDate", company.certificationExpirationDate);
+        // formData.append("withStock", company.withStock.toString());
+        // formData.append("catalog", company.catalog.toString());
+        // formData.append("invoiceF", company.invoiceF.toString());
+        // formData.append("invoiceB", company.invoiceB.toString());
+        // formData.append("guide", company.guide.toString());
+        // formData.append("app", company.app.toString());
+
+        // if (company.certification) {
+        //     formData.append("certification", company.certification); // Aquí se agrega el archivo
+        // }
+
+        // try {
+        //     const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+        //         method: 'POST',
+        //         body: formData
+        //     });
+    
+        //     const result = await response.json();
+        //     console.log("Full Response:", result);
+    
+        //     // Verifica si hay errores en la respuesta
+        //     if (result.errors) {
+        //         console.error("GraphQL Errors:", result.errors);
+        //     } else {
+        //         // Verifica si el resultado de la consulta contiene datos
+        //         if (result.data && result.data.updateCompany) {
+        //             toast(result.data.updateCompany.message, { hideProgressBar: true, autoClose: 2000, type: 'success' });
+        //             setCompany(initialState);
+        //             fetchCompanies();
+        //             modal.hide();
+        //         } else {
+        //             console.error("Response Data Missing:", result.data);
+        //         }
+        //     }
+        // } catch (error) {
+        //     console.error("Fetch Error:", error);
+        // }
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]; // Obtiene el primer archivo seleccionado
         // Verifica si se seleccionó un archivo
@@ -170,6 +430,9 @@ function CompanyModal({ modal, setModal, company, setCompany, initialState, fetc
             setModal(new Modal($targetEl, options))
         }
     }, []);
+    useEffect(() => {
+        console.log(company)
+    }, [company]);
     return (
         <div>
             <div id="company-modal" tabIndex={-1} aria-hidden="true" className="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
@@ -194,23 +457,23 @@ function CompanyModal({ modal, setModal, company, setCompany, initialState, fetc
                                         <div className="sm:col-span-2">
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="relative z-0 w-full mb-2 group sm:col-span-1">
-                                                    <input type="text" name="doc" id="doc" value={company.doc} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                                                    <input type="text" name="doc" id="doc" value={company?.doc? company?.doc:''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                                                     <label htmlFor="doc" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Numero ruc</label>
                                                 </div>
                                                 <div className="relative z-0 w-full mb-2 group sm:col-span-1">
-                                                    <input type="text" name="shortName" id="shortName" value={company.shortName} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                                                    <input type="text" name="shortName" id="shortName" value={company?.shortName? company?.shortName:''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                                                     <label htmlFor="shortName" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Nombre comercial</label>
                                                 </div>
                                                 <div className="relative z-0 w-full mb-2 group sm:col-span-2">
-                                                    <input type="text" name="businessName" id="businessName" value={company.businessName} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                                                    <input type="text" name="businessName" id="businessName" value={company?.businessName? company?.businessName:''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                                                     <label htmlFor="businessName" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Razon Social</label>
                                                 </div>
                                                 <div className="relative z-0 w-full mb-2 group sm:col-span-2">
-                                                    <input type="text" name="address" id="address" value={company.address} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                                                    <input type="text" name="address" id="address" value={company?.address?company?.address:''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                                                     <label htmlFor="address" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Direccion</label>
                                                 </div>
                                                 <div className="relative z-0 w-full mb-2 group sm:col-span-1">
-                                                    <input type="email" name="email" id="email" value={company.email} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                                                    <input type="email" name="email" id="email" value={company?.email?company?.email:''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                                                     <label htmlFor="email" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Correo Electronico</label>
                                                 </div>
                                                 <div className="relative z-0 w-full mb-2 group sm:col-span-1">
@@ -241,8 +504,6 @@ function CompanyModal({ modal, setModal, company, setCompany, initialState, fetc
                                                     </label>
                                                 </div>
                                         </div>
-
-
                                     </div>
                                 </fieldset>
                                 
@@ -250,17 +511,17 @@ function CompanyModal({ modal, setModal, company, setCompany, initialState, fetc
                                     <legend className=' text-blue-600 font-semibold mb-2'>Cuenta Sunat</legend>
                                     <div className="grid grid-cols-3 gap-4">
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                        <input type="text" name="userSol" id="userSol" value={company.userSol} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                                        <input type="text" name="userSol" id="userSol" value={company?.userSol?company?.userSol:''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                                         <label htmlFor="userSol" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Usuario Sol</label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                        <input type="text" name="keySol" id="keySol" value={company.keySol ? company.keySol : ''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
+                                        <input type="text" name="keySol" id="keySol" value={company?.keySol ? company.keySol : ''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
                                         <label htmlFor="keySol" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Clave Sol</label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">                                           
                                             <input
                                                 type="date"
-                                                value={company.certificationExpirationDate}
+                                                value={company?.certificationExpirationDate?company?.certificationExpirationDate:''}
                                                 onChange={handleInputChange}
                                                 name="certificationExpirationDate"
                                                 className="block pb-2 pt-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
@@ -270,11 +531,11 @@ function CompanyModal({ modal, setModal, company, setCompany, initialState, fetc
                                         </div>
 
                                         <div className="sm:col-span-2 relative z-0 w-full mb-2 group">                                        
-                                        <input className="block pt-2.5 pb-1 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" id="default_size" type="file" />
-                                        <label className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6" htmlFor="default_size">Certificado Digital</label>
+                                        <input ref={fileInputRef} onChange={handleInputChange} className="block pt-2.5 pb-1 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" id="certification" name="certification" type="file" />
+                                        <label className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6" htmlFor="certification">Certificado Digital</label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                        <input type="text" name="passwordSignature" id="passwordSignature" value={company.passwordSignature ? company.passwordSignature : ''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder="" />
+                                        <input type="text" name="passwordSignature" id="passwordSignature" value={company?.passwordSignature ? company.passwordSignature : ''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder="" />
                                         <label htmlFor="passwordSignature" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Contraseña firma</label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
@@ -287,19 +548,19 @@ function CompanyModal({ modal, setModal, company, setCompany, initialState, fetc
                                     <legend className=' text-blue-600 font-semibold mb-2'>Configuraciones</legend>
                                     <div className="grid grid-cols-4 gap-4">
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                        <input type="number" step={1} min={0} name="limit" id="limit" value={company.limit!} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-right text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
+                                        <input type="number" step={1} min={0} name="limit" id="limit" value={company?.limit!} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-right text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
                                         <label htmlFor="limit" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Limite comprobantes</label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                        <input type="number" step={1} min={0} max={7} name="emissionInvoiceWithPreviousDate" id="emissionInvoiceWithPreviousDate" value={company.emissionInvoiceWithPreviousDate} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="text-right block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
+                                        <input type="number" step={1} min={0} max={7} name="emissionInvoiceWithPreviousDate" id="emissionInvoiceWithPreviousDate" value={company?.emissionInvoiceWithPreviousDate?company?.emissionInvoiceWithPreviousDate!:0} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="text-right block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
                                         <label htmlFor="emissionInvoiceWithPreviousDate" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Días atras(Facturas)</label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">                                           
-                                        <input type="number" step={1} min={0} max={7} name="emissionReceiptWithPreviousDate" id="emissionReceiptWithPreviousDate" value={company.emissionReceiptWithPreviousDate!} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-right text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
+                                        <input type="number" step={1} min={0} max={7} name="emissionReceiptWithPreviousDate" id="emissionReceiptWithPreviousDate" value={company?.emissionReceiptWithPreviousDate?company?.emissionReceiptWithPreviousDate!:0} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-right text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
                                         <label htmlFor="emissionReceiptWithPreviousDate" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Días atras(Boletas)</label>
                                         </div>                                        
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                        <select value={company.percentageIgv} name="percentageIgv" onChange={handleInputChange} className="text-right block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" required>
+                                        <select value={company?.percentageIgv?company?.percentageIgv:18} name="percentageIgv" onChange={handleInputChange} className="text-right block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" required>
                                             {/* <option selected>Porcentaje IGV %</option> */}
                                             <option value={18}>18%</option>
                                             <option value={10}>10% (Ley 31556)</option>
@@ -311,28 +572,28 @@ function CompanyModal({ modal, setModal, company, setCompany, initialState, fetc
 
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
                                         <label className="inline-flex items-center mb-1 cursor-pointer">
-                                            <input type="checkbox" value="" id="isEnabled" name="isEnabled" className="sr-only peer" checked={company.isEnabled} onChange={handleCheckboxChange} />
+                                            <input type="checkbox" value="" id="isEnabled" name="isEnabled" className="sr-only peer" checked={company?.isEnabled?company?.isEnabled:false} onChange={handleCheckboxChange} />
                                             <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                             <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Estado Activo</span>
                                         </label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
                                         <label className="inline-flex items-center mb-1 cursor-pointer">
-                                            <input type="checkbox" value="" id="includeIgv" name="includeIgv" className="sr-only peer" checked={company.includeIgv} onChange={handleCheckboxChange} />
+                                            <input type="checkbox" value="" id="includeIgv" name="includeIgv" className="sr-only peer" checked={company?.includeIgv?company?.includeIgv:false} onChange={handleCheckboxChange} />
                                             <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                             <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Incluir IGV</span>
                                         </label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
                                         <label className="inline-flex items-center mb-1 cursor-pointer">
-                                            <input type="checkbox" value="" id="isProduction" name="isProduction" className="sr-only peer" checked={company.isProduction} onChange={handleCheckboxChange} />
+                                            <input type="checkbox" value="" id="isProduction" name="isProduction" className="sr-only peer" checked={company?.isProduction?company?.isProduction:false} onChange={handleCheckboxChange} />
                                             <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                             <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Producción</span>
                                         </label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
                                         <label className="inline-flex items-center mb-1 cursor-pointer">
-                                            <input type="checkbox" value="" id="withStock" name="withStock" className="sr-only peer" checked={company.withStock} onChange={handleCheckboxChange} />
+                                            <input type="checkbox" value="" id="withStock" name="withStock" className="sr-only peer" checked={company?.withStock?company?.withStock:false} onChange={handleCheckboxChange} />
                                             <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                             <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Incluir Stock</span>
                                         </label>
@@ -340,21 +601,21 @@ function CompanyModal({ modal, setModal, company, setCompany, initialState, fetc
 
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
                                         <label className="inline-flex items-center mb-1 cursor-pointer">
-                                            <input type="checkbox" value="" id="invoiceF" name="invoiceF" className="sr-only peer" checked={company.invoiceF} onChange={handleCheckboxChange} />
+                                            <input type="checkbox" value="" id="invoiceF" name="invoiceF" className="sr-only peer" checked={company?.invoiceF?company?.invoiceF:false} onChange={handleCheckboxChange} />
                                             <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                             <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Incluir Factura</span>
                                         </label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
                                         <label className="inline-flex items-center mb-1 cursor-pointer">
-                                            <input type="checkbox" value="" id="invoiceB" name="invoiceB" className="sr-only peer" checked={company.invoiceB} onChange={handleCheckboxChange} />
+                                            <input type="checkbox" value="" id="invoiceB" name="invoiceB" className="sr-only peer" checked={company?.invoiceB?company?.invoiceB:false} onChange={handleCheckboxChange} />
                                             <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                             <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Incluir Boleta</span>
                                         </label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
                                         <label className="inline-flex items-center mb-1 cursor-pointer">
-                                            <input type="checkbox" value="" id="guide" name="guide" className="sr-only peer" checked={company.guide} onChange={handleCheckboxChange} />
+                                            <input type="checkbox" value="" id="guide" name="guide" className="sr-only peer" checked={company?.guide?company?.guide:false} onChange={handleCheckboxChange} />
                                             <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                             <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Incluir Guía</span>
                                         </label>
@@ -362,7 +623,7 @@ function CompanyModal({ modal, setModal, company, setCompany, initialState, fetc
 
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
                                         <label className="inline-flex items-center mb-1 cursor-pointer">
-                                            <input type="checkbox" value="" id="app" name="app" className="sr-only peer" checked={company.app} onChange={handleCheckboxChange} />
+                                            <input type="checkbox" value="" id="app" name="app" className="sr-only peer" checked={company?.app?company?.app:false} onChange={handleCheckboxChange} />
                                             <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                             <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Incluir App Mobil</span>
                                         </label>
