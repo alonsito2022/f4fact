@@ -1,6 +1,6 @@
 "use client"
 import { ChangeEvent, FormEvent, useState, useEffect } from "react";
-import { ICompany } from '@/app/types';
+import { ICompany, IUser } from '@/app/types';
 import { toast } from "react-toastify";
 import { it } from "node:test";
 import CompanyList from "./CompanyList"
@@ -8,6 +8,8 @@ import CompanyModal from "./CompanyModal"
 import { Modal, ModalOptions } from 'flowbite'
 import Breadcrumb from "@/components/Breadcrumb";
 import CompanyFilter from "./CompanyFilter";
+import { useSession } from 'next-auth/react'
+import { DocumentNode, gql, useMutation } from "@apollo/client";
 const initialState = {
   id: 0,
   typeDoc: "6",
@@ -39,11 +41,84 @@ const initialState = {
   guide: false,
   app: false
 }
+const COMPANIES_QUERY = gql`
+  query Companies {
+    companies{
+                id
+                typeDoc
+                doc
+                businessName
+                address
+                email
+                phone
+                shortName
+                logo
+                isProduction
+                isEnabled
+                limit
+                country
+                userSol
+                keySol
+                emissionInvoiceWithPreviousDate
+                emissionReceiptWithPreviousDate
+                includeIgv
+                percentageIgv
+                productionDate
+                disabledDate
+              }
+    }
+`;
+
+const COMPANY_QUERY = gql`
+    query Unit($pk: ID!) {
+      companyById(pk: $pk){
+        id
+            typeDoc
+            doc
+            businessName
+            address
+            email
+            phone
+            shortName
+            logo                        
+            isEnabled
+            limit
+            country
+            userSol
+            keySol
+            emissionInvoiceWithPreviousDate
+            emissionReceiptWithPreviousDate
+            includeIgv
+            percentageIgv
+            isEnabled
+            productionDate
+            isProduction
+            disabledDate
+            passwordSignature
+            certification
+            certificationExpirationDate
+            withStock
+            catalog
+            invoiceF
+            invoiceB
+            guide
+            app
+        }
+    }
+`;
 function CompanyPage() {
   const [companies, setCompanies] = useState<ICompany[]>([]);
   const [modal, setModal] = useState<Modal | any>(null);
   const [company, setCompany] = useState(initialState);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const { data: session, status } = useSession();
+  const [jwtToken, setJwtToken] = useState<string | null>(null);
+  useEffect(() => {
+    if (session?.user) {
+        const user = session.user as IUser;
+        setJwtToken(user.accessToken as string);
+    }
+}, [session]);
   async function fetchCompanies() {
     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
       method: 'POST',
@@ -143,7 +218,7 @@ function CompanyPage() {
           </div>
         </div>
       </div>
-      <CompanyModal modal={modal} setModal={setModal} company={company} setCompany={setCompany} initialState={initialState} fetchCompanies={fetchCompanies} />
+      <CompanyModal jwtToken={jwtToken} COMPANIES_QUERY={COMPANIES_QUERY} modal={modal} setModal={setModal} company={company} setCompany={setCompany} initialState={initialState} fetchCompanies={fetchCompanies} />
     </>
   )
 }
