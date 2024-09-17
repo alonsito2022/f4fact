@@ -1,7 +1,37 @@
 "use client";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Breadcrumb from "@/components/Breadcrumb";
-
+const today = new Date().toISOString().split('T')[0];
+const initialStateSale = {
+    id: 0,
+    serial: "",
+    correlative: "",
+    emitDate: today,
+    clientName: "",
+    clientId: 0,
+    igvType: 18,
+    documentType: "01",
+    currencyType: "PEN",
+    saleExchangeRate: "",
+    userId: 0,
+    userName: "",
+    operationdetailSet: [],
+    cashflowSet: [],
+    discountForItem: "",
+    discountGlobal: "",
+    discountPercentageGlobal: "",
+    totalDiscount: "",
+    totalTaxed: "",
+    totalUnaffected: "",
+    totalExonerated: "",
+    totalIgv: "",
+    totalFree: "",
+    totalAmount: "",
+    totalPerception: "",
+    totalToPay: "",
+    totalPayed: "",
+    totalTurned: "",
+}
 function NewSalePage() {
     return (
         <>
