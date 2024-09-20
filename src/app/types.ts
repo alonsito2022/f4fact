@@ -53,7 +53,41 @@ export interface ICompany {
     guide?: boolean
     app?: boolean
 }
+export interface IPerson {
+    id: number
+    documentNumber?: string
+    documentType?: string
+    names?: string
+    shortName?: string
+    address: string
 
+    departmentId: string
+    provinceId: string
+    districtId: string
+    countryReadable: string
+    country: string
+    economicActivityMain?: number
+    economicActivityMainReadable?: string
+    email: string
+    phone?: string    
+    isSupplier: boolean
+    isEnabled: boolean
+    
+    isClient?: boolean
+    code: string
+    documentTypeReadable?: string
+    typeTradeName?: String
+    nationality?: string
+    creditLine: number
+    businessTypeId?: number
+    typeTradeId?: number
+    role?: string
+    roleReadable?: string
+    personaddressSet?: Array<ISupplierAddress>
+    checked?: boolean
+   
+
+}
 export interface ISupplier {
     id: number
     documentNumber?: string
