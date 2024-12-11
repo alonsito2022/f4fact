@@ -52,12 +52,12 @@ const DISTRICTS_QUERY = gql`
 function PersonForm({ modalAddPerson, setModalAddPerson, person, setPerson, jwtToken, PEOPLE_QUERY }: any) {
     const [nationalities, setNationalities] = useState<INationality[]>([]);
     const [economicActivities, setEconomicActivities] = useState<IEconomicActivity[]>([
-        {id:0, value: 'NO APLICA'},
-        {id:4520, value: 'MANTENIMIENTO Y REPARACIÓN DE VEHÍCULOS AUTOMOTORES'},
-        {id:4610, value: 'VENTA AL POR MAYOR A CAMBIO DE UNA RETRIBUCIÓN O POR CONTRATA'},
-        {id:4630, value: 'VENTA AL POR MAYOR DE ALIMENTOS, BEBIDAS Y TABACO'},
-        {id:4690, value: 'VENTA AL POR MAYOR NO ESPECIALIZADA'},
-        {id:4923, value: 'TRANSPORTE DE CARGA POR CARRETERA'}
+        {"code":"0", "name": "NO APLICA"},
+        {"code":"4520", "name": "MANTENIMIENTO Y REPARACIÓN DE VEHÍCULOS AUTOMOTORES"},
+        {"code":"4610", "name": "VENTA AL POR MAYOR A CAMBIO DE UNA RETRIBUCIÓN O POR CONTRATA"},
+        {"code":"4630", "name": "VENTA AL POR MAYOR DE ALIMENTOS, BEBIDAS Y TABACO"},
+        {"code":"4690", "name": "VENTA AL POR MAYOR NO ESPECIALIZADA"},
+        {"code":"4923", "name": "TRANSPORTE DE CARGA POR CARRETERA"}
     ]);
     const getAuthContext = () => ({
         headers: {
@@ -366,7 +366,7 @@ function PersonForm({ modalAddPerson, setModalAddPerson, person, setPerson, jwtT
             placeholder="Actividad(es) Económica(s)" />
         <datalist id="economicActivityMainReadableList">
             {economicActivities?.map((n: IEconomicActivity, index: number) => (
-                <option key={index} value={n.value} data-key={n.id} />
+                <option key={index} value={n.name} data-key={n.code} />
             ))}
         </datalist>
     </div>
@@ -379,7 +379,7 @@ function PersonForm({ modalAddPerson, setModalAddPerson, person, setPerson, jwtT
             placeholder="Actividad(es) Económica(s)" />
         <datalist id="economicActivitySecondary1ReadableList">
             {economicActivities?.map((n: IEconomicActivity, index: number) => (
-                <option key={index} value={n.value} data-key={n.id} />
+                <option key={index} value={n.name} data-key={n.code} />
             ))}
         </datalist>
     </div>
