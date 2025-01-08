@@ -280,6 +280,7 @@ export interface IOperation {
     saleExchangeRate?: string
     // observation?: string
     supplier?: ISupplier
+    client?: ISupplier
     // type?: string
 
     operationdetailSet?: Array<IOperationDetail>
@@ -298,6 +299,16 @@ export interface IOperation {
     totalAmount: string
     totalPerception: string
     totalToPay: string
+
+    totalPayed: string
+    operationStatus: string
+    operationStatusReadable: string
+    sendClient: boolean
+    linkXml: string
+    linkXmlLow: string
+    linkCdr: string
+    linkCdrLow: string
+    sunatStatus: boolean
 
 
     // id: 0,

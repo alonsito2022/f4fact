@@ -18,10 +18,10 @@ const SUPPLIERS_QUERY = gql`
     }
 `;
 
-function SaleFilter({ setFilterObj, filterObj, saleQuery, filteredSaleLoading, jwtToken }: any) {
+function SaleFilter({ setFilterObj, filterObj, salesQuery, filteredSaleLoading, jwtToken }: any) {
     const router = useRouter();
     const handleClickButton = async () => {
-        saleQuery();
+        salesQuery();
     }
 
     const handleInputChange = (event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
