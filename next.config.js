@@ -2,12 +2,12 @@
 const nextConfig = {
     async redirects() {
         return [
-          {
-            source: '/dashboard',
-            destination: '/dashboard/profile',
-            permanent: true,
-          },
-        ]
-      },
-}
-module.exports = nextConfig
+            {
+                source: "/dashboard",
+                destination: "/dashboard/sales",
+                permanent: true,
+            },
+        ];
+    },
+};
+module.exports = nextConfig;

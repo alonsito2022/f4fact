@@ -309,6 +309,8 @@ export interface IOperation {
     linkCdr: string
     linkCdrLow: string
     sunatStatus: boolean
+    sunatDescription: string
+    sunatDescriptionLow: string
 
 
     // id: 0,

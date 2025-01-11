@@ -41,6 +41,8 @@ const SALES_QUERY = gql`
             linkCdr
             linkCdrLow
             sunatStatus
+            sunatDescription
+            sunatDescriptionLow
             client{
                 names
             }
@@ -88,6 +90,7 @@ function SalePage() {
 
                 </div>
             </div>
+
 
             <div className="flex flex-col">
                 <div className="overflow-x-auto">
