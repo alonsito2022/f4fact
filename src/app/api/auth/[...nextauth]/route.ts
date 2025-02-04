@@ -16,6 +16,7 @@ const TOKEN_AUTH_MUTATION = gql`
                 id
                 username
                 fullName
+                email
                 avatar
                 subsidiary {
                     id
