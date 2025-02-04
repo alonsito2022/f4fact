@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { gql, useQuery } from "@apollo/client";
 import { ISupplier } from "@/app/types";
 import { initFlowbite } from "flowbite";
+import Excel from "@/components/icons/Excel";
 
 const SUPPLIERS_QUERY = gql`
     query {
@@ -27,6 +28,12 @@ function SaleFilter({
     jwtToken,
 }: any) {
     const router = useRouter();
+    const [hostname, setHostname] = useState("");
+    useEffect(() => {
+        if (hostname == "") {
+            setHostname(`${process.env.NEXT_PUBLIC_BASE_API}`);
+        }
+    }, [hostname]);
     const handleClickButton = async () => {
         salesQuery();
         initFlowbite();
@@ -93,17 +100,17 @@ function SaleFilter({
                             onChange={handleInputChange}
                             className="filter-form-control"
                         >
-                            <option value={0} disabled>
+                            <option value={"NA"} disabled>
                                 Filtrar por tipo de Doc.
                             </option>
-                            <option value={50}>FACTURA ELECTRÓNICA</option>
-                            <option value={100}>
+                            <option value={"01"}>FACTURA ELECTRÓNICA</option>
+                            <option value={"03"}>
                                 BOLETA DE VENTA ELECTRÓNICA
                             </option>
-                            <option value={150}>
+                            <option value={"07"}>
                                 NOTA DE CRÉDITO ELECTRÓNICA
                             </option>
-                            <option value={200}>
+                            <option value={"08"}>
                                 NOTA DE DÉBITO ELECTRÓNICA
                             </option>
                         </select>
@@ -124,7 +131,7 @@ function SaleFilter({
                                     disabled={suppliersLoading}
                                     className="filter-form-control lg:w-96"
                                     list="supplierList"
-                                    placeholder="Buscar por proveedor"
+                                    placeholder="Buscar por cliente"
                                 />
                                 <datalist id="supplierList">
                                     {suppliersData?.allSuppliers?.map(
@@ -157,17 +164,6 @@ function SaleFilter({
                         />
                     </div>
                 </form>
-
-                <div className="flex items-center w-full sm:justify-end ">
-                    <div className="flex pl-2 space-x-1">
-                        <a
-                            onClick={() => {}}
-                            className="inline-flex items-center justify-center p-1 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white me-6"
-                        >
-                            <Search />
-                        </a>
-                    </div>
-                </div>
             </div>
 
             <div className="flex items-center w-full sm:justify-end gap-2">
@@ -181,17 +177,16 @@ function SaleFilter({
                     <Filter />
                     Filtrar
                 </button>
-                <button
-                    id="createProductButton"
-                    type="button"
-                    onClick={() => {
-                        router.push(`/dashboard/sale/new`, { scroll: false });
-                    }}
-                    className="btn-blue px-5 py-3 inline-flex items-center gap-2"
+                <a
+                    href={`${hostname}/operations/export_sales_to_excel/${filterObj.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/`}
+                    target="_blank"
+                    title="Descargar EXCEL"
+                    download
+                    className="btn-green px-5 py-3 inline-flex items-center gap-2 m-0"
                 >
-                    <Add />
-                    Crear compra
-                </button>
+                    <Excel />
+                    Descarga para excel
+                </a>
             </div>
         </div>
     );

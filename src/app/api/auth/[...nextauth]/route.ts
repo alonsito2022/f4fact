@@ -1,9 +1,9 @@
-import NextAuth, { Session } from "next-auth"
+import NextAuth, { Session } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import createApolloClient from "@/lib/apollo-client";
 import { gql } from "@apollo/client";
 import { JWT } from "next-auth/jwt";
-import { User  } from "next-auth";
+import { User } from "next-auth";
 
 const TOKEN_AUTH_MUTATION = gql`
     mutation TokenAuth($email: String!, $password: String!) {
@@ -12,11 +12,15 @@ const TOKEN_AUTH_MUTATION = gql`
             payload
             refreshToken
             refreshExpiresIn
-            user{
+            user {
                 id
                 username
                 fullName
                 avatar
+                subsidiary {
+                    id
+                    name
+                }
             }
         }
     }
@@ -38,7 +42,7 @@ const handler = NextAuth({
             name: "Credentials",
             credentials: {
                 email: { label: "Email", type: "email" },
-                password: { label: "Password", type: "password" }
+                password: { label: "Password", type: "password" },
             },
             async authorize(credentials, req) {
                 if (!credentials?.email || !credentials?.password) {
@@ -49,26 +53,27 @@ const handler = NextAuth({
                     const values = {
                         email: credentials.email,
                         password: credentials.password,
-                    }
+                    };
                     // console.log(values)
                     const { data, errors } = await client.mutate({
                         mutation: TOKEN_AUTH_MUTATION,
                         variables: values,
                     });
-                    if(errors)
-                        console.log(errors.toString())
+                    if (errors) console.log(errors.toString());
 
                     if (data.tokenAuth && data.tokenAuth.token) {
-                        console.log("payload", data.tokenAuth?.payload)
+                        console.log("payload", data.tokenAuth);
                         return {
                             id: data.tokenAuth.user.id,
                             fullName: data.tokenAuth.user.fullName,
                             email: data.tokenAuth.user.email,
                             avatar: data.tokenAuth.user.avatar,
                             accessToken: data.tokenAuth.token,
+                            subsidiaryId: data.tokenAuth.user.subsidiary.id,
+                            subsidiaryName: data.tokenAuth.user.subsidiary.name,
                             // ... cualquier otro dato del usuario que quieras incluir
                             exp: data.tokenAuth?.payload.exp,
-                            iat: data.tokenAuth?.payload.origIat
+                            iat: data.tokenAuth?.payload.origIat,
                         };
                     } else {
                         throw new Error("Authentication failed");
@@ -121,8 +126,8 @@ const handler = NextAuth({
                 // }
                 // // Return null if user data could not be retrieved
                 // return null
-            }
-        })
+            },
+        }),
     ],
     session: {
         strategy: "jwt",
@@ -130,8 +135,7 @@ const handler = NextAuth({
         maxAge: 24 * 60 * 60, // 24 hours
     },
     callbacks: {
-        
-        async jwt({ token, user }: {token: JWT; user: User}) {
+        async jwt({ token, user }: { token: JWT; user: User }) {
             const usr = user as ExtendedUser;
             if (usr) {
                 token.user = usr;
@@ -140,7 +144,7 @@ const handler = NextAuth({
             }
             return token;
         },
-        async session({ session, token }: {session: Session, token: JWT}) {
+        async session({ session, token }: { session: Session; token: JWT }) {
             // const ses = session as ExtendedSession;
             // console.log("expires", session.expires)
             // if (token.exp){
@@ -155,10 +159,9 @@ const handler = NextAuth({
             // session.accessToken = token.user.accessToken as any;
             return session;
         },
-        
     },
     pages: {
-        signIn: '/login',
+        signIn: "/login",
         // signOut:`/`,
     },
     // redirect:{
@@ -167,13 +170,12 @@ const handler = NextAuth({
     // events: {
     //     signOut: `${process.env.NEXTAUTH_URL_INTERNAL}/`,
     //     // signOut(message) {
-            
+
     //     // },(){
 
     //     //     return `${process.env.NEXTAUTH_URL_INTERNAL}/`;
     //     // },
     // }
-    
-})
+});
 
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST };
