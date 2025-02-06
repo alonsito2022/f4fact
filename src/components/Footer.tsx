@@ -3,12 +3,12 @@ import React from "react";
 function Footer() {
     return (
         <>
-            <footer className="p-4 my-6 mx-4 bg-white rounded-lg shadow md:flex md:items-center md:justify-between md:p-6 xl:p-8 dark:bg-gray-800">
+            <footer className="p-4 my-6 mx-4 bg-white rounded-lg shadow md:flex md:items-center md:justify-between md:p-6 xl:p-8 dark:bg-gray-800  font-encodeSansCondensed">
                 <ul className="flex flex-wrap items-center mb-6 space-y-1 md:mb-0">
                     <li>
                         <a
-                            href="#"
-                            className="mr-4 text-sm font-normal text-gray-500 hover:underline md:mr-6 dark:text-gray-400"
+                            href="https://www.facebook.com/4Soluciones"
+                            className="mr-4 text-xs font-normal text-gray-500 hover:underline md:mr-6 dark:text-gray-400"
                         >
                             Términos y condiciones
                         </a>
@@ -48,7 +48,7 @@ function Footer() {
                 </ul>
                 <div className="flex space-x-6 sm:justify-center">
                     <a
-                        href="#"
+                        href="https://www.facebook.com/4Soluciones"
                         className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                     >
                         <svg
@@ -130,7 +130,7 @@ function Footer() {
                     </a> */}
                 </div>
             </footer>
-            <p className="my-10 text-sm text-center text-gray-500">
+            <p className="my-10 text-xs text-center text-gray-500  font-encodeSansCondensed">
                 &copy; 2019-2025{" "}
                 <a
                     href="https://4soluciones.net/"

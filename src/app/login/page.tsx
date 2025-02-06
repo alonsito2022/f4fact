@@ -41,7 +41,7 @@ function LoginPage() {
 
     return (
         <>
-            <nav className="fixed z-30 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+            <nav className="fixed z-30 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700  font-encodeSansCondensed">
                 <div className="px-3 py-3 lg:px-5 lg:pl-3">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center justify-start">
@@ -51,7 +51,7 @@ function LoginPage() {
                                     className="h-8 mr-3"
                                     alt="FlowBite Logo"
                                 />
-                                <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
+                                <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white ">
                                     4Fact
                                 </span>
                             </a>
@@ -74,7 +74,7 @@ function LoginPage() {
                 </div>
             </nav>
 
-            <div className="flex flex-col items-center justify-center px-6 pt-24 mx-auto  pt:mt-0 dark:bg-gray-900 bg-gradient-to-r">
+            <div className="flex flex-col items-center justify-center px-6 pt-24 mx-auto  pt:mt-0 dark:bg-gray-900 bg-gradient-to-r  font-encodeSansCondensed">
                 {status === "loading" && <p>Cargando...</p>}
                 {status === "unauthenticated" && (
                     <>
@@ -153,11 +153,11 @@ function LoginPage() {
                                     </p>
                                 )}
                                 <div className="w-full max-w-sm p-6 space-y-3 sm:p-8  text-center">
-                                    <span className=" inline-flex items-center gap-2 bg-green-100 text-green-800 text-2xl font-extralight me-2 px-4 py-2.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">
+                                    <span className=" inline-flex items-center gap-2 bg-green-100 text-emerald-500 text-2xl font-extralight me-2 px-4 py-2.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">
                                         <Lock />
                                         Seguro
                                     </span>
-                                    <div className="text-green-400 font-extralight text-sm">
+                                    <div className="text-emerald-500 dark:text-green-400 dark:font-extralight text-sm">
                                         Protegido con un Certificado Digital SSL
                                         (https://), tus datos están
                                         completamente seguros.
