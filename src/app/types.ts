@@ -14,6 +14,7 @@ export interface IUser {
     subsidiaryId?: string;
     subsidiaryName?: string;
     isActive?: boolean;
+    isSuperuser?: boolean;
     avatar?: string | ArrayBuffer | null;
     avatarUrl?: string;
     refreshToken?: string;

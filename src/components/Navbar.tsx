@@ -9,6 +9,7 @@ import ImageCircle from "./images/ImageCircle";
 import UserCircle from "./icons/UserCircle";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/functions";
+import { useSidebar } from "@/components/context/SidebarContext";
 
 function Navbar() {
     // const session = await getServerSession();
@@ -16,44 +17,8 @@ function Navbar() {
     const u = session?.user as IUser;
     const [mounted, setMounted] = useState(false);
     const router = useRouter();
-    const handleToggleSidebarMobile = () => {
-        const sidebar = document.getElementById("sidebar");
-        const sidebarBackdrop = document.getElementById("sidebarBackdrop");
-        const toggleSidebarMobileHamburger = document.getElementById(
-            "toggleSidebarMobileHamburger"
-        );
-        const toggleSidebarMobileClose = document.getElementById(
-            "toggleSidebarMobileClose"
-        );
-        // const toggleSidebarMobileSearch = document.getElementById('toggleSidebarMobileSearch');
-        // const toggleSidebarMobileEl = document.getElementById('toggleSidebarMobile');
-        console.log("clic outside");
-        if (
-            sidebar &&
-            sidebarBackdrop &&
-            toggleSidebarMobileHamburger &&
-            toggleSidebarMobileClose
-        ) {
-            console.log("clic");
 
-            sidebar.classList.toggle("hidden");
-            sidebarBackdrop.classList.toggle("hidden");
-            toggleSidebarMobileHamburger.classList.toggle("hidden");
-            toggleSidebarMobileClose.classList.toggle("hidden");
-
-            // toggleSidebarMobileSearch.addEventListener('click', () => {
-            //     toggleSidebarMobile(sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose);
-            // });
-
-            // toggleSidebarMobileEl.addEventListener('click', () => {
-            //     toggleSidebarMobile(sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose);
-            // });
-
-            // sidebarBackdrop.addEventListener('click', () => {
-            //     toggleSidebarMobile(sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose);
-            // });
-        }
-    };
+    const { isSidebarOpen, toggleSidebar } = useSidebar();
 
     // useEffect(() => {
     //     setMounted(true)
@@ -129,48 +94,50 @@ function Navbar() {
         //     </div>
         // </nav>
 
-        <nav className="fixed z-30 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700  font-encodeSansCondensed">
+        <nav className="fixed top-0 left-0 z-30 w-full h-16 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700 font-encodeSansCondensed">
             {/* <div className=" bg-red-300 dark:bg-red-500 text-center p-1 text-sm">Hoy, {formatDate(new Date())}, se presenta intermitencia en los servidores de la SUNAT. La obtención del PDF y CDR podría demorar, sin embargo puede seguir facturando. Nuestro sistema los enviará automáticamente cuando sea posible.</div> */}
             <div className="px-3 py-3 lg:px-5 lg:pl-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center justify-start">
                         <button
                             type="button"
-                            onClick={handleToggleSidebarMobile}
+                            onClick={toggleSidebar}
                             id="toggleSidebarMobile"
-                            aria-expanded="true"
-                            aria-controls="sidebar"
-                            className="p-2 text-gray-600 rounded cursor-pointer lg:hidden hover:text-gray-900 hover:bg-gray-100 focus:bg-gray-100 dark:focus:bg-gray-700 focus:ring-2 focus:ring-gray-100 dark:focus:ring-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                            className="p-2 text-gray-600 rounded hover:text-gray-900 dark:text-gray-400"
                         >
-                            <svg
-                                id="toggleSidebarMobileHamburger"
-                                className="w-6 h-6"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    fillRule="evenodd"
-                                    d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                    clipRule="evenodd"
-                                ></path>
-                            </svg>
-                            <svg
-                                id="toggleSidebarMobileClose"
-                                className="hidden w-6 h-6"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    fillRule="evenodd"
-                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                    clipRule="evenodd"
-                                ></path>
-                            </svg>
+                            {isSidebarOpen ? (
+                                // Ícono de "Cerrar" (X)
+                                <svg
+                                    className="w-6 h-6"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                        clipRule="evenodd"
+                                    ></path>
+                                </svg>
+                            ) : (
+                                // Ícono de "Menú" (☰)
+                                <svg
+                                    className="w-6 h-6"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                        clipRule="evenodd"
+                                    ></path>
+                                </svg>
+                            )}
                         </button>
 
-                        <a href="/dashboard" className="flex ml-2 md:mr-24">
+                        <a
+                            href="/dashboard"
+                            className="ml-2 md:mr-24 hidden sm:flex"
+                        >
                             <img
                                 src="/images/logo.svg"
                                 className="h-8 mr-3"
@@ -651,7 +618,7 @@ function Navbar() {
                             </div>
                         </div> */}
 
-                        <div>{u?.subsidiaryName}</div>
+                        <div className="text-xs">{u?.subsidiaryName}</div>
 
                         <ThemeToggle />
 
@@ -705,6 +672,14 @@ function Navbar() {
                                         role="none"
                                     >
                                         {u?.email}
+                                    </p>
+                                    <p
+                                        className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
+                                        role="none"
+                                    >
+                                        {u?.isSuperuser
+                                            ? "Superusuario"
+                                            : "Usuario"}
                                     </p>
                                 </div>
                                 <ul className="py-1" role="none">

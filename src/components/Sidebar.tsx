@@ -7,10 +7,12 @@ import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { saveFortnightValue } from "@/redux/features/fortnitghtSlice";
 import { initFlowbite } from "flowbite";
+import { useSidebar } from "@/components/context/SidebarContext";
 
 function Sidebar() {
     const { data: session } = useSession();
     const u = session?.user as IUser;
+    const { isSidebarOpen } = useSidebar();
 
     useEffect(() => {
         if (u !== undefined) {
@@ -31,40 +33,19 @@ function Sidebar() {
         setOpcionSeleccionada(indice);
     };
 
-    const handleToggleSidebarMobile = () => {
-        const sidebar = document.getElementById("sidebar");
-        const toggleSidebarMobileHamburger = document.getElementById(
-            "toggleSidebarMobileHamburger"
-        );
-        const toggleSidebarMobileClose = document.getElementById(
-            "toggleSidebarMobileClose"
-        );
-        const sidebarBackdrop = document.getElementById("sidebarBackdrop");
-        if (
-            sidebar &&
-            toggleSidebarMobileHamburger &&
-            toggleSidebarMobileClose &&
-            sidebarBackdrop
-        ) {
-            sidebar.classList.toggle("hidden");
-            toggleSidebarMobileHamburger.classList.toggle("hidden");
-            toggleSidebarMobileClose.classList.toggle("hidden");
-            sidebarBackdrop.classList.toggle("hidden");
-        }
-    };
-
     return (
         <>
             <aside
                 id="sidebar"
-                className="fixed top-0 left-0 z-20 flex flex-col flex-shrink-0  w-64 h-full pt-20 font-normal duration-75 lg:flex transition-width  font-encodeSansCondensed"
-                aria-label="Sidebar"
+                className={`fixed top-16 inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 transition-transform transform mt-20 font-encodeSansCondensed ${
+                    isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+                } z-50 lg:relative lg:translate-x-0`}
             >
                 <div className="relative flex flex-col flex-1 min-h-0 pt-0 bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                     <div className="flex flex-col flex-1 pt-5 pb-4 overflow-y-auto">
                         <div className="flex-1 px-3 space-y-1 bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                            <ul className="pb-2 space-y-4">
-                                <li>
+                            <ul className="pb-2 space-y-1">
+                                {/* <li>
                                     <form
                                         action="#"
                                         method="GET"
@@ -100,7 +81,7 @@ function Sidebar() {
                                             />
                                         </div>
                                     </form>
-                                </li>
+                                </li> */}
                                 {/* <li>
                                     <a
                                         href="/"
@@ -496,12 +477,6 @@ function Sidebar() {
                     </div> */}
                 </div>
             </aside>
-
-            <div
-                className="fixed inset-0 z-10 lg:hidden bg-gray-900/50 dark:bg-gray-900/90"
-                id="sidebarBackdrop"
-                onClick={handleToggleSidebarMobile}
-            ></div>
         </>
     );
 }

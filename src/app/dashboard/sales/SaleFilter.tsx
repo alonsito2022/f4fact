@@ -90,87 +90,81 @@ function SaleFilter({
     });
 
     return (
-        <div className="items-center justify-between block sm:flex md:divide-x md:divide-gray-100 dark:divide-gray-700">
-            <div className="flex items-center mb-4 sm:mb-0">
-                <form className="sm:pr-3" action="#" method="GET">
-                    <div className="relative inline-flex gap-2">
-                        <select
-                            value={filterObj.documentType}
-                            name="documentType"
-                            onChange={handleInputChange}
-                            className="filter-form-control"
-                        >
-                            <option value={"NA"} disabled>
-                                Filtrar por tipo de Doc.
-                            </option>
-                            <option value={"01"}>FACTURA ELECTRÓNICA</option>
-                            <option value={"03"}>
-                                BOLETA DE VENTA ELECTRÓNICA
-                            </option>
-                            <option value={"07"}>
-                                NOTA DE CRÉDITO ELECTRÓNICA
-                            </option>
-                            <option value={"08"}>
-                                NOTA DE DÉBITO ELECTRÓNICA
-                            </option>
-                        </select>
-                        {suppliersError ? (
-                            <div>
-                                Error: No autorizado o error en la consulta.{" "}
-                                {suppliersError.message}
-                            </div>
-                        ) : (
-                            <>
-                                <input
-                                    type="search"
-                                    name="supplierName"
-                                    onChange={handleInputChange}
-                                    value={filterObj.supplierName}
-                                    onFocus={(e) => e.target.select()}
-                                    autoComplete="off"
-                                    disabled={suppliersLoading}
-                                    className="filter-form-control lg:w-96"
-                                    list="supplierList"
-                                    placeholder="Buscar por cliente"
-                                />
-                                <datalist id="supplierList">
-                                    {suppliersData?.allSuppliers?.map(
-                                        (n: ISupplier, index: number) => (
-                                            <option
-                                                key={index}
-                                                data-key={n.id}
-                                                value={`${n.documentNumber} ${n.names}`}
-                                            />
-                                        )
-                                    )}
-                                </datalist>
-                            </>
-                        )}
-
-                        <input
-                            type="date"
-                            name="startDate"
-                            onChange={handleInputChange}
-                            value={filterObj.startDate}
-                            className="filter-form-control"
-                        />
-
-                        <input
-                            type="date"
-                            name="endDate"
-                            onChange={handleInputChange}
-                            value={filterObj.endDate}
-                            className="filter-form-control"
-                        />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <form
+                className="flex flex-wrap gap-2 sm:pr-3"
+                action="#"
+                method="GET"
+            >
+                <select
+                    value={filterObj.documentType}
+                    name="documentType"
+                    onChange={handleInputChange}
+                    className="filter-form-control w-full sm:w-auto"
+                >
+                    <option value={"NA"} disabled>
+                        Filtrar por tipo de Doc.
+                    </option>
+                    <option value={"01"}>FACTURA ELECTRÓNICA</option>
+                    <option value={"03"}>BOLETA DE VENTA ELECTRÓNICA</option>
+                    <option value={"07"}>NOTA DE CRÉDITO ELECTRÓNICA</option>
+                    <option value={"08"}>NOTA DE DÉBITO ELECTRÓNICA</option>
+                </select>
+                {suppliersError ? (
+                    <div>
+                        Error: No autorizado o error en la consulta.{" "}
+                        {suppliersError.message}
                     </div>
-                </form>
-            </div>
+                ) : (
+                    <>
+                        <input
+                            type="search"
+                            name="supplierName"
+                            onChange={handleInputChange}
+                            value={filterObj.supplierName}
+                            onFocus={(e) => e.target.select()}
+                            autoComplete="off"
+                            disabled={suppliersLoading}
+                            className="filter-form-control w-full lg:w-96"
+                            list="supplierList"
+                            placeholder="Buscar por cliente"
+                        />
+                        <datalist id="supplierList">
+                            {suppliersData?.allSuppliers?.map(
+                                (n: ISupplier, index: number) => (
+                                    <option
+                                        key={index}
+                                        data-key={n.id}
+                                        value={`${n.documentNumber} ${n.names}`}
+                                    />
+                                )
+                            )}
+                        </datalist>
+                    </>
+                )}
 
-            <div className="flex items-center w-full sm:justify-end gap-2">
+                <input
+                    type="date"
+                    name="startDate"
+                    onChange={handleInputChange}
+                    value={filterObj.startDate}
+                    className="filter-form-control w-full sm:w-auto"
+                />
+
+                <input
+                    type="date"
+                    name="endDate"
+                    onChange={handleInputChange}
+                    value={filterObj.endDate}
+                    className="filter-form-control w-full sm:w-auto"
+                />
+            </form>
+
+            <div className="flex flex-wrap justify-end gap-2">
                 <button
                     id="btn-search"
                     type="button"
-                    className="btn-blue px-5 py-3 inline-flex items-center gap-2"
+                    className="btn-blue px-5 py-3 flex items-center gap-2 w-full sm:w-auto"
                     onClick={handleClickButton}
                     disabled={filteredSaleLoading}
                 >
@@ -182,7 +176,7 @@ function SaleFilter({
                     target="_blank"
                     title="Descargar EXCEL"
                     download
-                    className="btn-green px-5 py-3 inline-flex items-center gap-2 m-0"
+                    className="btn-green px-5 py-3 flex items-center gap-2 w-full sm:w-auto"
                 >
                     <Excel />
                     Descarga para excel

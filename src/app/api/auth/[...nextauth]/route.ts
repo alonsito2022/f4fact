@@ -18,6 +18,7 @@ const TOKEN_AUTH_MUTATION = gql`
                 fullName
                 email
                 avatar
+                isSuperuser
                 subsidiary {
                     id
                     name
@@ -69,6 +70,7 @@ const handler = NextAuth({
                             fullName: data.tokenAuth.user.fullName,
                             email: data.tokenAuth.user.email,
                             avatar: data.tokenAuth.user.avatar,
+                            isSuperuser: data.tokenAuth.user.isSuperuser,
                             accessToken: data.tokenAuth.token,
                             subsidiaryId: data.tokenAuth.user.subsidiary.id,
                             subsidiaryName: data.tokenAuth.user.subsidiary.name,

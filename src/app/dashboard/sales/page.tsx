@@ -110,8 +110,8 @@ function SalePage() {
     });
     return (
         <>
-            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200  dark:bg-gray-800 dark:border-gray-700">
-                <div className="w-full mb-1">
+            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <div className="w-full">
                     <Breadcrumb section={"Ventas"} article={"Ventas"} />
                     <SaleFilter
                         setFilterObj={setFilterObj}
@@ -128,7 +128,9 @@ function SalePage() {
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden shadow">
                             {filteredPurchasesError ? (
-                                <div>{filteredPurchasesError.message}</div>
+                                <div className="p-4 text-red-500 text-center">
+                                    {filteredPurchasesError.message}
+                                </div>
                             ) : (
                                 <SaleList
                                     filteredPurchasesData={

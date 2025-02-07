@@ -6,100 +6,30 @@ import Popover from "@/components/Popover";
 function SaleList({ filteredPurchasesData }: any) {
     return (
         <>
-            <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                 <thead className="bg-gray-100 dark:bg-gray-700">
-                    <tr>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            FECHA EMISION
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            TIPO
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            SERIE
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            NUM.
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            DENOMINACIÓN
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            M
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            TOTAL ONEROSA
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            TOTAL GRATUITA
-                        </th>
-
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            PAGADO?
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            ANULADO?
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            ENVIADO AL CLIENTE
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            PDF
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            XML
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            CDR
-                        </th>
-                        <th
-                            scope="col"
-                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                        >
-                            ESTADO EN LA SUNAT
-                        </th>
+                    <tr className="text-xs text-left text-gray-500 uppercase dark:text-gray-400">
+                        {[
+                            "Fecha Emisión",
+                            "Tipo",
+                            "Serie",
+                            "Num.",
+                            "Denominación",
+                            "M",
+                            "Total Onerosa",
+                            "Total Gratuita",
+                            "Pagado?",
+                            "Anulado?",
+                            "Enviado al Cliente",
+                            "PDF",
+                            "XML",
+                            "CDR",
+                            "Estado SUNAT",
+                        ].map((header, index) => (
+                            <th key={index} scope="col" className="p-4">
+                                {header}
+                            </th>
+                        ))}
                     </tr>
                 </thead>
                 <tbody>
@@ -109,9 +39,7 @@ function SaleList({ filteredPurchasesData }: any) {
                                 key={item.id}
                                 className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                             >
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {item.emitDate}
-                                </td>
+                                <td className="px-4 py-2">{item.emitDate}</td>
                                 <td className="px-4 py-2">
                                     {item.documentType?.replace("A_", "")}
                                 </td>

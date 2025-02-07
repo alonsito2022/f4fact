@@ -1,7 +1,10 @@
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
+import MainContent from "@/components/MainContent";
 import ReduxProviders from "@/redux/providers";
+import { SidebarProvider } from "@/components/context/SidebarContext";
+
 export default function DashboardLayout({
     children,
 }: {
@@ -9,19 +12,13 @@ export default function DashboardLayout({
 }) {
     return (
         <ReduxProviders>
-            {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem> */}
-            <Navbar />
-            <div className="flex pt-20 overflow-hidden bg-gray-50 dark:bg-gray-900">
-                <Sidebar />
-                <div
-                    id="main-content"
-                    className="relative w-full h-full overflow-y-auto lg:ms-64 bg-gray-50 dark:bg-gray-900  font-encodeSansCondensed"
-                >
-                    <main>{children}</main>
-                    <Footer />
+            <SidebarProvider>
+                <Navbar />
+                <div className="flex pt-20 overflow-hidden bg-gray-50 dark:bg-gray-900">
+                    <Sidebar />
+                    <MainContent>{children}</MainContent>
                 </div>
-            </div>
-            {/* </ThemeProvider> */}
+            </SidebarProvider>
         </ReduxProviders>
     );
 }
