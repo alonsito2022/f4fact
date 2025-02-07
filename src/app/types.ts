@@ -157,6 +157,7 @@ export interface ISubsidiary {
     ubigeo?: string;
     companyId?: number;
     companyName?: string;
+    company?: ICompany;
 }
 
 export interface IWarehouse {

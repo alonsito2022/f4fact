@@ -39,7 +39,9 @@ function SaleList({ filteredPurchasesData }: any) {
                                 key={item.id}
                                 className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                             >
-                                <td className="px-4 py-2">{item.emitDate}</td>
+                                <td className="px-4 py-2 text-nowrap">
+                                    {item.emitDate}
+                                </td>
                                 <td className="px-4 py-2">
                                     {item.documentType?.replace("A_", "")}
                                 </td>

@@ -12,17 +12,20 @@ const initialStateFilterObj = {
     endDate: today,
     clientId: 0,
     subsidiaryId: "",
+    subsidiaryName: "",
     supplierName: "",
     documentType: "01",
 };
 const SALES_QUERY = gql`
     query (
+        $subsidiaryId: Int!
         $clientId: Int!
         $startDate: Date!
         $endDate: Date!
         $documentType: String!
     ) {
         allSales(
+            subsidiaryId: $subsidiaryId
             clientId: $clientId
             startDate: $startDate
             endDate: $endDate
@@ -66,16 +69,23 @@ function SalePage() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
     const { data: session } = useSession();
     const [jwtToken, setJwtToken] = useState<string | null>(null);
-    const u = session?.user as IUser;
 
     useEffect(() => {
         if (session?.user) {
             const user = session.user as IUser;
             console.log("user", user);
-            setFilterObj({
-                ...filterObj,
-                subsidiaryId: user?.subsidiaryId!,
-            });
+            if (user?.isSuperuser) {
+                setFilterObj({
+                    ...filterObj,
+                    subsidiaryId: "0",
+                });
+            } else {
+                setFilterObj({
+                    ...filterObj,
+                    subsidiaryId: user?.subsidiaryId!,
+                });
+            }
+
             setJwtToken(user.accessToken as string);
         }
     }, [session]);
@@ -97,7 +107,8 @@ function SalePage() {
     ] = useLazyQuery(SALES_QUERY, {
         context: getAuthContext(),
         variables: {
-            clientId: filterObj.clientId,
+            subsidiaryId: Number(filterObj.subsidiaryId),
+            clientId: Number(filterObj.clientId),
             startDate: filterObj.startDate,
             endDate: filterObj.endDate,
             documentType: filterObj.documentType,
@@ -106,7 +117,7 @@ function SalePage() {
         onCompleted(data) {
             console.log("object", data, getAuthContext());
         },
-        onError: (err) => console.error("Error in purchases:", err),
+        onError: (err) => console.error("Error in sales:", err),
     });
     return (
         <>

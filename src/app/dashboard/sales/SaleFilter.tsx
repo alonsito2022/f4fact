@@ -5,7 +5,7 @@ import Search from "@/components/icons/Search";
 import Filter from "@/components/icons/Filter";
 import { useRouter } from "next/navigation";
 import { gql, useQuery } from "@apollo/client";
-import { ISupplier } from "@/app/types";
+import { ISubsidiary, ISupplier } from "@/app/types";
 import { initFlowbite } from "flowbite";
 import Excel from "@/components/icons/Excel";
 
@@ -16,6 +16,20 @@ const SUPPLIERS_QUERY = gql`
             id
             address
             documentNumber
+        }
+    }
+`;
+
+const SUBSIDIARIES_QUERY = gql`
+    query {
+        subsidiaries {
+            id
+            address
+            serial
+            company {
+                id
+                businessName
+            }
         }
     }
 `;
@@ -72,6 +86,32 @@ function SaleFilter({
             } else {
                 console.log("sin datalist");
             }
+        } else if (
+            name === "subsidiaryName" &&
+            event.target instanceof HTMLInputElement
+        ) {
+            const dataList = event.target.list;
+            if (dataList) {
+                const option = Array.from(dataList.options).find(
+                    (option) => option.value === value
+                );
+                if (option) {
+                    const selectedId = option.getAttribute("data-key");
+                    setFilterObj({
+                        ...filterObj,
+                        subsidiaryId: Number(selectedId),
+                        subsidiaryName: value,
+                    });
+                } else {
+                    setFilterObj({
+                        ...filterObj,
+                        subsidiaryId: 0,
+                        subsidiaryName: value,
+                    });
+                }
+            } else {
+                console.log("sin datalist");
+            }
         } else setFilterObj({ ...filterObj, [name]: value });
     };
     const getAuthContext = () => ({
@@ -88,11 +128,18 @@ function SaleFilter({
         context: getAuthContext(),
         skip: !jwtToken,
     });
-
+    const {
+        loading: subsidiariesLoading,
+        error: subsidiariesError,
+        data: subsidiariesData,
+    } = useQuery(SUBSIDIARIES_QUERY, {
+        context: getAuthContext(),
+        skip: !jwtToken,
+    });
     return (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <form
-                className="flex flex-wrap gap-2 sm:pr-3"
+                className="grid lg:grid-cols-4 gap-4 sm:pr-3"
                 action="#"
                 method="GET"
             >
@@ -117,7 +164,7 @@ function SaleFilter({
                     </div>
                 ) : (
                     <>
-                        <input
+                        {/* <input
                             type="search"
                             name="supplierName"
                             onChange={handleInputChange}
@@ -125,7 +172,7 @@ function SaleFilter({
                             onFocus={(e) => e.target.select()}
                             autoComplete="off"
                             disabled={suppliersLoading}
-                            className="filter-form-control w-full lg:w-96"
+                            className="filter-form-control w-full"
                             list="supplierList"
                             placeholder="Buscar por cliente"
                         />
@@ -136,6 +183,30 @@ function SaleFilter({
                                         key={index}
                                         data-key={n.id}
                                         value={`${n.documentNumber} ${n.names}`}
+                                    />
+                                )
+                            )}
+                        </datalist> */}
+
+                        <input
+                            type="search"
+                            name="subsidiaryName"
+                            onChange={handleInputChange}
+                            value={filterObj.subsidiaryName}
+                            onFocus={(e) => e.target.select()}
+                            autoComplete="off"
+                            disabled={subsidiariesLoading}
+                            className="filter-form-control w-full"
+                            list="subsidiaryList"
+                            placeholder="Buscar por sede"
+                        />
+                        <datalist id="subsidiaryList">
+                            {subsidiariesData?.subsidiaries?.map(
+                                (n: ISubsidiary, index: number) => (
+                                    <option
+                                        key={index}
+                                        data-key={n.id}
+                                        value={`${n.company?.businessName} ${n.serial}`}
                                     />
                                 )
                             )}
@@ -160,7 +231,7 @@ function SaleFilter({
                 />
             </form>
 
-            <div className="flex flex-wrap justify-end gap-2">
+            <div className="flex flex-wrap justify-end gap-4">
                 <button
                     id="btn-search"
                     type="button"
