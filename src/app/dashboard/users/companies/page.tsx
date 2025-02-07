@@ -31,7 +31,7 @@ const initialState = {
   isProduction: false,
   productionDate: "",
   disabledDate: "",
-  passwordSignature: "",
+  certificationKey: null,
   certification: null,
   certificationExpirationDate: "",
   withStock: false,

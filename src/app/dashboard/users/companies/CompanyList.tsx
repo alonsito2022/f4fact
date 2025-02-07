@@ -31,9 +31,9 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
             isEnabled
             productionDate
             isProduction
-            disabledDate
-            passwordSignature
+            disabledDate            
             certification
+            certificationKey
             certificationExpirationDate
             withStock
             catalog

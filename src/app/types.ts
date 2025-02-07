@@ -45,6 +45,7 @@ export interface ICompany {
     disabledDate?: string;
     passwordSignature?: string;
     certification?: string | ArrayBuffer | null;
+    certificationKey?: string | ArrayBuffer | null;
     certificationExpirationDate?: string;
     withStock?: boolean;
     catalog?: boolean;

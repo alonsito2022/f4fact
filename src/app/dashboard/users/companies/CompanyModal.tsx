@@ -2,6 +2,7 @@ import { ChangeEvent, FormEvent, MouseEvent, useEffect, useRef } from "react";
 import { Modal, ModalOptions } from 'flowbite'
 import { toast } from "react-toastify";
 import { DocumentNode, gql, useMutation } from "@apollo/client";
+import { ICompany } from "@/app/types";
 const CREATE_COMPANY = gql`
   mutation CreateCompany(
     $typeDoc: String!,
@@ -21,9 +22,9 @@ const CREATE_COMPANY = gql`
     $percentageIgv: Int!,
     $isEnabled: Boolean!,
     $isProduction: Boolean!,
-    $certification: Upload,  
+    $certification: String!, # Upload,  
     $certificationExpirationDate: String!,
-    $passwordSignature: String!,
+    $certificationKey: String!, #Upload,
     $withStock: Boolean!,
     $catalog: Boolean!,
     $invoiceF: Boolean!,
@@ -51,7 +52,7 @@ const CREATE_COMPANY = gql`
       isProduction: $isProduction,
       certification: $certification, 
       certificationExpirationDate: $certificationExpirationDate,
-      passwordSignature: $passwordSignature,
+      certificationKey: $certificationKey,
       withStock: $withStock,
       catalog: $catalog,
       invoiceF: $invoiceF,
@@ -59,6 +60,7 @@ const CREATE_COMPANY = gql`
       guide: $guide,
       app: $app
     ) {
+      success
       message
     }
   }
@@ -83,9 +85,9 @@ const UPDATE_COMPANY = gql`
     $percentageIgv: Int!,
     $isEnabled: Boolean!,
     $isProduction: Boolean!,
-    $certification: Upload,  
+    $certification: String!, #Upload,  
     $certificationExpirationDate: String!,
-    $passwordSignature: String!,
+    $certificationKey: String!, #Upload,
     $withStock: Boolean!,
     $catalog: Boolean!,
     $invoiceF: Boolean!,
@@ -114,7 +116,7 @@ const UPDATE_COMPANY = gql`
       isProduction: $isProduction,
       certification: $certification, 
       certificationExpirationDate: $certificationExpirationDate,
-      passwordSignature: $passwordSignature,
+      certificationKey: $certificationKey,
       withStock: $withStock,
       catalog: $catalog,
       invoiceF: $invoiceF,
@@ -154,31 +156,209 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
     ) => {
         const { name, value, type } = event.target;
 
-        if (name === "certification" && event.target instanceof HTMLInputElement) {
+        if ((name === "certification" || name === "certificationKey") && event.target instanceof HTMLInputElement) {
+           const file = event.target.files?.[0];
+        
+            if (file) {
+                try {
+                    const base64 = await new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result as string);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+
+                    setCompany((prevCompany: ICompany) => ({
+                        ...prevCompany,
+                        [name]: base64
+                        // {
+                            // file: file,
+                            // base64: base64
+                        // }
+                    }));
+                } catch (error) {
+                    console.error('File reading error:', error);
+                }
+            }
             // Verificación adicional para asegurarse de que `files` esté disponible
-            const files = event.target.files; // Ahora TypeScript sabe que `files` existe
-            setCompany({
-                ...company,
-                [name]: files?.[0] ?? null, // Guardar el archivo seleccionado o null si no hay archivo
-            });
-        } else {
-            // Manejo general para texto, área de texto y selección
-            setCompany({
-                ...company,
+            // const files = event.target.files; // Ahora TypeScript sabe que `files` existe
+            // setCompany((prevCompany: ICompany) => ({
+            //     ...prevCompany,
+            //     [name]: files?.[0] ?? null, // Guardar el archivo seleccionado o null si no hay archivo
+            // }));
+        }else {
+            setCompany((prevCompany: ICompany) => ({
+                ...prevCompany,
                 [name]: value,
-            });
+            }));
         }
+        
     };
     const handleCheckboxChange = ({ target: { name, checked } }: ChangeEvent<HTMLInputElement>) => {
         setCompany({ ...company, [name]: checked });
     }
+    // const fileToBase64 = (file: File): Promise<string> => {
+    //     return new Promise((resolve, reject) => {
+    //         const reader = new FileReader();
+    //         reader.readAsDataURL(file);
+    //         reader.onload = () => resolve(reader.result as string);
+    //         reader.onerror = error => reject(error);
+    //     });
+    // };
     const handleSaveCompany = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const formData = new FormData();
-        formData.append('certification', company.certification);
-        console.log(formData)
+        // const formData = new FormData();
+        // if (company.certification) {
+        //     formData.append('certification', company.certification);
+        // }
+        // if (company.certificationKey) {
+        //     formData.append('certificationKey', company.certificationKey);
+        // }
+        // console.log('Files in FormData:', 
+        //     formData.get('certification'), 
+        //     formData.get('certificationKey')
+        // );
+        // formData.append('data', JSON.stringify({
+        //     typeDoc: "6",
+        //     doc: company.doc,
+        //     shortName: company.shortName,
+        //     businessName: company.businessName,
+        //     address: company.address,
+        //     email: company.email,
+        //     phone: company.phone,
+        //     userSol: company.userSol,
+        //     keySol: company.keySol,
+        //     limit: company.limit,
+        //     emissionInvoiceWithPreviousDate: company.emissionInvoiceWithPreviousDate,
+        //     emissionReceiptWithPreviousDate: company.emissionReceiptWithPreviousDate,
+        //     logo: company.logo,
+        //     includeIgv: company.includeIgv,
+        //     percentageIgv: company.percentageIgv,
+        //     isEnabled: company.isEnabled,
+        //     isProduction: company.isProduction,
+        //     certificationExpirationDate: company.certificationExpirationDate,
+        //     withStock: company.withStock,
+        //     catalog: company.catalog,
+        //     invoiceF: company.invoiceF,
+        //     invoiceB: company.invoiceB,
+        //     guide: company.guide,
+        //     app: company.app
+        // }));
+        // console.log('Data:',company)
+        // console.log('FormData:',formData)
+        // let queryFetch: String = "";
+        // if (Number(company.id) !== 0) {
+        //     queryFetch = `
+        //         mutation{
+        //             updateCompany(
+        //                 id:${company.id}, 
+        //                 typeDoc:"6",
+        //                 doc: "${company.doc}", 
+        //                 shortName: "${company.shortName}", 
+        //                 businessName: "${company.businessName}", 
+        //                 address: "${company.address}", 
+        //                 email: "${company.email}",
+        //                 phone: "${company.phone}",
+        //                 userSol: "${company.userSol}",
+        //                 keySol: "${company.keySol}",
+        //                 limit: ${company.limit},
+        //                 emissionInvoiceWithPreviousDate: ${company.emissionInvoiceWithPreviousDate},
+        //                 emissionReceiptWithPreviousDate: ${company.emissionReceiptWithPreviousDate},
+        //                 logo: "${company.logo}",                       
+        //                 includeIgv: ${company.includeIgv},
+        //                 percentageIgv: ${company.percentageIgv},
+        //                 isEnabled: ${company.isEnabled},
+        //                 isProduction: ${company.isProduction},
+        //                 passwordSignature: "${company.passwordSignature}",
+        //                 certification: "${company.certification}",
+        //                 certificationExpirationDate: "${company.certificationExpirationDate}",
+        //                 withStock: ${company.withStock},
+        //                 catalog: ${company.catalog},
+        //                 invoiceF: ${company.invoiceF},
+        //                 invoiceB: ${company.invoiceB},
+        //                 guide: ${company.guide},
+        //                 app: ${company.app},
+        //             ){
+        //                 message
+        //             }
+        //         }
+        //     `;
+        //     console.log(queryFetch)
+        //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+        //         method: 'POST',
+        //         headers: { "Content-Type": "application/json" },
+        //         body: JSON.stringify({ query: queryFetch })
+        //     })
+        //         .then(res => res.json())
+        //         .then(data => {
+        //             toast(data.data.updateCompany.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
+        //             setCompany(initialState);
+        //             fetchCompanies();
+        //             modal.hide();
+
+        //         }).catch(e => console.log(e))
+        // }
+        // else {
+        //     queryFetch = `
+        //         mutation{
+        //             createCompany(
+        //                 typeDoc:"6",
+        //                 doc: "${company.doc}", 
+        //                 shortName: "${company.shortName}", 
+        //                 businessName: "${company.businessName}", 
+        //                 address: "${company.address}", 
+        //                 email: "${company.email}",
+        //                 phone: "${company.phone}",
+        //                 userSol: "${company.userSol}",
+        //                 keySol: "${company.keySol}",
+        //                 limit: ${company.limit},
+        //                 emissionInvoiceWithPreviousDate: ${company.emissionInvoiceWithPreviousDate},
+        //                 emissionReceiptWithPreviousDate: ${company.emissionReceiptWithPreviousDate},
+        //                 logo: "${company.logo}",                       
+        //                 includeIgv: ${company.includeIgv},
+        //                 percentageIgv: ${company.percentageIgv},
+        //                 isEnabled: ${company.isEnabled},
+        //                 isProduction: ${company.isProduction},
+        //                 passwordSignature: "${company.passwordSignature}",
+        //                 certification: "${company.logo}",
+        //                 certificationExpirationDate: "${company.certificationExpirationDate}",
+        //                 withStock: ${company.withStock},
+        //                 catalog: ${company.catalog},
+        //                 invoiceF: ${company.invoiceF},
+        //                 invoiceB: ${company.invoiceB},
+        //                 guide: ${company.guide},
+        //                 app: ${company.app},
+        //             ){
+        //                 message
+        //             }
+        //         }
+        //     `;
+        //     console.log(queryFetch)
+        //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+        //         method: 'POST',
+        //         headers: { "Content-Type": "application/json" },
+        //         body: formData
+        //         // body: JSON.stringify({ query: queryFetch })
+        //     })
+        //         .then(res => res.json())
+        //         .then(data => {
+        //             toast(data.data.createCompany.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
+        //             setCompany(initialState);
+        //             fetchCompanies();
+        //             modal.hide();
+        //         }).catch(e => console.log(e))
+        // }
+
         try {
+            // const certificationBase64 = company.certification 
+            // ? await fileToBase64(company.certification) 
+            // : null;
+        
+            // const certificationKeyBase64 = company.certificationKey 
+            // ? await fileToBase64(company.certificationKey) 
+            // : null;
             // Si la compañía tiene un ID, es una actualización
+            console.log("Empresa:", company)
             if (Number(company.id) !== 0) {
                 const { data, errors } = await updateCompany({
                     variables: {
@@ -200,9 +380,9 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
                         percentageIgv: company.percentageIgv,
                         isEnabled: company.isEnabled,
                         isProduction: company.isProduction,
-                        certification: formData.get('certification'),
+                        certification: company.certification,
                         certificationExpirationDate: company.certificationExpirationDate,
-                        passwordSignature: company.passwordSignature,
+                        certificationKey: company.certificationKey,
                         withStock: company.withStock,
                         catalog: company.catalog,
                         invoiceF: company.invoiceF,
@@ -229,7 +409,7 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
                 }
             } 
             // Si no tiene un ID, es una creación
-            else {
+            else {               
                 const { data, errors } = await createCompany({
                     variables: {
                         typeDoc: "6",
@@ -249,9 +429,9 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
                         percentageIgv: company.percentageIgv,
                         isEnabled: company.isEnabled,
                         isProduction: company.isProduction,
-                        certification: formData.get('certification'),
+                        certification: company.certification ,
                         certificationExpirationDate: company.certificationExpirationDate,
-                        passwordSignature: company.passwordSignature,
+                        certificationKey: company.certificationKey,
                         withStock: company.withStock,
                         catalog: company.catalog,
                         invoiceF: company.invoiceF,
@@ -286,108 +466,7 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
             });
         }
     };
-    // let queryFetch: String = "";
-    // if (Number(company.id) !== 0) {
-    //     queryFetch = `
-    //         mutation{
-    //             updateCompany(
-    //                 id:${company.id}, 
-    //                 typeDoc:"6",
-    //                 doc: "${company.doc}", 
-    //                 shortName: "${company.shortName}", 
-    //                 businessName: "${company.businessName}", 
-    //                 address: "${company.address}", 
-    //                 email: "${company.email}",
-    //                 phone: "${company.phone}",
-    //                 userSol: "${company.userSol}",
-    //                 keySol: "${company.keySol}",
-    //                 limit: ${company.limit},
-    //                 emissionInvoiceWithPreviousDate: ${company.emissionInvoiceWithPreviousDate},
-    //                 emissionReceiptWithPreviousDate: ${company.emissionReceiptWithPreviousDate},
-    //                 logo: "${company.logo}",                       
-    //                 includeIgv: ${company.includeIgv},
-    //                 percentageIgv: ${company.percentageIgv},
-    //                 isEnabled: ${company.isEnabled},
-    //                 isProduction: ${company.isProduction},
-    //                 passwordSignature: "${company.passwordSignature}",
-    //                 certification: "${company.certification}",
-    //                 certificationExpirationDate: "${company.certificationExpirationDate}",
-    //                 withStock: ${company.withStock},
-    //                 catalog: ${company.catalog},
-    //                 invoiceF: ${company.invoiceF},
-    //                 invoiceB: ${company.invoiceB},
-    //                 guide: ${company.guide},
-    //                 app: ${company.app},
-    //             ){
-    //                 message
-    //             }
-    //         }
-    //     `;
-    //     console.log(queryFetch)
-    //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-    //         method: 'POST',
-    //         headers: { "Content-Type": "application/json" },
-    //         body: JSON.stringify({ query: queryFetch })
-    //     })
-    //         .then(res => res.json())
-    //         .then(data => {
-    //             toast(data.data.updateCompany.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-    //             setCompany(initialState);
-    //             fetchCompanies();
-    //             modal.hide();
-
-    //         }).catch(e => console.log(e))
-    // }
-    // else {
-    //     queryFetch = `
-    //         mutation{
-    //             createCompany(
-    //                 typeDoc:"6",
-    //                 doc: "${company.doc}", 
-    //                 shortName: "${company.shortName}", 
-    //                 businessName: "${company.businessName}", 
-    //                 address: "${company.address}", 
-    //                 email: "${company.email}",
-    //                 phone: "${company.phone}",
-    //                 userSol: "${company.userSol}",
-    //                 keySol: "${company.keySol}",
-    //                 limit: ${company.limit},
-    //                 emissionInvoiceWithPreviousDate: ${company.emissionInvoiceWithPreviousDate},
-    //                 emissionReceiptWithPreviousDate: ${company.emissionReceiptWithPreviousDate},
-    //                 logo: "${company.logo}",                       
-    //                 includeIgv: ${company.includeIgv},
-    //                 percentageIgv: ${company.percentageIgv},
-    //                 isEnabled: ${company.isEnabled},
-    //                 isProduction: ${company.isProduction},
-    //                 passwordSignature: "${company.passwordSignature}",
-    //                 certification: "${company.logo}",
-    //                 certificationExpirationDate: "${company.certificationExpirationDate}",
-    //                 withStock: ${company.withStock},
-    //                 catalog: ${company.catalog},
-    //                 invoiceF: ${company.invoiceF},
-    //                 invoiceB: ${company.invoiceB},
-    //                 guide: ${company.guide},
-    //                 app: ${company.app},
-    //             ){
-    //                 message
-    //             }
-    //         }
-    //     `;
-    //     console.log(queryFetch)
-    //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-    //         method: 'POST',
-    //         headers: { "Content-Type": "application/json" },
-    //         body: JSON.stringify({ query: queryFetch })
-    //     })
-    //         .then(res => res.json())
-    //         .then(data => {
-    //             toast(data.data.createCompany.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-    //             setCompany(initialState);
-    //             fetchCompanies();
-    //             modal.hide();
-    //         }).catch(e => console.log(e))
-    // }
-    // };
+    
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]; // Obtiene el primer archivo seleccionado
@@ -521,16 +600,15 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
                                             <label htmlFor="certificationExpirationDate" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Fecha expiración</label>
                                         </div>
 
-                                        <div className="sm:col-span-2 relative z-0 w-full mb-2 group">
+                                        <div className="sm:col-span-3 relative z-0 w-full mb-2 group">
                                             <input ref={fileInputRef} onChange={handleInputChange} className="block pt-2.5 pb-1 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" id="certification" name="certification" type="file" />
                                             <label className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6" htmlFor="certification">Certificado Digital</label>
+                                            {company.certification && (<p className="text-sm text-gray-500 mt-1">Archivo cargado: server.pem</p>)}
                                         </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <input type="text" name="passwordSignature" id="passwordSignature" value={company?.passwordSignature ? company.passwordSignature : ''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder="" required />
-                                            <label htmlFor="passwordSignature" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Contraseña firma</label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-
+                                        <div className="sm:col-span-3 relative z-0 w-full mb-2 group">
+                                            <input ref={fileInputRef} onChange={handleInputChange} className="block pt-2.5 pb-1 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" id="certificationKey" name="certificationKey" type="file" />
+                                            <label className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6" htmlFor="certificationKey">Clave Certificado Digital</label>
+                                            {company.certificationKey && (<p className="text-sm text-gray-500 mt-1">Archivo cargado: server_key.pem</p>)}
                                         </div>
                                     </div>
                                 </fieldset>
