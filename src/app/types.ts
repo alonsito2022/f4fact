@@ -13,6 +13,7 @@ export interface IUser {
     fullName?: string;
     subsidiaryId?: string;
     subsidiaryName?: string;
+    subsidiary?: ISubsidiary;
     isActive?: boolean;
     isSuperuser?: boolean;
     avatar?: string | ArrayBuffer | null;
