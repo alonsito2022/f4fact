@@ -6,6 +6,7 @@ import SaleFilter from "./SaleFilter";
 import { gql, useLazyQuery } from "@apollo/client";
 import { useSession } from "next-auth/react";
 import { IUser } from "@/app/types";
+import { initFlowbite } from "flowbite";
 const today = new Date().toISOString().split("T")[0];
 const initialStateFilterObj = {
     startDate: today,
@@ -14,7 +15,10 @@ const initialStateFilterObj = {
     subsidiaryId: "",
     subsidiaryName: "",
     supplierName: "",
-    documentType: "01",
+    documentType: "NA",
+    page: 1,
+    pageSize: 50,
+    isSuperuser: false,
 };
 const SALES_QUERY = gql`
     query (
@@ -23,6 +27,8 @@ const SALES_QUERY = gql`
         $startDate: Date!
         $endDate: Date!
         $documentType: String!
+        $page: Int!
+        $pageSize: Int!
     ) {
         allSales(
             subsidiaryId: $subsidiaryId
@@ -30,37 +36,50 @@ const SALES_QUERY = gql`
             startDate: $startDate
             endDate: $endDate
             documentType: $documentType
+            page: $page
+            pageSize: $pageSize
         ) {
-            id
-            emitDate
-            operationDate
-            currencyType
-            documentType
-            serial
-            correlative
-            totalAmount
-            totalTaxed
-            totalDiscount
-            totalExonerated
-            totalUnaffected
-            totalFree
-            totalIgv
-            totalToPay
-            totalPayed
-            operationStatus
-            operationStatusReadable
-            sendClient
+            sales {
+                id
+                emitDate
+                operationDate
+                currencyType
+                documentType
+                serial
+                correlative
+                totalAmount
+                totalTaxed
+                totalDiscount
+                totalExonerated
+                totalUnaffected
+                totalFree
+                totalIgv
+                totalToPay
+                totalPayed
+                operationStatus
+                operationStatusReadable
+                sendClient
 
-            linkXml
-            linkXmlLow
-            linkCdr
-            linkCdrLow
-            sunatStatus
-            sunatDescription
-            sunatDescriptionLow
-            client {
-                names
+                linkXml
+                linkXmlLow
+                linkCdr
+                linkCdrLow
+                sunatStatus
+                sunatDescription
+                sunatDescriptionLow
+                client {
+                    names
+                }
+                subsidiary {
+                    companyName
+                }
             }
+            totalInvoices
+            totalSalesTickets
+            totalCreditNotes
+            totalDebitNotes
+            totalNumberOfPages
+            totalNumberOfSales
         }
     }
 `;
@@ -73,49 +92,57 @@ function SalePage() {
     useEffect(() => {
         if (session?.user) {
             const user = session.user as IUser;
-            console.log("user", user);
-            if (user?.isSuperuser) {
-                setFilterObj({
-                    ...filterObj,
-                    subsidiaryId: "0",
-                });
-            } else {
-                setFilterObj({
-                    ...filterObj,
-                    subsidiaryId: user?.subsidiaryId!,
-                });
-            }
+            setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
 
-            setJwtToken(user.accessToken as string);
+            setFilterObj((prev) => ({
+                ...prev,
+                subsidiaryId:
+                    prev.subsidiaryId ||
+                    (user.isSuperuser ? "0" : user.subsidiaryId!),
+                isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
+            }));
         }
     }, [session]);
+    // useMemo para evitar que getAuthContext() genere un nuevo objeto en cada render
+    const authContext = useMemo(
+        () => ({
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: jwtToken ? `JWT ${jwtToken}` : "",
+            },
+        }),
+        [jwtToken]
+    );
 
-    const getAuthContext = () => ({
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: jwtToken ? `JWT ${jwtToken}` : "",
-        },
-    });
-
+    // const getAuthContext = () => ({
+    //     headers: {
+    //         "Content-Type": "application/json",
+    //         Authorization: jwtToken ? `JWT ${jwtToken}` : "",
+    //     },
+    // });
+    // Si tienes habilitada la política de network-only, Apollo Client siempre intentará obtener datos frescos de la API cuando el componente se vuelva a montar.
     const [
         salesQuery,
         {
-            loading: filteredPurchasesLoading,
-            error: filteredPurchasesError,
-            data: filteredPurchasesData,
+            loading: filteredSalesLoading,
+            error: filteredSalesError,
+            data: filteredSalesData,
         },
     ] = useLazyQuery(SALES_QUERY, {
-        context: getAuthContext(),
+        context: authContext,
         variables: {
             subsidiaryId: Number(filterObj.subsidiaryId),
             clientId: Number(filterObj.clientId),
             startDate: filterObj.startDate,
             endDate: filterObj.endDate,
             documentType: filterObj.documentType,
+            page: Number(filterObj.page),
+            pageSize: Number(filterObj.pageSize),
         },
         fetchPolicy: "network-only",
         onCompleted(data) {
-            console.log("object", data, getAuthContext());
+            console.log("object", data, authContext);
+            initFlowbite();
         },
         onError: (err) => console.error("Error in sales:", err),
     });
@@ -128,7 +155,7 @@ function SalePage() {
                         setFilterObj={setFilterObj}
                         filterObj={filterObj}
                         salesQuery={salesQuery}
-                        filteredPurchasesLoading={filteredPurchasesLoading}
+                        filteredSalesLoading={filteredSalesLoading}
                         jwtToken={jwtToken}
                     />
                 </div>
@@ -138,15 +165,15 @@ function SalePage() {
                 <div className="overflow-x-auto">
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden shadow">
-                            {filteredPurchasesError ? (
+                            {filteredSalesError ? (
                                 <div className="p-4 text-red-500 text-center">
-                                    {filteredPurchasesError.message}
+                                    {filteredSalesError.message}
                                 </div>
                             ) : (
                                 <SaleList
-                                    filteredPurchasesData={
-                                        filteredPurchasesData
-                                    }
+                                    filteredSalesData={filteredSalesData}
+                                    setFilterObj={setFilterObj}
+                                    filterObj={filterObj}
                                 />
                             )}
                         </div>

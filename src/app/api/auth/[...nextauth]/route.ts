@@ -29,11 +29,13 @@ const TOKEN_AUTH_MUTATION = gql`
 `;
 
 interface ExtendedUser extends User {
+    accessToken: string;
     iat: number;
     exp: number;
 }
 
 interface ExtendedSession extends Session {
+    accessToken: string;
     iat: number;
     exp: number;
 }
@@ -135,32 +137,32 @@ const handler = NextAuth({
     session: {
         strategy: "jwt",
         // maxAge: 5 * 60, // 5 minutos en segundos
-        maxAge: 24 * 60 * 60, // 24 hours
+        maxAge: 365 * 24 * 60 * 60, // 1 año para que no caduque en NextAuth
     },
     callbacks: {
         async jwt({ token, user }: { token: JWT; user: User }) {
             const usr = user as ExtendedUser;
             if (usr) {
                 token.user = usr;
+                token.accessToken = usr.accessToken;
                 token.iat = usr.iat;
                 token.exp = usr.exp;
+            }
+            // Verifica si el token ha expirado
+            if (Date.now() >= (token?.exp as number) * 1000) {
+                console.log("Token expirado, invalidando sesión");
+                return {};
             }
             return token;
         },
         async session({ session, token }: { session: Session; token: JWT }) {
-            // const ses = session as ExtendedSession;
-            // console.log("expires", session.expires)
-            // if (token.exp){
-            //     // Convertir el tiempo UNIX a ISODateString
-            //     const expiresAt = new Date(Number(token.exp) * 1000).toISOString();
-            //     session.expires = expiresAt; // Asignar nueva fecha de expiración
-            // }
-            // console.log("expires 2", session.expires)
-            session.user = token.user as ExtendedUser;
-            // ses.ag = Number(token.iat)
-            // ses.exp = Number(token.exp)
-            // session.accessToken = token.user.accessToken as any;
-            return session;
+            let defaultSession = session as ExtendedSession;
+            defaultSession.user = token.user as ExtendedUser;
+            defaultSession.accessToken = token?.accessToken as string;
+            defaultSession.expires = new Date(
+                (token?.exp as number) * 1000
+            ).toISOString(); // Expira según el backend
+            return defaultSession;
         },
     },
     pages: {

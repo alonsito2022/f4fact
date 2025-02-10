@@ -638,9 +638,9 @@ function Navbar() {
                                     <img
                                         className="w-8 h-8 rounded-full"
                                         src={
-                                            u?.avatar != null
+                                            u?.avatar != null && u?.avatar != ""
                                                 ? `${process.env.NEXT_PUBLIC_BASE_API}/media/users/${u?.avatar}`
-                                                : "https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                                                : "/images/users/user-profile-avatar.png"
                                         }
                                         alt="user photo"
                                     />

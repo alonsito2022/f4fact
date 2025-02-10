@@ -6,7 +6,7 @@ import Filter from "@/components/icons/Filter";
 import { useRouter } from "next/navigation";
 import { gql, useQuery } from "@apollo/client";
 import { ISubsidiary, ISupplier } from "@/app/types";
-import { initFlowbite } from "flowbite";
+// import { initFlowbite } from "flowbite";
 import Excel from "@/components/icons/Excel";
 
 const SUPPLIERS_QUERY = gql`
@@ -50,7 +50,7 @@ function SaleFilter({
     }, [hostname]);
     const handleClickButton = async () => {
         salesQuery();
-        initFlowbite();
+        // initFlowbite();
     };
 
     const handleInputChange = (
@@ -137,105 +137,68 @@ function SaleFilter({
         skip: !jwtToken,
     });
     return (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <form
-                className="grid lg:grid-cols-4 gap-4 sm:pr-3"
-                action="#"
-                method="GET"
+        <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <select
+                value={filterObj.documentType}
+                name="documentType"
+                onChange={handleInputChange}
+                className="filter-form-control w-full justify-self-start"
             >
-                <select
-                    value={filterObj.documentType}
-                    name="documentType"
-                    onChange={handleInputChange}
-                    className="filter-form-control w-full sm:w-auto"
-                >
-                    <option value={"NA"} disabled>
-                        Filtrar por tipo de Doc.
-                    </option>
-                    <option value={"01"}>FACTURA ELECTRÓNICA</option>
-                    <option value={"03"}>BOLETA DE VENTA ELECTRÓNICA</option>
-                    <option value={"07"}>NOTA DE CRÉDITO ELECTRÓNICA</option>
-                    <option value={"08"}>NOTA DE DÉBITO ELECTRÓNICA</option>
-                </select>
-                {suppliersError ? (
-                    <div>
-                        Error: No autorizado o error en la consulta.{" "}
-                        {suppliersError.message}
-                    </div>
-                ) : (
-                    <>
-                        {/* <input
-                            type="search"
-                            name="supplierName"
-                            onChange={handleInputChange}
-                            value={filterObj.supplierName}
-                            onFocus={(e) => e.target.select()}
-                            autoComplete="off"
-                            disabled={suppliersLoading}
-                            className="filter-form-control w-full"
-                            list="supplierList"
-                            placeholder="Buscar por cliente"
-                        />
-                        <datalist id="supplierList">
-                            {suppliersData?.allSuppliers?.map(
-                                (n: ISupplier, index: number) => (
-                                    <option
-                                        key={index}
-                                        data-key={n.id}
-                                        value={`${n.documentNumber} ${n.names}`}
-                                    />
-                                )
-                            )}
-                        </datalist> */}
+                <option value={"NA"}>Filtrar por tipo de Doc.</option>
+                <option value={"01"}>FACTURA ELECTRÓNICA</option>
+                <option value={"03"}>BOLETA DE VENTA ELECTRÓNICA</option>
+                <option value={"07"}>NOTA DE CRÉDITO ELECTRÓNICA</option>
+                <option value={"08"}>NOTA DE DÉBITO ELECTRÓNICA</option>
+            </select>
+            {filterObj.isSuperuser ? (
+                <>
+                    <input
+                        type="search"
+                        name="subsidiaryName"
+                        onChange={handleInputChange}
+                        value={filterObj.subsidiaryName}
+                        onFocus={(e) => e.target.select()}
+                        autoComplete="off"
+                        disabled={subsidiariesLoading}
+                        className="filter-form-control w-full justify-self-start"
+                        list="subsidiaryList"
+                        placeholder="Buscar por sede"
+                    />
+                    <datalist id="subsidiaryList">
+                        {subsidiariesData?.subsidiaries?.map(
+                            (n: ISubsidiary, index: number) => (
+                                <option
+                                    key={index}
+                                    data-key={n.id}
+                                    value={`${n.company?.businessName} ${n.serial}`}
+                                />
+                            )
+                        )}
+                    </datalist>
+                </>
+            ) : null}
 
-                        <input
-                            type="search"
-                            name="subsidiaryName"
-                            onChange={handleInputChange}
-                            value={filterObj.subsidiaryName}
-                            onFocus={(e) => e.target.select()}
-                            autoComplete="off"
-                            disabled={subsidiariesLoading}
-                            className="filter-form-control w-full"
-                            list="subsidiaryList"
-                            placeholder="Buscar por sede"
-                        />
-                        <datalist id="subsidiaryList">
-                            {subsidiariesData?.subsidiaries?.map(
-                                (n: ISubsidiary, index: number) => (
-                                    <option
-                                        key={index}
-                                        data-key={n.id}
-                                        value={`${n.company?.businessName} ${n.serial}`}
-                                    />
-                                )
-                            )}
-                        </datalist>
-                    </>
-                )}
+            <input
+                type="date"
+                name="startDate"
+                onChange={handleInputChange}
+                value={filterObj.startDate}
+                className="filter-form-control w-full justify-self-start"
+            />
 
-                <input
-                    type="date"
-                    name="startDate"
-                    onChange={handleInputChange}
-                    value={filterObj.startDate}
-                    className="filter-form-control w-full sm:w-auto"
-                />
+            <input
+                type="date"
+                name="endDate"
+                onChange={handleInputChange}
+                value={filterObj.endDate}
+                className="filter-form-control w-full justify-self-start"
+            />
 
-                <input
-                    type="date"
-                    name="endDate"
-                    onChange={handleInputChange}
-                    value={filterObj.endDate}
-                    className="filter-form-control w-full sm:w-auto"
-                />
-            </form>
-
-            <div className="flex flex-wrap justify-end gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 col-span-full lg:col-span-2 xl:col-span-5 mt-4">
                 <button
                     id="btn-search"
                     type="button"
-                    className="btn-blue px-5 py-3 flex items-center gap-2 w-full sm:w-auto"
+                    className="btn-blue px-5 py-3 flex items-center justify-center gap-2 w-full"
                     onClick={handleClickButton}
                     disabled={filteredSaleLoading}
                 >
@@ -247,7 +210,7 @@ function SaleFilter({
                     target="_blank"
                     title="Descargar EXCEL"
                     download
-                    className="btn-green px-5 py-3 flex items-center gap-2 w-full sm:w-auto"
+                    className="btn-green px-5 py-3 flex items-center justify-center gap-2 w-full m-0"
                 >
                     <Excel />
                     Descarga para excel

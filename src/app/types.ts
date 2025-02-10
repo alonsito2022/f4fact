@@ -279,7 +279,7 @@ export interface IOperation {
     supplier?: ISupplier;
     client?: ISupplier;
     // type?: string
-
+    subsidiary: ISubsidiary;
     operationdetailSet?: Array<IOperationDetail>;
     cashflowSet?: Array<ICashFlow>;
 
