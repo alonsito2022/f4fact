@@ -207,157 +207,7 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
     // };
     const handleSaveCompany = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // const formData = new FormData();
-        // if (company.certification) {
-        //     formData.append('certification', company.certification);
-        // }
-        // if (company.certificationKey) {
-        //     formData.append('certificationKey', company.certificationKey);
-        // }
-        // console.log('Files in FormData:', 
-        //     formData.get('certification'), 
-        //     formData.get('certificationKey')
-        // );
-        // formData.append('data', JSON.stringify({
-        //     typeDoc: "6",
-        //     doc: company.doc,
-        //     shortName: company.shortName,
-        //     businessName: company.businessName,
-        //     address: company.address,
-        //     email: company.email,
-        //     phone: company.phone,
-        //     userSol: company.userSol,
-        //     keySol: company.keySol,
-        //     limit: company.limit,
-        //     emissionInvoiceWithPreviousDate: company.emissionInvoiceWithPreviousDate,
-        //     emissionReceiptWithPreviousDate: company.emissionReceiptWithPreviousDate,
-        //     logo: company.logo,
-        //     includeIgv: company.includeIgv,
-        //     percentageIgv: company.percentageIgv,
-        //     isEnabled: company.isEnabled,
-        //     isProduction: company.isProduction,
-        //     certificationExpirationDate: company.certificationExpirationDate,
-        //     withStock: company.withStock,
-        //     catalog: company.catalog,
-        //     invoiceF: company.invoiceF,
-        //     invoiceB: company.invoiceB,
-        //     guide: company.guide,
-        //     app: company.app
-        // }));
-        // console.log('Data:',company)
-        // console.log('FormData:',formData)
-        // let queryFetch: String = "";
-        // if (Number(company.id) !== 0) {
-        //     queryFetch = `
-        //         mutation{
-        //             updateCompany(
-        //                 id:${company.id}, 
-        //                 typeDoc:"6",
-        //                 doc: "${company.doc}", 
-        //                 shortName: "${company.shortName}", 
-        //                 businessName: "${company.businessName}", 
-        //                 address: "${company.address}", 
-        //                 email: "${company.email}",
-        //                 phone: "${company.phone}",
-        //                 userSol: "${company.userSol}",
-        //                 keySol: "${company.keySol}",
-        //                 limit: ${company.limit},
-        //                 emissionInvoiceWithPreviousDate: ${company.emissionInvoiceWithPreviousDate},
-        //                 emissionReceiptWithPreviousDate: ${company.emissionReceiptWithPreviousDate},
-        //                 logo: "${company.logo}",                       
-        //                 includeIgv: ${company.includeIgv},
-        //                 percentageIgv: ${company.percentageIgv},
-        //                 isEnabled: ${company.isEnabled},
-        //                 isProduction: ${company.isProduction},
-        //                 passwordSignature: "${company.passwordSignature}",
-        //                 certification: "${company.certification}",
-        //                 certificationExpirationDate: "${company.certificationExpirationDate}",
-        //                 withStock: ${company.withStock},
-        //                 catalog: ${company.catalog},
-        //                 invoiceF: ${company.invoiceF},
-        //                 invoiceB: ${company.invoiceB},
-        //                 guide: ${company.guide},
-        //                 app: ${company.app},
-        //             ){
-        //                 message
-        //             }
-        //         }
-        //     `;
-        //     console.log(queryFetch)
-        //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-        //         method: 'POST',
-        //         headers: { "Content-Type": "application/json" },
-        //         body: JSON.stringify({ query: queryFetch })
-        //     })
-        //         .then(res => res.json())
-        //         .then(data => {
-        //             toast(data.data.updateCompany.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-        //             setCompany(initialState);
-        //             fetchCompanies();
-        //             modal.hide();
-
-        //         }).catch(e => console.log(e))
-        // }
-        // else {
-        //     queryFetch = `
-        //         mutation{
-        //             createCompany(
-        //                 typeDoc:"6",
-        //                 doc: "${company.doc}", 
-        //                 shortName: "${company.shortName}", 
-        //                 businessName: "${company.businessName}", 
-        //                 address: "${company.address}", 
-        //                 email: "${company.email}",
-        //                 phone: "${company.phone}",
-        //                 userSol: "${company.userSol}",
-        //                 keySol: "${company.keySol}",
-        //                 limit: ${company.limit},
-        //                 emissionInvoiceWithPreviousDate: ${company.emissionInvoiceWithPreviousDate},
-        //                 emissionReceiptWithPreviousDate: ${company.emissionReceiptWithPreviousDate},
-        //                 logo: "${company.logo}",                       
-        //                 includeIgv: ${company.includeIgv},
-        //                 percentageIgv: ${company.percentageIgv},
-        //                 isEnabled: ${company.isEnabled},
-        //                 isProduction: ${company.isProduction},
-        //                 passwordSignature: "${company.passwordSignature}",
-        //                 certification: "${company.logo}",
-        //                 certificationExpirationDate: "${company.certificationExpirationDate}",
-        //                 withStock: ${company.withStock},
-        //                 catalog: ${company.catalog},
-        //                 invoiceF: ${company.invoiceF},
-        //                 invoiceB: ${company.invoiceB},
-        //                 guide: ${company.guide},
-        //                 app: ${company.app},
-        //             ){
-        //                 message
-        //             }
-        //         }
-        //     `;
-        //     console.log(queryFetch)
-        //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-        //         method: 'POST',
-        //         headers: { "Content-Type": "application/json" },
-        //         body: formData
-        //         // body: JSON.stringify({ query: queryFetch })
-        //     })
-        //         .then(res => res.json())
-        //         .then(data => {
-        //             toast(data.data.createCompany.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
-        //             setCompany(initialState);
-        //             fetchCompanies();
-        //             modal.hide();
-        //         }).catch(e => console.log(e))
-        // }
-
         try {
-            // const certificationBase64 = company.certification 
-            // ? await fileToBase64(company.certification) 
-            // : null;
-        
-            // const certificationKeyBase64 = company.certificationKey 
-            // ? await fileToBase64(company.certificationKey) 
-            // : null;
-            // Si la compañía tiene un ID, es una actualización
             console.log("Empresa:", company)
             if (Number(company.id) !== 0) {
                 const { data, errors } = await updateCompany({
@@ -375,14 +225,14 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
                         limit: company.limit,
                         emissionInvoiceWithPreviousDate: company.emissionInvoiceWithPreviousDate,
                         emissionReceiptWithPreviousDate: company.emissionReceiptWithPreviousDate,
-                        logo: company.logo,
+                        logo: company.logo || "",
                         includeIgv: company.includeIgv,
                         percentageIgv: company.percentageIgv,
                         isEnabled: company.isEnabled,
                         isProduction: company.isProduction,
-                        certification: company.certification,
+                        certification: company.certification || "" ,
                         certificationExpirationDate: company.certificationExpirationDate,
-                        certificationKey: company.certificationKey,
+                        certificationKey: company.certificationKey || "",
                         withStock: company.withStock,
                         catalog: company.catalog,
                         invoiceF: company.invoiceF,
@@ -424,14 +274,14 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
                         limit: company.limit,
                         emissionInvoiceWithPreviousDate: company.emissionInvoiceWithPreviousDate,
                         emissionReceiptWithPreviousDate: company.emissionReceiptWithPreviousDate,
-                        logo: company.logo,
+                        logo: company.logo || "",
                         includeIgv: company.includeIgv,
                         percentageIgv: company.percentageIgv,
                         isEnabled: company.isEnabled,
                         isProduction: company.isProduction,
-                        certification: company.certification ,
+                        certification: company.certification || "" ,
                         certificationExpirationDate: company.certificationExpirationDate,
-                        certificationKey: company.certificationKey,
+                        certificationKey: company.certificationKey || "",
                         withStock: company.withStock,
                         catalog: company.catalog,
                         invoiceF: company.invoiceF,
