@@ -1,13 +1,14 @@
-"use client"
-import { ChangeEvent, FormEvent, useState, useEffect } from "react";
-import { ISubsidiary, IUser } from '@/app/types';
+"use client";
+import { ChangeEvent, FormEvent, useState, useEffect, useMemo } from "react";
+import { ISubsidiary, IUser } from "@/app/types";
 import { toast } from "react-toastify";
 import { it } from "node:test";
-import SubsidiaryList from "./SubsidiaryList"
-import SubsidiaryModal from "./SubsidiaryModal"
-import { Modal, ModalOptions } from 'flowbite'
+import SubsidiaryList from "./SubsidiaryList";
+import SubsidiaryModal from "./SubsidiaryModal";
+import { Modal, ModalOptions } from "flowbite";
 import { gql, useLazyQuery, useQuery } from "@apollo/client";
 import { useSession } from "next-auth/react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 const initialState = {
     id: 0,
@@ -16,197 +17,193 @@ const initialState = {
     address: "",
     phone: "",
     ubigeo: "",
-    company: ""
-}
+    company: "",
+};
 
 const SUBSIDIARIES_QUERY = gql`
-{
-  subsidiaries {
-    id
-    serial
-    name
-    address
-    phone
-    district {
-      id
-      description
+    query {
+        subsidiaries {
+            id
+            serial
+            name
+            address
+            phone
+            district {
+                id
+                description
+            }
+            companyId
+            companyName
+        }
     }
-    companyId
-    companyName
-  }
-}
 `;
 const SEARCH_SUBSIDIARIES_QUERY = gql`
-query ($searchTerm: String!) {
-  searchSubsidiaries(search: $searchTerm) {
-    id
-    serial
-    name
-    address
-    phone
-    district {
-      id
-      description
+    query ($searchTerm: String!) {
+        searchSubsidiaries(search: $searchTerm) {
+            id
+            serial
+            name
+            address
+            phone
+            district {
+                id
+                description
+            }
+            companyId
+            companyName
+        }
     }
-    companyId
-    companyName
-  }
-}
 `;
+const initialStateFilterObj = {
+    subsidiaryId: "",
+    isSuperuser: false,
+};
 function SubsidiaryPage() {
+    const [filterObj, setFilterObj] = useState(initialStateFilterObj);
     const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
     const [modal, setModal] = useState<Modal | any>(null);
     const [subsidiary, setSubsidiary] = useState(initialState);
-    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [searchTerm, setSearchTerm] = useState<string>("");
+    const [searchField, setSearchField] = useState<"name" | "serial">("name");
     const { data: session, status } = useSession();
     const [jwtToken, setJwtToken] = useState<string | null>(null);
 
     useEffect(() => {
         if (session?.user) {
             const user = session.user as IUser;
-            setJwtToken(user.accessToken as string);
+            setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
+
+            setFilterObj((prev) => ({
+                ...prev,
+                subsidiaryId:
+                    prev.subsidiaryId ||
+                    (user.isSuperuser ? "0" : user.subsidiaryId!),
+                isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
+            }));
         }
     }, [session]);
 
-    // async function fetchSubsidiaries(){
-    //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-    //         method: 'POST',
-    //         headers: { "Content-Type": "application/json"},
-    //         body: JSON.stringify({
-    //             query: `
-    //                 {
-    //                     subsidiaries {
-    //                         id
-    //                         serial
-    //                         name
-    //                         address
-    //                         phone
-    //                         ubigeo
-    //                         companyId
-    //                         companyName
-    //                     }
-    //                 }
-    //             `                
-    //         })            
-    //     })
-    //     .then(res=>res.json())
-    //     .then(data=>{
-    //         setSubsidiaries(data.data.subsidiaries);
-    //     })
-    // }
-    const getAuthContext = () => ({
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
-        },
-    });
-    const { loading: subsidiariesLoading, error: subsidiariesError, data: subsidiariesData } = useQuery(SUBSIDIARIES_QUERY, {
-        context: getAuthContext(),
+    const authContext = useMemo(
+        () => ({
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: jwtToken ? `JWT ${jwtToken}` : "",
+            },
+        }),
+        [jwtToken]
+    );
+    const {
+        loading: subsidiariesLoading,
+        error: subsidiariesError,
+        data: subsidiariesData,
+    } = useQuery(SUBSIDIARIES_QUERY, {
+        context: authContext,
         skip: !jwtToken, // Esto evita que la consulta se ejecute si no hay token
     });
 
-    const [searchSubsidiariesQuery, { loading: filteredSubsidiariesLoading, error: filteredSubsidiariesError, data: filteredSubsidiariesData }] = useLazyQuery(SEARCH_SUBSIDIARIES_QUERY, {
-        context: getAuthContext(),
-        variables: { search: searchTerm },
-        onCompleted: (data) => {
-            if (data.searchSubsidiaries) {
-                setSubsidiaries(data?.searchSubsidiaries)
-            }
-        },
-        onError: (err) => console.error("Error in Subsidiaries:", err),
-    });
+    const filteredSubsidiaries = useMemo(() => {
+        if (subsidiariesData) {
+            let newdata = subsidiariesData.subsidiaries?.filter(
+                (w: ISubsidiary) =>
+                    searchField === "name"
+                        ? w?.name
+                              ?.toLowerCase()
+                              .includes(searchTerm.toLowerCase())
+                        : w?.serial
+                              ?.toString()
+                              .toLowerCase()
+                              .includes(searchTerm.toLowerCase())
+            );
+            return newdata;
+        }
+    }, [searchTerm, searchField, subsidiariesData]);
 
-
-    useEffect(() => {
-        if (searchTerm.length >= 3) 
-            searchSubsidiariesQuery()
-        
-    }, [searchTerm]);
-
-    // async function fetchSubsidiariesbyName() {
-    //     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-    //         method: 'POST',
-    //         headers: { "Content-Type": "application/json" },
-    //         body: JSON.stringify({
-    //             query: `
-    //               {
-    //                   searchSubsidiaries(search: "${searchTerm}") {
-    //                         id
-    //                         serial
-    //                         name
-    //                         address
-    //                         phone
-    //                         ubigeo
-    //                         companyId
-    //                         companyName
-    //                   }
-    //               }
-    //           `
-    //         })
-    //     })
-    //         .then(res => res.json())
-    //         .then(data => {
-    //             setSubsidiaries(data.data.searchSubsidiaries);
-    //         })
-    // }
-    const handleInputSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputSearchChange = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
         setSearchTerm(event.target.value);
     };
     return (
         <>
-            <nav className="flex justify-between mb-3 content-center px-5 py-3 text-gray-700 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700" aria-label="Breadcrumb">
-                <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                    <li className="inline-flex items-center">
-                        <a href="/dashboard" className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
-                            <svg className="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
-                            </svg>
-                            Inicio
-                        </a>
-                    </li>
-                    <li>
-                        <div className="flex items-center">
-                            <svg className="rtl:rotate-180 block w-3 h-3 mx-1 text-gray-400 " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
-                            </svg>
-                            <a href="/dashboard/users/companies" className="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">Empresa</a>
-                        </div>
-                    </li>
-                    <li aria-current="page">
-                        <div className="flex items-center">
-                            <svg className="rtl:rotate-180  w-3 h-3 mx-1 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4" />
-                            </svg>
-                            <span className="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Local</span>
-                        </div>
-                    </li>
-                </ol>
-                <button type="button" onClick={(e) => { modal.show(); }} className="btn-green mb-0">Crear Local</button>
-            </nav>
+            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <div className="w-full">
+                    <Breadcrumb section={"Empresa"} article={"Local"} />
 
-
-            <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-                <div className="flex flex-column sm:flex-row flex-wrap space-y-4 sm:space-y-0 items-center justify-between pb-4">
-                    <div>
-                        <h6 className="mb-0 text-2xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-2xl"><span className="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">SEDES/LOCALES</span></h6>
-
-                    </div>
-                    <div>
-                        <label htmlFor="table-search" className="sr-only">Buscar</label>
-                        <div className="relative">
+                    <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 xl:flex xl:flex-wrap items-center">
+                        <div className="relative w-full sm:w-auto">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"></path></svg>
+                                <svg
+                                    className="w-5 h-5 text-gray-500 dark:text-gray-400"
+                                    aria-hidden="true"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                        clipRule="evenodd"
+                                    ></path>
+                                </svg>
                             </div>
-                            <input type="text" id="table-search" value={searchTerm} onChange={handleInputSearchChange} className="block px-2 py-2.5 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Buscar nombre local..." />
+                            <input
+                                type="search"
+                                name="searchTerm"
+                                value={searchTerm}
+                                onChange={handleInputSearchChange}
+                                className="block w-full sm:w-80 px-2 py-2.5 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                placeholder="Buscar nombre local..."
+                            />
+                        </div>
+                        {filterObj?.isSuperuser ? (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    modal.show();
+                                }}
+                                className="btn-green mb-0 w-full sm:w-auto"
+                            >
+                                Crear Local
+                            </button>
+                        ) : null}
+                    </div>
+                </div>
+            </div>
 
+            <div className="flex flex-col">
+                <div className="overflow-x-auto">
+                    <div className="inline-block min-w-full align-middle">
+                        <div className="overflow-hidden shadow">
+                            {subsidiariesLoading ? (
+                                <div>Cargando...</div>
+                            ) : subsidiariesError ? (
+                                <div className="p-4 text-red-500 text-center">
+                                    {subsidiariesError.message}
+                                </div>
+                            ) : (
+                                <SubsidiaryList
+                                    filteredSubsidiaries={filteredSubsidiaries}
+                                    modal={modal}
+                                    setModal={setModal}
+                                    subsidiary={subsidiary}
+                                    setSubsidiary={setSubsidiary}
+                                    filterObj={filterObj}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
-                <SubsidiaryList subsidiaries={subsidiaries} modal={modal} setModal={setModal} subsidiary={subsidiary} setSubsidiary={setSubsidiary} />
             </div>
-            <SubsidiaryModal modal={modal} setModal={setModal} subsidiary={subsidiary} setSubsidiary={setSubsidiary} initialState={initialState} SUBSIDIARIES_QUERY={SUBSIDIARIES_QUERY} />
+            <SubsidiaryModal
+                modal={modal}
+                setModal={setModal}
+                subsidiary={subsidiary}
+                setSubsidiary={setSubsidiary}
+                initialState={initialState}
+                SUBSIDIARIES_QUERY={SUBSIDIARIES_QUERY}
+            />
         </>
-    )
+    );
 }
 
-export default SubsidiaryPage
+export default SubsidiaryPage;

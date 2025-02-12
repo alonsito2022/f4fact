@@ -55,9 +55,13 @@ export default withAuth(
         // Aquí puedes verificar si el token ha expirado
         if (accessToken && expAccessToken) {
             const now = Math.floor(Date.now() / 1000);
+            // console.log("Current Time:", now);
+            // console.log("Token Expiration Time:", expAccessToken);
             if (now >= expAccessToken) {
                 console.log("Sesión expirada, redirigiendo a login", req.url);
-                return NextResponse.redirect(new URL("/auth/login", req.url));
+                return NextResponse.redirect(
+                    new URL("/api/auth/signout", req.url)
+                );
             }
         }
 

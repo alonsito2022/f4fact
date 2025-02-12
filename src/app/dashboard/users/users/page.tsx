@@ -54,10 +54,13 @@ function UserPage() {
                 avatar
                 avatarUrl
                 subsidiary{
-                id
-                companyName
-                serial
-              }
+                    id
+                    companyName
+                    serial
+                    
+                }
+                isActive
+                isSuperuser
             }
         }
     `;

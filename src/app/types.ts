@@ -224,6 +224,8 @@ export interface IProduct {
 
     minimumUnitName?: String;
     maximumUnitName?: String;
+
+    subsidiary?: ISubsidiary;
 }
 
 export interface INationality {

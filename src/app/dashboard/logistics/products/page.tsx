@@ -49,28 +49,14 @@ const initialStateProductFilterObj = {
     activeType: "01",
     subjectPerception: false,
     typeAffectationId: 0,
+    subsidiaryId: "",
+    isSuperuser: false,
     limit: 50,
 };
 
 const PRODUCTS_QUERY = gql`
-    query (
-        $criteria: String!
-        $searchText: String!
-        $available: Boolean!
-        $activeType: String!
-        $subjectPerception: Boolean!
-        $typeAffectationId: Int!
-        $limit: Int!
-    ) {
-        allProducts(
-            criteria: $criteria
-            searchText: $searchText
-            available: $available
-            activeType: $activeType
-            subjectPerception: $subjectPerception
-            typeAffectationId: $typeAffectationId
-            limit: $limit
-        ) {
+    query ($subsidiaryId: Int!) {
+        allProducts(subsidiaryId: $subsidiaryId) {
             id
             code
             name
@@ -89,6 +75,11 @@ const PRODUCTS_QUERY = gql`
             typeAffectationName
             subjectPerception
             observation
+            subsidiary {
+                id
+                serial
+                companyName
+            }
         }
     }
 `;
@@ -107,6 +98,37 @@ const TYPE_AFFECTATION_QUERY = gql`
 `;
 
 function ProductPage() {
+    const [productFilterObj, setProductFilterObj] = useState(
+        initialStateProductFilterObj
+    );
+    const { data: session } = useSession();
+    const [jwtToken, setJwtToken] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (session?.user) {
+            const user = session.user as IUser;
+            setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
+
+            setProductFilterObj((prev) => ({
+                ...prev,
+                subsidiaryId:
+                    prev.subsidiaryId ||
+                    (user.isSuperuser ? "0" : user.subsidiaryId!),
+                isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
+            }));
+        }
+    }, [session]);
+
+    const authContext = useMemo(
+        () => ({
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: jwtToken ? `JWT ${jwtToken}` : "",
+            },
+        }),
+        [jwtToken]
+    );
+
     const [products, setProducts] = useState<IProduct[]>([]);
     const [product, setProduct] = useState(initialStateProduct);
     const [modalProduct, setModalProduct] = useState<Modal | any>(null);
@@ -115,19 +137,6 @@ function ProductPage() {
     const [searchField, setSearchField] = useState<"name" | "code" | "ean">(
         "name"
     );
-    const [productFilterObj, setProductFilterObj] = useState(
-        initialStateProductFilterObj
-    );
-    const { data: session } = useSession();
-    const [jwtToken, setJwtToken] = useState<string | null>(null);
-    const u = session?.user as IUser;
-
-    useEffect(() => {
-        if (session?.user) {
-            const user = session.user as IUser;
-            setJwtToken(user.accessToken as string);
-        }
-    }, [session]);
 
     useEffect(() => {
         if (jwtToken) {
@@ -135,19 +144,12 @@ function ProductPage() {
         }
     }, [jwtToken]);
 
-    const getAuthContext = () => ({
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: jwtToken ? `JWT ${jwtToken}` : "",
-        },
-    });
-
     const {
         loading: typeAffectationsLoading,
         error: typeAffectationsError,
         data: typeAffectationsData,
     } = useQuery(TYPE_AFFECTATION_QUERY, {
-        context: getAuthContext(),
+        context: authContext,
         skip: !jwtToken, // Esto evita que la consulta se ejecute si no hay token
         onError: (err) => console.error("Error in typeAffectations:", err),
     });
@@ -160,15 +162,9 @@ function ProductPage() {
             data: filteredProductsData,
         },
     ] = useLazyQuery(PRODUCTS_QUERY, {
-        context: getAuthContext(),
+        context: authContext,
         variables: {
-            criteria: productFilterObj.criteria,
-            searchText: productFilterObj.searchText,
-            available: productFilterObj.available,
-            activeType: productFilterObj.activeType,
-            subjectPerception: productFilterObj.subjectPerception,
-            typeAffectationId: Number(productFilterObj.typeAffectationId),
-            limit: Number(productFilterObj.limit),
+            subsidiaryId: Number(productFilterObj.subsidiaryId),
         },
         onCompleted: (data) => {
             console.log(data.allProducts.length);
@@ -200,8 +196,8 @@ function ProductPage() {
 
     return (
         <>
-            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
-                <div className="w-full mb-1">
+            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <div className="w-full">
                     <Breadcrumb section={"Productos"} article={"Productos"} />
                     <ProductFilter
                         productFilterObj={productFilterObj}
@@ -215,6 +211,8 @@ function ProductPage() {
                         initialStateProduct={initialStateProduct}
                         setProduct={setProduct}
                         fetchProducts={fetchProducts}
+                        authContext={authContext}
+                        jwtToken={jwtToken}
                     />
                 </div>
             </div>
@@ -226,8 +224,7 @@ function ProductPage() {
                             {filteredProductsLoading ? (
                                 <div>Cargando...</div>
                             ) : filteredProductsError ? (
-                                <div>
-                                    Error: No autorizado o error en la consulta.{" "}
+                                <div className="p-4 text-red-500 text-center">
                                     {filteredProductsError.message}
                                 </div>
                             ) : (

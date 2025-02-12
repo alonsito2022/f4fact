@@ -141,7 +141,7 @@ function SalePage() {
         },
         fetchPolicy: "network-only",
         onCompleted(data) {
-            console.log("object", data, authContext);
+            // console.log("object", data, authContext);
             initFlowbite();
         },
         onError: (err) => console.error("Error in sales:", err),
