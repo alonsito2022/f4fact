@@ -258,7 +258,6 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
                     modal.hide();
                 }
             } 
-            // Si no tiene un ID, es una creación
             else {               
                 const { data, errors } = await createCompany({
                     variables: {
