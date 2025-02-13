@@ -21,7 +21,7 @@ function UnitFilter({
     return (
         <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             <label htmlFor="products-search" className="sr-only">
-                Search
+                Buscar unidades
             </label>
 
             <input
