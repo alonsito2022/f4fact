@@ -87,7 +87,6 @@ function Cpe() {
 
         saleQuery();
     };
-
     const [
         saleQuery,
         {
