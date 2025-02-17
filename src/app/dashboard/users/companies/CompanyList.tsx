@@ -21,7 +21,6 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
             logo                        
             isEnabled
             limit
-            country
             userSol
             keySol
             emissionInvoiceWithPreviousDate
@@ -55,14 +54,14 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
             .then(res => res.json())
             .then(data => {
                 console.log(data.data.companyById)
-                // if (data.data.userById.avatar) {
-                //     // Concatenar el dominio con la URL relativa del avatar
-                //     const avatarUrl = `${process.env.NEXT_PUBLIC_BASE_API}/${data.data.userById.avatar}`;
-
-                //     // Actualizar la propiedad 'avatarUrl' en los datos del usuario
-                //     data.data.userById.avatarUrl = avatarUrl;
-                //   }
-                setCompany(data.data.companyById);
+                let companyData = data.data.companyById;
+                companyData.phone = companyData.phone || "";
+                companyData.certification = companyData.certification || "";
+                companyData.certificationKey = companyData.certificationKey || "";
+                companyData.logo = companyData.logo || "";
+                companyData.productionDate = companyData.productionDate || "";
+                console.log(companyData);
+                setCompany(companyData);
             })
     }
     return (
