@@ -155,7 +155,6 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
         event: ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value, type } = event.target;
-
         if ((name === "certification" || name === "certificationKey") && event.target instanceof HTMLInputElement) {
            const file = event.target.files?.[0];
         
@@ -321,21 +320,59 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
         const file = event.target.files?.[0]; // Obtiene el primer archivo seleccionado
         // Verifica si se seleccionó un archivo
         if (file) {
+            // Verifica el tamaño del archivo
+            if (file.size > 20000) { // 20KB en bytes
+                toast.error("El tamaño del archivo no debe superar los 20KB", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                });
+                handleFileReset(); // Restablece el input de archivo
+                return;
+            }
+    
             const reader = new FileReader();
-
-            // Cuando se carga el archivo, muestra la imagen en el componente
+    
+            // Cuando se carga el archivo, verifica las dimensiones de la imagen
             reader.onload = (e: ProgressEvent<FileReader>) => {
                 if (e.target?.result) {
-                    // console.log(e.target?.result)
-                    //   setUser({...user, avatar:e.target.result});
-                    setCompany((prevCompany: any) => ({
-                        ...prevCompany,
-                        logo: e.target?.result as string // Asegúrate de definir el tipo correcto para e.target.result
-                    }));
+                    const img = new Image();
+                    img.onload = () => {
+                        if (img.width > 320 || img.height > 80) {
+                            toast.error("La imagen no debe superar los 320x80 píxeles", {
+                                hideProgressBar: true,
+                                autoClose: 2000,
+                            });
+                            handleFileReset(); // Restablece el input de archivo
+                        } else {
+                            setCompany((prevCompany: any) => ({
+                                ...prevCompany,
+                                logo: e.target?.result as string // Asegúrate de definir el tipo correcto para e.target.result
+                            }));
+                        }
+                    };
+                    img.src = e.target.result as string;
                 }
             };
             reader.readAsDataURL(file);
         }
+        // const file = event.target.files?.[0]; // Obtiene el primer archivo seleccionado
+        // // Verifica si se seleccionó un archivo
+        // if (file) {
+        //     const reader = new FileReader();
+
+        //     // Cuando se carga el archivo, muestra la imagen en el componente
+        //     reader.onload = (e: ProgressEvent<FileReader>) => {
+        //         if (e.target?.result) {
+        //             // console.log(e.target?.result)
+        //             //   setUser({...user, avatar:e.target.result});
+        //             setCompany((prevCompany: any) => ({
+        //                 ...prevCompany,
+        //                 logo: e.target?.result as string // Asegúrate de definir el tipo correcto para e.target.result
+        //             }));
+        //         }
+        //     };
+        //     reader.readAsDataURL(file);
+        // }
     };
     useEffect(() => {
         if (modal == null) {
