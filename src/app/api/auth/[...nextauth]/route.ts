@@ -66,7 +66,7 @@ const handler = NextAuth({
                     if (errors) console.log(errors.toString());
 
                     if (data.tokenAuth && data.tokenAuth.token) {
-                        console.log("payload", data.tokenAuth);
+                        // console.log("payload", data.tokenAuth);
                         return {
                             id: data.tokenAuth.user.id,
                             fullName: data.tokenAuth.user.fullName,
@@ -167,6 +167,8 @@ const handler = NextAuth({
     },
     pages: {
         signIn: "/login",
+        signOut: "/custom-signout", // Página personalizada de cierre de sesión
+
         // signOut:`/`,
     },
     // redirect:{
