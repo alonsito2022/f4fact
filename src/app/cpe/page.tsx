@@ -1,12 +1,12 @@
 "use client";
 import { FormEvent, useEffect, useState, ChangeEvent } from "react";
-
 import Link from "next/link";
 import Search from "@/components/icons/Search";
 import Lock from "@/components/icons/Lock";
 import { gql, useLazyQuery } from "@apollo/client";
 import { useSession } from "next-auth/react";
 import { IUser } from "@/app/types";
+
 const today = new Date().toISOString().split("T")[0];
 const initialStateFilterObj = {
     doc: "",
@@ -15,6 +15,7 @@ const initialStateFilterObj = {
     correlative: "",
     totalToPay: "",
 };
+
 const SALE_QUERY = gql`
     query (
         $doc: String!
@@ -69,14 +70,38 @@ const SALE_QUERY = gql`
         }
     }
 `;
+
 function Cpe() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
+    const [showForm, setShowForm] = useState(true);
+
     const handleInputChange = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
         >
     ) => {
         const { name, value } = event.target;
+
+        // Validar que solo se ingresen dígitos en el campo "doc"
+        if (name === "doc" && !/^\d*$/.test(value)) {
+            return;
+        }
+
+        // Validar que solo se ingresen dígitos y máximo 6 caracteres en el campo "correlative"
+        if (
+            name === "correlative" &&
+            (!/^\d*$/.test(value) || value.length > 6)
+        ) {
+            return;
+        }
+
+        // Validar que solo se ingresen dígitos, decimales y máximo 20 caracteres en el campo "totalToPay"
+        if (
+            name === "totalToPay" &&
+            (!/^\d*\.?\d*$/.test(value) || value.length > 20)
+        ) {
+            return;
+        }
 
         setFilterObj({ ...filterObj, [name]: value });
     };
@@ -85,7 +110,25 @@ function Cpe() {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
 
+        // Validar que los valores no sean cadenas vacías antes de realizar la consulta
+        if (
+            !filterObj.doc ||
+            !filterObj.documentType ||
+            !filterObj.serial ||
+            !filterObj.correlative ||
+            !filterObj.totalToPay
+        ) {
+            console.error("Todos los campos son obligatorios");
+            return;
+        }
+
         saleQuery();
+        setShowForm(false);
+    };
+
+    const handleBackToForm = () => {
+        setFilterObj(initialStateFilterObj); // Reinicializa los valores por defecto
+        setShowForm(true);
     };
 
     const [
@@ -107,7 +150,14 @@ function Cpe() {
         onCompleted(data) {
             console.log("object", data);
         },
-        onError: (err) => console.error("Error in Sale:", err),
+        onError: (err) =>
+            console.error("Error in Sale:", err, {
+                doc: filterObj.doc,
+                documentType: filterObj.documentType,
+                serial: filterObj.serial,
+                correlative: filterObj.correlative,
+                totalToPay: filterObj.totalToPay,
+            }),
     });
 
     return (
@@ -147,6 +197,165 @@ function Cpe() {
 
             {filteredSaleError ? (
                 <div>{filteredSaleError.message}</div>
+            ) : filteredSaleLoading ? (
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="text-center">
+                        <div
+                            className="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full"
+                            role="status"
+                        >
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            ) : showForm ? (
+                <>
+                    <div className="flex flex-col items-center justify-center px-6 pt-24 mx-auto  pt:mt-0 dark:bg-gray-900 bg-gradient-to-r">
+                        <div className="w-full max-w-sm p-6 space-y-3 sm:p-8 bg-white rounded-lg shadow dark:bg-gray-800 border border-gray-300">
+                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 text-center">
+                                Buscar comprobante
+                            </h2>
+                            <h4 className="text-gray-900 dark:text-white pt-0 mb-0 text-center font-thin text-2xl">
+                                VERSIÓN NUBE
+                            </h4>
+                            <form
+                                className="mt-8 space-y-4"
+                                onSubmit={handleSubmit}
+                            >
+                                <div className="">
+                                    <label htmlFor="doc" className="form-label">
+                                        RUC del emisor
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="doc"
+                                        id="doc"
+                                        value={filterObj.doc}
+                                        maxLength={11}
+                                        onChange={handleInputChange}
+                                        className="form-control"
+                                        autoComplete="off"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="">
+                                    <label
+                                        htmlFor="documentType"
+                                        className="form-label"
+                                    >
+                                        Tipo de comprobante
+                                    </label>
+                                    <select
+                                        value={filterObj.documentType}
+                                        name="documentType"
+                                        onChange={handleInputChange}
+                                        className="form-control-sm"
+                                        required
+                                    >
+                                        <option value={"01"}>
+                                            FACTURA ELECTRÓNICA
+                                        </option>
+                                        <option value={"03"}>
+                                            BOLETA DE VENTA ELECTRÓNICA
+                                        </option>
+                                        <option value={"07"}>
+                                            NOTA DE CRÉDITO ELECTRÓNICA
+                                        </option>
+                                        <option value={"08"}>
+                                            NOTA DE DÉBITO ELECTRÓNICA
+                                        </option>
+                                        <option value={"09"}>
+                                            GUIA DE REMISIÓN REMITENTE
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div className="">
+                                    <label
+                                        htmlFor="serial"
+                                        className="form-label"
+                                    >
+                                        Serie
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="serial"
+                                        id="serial"
+                                        value={filterObj.serial}
+                                        maxLength={4}
+                                        onChange={handleInputChange}
+                                        className="form-control"
+                                        autoComplete="off"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="">
+                                    <label
+                                        htmlFor="correlative"
+                                        className="form-label"
+                                    >
+                                        Numero
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="correlative"
+                                        id="correlative"
+                                        value={filterObj.correlative}
+                                        maxLength={6}
+                                        onChange={handleInputChange}
+                                        className="form-control"
+                                        autoComplete="off"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="">
+                                    <label
+                                        htmlFor="totalToPay"
+                                        className="form-label"
+                                    >
+                                        Total
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="totalToPay"
+                                        id="totalToPay"
+                                        value={filterObj.totalToPay}
+                                        maxLength={20}
+                                        onChange={handleInputChange}
+                                        className="form-control"
+                                        autoComplete="off"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="grid ">
+                                    <button
+                                        type="submit"
+                                        className="btn-default m-0"
+                                    >
+                                        Buscar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div className="flex flex-col items-center justify-center px-6 pt-4">
+                        <div className="w-full max-w-sm p-6 space-y-3 sm:p-8  text-center">
+                            <span className=" inline-flex items-center gap-2 bg-green-100 text-green-800 text-2xl font-extralight me-2 px-4 py-2.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">
+                                <Lock />
+                                Seguro
+                            </span>
+                            <div className="text-green-400 font-extralight text-sm">
+                                Protegido con un Certificado Digital SSL
+                                (https://), tus datos están completamente
+                                seguros.
+                            </div>
+                        </div>
+                    </div>
+                </>
             ) : (
                 <>
                     {filteredSaleData &&
@@ -234,153 +443,16 @@ function Cpe() {
                                     >
                                         Descargar CDR
                                     </a>
+                                    <button
+                                        onClick={handleBackToForm}
+                                        className="btn-default m-0 text-center"
+                                    >
+                                        Volver al formulario
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                    ) : (
-                        <>
-                            <div className="flex flex-col items-center justify-center px-6 pt-24 mx-auto  pt:mt-0 dark:bg-gray-900 bg-gradient-to-r">
-                                <div className="w-full max-w-sm p-6 space-y-3 sm:p-8 bg-white rounded-lg shadow dark:bg-gray-800 border border-gray-300">
-                                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 text-center">
-                                        Buscar comprobante
-                                    </h2>
-                                    <h4 className="text-gray-900 dark:text-white pt-0 mb-0 text-center font-thin text-2xl">
-                                        VERSIÓN NUBE
-                                    </h4>
-                                    <form
-                                        className="mt-8 space-y-4"
-                                        onSubmit={handleSubmit}
-                                    >
-                                        <div className="">
-                                            <label
-                                                htmlFor="doc"
-                                                className="form-label"
-                                            >
-                                                RUC del emisor
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="doc"
-                                                id="doc"
-                                                value={filterObj.doc}
-                                                onChange={handleInputChange}
-                                                className="form-control"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="">
-                                            <label
-                                                htmlFor="documentType"
-                                                className="form-label"
-                                            >
-                                                Tipo de comprobante
-                                            </label>
-                                            <select
-                                                value={filterObj.documentType}
-                                                name="documentType"
-                                                onChange={handleInputChange}
-                                                className="form-control-sm"
-                                                required
-                                            >
-                                                <option value={"01"}>
-                                                    FACTURA ELECTRÓNICA
-                                                </option>
-                                                <option value={"03"}>
-                                                    BOLETA DE VENTA ELECTRÓNICA
-                                                </option>
-                                                <option value={"07"}>
-                                                    NOTA DE CRÉDITO ELECTRÓNICA
-                                                </option>
-                                                <option value={"08"}>
-                                                    NOTA DE DÉBITO ELECTRÓNICA
-                                                </option>
-                                                <option value={"09"}>
-                                                    GUIA DE REMISIÓN REMITENTE
-                                                </option>
-                                            </select>
-                                        </div>
-
-                                        <div className="">
-                                            <label
-                                                htmlFor="serial"
-                                                className="form-label"
-                                            >
-                                                Serie
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="serial"
-                                                id="serial"
-                                                value={filterObj.serial}
-                                                onChange={handleInputChange}
-                                                className="form-control"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="">
-                                            <label
-                                                htmlFor="correlative"
-                                                className="form-label"
-                                            >
-                                                Numero
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="correlative"
-                                                id="correlative"
-                                                value={filterObj.correlative}
-                                                onChange={handleInputChange}
-                                                className="form-control"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="">
-                                            <label
-                                                htmlFor="totalToPay"
-                                                className="form-label"
-                                            >
-                                                Total
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="totalToPay"
-                                                id="totalToPay"
-                                                value={filterObj.totalToPay}
-                                                onChange={handleInputChange}
-                                                className="form-control"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="grid ">
-                                            <button
-                                                type="submit"
-                                                className="btn-default m-0"
-                                            >
-                                                Buscar
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-center justify-center px-6 pt-4">
-                                <div className="w-full max-w-sm p-6 space-y-3 sm:p-8  text-center">
-                                    <span className=" inline-flex items-center gap-2 bg-green-100 text-green-800 text-2xl font-extralight me-2 px-4 py-2.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">
-                                        <Lock />
-                                        Seguro
-                                    </span>
-                                    <div className="text-green-400 font-extralight text-sm">
-                                        Protegido con un Certificado Digital SSL
-                                        (https://), tus datos están
-                                        completamente seguros.
-                                    </div>
-                                </div>
-                            </div>
-                        </>
-                    )}
+                    ) : null}
                 </>
             )}
         </>
