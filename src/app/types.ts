@@ -276,6 +276,7 @@ export interface IOperation {
     supplierId?: number;
     igvType?: number;
     documentType?: string;
+    documentTypeReadable?: string;
     currencyType?: string;
     saleExchangeRate?: string;
     // observation?: string
@@ -307,6 +308,8 @@ export interface IOperation {
     linkXmlLow: string;
     linkCdr: string;
     linkCdrLow: string;
+    fileNameXml: string;
+    fileNameCdr: string;
     sunatStatus: boolean;
     sunatDescription: string;
     sunatDescriptionLow: string;

@@ -49,7 +49,17 @@ function SaleFilter({
         }
     }, [hostname]);
     const handleClickButton = async () => {
-        salesQuery();
+        salesQuery({
+            variables: {
+                subsidiaryId: Number(filterObj.subsidiaryId),
+                clientId: Number(filterObj.clientId),
+                startDate: filterObj.startDate,
+                endDate: filterObj.endDate,
+                documentType: filterObj.documentType,
+                page: Number(filterObj.page),
+                pageSize: Number(filterObj.pageSize),
+            },
+        });
         // initFlowbite();
     };
 

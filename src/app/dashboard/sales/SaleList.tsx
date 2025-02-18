@@ -3,11 +3,22 @@ import { IOperation, IProduct } from "@/app/types";
 import Close from "@/components/icons/Close";
 import Popover from "@/components/Popover";
 import Check from "@/components/icons/Check";
+import { toast } from "react-toastify";
 
 function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
     const handleDownload = (url: string, filename: string) => {
-        fetch(url)
-            .then((response) => response.blob())
+        if (!url || !filename) {
+            toast.error("URL o nombre de archivo no válido");
+            return;
+        }
+
+        fetch(url.toString().replace("http:", "https:"))
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Error en la respuesta de la descarga");
+                }
+                return response.blob();
+            })
             .then((blob) => {
                 const link = document.createElement("a");
                 link.href = URL.createObjectURL(blob);
@@ -20,6 +31,15 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                 console.error("Error al descargar el archivo:", error)
             );
     };
+    const transformedSalesData = filteredSalesData?.allSales?.sales?.map(
+        (item: IOperation) => ({
+            ...item,
+            operationStatus: item.operationStatus.replace("A_", ""),
+            documentType: item.documentType?.replace("A_", ""),
+            fileNameXml: `${item?.subsidiary?.company?.doc}-${item?.documentType}-${item.serial}-${item.correlative}.xml`,
+            fileNameCdr: `R-${item?.subsidiary?.company?.doc}-${item?.documentType}-${item.serial}-${item.correlative}.xml`,
+        })
+    );
     return (
         <>
             <div className="w-full overflow-x-auto">
@@ -128,7 +148,7 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredSalesData?.allSales?.sales?.map(
+                        {transformedSalesData?.map(
                             (item: IOperation, index: number) => (
                                 <tr
                                     key={item.id}
@@ -143,9 +163,7 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                     <td className="p-2 text-nowrap">
                                         {item.emitDate}
                                     </td>
-                                    <td className="p-2">
-                                        {item.documentType?.replace("A_", "")}
-                                    </td>
+                                    <td className="p-2">{item.documentType}</td>
                                     <td className="p-2">{item.serial}</td>
                                     <td className="p-2">{item.correlative}</td>
                                     <td className="p-2">
@@ -169,10 +187,7 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                             : "X"}
                                     </td>
                                     <td className="p-2">
-                                        {item.operationStatus.replace(
-                                            "A_",
-                                            ""
-                                        ) === "06"
+                                        {item.operationStatus === "06"
                                             ? "SI"
                                             : "NO"}
                                     </td>
@@ -198,35 +213,26 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                     </td>
                                     <td className="p-2 text-center">
                                         <a
-                                            href={
-                                                item.operationStatus.replace(
-                                                    "A_",
-                                                    ""
-                                                ) === "02"
-                                                    ? item.linkXml
-                                                    : item.operationStatus.replace(
-                                                          "A_",
-                                                          ""
-                                                      ) === "06"
-                                                    ? item.linkXmlLow
-                                                        ? item.linkXmlLow
-                                                        : "#"
-                                                    : "#"
-                                            }
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                const url =
+                                                    item.operationStatus ===
+                                                    "02"
+                                                        ? item.linkXml
+                                                        : item.linkXmlLow;
+                                                handleDownload(
+                                                    url,
+                                                    item?.fileNameXml
+                                                );
+                                            }}
                                             className="hover:underline"
-                                            target="_blank"
-                                            download
                                         >
-                                            <span className="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">
-                                                {item.operationStatus.replace(
-                                                    "A_",
-                                                    ""
-                                                ) === "02"
+                                            <span className="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300 text-nowrap">
+                                                {item.operationStatus === "02"
                                                     ? "XML"
-                                                    : item.operationStatus.replace(
-                                                          "A_",
-                                                          ""
-                                                      ) === "06"
+                                                    : item.operationStatus ===
+                                                      "06"
                                                     ? item.linkXmlLow
                                                         ? "XML"
                                                         : "SIN XML"
@@ -236,41 +242,30 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                     </td>
                                     <td className="p-2 text-center">
                                         <a
-                                            href={
-                                                item.operationStatus.replace(
-                                                    "A_",
-                                                    ""
-                                                ) === "02"
-                                                    ? item.linkCdr
-                                                    : item.operationStatus.replace(
-                                                          "A_",
-                                                          ""
-                                                      ) === "06"
-                                                    ? item.linkCdrLow
-                                                        ? item.linkCdrLow
-                                                        : "#"
-                                                    : "#"
-                                            }
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                const url =
+                                                    item.operationStatus ===
+                                                    "02"
+                                                        ? item.linkCdr
+                                                        : item.linkCdrLow;
+                                                handleDownload(
+                                                    url,
+                                                    item?.fileNameCdr
+                                                );
+                                            }}
                                             className="hover:underline"
-                                            target="_blank"
-                                            download
                                         >
-                                            {item.operationStatus.replace(
-                                                "A_",
-                                                ""
-                                            ) === "02" ? (
+                                            {item.operationStatus === "02" ? (
                                                 <>
-                                                    {item?.documentType?.replace(
-                                                        "A_",
-                                                        ""
-                                                    ) === "01" ? (
+                                                    {item?.documentType ===
+                                                    "01" ? (
                                                         <span className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
                                                             CDR
                                                         </span>
-                                                    ) : item?.documentType?.replace(
-                                                          "A_",
-                                                          ""
-                                                      ) === "03" ? (
+                                                    ) : item?.documentType ===
+                                                      "03" ? (
                                                         <span className="bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-gray-900 dark:text-gray-300">
                                                             CDR
                                                         </span>
@@ -278,11 +273,9 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                                         "-"
                                                     )}
                                                 </>
-                                            ) : item.operationStatus.replace(
-                                                  "A_",
-                                                  ""
-                                              ) === "06" ? (
-                                                <span className="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300">
+                                            ) : item.operationStatus ===
+                                              "06" ? (
+                                                <span className="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap">
                                                     {item.linkCdrLow
                                                         ? "CDR"
                                                         : "SIN CDR"}
@@ -299,28 +292,20 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                                     "popover-company-" + item.id
                                                 }
                                                 className={
-                                                    item.operationStatus.replace(
-                                                        "A_",
-                                                        ""
-                                                    ) === "02"
+                                                    item.operationStatus ===
+                                                    "02"
                                                         ? "bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300"
-                                                        : item.operationStatus.replace(
-                                                              "A_",
-                                                              ""
-                                                          ) === "06"
-                                                        ? "bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300"
+                                                        : item.operationStatus ===
+                                                          "06"
+                                                        ? "bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap"
                                                         : ""
                                                 }
                                             >
-                                                {item.operationStatus.replace(
-                                                    "A_",
-                                                    ""
-                                                ) === "02" ? (
+                                                {item.operationStatus ===
+                                                "02" ? (
                                                     <>
-                                                        {item?.documentType?.replace(
-                                                            "A_",
-                                                            ""
-                                                        ) === "01" ? (
+                                                        {item?.documentType ===
+                                                        "01" ? (
                                                             <>
                                                                 <svg
                                                                     className="inline-block w-4 h-4 "
@@ -336,10 +321,8 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                                                 </svg>{" "}
                                                                 0
                                                             </>
-                                                        ) : item?.documentType?.replace(
-                                                              "A_",
-                                                              ""
-                                                          ) === "03" ? (
+                                                        ) : item?.documentType ===
+                                                          "03" ? (
                                                             <>
                                                                 <svg
                                                                     className="inline-block w-4 h-4 "
@@ -358,10 +341,8 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                                             "-"
                                                         )}
                                                     </>
-                                                ) : item.operationStatus.replace(
-                                                      "A_",
-                                                      ""
-                                                  ) === "06" ? (
+                                                ) : item.operationStatus ===
+                                                  "06" ? (
                                                     <>
                                                         {
                                                             item.operationStatusReadable
@@ -374,15 +355,11 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                             <Popover
                                                 id={item.id}
                                                 description={
-                                                    item.operationStatus.replace(
-                                                        "A_",
-                                                        ""
-                                                    ) === "02"
+                                                    item.operationStatus ===
+                                                    "02"
                                                         ? item.sunatDescription
-                                                        : item.operationStatus.replace(
-                                                              "A_",
-                                                              ""
-                                                          ) === "06"
+                                                        : item.operationStatus ===
+                                                          "06"
                                                         ? item.sunatDescriptionLow
                                                             ? item.sunatDescriptionLow
                                                             : "no tiene descripción"

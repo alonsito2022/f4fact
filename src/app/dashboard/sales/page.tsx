@@ -72,6 +72,9 @@ const SALES_QUERY = gql`
                 }
                 subsidiary {
                     companyName
+                    company {
+                        doc
+                    }
                 }
             }
             totalInvoices
@@ -130,15 +133,6 @@ function SalePage() {
         },
     ] = useLazyQuery(SALES_QUERY, {
         context: authContext,
-        variables: {
-            subsidiaryId: Number(filterObj.subsidiaryId),
-            clientId: Number(filterObj.clientId),
-            startDate: filterObj.startDate,
-            endDate: filterObj.endDate,
-            documentType: filterObj.documentType,
-            page: Number(filterObj.page),
-            pageSize: Number(filterObj.pageSize),
-        },
         fetchPolicy: "network-only",
         onCompleted(data) {
             // console.log("object", data, authContext);
