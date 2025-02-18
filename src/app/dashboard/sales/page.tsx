@@ -7,6 +7,8 @@ import { gql, useLazyQuery } from "@apollo/client";
 import { useSession } from "next-auth/react";
 import { IUser } from "@/app/types";
 import { initFlowbite } from "flowbite";
+import WhatsAppModal from "./WhatsAppModal";
+import { Modal, ModalOptions } from "flowbite";
 const today = new Date().toISOString().split("T")[0];
 const initialStateFilterObj = {
     startDate: today,
@@ -69,6 +71,7 @@ const SALES_QUERY = gql`
                 sunatDescriptionLow
                 client {
                     names
+                    documentNumber
                 }
                 subsidiary {
                     companyName
@@ -86,17 +89,27 @@ const SALES_QUERY = gql`
         }
     }
 `;
-
+// FACTURA ELECTRÓNICA F002-187
+// 10295018025 Camargo Aragón Internet Ymelda Fortunata
+const initialStateCpe = {
+    id: 0,
+    documentTypeDisplay: "NA",
+    serial: "",
+    correlative: "",
+    clientName: "",
+    clientDoc: "",
+};
 function SalePage() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
+    const [cpe, setCpe] = useState(initialStateCpe);
     const { data: session } = useSession();
     const [jwtToken, setJwtToken] = useState<string | null>(null);
+    const [modalWhatsApp, setModalWhatsApp] = useState<Modal | any>(null);
 
     useEffect(() => {
         if (session?.user) {
             const user = session.user as IUser;
             setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
-
             setFilterObj((prev) => ({
                 ...prev,
                 subsidiaryId:
@@ -168,12 +181,22 @@ function SalePage() {
                                     filteredSalesData={filteredSalesData}
                                     setFilterObj={setFilterObj}
                                     filterObj={filterObj}
+                                    modalWhatsApp={modalWhatsApp}
+                                    cpe={cpe}
+                                    setCpe={setCpe}
                                 />
                             )}
                         </div>
                     </div>
                 </div>
             </div>
+            <WhatsAppModal
+                modalWhatsApp={modalWhatsApp}
+                setModalWhatsApp={setModalWhatsApp}
+                cpe={cpe}
+                setCpe={setCpe}
+                initialStateCpe={initialStateCpe}
+            />
         </>
     );
 }

@@ -216,6 +216,7 @@ function NewSalePage() {
         if (session?.user) {
             const user = session.user as IUser;
             setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
+            console.log("accessToken", user.accessToken);
             setUserLogged((prev) => ({
                 ...prev,
                 subsidiaryId:

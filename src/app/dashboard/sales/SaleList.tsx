@@ -5,7 +5,14 @@ import Popover from "@/components/Popover";
 import Check from "@/components/icons/Check";
 import { toast } from "react-toastify";
 
-function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
+function SaleList({
+    filteredSalesData,
+    setFilterObj,
+    filterObj,
+    modalWhatsApp,
+    cpe,
+    setCpe,
+}: any) {
     const handleDownload = (url: string, filename: string) => {
         if (!url || !filename) {
             toast.error("URL o nombre de archivo no válido");
@@ -31,6 +38,7 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                 console.error("Error al descargar el archivo:", error)
             );
     };
+
     const transformedSalesData = filteredSalesData?.allSales?.sales?.map(
         (item: IOperation) => ({
             ...item,
@@ -137,6 +145,7 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                 "XML",
                                 "CDR",
                                 "Estado SUNAT",
+                                "",
                             ].map((header, index) => (
                                 <th
                                     key={index}
@@ -289,7 +298,7 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                         <>
                                             <span
                                                 data-popover-target={
-                                                    "popover-company-" + item.id
+                                                    "popover-status-" + item.id
                                                 }
                                                 className={
                                                     item.operationStatus ===
@@ -353,19 +362,132 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                                 )}
                                             </span>
                                             <Popover
-                                                id={item.id}
-                                                description={
-                                                    item.operationStatus ===
-                                                    "02"
-                                                        ? item.sunatDescription
-                                                        : item.operationStatus ===
-                                                          "06"
-                                                        ? item.sunatDescriptionLow
+                                                id={"popover-status-" + item.id}
+                                            >
+                                                {item.operationStatus ===
+                                                "02" ? (
+                                                    <p>
+                                                        {item.sunatDescription}
+                                                    </p>
+                                                ) : item.operationStatus ===
+                                                  "06" ? (
+                                                    <p>
+                                                        {item.sunatDescriptionLow
                                                             ? item.sunatDescriptionLow
-                                                            : "no tiene descripción"
-                                                        : ""
+                                                            : "No tiene descripción"}
+                                                    </p>
+                                                ) : (
+                                                    <p>Sin información</p>
+                                                )}
+                                            </Popover>
+                                        </>
+                                    </td>
+                                    <td className="p-2">
+                                        <>
+                                            <span
+                                                data-popover-target={
+                                                    "popover-options-" + item.id
                                                 }
-                                            />
+                                                className={
+                                                    "font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                }
+                                            >
+                                                Opciones
+                                            </span>
+                                            <Popover
+                                                id={
+                                                    "popover-options-" + item.id
+                                                }
+                                            >
+                                                <a
+                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                    href="#"
+                                                    onClick={() => {
+                                                        modalWhatsApp.show();
+                                                        setCpe({
+                                                            ...cpe,
+                                                            id: Number(item.id),
+                                                            documentTypeDisplay:
+                                                                item.documentType ===
+                                                                "01"
+                                                                    ? "FACTURA"
+                                                                    : item.documentType ===
+                                                                      "03"
+                                                                    ? "BOLETA"
+                                                                    : "NA",
+                                                            serial: item.serial,
+                                                            correlative:
+                                                                item.correlative,
+                                                            clientName:
+                                                                item.client
+                                                                    ?.names,
+                                                            clientDoc:
+                                                                item.client
+                                                                    ?.documentNumber,
+                                                        });
+                                                    }}
+                                                >
+                                                    Enviar por WhatsApp
+                                                </a>
+                                                <br />
+                                                <a
+                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                    target="_blank"
+                                                    href="#"
+                                                >
+                                                    Generar NOTA DE DÉBITO
+                                                </a>
+                                                <br />
+                                                <a
+                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                    target="_blank"
+                                                    href="#"
+                                                >
+                                                    Generar GUIA DE REMISIÓN
+                                                    REMITENTE
+                                                </a>
+                                                <br />
+                                                <a
+                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                    target="_blank"
+                                                    href="#"
+                                                >
+                                                    Generar GUIA DE REMISIÓN
+                                                    TRANSPORTISTA
+                                                </a>
+                                                <br />
+                                                <a
+                                                    className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                                                    target="_blank"
+                                                    href="#"
+                                                >
+                                                    ANULAR o COMUNICAR DE BAJA
+                                                </a>
+                                                <br />
+                                                <a
+                                                    className="font-medium text-green-600 dark:text-green-500 hover:underline"
+                                                    target="_blank"
+                                                    href="https://ww1.sunat.gob.pe/ol-ti-itconsultaunificadalibre/consultaUnificadaLibre/consulta"
+                                                >
+                                                    CONSULTA SUNAT 1
+                                                </a>
+                                                <br />
+                                                <a
+                                                    className="font-medium text-green-600 dark:text-green-500 hover:underline"
+                                                    target="_blank"
+                                                    href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
+                                                >
+                                                    CONSULTA SUNAT 2
+                                                </a>
+                                                <br />
+                                                <a
+                                                    className="font-medium text-green-600 dark:text-green-500 hover:underline"
+                                                    target="_blank"
+                                                    href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
+                                                >
+                                                    Verificar XML en la SUNAT
+                                                </a>
+                                            </Popover>
                                         </>
                                     </td>
                                 </tr>
@@ -397,7 +519,7 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                       ).toFixed(2)
                                     : "0.00"}
                             </td>
-                            <td colSpan={8}></td>
+                            <td colSpan={9}></td>
                         </tr>
                         <tr>
                             <td
@@ -423,7 +545,7 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                       ).toFixed(2)
                                     : "0.00"}
                             </td>
-                            <td colSpan={8}></td>
+                            <td colSpan={9}></td>
                         </tr>
                         <tr>
                             <td
@@ -449,7 +571,7 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                       ).toFixed(2)
                                     : "0.00"}
                             </td>
-                            <td colSpan={8}></td>
+                            <td colSpan={9}></td>
                         </tr>
                         <tr>
                             <td
@@ -475,7 +597,7 @@ function SaleList({ filteredSalesData, setFilterObj, filterObj }: any) {
                                       ).toFixed(2)
                                     : "0.00"}
                             </td>
-                            <td colSpan={8}></td>
+                            <td colSpan={9}></td>
                         </tr>
                     </tfoot>
                 </table>
