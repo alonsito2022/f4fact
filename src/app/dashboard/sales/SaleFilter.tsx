@@ -49,6 +49,13 @@ function SaleFilter({
         }
     }, [hostname]);
     const handleClickButton = async () => {
+        // Reinicializa la página a 1
+        setFilterObj({
+            ...filterObj,
+            page: 1,
+        });
+
+        // Llama a salesQuery con la página reinicializada
         salesQuery({
             variables: {
                 subsidiaryId: Number(filterObj.subsidiaryId),
@@ -56,7 +63,7 @@ function SaleFilter({
                 startDate: filterObj.startDate,
                 endDate: filterObj.endDate,
                 documentType: filterObj.documentType,
-                page: Number(filterObj.page),
+                page: 1, // Asegúrate de pasar la página como 1 aquí también
                 pageSize: Number(filterObj.pageSize),
             },
         });

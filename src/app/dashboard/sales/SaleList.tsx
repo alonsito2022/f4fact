@@ -666,24 +666,58 @@ function SaleList({
                     <button
                         className="btn-blue-xs"
                         disabled={filterObj.page === 1}
-                        onClick={() =>
+                        onClick={() => {
                             setFilterObj({
                                 ...filterObj,
                                 page: filterObj.page - 1,
-                            })
-                        }
+                            });
+                            // Llama a salesQuery con los nuevos parámetros
+                            salesQuery({
+                                variables: {
+                                    subsidiaryId: Number(
+                                        filterObj.subsidiaryId
+                                    ),
+                                    clientId: Number(filterObj.clientId),
+                                    startDate: filterObj.startDate,
+                                    endDate: filterObj.endDate,
+                                    documentType: filterObj.documentType,
+                                    page: filterObj.page - 1,
+                                    pageSize: Number(filterObj.pageSize),
+                                },
+                            });
+                        }}
                     >
                         Prev
                     </button>
                     <span className="text-sm">Página {filterObj.page}</span>
                     <button
                         className="btn-blue-xs"
-                        onClick={() =>
+                        onClick={() => {
                             setFilterObj({
                                 ...filterObj,
                                 page: filterObj.page + 1,
-                            })
-                        }
+                            });
+                            salesQuery({
+                                variables: {
+                                    subsidiaryId: Number(
+                                        filterObj.subsidiaryId
+                                    ),
+                                    clientId: Number(filterObj.clientId),
+                                    startDate: filterObj.startDate,
+                                    endDate: filterObj.endDate,
+                                    documentType: filterObj.documentType,
+                                    page: filterObj.page + 1,
+                                    pageSize: Number(filterObj.pageSize),
+                                },
+                            });
+                        }}
+                        style={{
+                            display:
+                                filterObj.page ===
+                                filteredSalesData?.allSales?.totalNumberOfPages
+                                    ? "none"
+                                    : "inline-block",
+                        }}
                     >
                         Next
                     </button>

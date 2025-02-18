@@ -172,7 +172,13 @@ function SalePage() {
                 <div className="overflow-x-auto">
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden shadow">
-                            {filteredSalesError ? (
+                            {filteredSalesLoading ? (
+                                <div className="p-4 text-center">
+                                    <span className="loader"></span>{" "}
+                                    {/* Puedes usar un spinner o cualquier otro indicador de carga */}
+                                    Cargando ventas...
+                                </div>
+                            ) : filteredSalesError ? (
                                 <div className="p-4 text-red-500 text-center">
                                     {filteredSalesError.message}
                                 </div>
