@@ -8,32 +8,44 @@ function SubsidiaryList({
     subsidiary,
     setSubsidiary,
     filterObj,
+    user
 }: any) {
     async function fetchSubsidiaryByID(pk: number) {
-        await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                query: `
-                {
-                    subsidiaryById(pk: ${pk}){
-                      id
-                      serial
-                      name
-                      address
-                      phone
-                      ubigeo
-                      companyId
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    query: `
+                    {
+                        subsidiaryById(pk: ${pk}) {
+                            id
+                            serial
+                            name
+                            address
+                            phone
+                            districtId
+                            districtName
+                            companyId
+                            token
+                        }
                     }
-                }
-            `,
-            }),
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                console.log(data.data.subsidiaryById);
-                setSubsidiary(data.data.subsidiaryById);
+                    `,
+                }),
             });
+
+            const result = await response.json();
+
+            if (response.ok && result.data) {
+                console.log("Sucursal:", result.data.subsidiaryById);
+                setSubsidiary(result.data.subsidiaryById);
+            } else {
+                console.error("Error fetching subsidiary:", result.errors);
+                throw new Error(result.errors ? result.errors[0].message : "Error fetching subsidiary");
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+        }
     }
     return (
         <div className="overflow-x-auto">
@@ -87,14 +99,12 @@ function SubsidiaryList({
                         >
                             Empresa
                         </th>
-                        {filterObj?.isSuperuser ? (
-                            <th
-                                scope="col"
-                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                            >
-                                <span className="sr-only">Edit</span>
-                            </th>
-                        ) : null}
+                        <th
+                            scope="col"
+                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                        >
+                            <span className="sr-only">Edit</span>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -120,7 +130,7 @@ function SubsidiaryList({
                                 <td className="px-4 py-2">{item.address}</td>
                                 <td className="px-4 py-2">{item.phone}</td>
                                 <td className="px-4 py-2">
-                                    {item.ubigeo ? item.ubigeo : "-"}
+                                    {item.districtId ? item.districtId : "-"}
                                 </td>
                                 <td className="px-4 py-2">
                                     {item.companyName}
@@ -131,9 +141,7 @@ function SubsidiaryList({
                                             href="#"
                                             className="hover:underline"
                                             onClick={async () => {
-                                                await fetchSubsidiaryByID(
-                                                    item.id!
-                                                );
+                                                await fetchSubsidiaryByID(item.id!);
                                                 modal.show();
                                             }}
                                         >
@@ -149,7 +157,31 @@ function SubsidiaryList({
                                             </svg>
                                         </a>
                                     </td>
-                                ) : null}
+                                ) : Number(user?.subsidiaryId) === Number(item.id) ? (
+                                    <td className="px-4 py-2 text-right">
+                                        <a
+                                            href="#"
+                                            className="hover:underline"
+                                            onClick={async () => {
+                                                await fetchSubsidiaryByID(item.id!);
+                                                modal.show();
+                                            }}
+                                        >
+                                            <svg
+                                                className="w-6 h-6 text-green-500 dark:text-white"
+                                                aria-hidden="true"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 18"
+                                            >
+                                                <path d="M12.687 14.408a3.01 3.01 0 0 1-1.533.821l-3.566.713a3 3 0 0 1-3.53-3.53l.713-3.566a3.01 3.01 0 0 1 .821-1.533L10.905 2H2.167A2.169 2.169 0 0 0 0 4.167v11.666A2.169 2.169 0 0 0 2.167 18h11.666A2.169 2.169 0 0 0 16 15.833V11.1l-3.313 3.308Zm5.53-9.065.546-.546a2.518 2.518 0 0 0 0-3.56 2.576 2.576 0 0 0-3.559 0l-.547.547 3.56 3.56Z" />
+                                                <path d="M13.243 3.2 7.359 9.081a.5.5 0 0 0-.136.256L6.51 12.9a.5.5 0 0 0 .59.59l3.566-.713a.5.5 0 0 0 .255-.136L16.8 6.757 13.243 3.2Z" />
+                                            </svg>
+                                        </a>
+                                    </td>
+                                ) : (
+                                    null
+                                )}
                             </tr>
                         ))}
                 </tbody>

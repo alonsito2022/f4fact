@@ -155,7 +155,7 @@ export interface ISubsidiary {
     name?: string;
     address?: string;
     phone?: string;
-    ubigeo?: string;
+    districtId?: string;
     companyId?: number;
     companyName?: string;
     company?: ICompany;
