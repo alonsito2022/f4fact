@@ -11,6 +11,10 @@ function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialSta
 
     const handleSaveSubsidiary = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if(subsidiary.companyId === 0 || subsidiary.companyId === "" || subsidiary.companyId === null || subsidiary.companyId === undefined){
+            toast("Seleccione una empresa", { hideProgressBar: true, autoClose: 2000, type: 'error' });
+            return;
+        }
         let queryFetch: String = "";
         if(Number(subsidiary.id)!==0){
             queryFetch = `
@@ -61,8 +65,6 @@ function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialSta
                 modal.hide();
             }).catch(e=>console.log(e))
         }
-
-
     }    
 
     async function fetchCompanies(){
@@ -98,6 +100,14 @@ function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialSta
         }
         fetchCompanies()
       }, []);
+    const handleCopyToken = () => {
+        navigator.clipboard.writeText(subsidiary.token || "").then(() => {
+            toast("Token copiado al portapapeles", { hideProgressBar: true, autoClose: 2000, type: 'success' });
+        }).catch(err => {
+            console.error("Error al copiar el token: ", err);
+            toast("Error al copiar el token", { hideProgressBar: true, autoClose: 2000, type: 'error' });
+        });
+    };
   return (
     <div>
       <div id="subsidiary-modal" tabIndex={-1} aria-hidden="true" className="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
@@ -144,10 +154,22 @@ function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialSta
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <label htmlFor="companyId" className="sr-only">Empresa</label>
                         <select id="companyId" name="companyId" onChange={handleInputChange} value={subsidiary.companyId} className="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
+                        <option value="">Seleccionar Empresa</option>
                         {companies?.map((o,k)=>(
                                 <option key={k} value={o.id}>{o.businessName}</option>
                             ))}
                         </select>
+                    </div>
+                    <div className="grid md:grid-cols-1 md:gap-6 pt-4">
+                        <div className="relative z-0 w-full mb-6 group">
+                            <div className="flex items-center">
+                                <input type="text" name="token" id="token" value={subsidiary.token ? subsidiary.token : ''} disabled onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
+                                <button type="button" onClick={handleCopyToken} className="ml-2 px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                                    Copiar
+                                </button>
+                            </div>
+                            <label htmlFor="token" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Token</label>
+                        </div>
                     </div>
                     <button type="submit" className="btn-blue">{subsidiary.id? <p>Actualizar Datos de Local</p> : <p>Crear Datos de Local</p>}</button>
                     </form>
