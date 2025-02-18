@@ -16,7 +16,7 @@ const initialState = {
     name: "",
     address: "",
     phone: "",
-    ubigeo: "",
+    districtId: "",
     company: "",
 };
 
@@ -28,10 +28,8 @@ const SUBSIDIARIES_QUERY = gql`
             name
             address
             phone
-            district {
-                id
-                description
-            }
+            districtId
+            districtName
             companyId
             companyName
         }
@@ -45,10 +43,8 @@ const SEARCH_SUBSIDIARIES_QUERY = gql`
             name
             address
             phone
-            district {
-                id
-                description
-            }
+            districtId
+            districtName
             companyId
             companyName
         }
@@ -71,6 +67,7 @@ function SubsidiaryPage() {
     useEffect(() => {
         if (session?.user) {
             const user = session.user as IUser;
+            console.log(user)
             setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
 
             setFilterObj((prev) => ({
@@ -188,6 +185,7 @@ function SubsidiaryPage() {
                                     subsidiary={subsidiary}
                                     setSubsidiary={setSubsidiary}
                                     filterObj={filterObj}
+                                    user={session?.user}
                                 />
                             )}
                         </div>
