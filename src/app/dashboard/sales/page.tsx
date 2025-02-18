@@ -184,6 +184,7 @@ function SalePage() {
                                     modalWhatsApp={modalWhatsApp}
                                     cpe={cpe}
                                     setCpe={setCpe}
+                                    salesQuery={salesQuery}
                                 />
                             )}
                         </div>

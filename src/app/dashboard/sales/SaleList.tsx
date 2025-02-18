@@ -4,6 +4,16 @@ import Close from "@/components/icons/Close";
 import Popover from "@/components/Popover";
 import Check from "@/components/icons/Check";
 import { toast } from "react-toastify";
+import { gql, useMutation } from "@apollo/client";
+
+const CANCEL_INVOICE = gql`
+    mutation CancelInvoice($operationId: Int!, $lowDate: Date!) {
+        cancelInvoice(operationId: $operationId, lowDate: $lowDate) {
+            message
+            success
+        }
+    }
+`;
 
 function SaleList({
     filteredSalesData,
@@ -12,6 +22,7 @@ function SaleList({
     modalWhatsApp,
     cpe,
     setCpe,
+    salesQuery,
 }: any) {
     const handleDownload = (url: string, filename: string) => {
         if (!url || !filename) {
@@ -38,7 +49,45 @@ function SaleList({
                 console.error("Error al descargar el archivo:", error)
             );
     };
+    const [cancelInvoice, { loading, error, data }] =
+        useMutation(CANCEL_INVOICE);
+    const handleCancelInvoice = (operationId: number) => {
+        const today = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD
 
+        cancelInvoice({
+            variables: {
+                operationId,
+                lowDate: today,
+            },
+        })
+            .then((response) => {
+                if (response.data.cancelInvoice.success) {
+                    toast.success("Factura anulada correctamente.");
+                    salesQuery({
+                        variables: {
+                            subsidiaryId: Number(filterObj.subsidiaryId),
+                            clientId: Number(filterObj.clientId),
+                            startDate: filterObj.startDate,
+                            endDate: filterObj.endDate,
+                            documentType: filterObj.documentType,
+                            page: Number(filterObj.page),
+                            pageSize: Number(filterObj.pageSize),
+                        },
+                    });
+                } else {
+                    toast.error(
+                        `Error: ${response.data.cancelInvoice.message}`
+                    );
+                }
+            })
+            .catch((err) => {
+                toast.error("Error al anular la factura.");
+                console.error(err, {
+                    operationId,
+                    lowDate: today,
+                });
+            });
+    };
     const transformedSalesData = filteredSalesData?.allSales?.sales?.map(
         (item: IOperation) => ({
             ...item,
@@ -458,8 +507,13 @@ function SaleList({
                                                 <br />
                                                 <a
                                                     className="font-medium text-red-600 dark:text-red-500 hover:underline"
-                                                    target="_blank"
                                                     href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault(); // Evita que el enlace cambie de página
+                                                        handleCancelInvoice(
+                                                            Number(item?.id)
+                                                        );
+                                                    }}
                                                 >
                                                     ANULAR o COMUNICAR DE BAJA
                                                 </a>
