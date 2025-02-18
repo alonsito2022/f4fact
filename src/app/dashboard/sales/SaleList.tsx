@@ -510,9 +510,16 @@ function SaleList({
                                                     href="#"
                                                     onClick={(e) => {
                                                         e.preventDefault(); // Evita que el enlace cambie de página
-                                                        handleCancelInvoice(
-                                                            Number(item?.id)
-                                                        );
+                                                        const confirmDelete =
+                                                            window.confirm(
+                                                                "¿Estás seguro de que deseas anular esta factura? Esta acción no se puede deshacer."
+                                                            );
+
+                                                        if (confirmDelete) {
+                                                            handleCancelInvoice(
+                                                                Number(item?.id)
+                                                            );
+                                                        }
                                                     }}
                                                 >
                                                     ANULAR o COMUNICAR DE BAJA
