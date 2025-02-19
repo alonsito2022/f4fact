@@ -141,28 +141,41 @@ const handler = NextAuth({
     },
     callbacks: {
         async jwt({ token, user }: { token: JWT; user: User }) {
-            const usr = user as ExtendedUser;
-            if (usr) {
-                token.user = usr;
-                token.accessToken = usr.accessToken;
-                token.iat = usr.iat;
-                token.exp = usr.exp;
-            }
-            // Verifica si el token ha expirado
-            if (Date.now() >= (token?.exp as number) * 1000) {
-                console.log("Token expirado, invalidando sesión");
-                return {};
+            // const usr = user as ExtendedUser;
+            // if (usr) {
+            //     token.user = usr;
+            //     token.accessToken = usr.accessToken;
+            //     token.iat = usr.iat;
+            //     token.exp = usr.exp;
+            // }
+            // // Verifica si el token ha expirado
+            // if (Date.now() >= (token?.exp as number) * 1000) {
+            //     console.log("Token expirado, invalidando sesión");
+            //     return {};
+            // }
+            // return token;
+            if (user) {
+                token.user = user as ExtendedUser; // Guarda todos los datos en el token
+                token.accessToken = (user as ExtendedUser).accessToken;
+                token.iat = (user as ExtendedUser).iat;
+                token.exp = (user as ExtendedUser).exp;
             }
             return token;
         },
         async session({ session, token }: { session: Session; token: JWT }) {
-            let defaultSession = session as ExtendedSession;
-            defaultSession.user = token.user as ExtendedUser;
-            defaultSession.accessToken = token?.accessToken as string;
-            defaultSession.expires = new Date(
-                (token?.exp as number) * 1000
-            ).toISOString(); // Expira según el backend
-            return defaultSession;
+            // let defaultSession = session as ExtendedSession;
+            // defaultSession.user = token.user as ExtendedUser;
+            // defaultSession.accessToken = token?.accessToken as string;
+            // defaultSession.expires = new Date(
+            //     (token?.exp as number) * 1000
+            // ).toISOString(); // Expira según el backend
+            // return defaultSession;
+            return {
+                ...session,
+                user: token.user as ExtendedUser, // Asegura que la sesión contiene el usuario completo
+                accessToken: token.accessToken,
+                expires: new Date((token.exp as number) * 1000).toISOString(),
+            };
         },
     },
     pages: {

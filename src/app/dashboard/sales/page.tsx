@@ -102,12 +102,12 @@ const initialStateCpe = {
 function SalePage() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
     const [cpe, setCpe] = useState(initialStateCpe);
-    const { data: session } = useSession();
+    const { data: session, status, update } = useSession();
     const [jwtToken, setJwtToken] = useState<string | null>(null);
     const [modalWhatsApp, setModalWhatsApp] = useState<Modal | any>(null);
 
     useEffect(() => {
-        console.log("Session at useEffect start:", session);
+        console.log("Session at useEffect start:", status, session, update);
         if (session?.user) {
             const user = session.user as IUser;
             console.log("User details:", user);
