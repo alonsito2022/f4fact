@@ -105,13 +105,15 @@ function SalePage() {
     const { data: session, status, update } = useSession();
     const [jwtToken, setJwtToken] = useState<string | null>(null);
     const [modalWhatsApp, setModalWhatsApp] = useState<Modal | any>(null);
+    const [sessionUpdated, setSessionUpdated] = useState(false);
 
     useEffect(() => {
         console.log("Session at useEffect start:", status, session, update);
 
-        if (status === "authenticated") {
+        if (status === "authenticated" && !sessionUpdated) {
             update().then((updatedSession) => {
                 console.log("Updated session:", updatedSession);
+                setSessionUpdated(true); // Evita que se vuelva a llamar indefinidamente
             });
         }
 
@@ -138,7 +140,7 @@ function SalePage() {
         } else {
             console.log("No user found in session");
         }
-    }, [session, status, update]);
+    }, [session, status, update, sessionUpdated]);
     // useMemo para evitar que getAuthContext() genere un nuevo objeto en cada render
     const authContext = useMemo(
         () => ({
