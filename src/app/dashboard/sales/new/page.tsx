@@ -309,7 +309,7 @@ function NewSalePage() {
                         name: value,
                     });
 
-                    // modalAddDetail.show();
+                    modalAddDetail.show();
                     // setPurchaseDetail({
                     //     ...purchaseDetail,
 
@@ -483,7 +483,7 @@ function NewSalePage() {
                                     id="id"
                                     value={sale.id}
                                 />
-                                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                                <div className="grid gap-4  lg:grid-cols-5 sm:grid-cols-1 md:grid-cols-3">
                                     {/* IGV % */}
                                     <div>
                                         <label
@@ -496,7 +496,7 @@ function NewSalePage() {
                                             value={sale.igvType}
                                             name="igvType"
                                             onChange={handleSale}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                             required
                                         >
                                             <option value={18}>18%</option>
@@ -518,7 +518,7 @@ function NewSalePage() {
                                             value={sale.documentType}
                                             name="documentType"
                                             onChange={handleSale}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                             required
                                         >
                                             <option value={"01"}>
@@ -553,7 +553,7 @@ function NewSalePage() {
                                             value={sale.emitDate}
                                             onChange={handleSale}
                                             onFocus={(e) => e.target.select()}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                             required
                                         />
                                     </div>
@@ -565,7 +565,7 @@ function NewSalePage() {
                                         <div className="relative w-full">
                                             <input
                                                 type="text"
-                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                 maxLength={200}
                                                 value={sale.clientName}
                                                 name="clientName"
@@ -598,7 +598,7 @@ function NewSalePage() {
                                             </datalist>
                                             <button
                                                 type="button"
-                                                className="absolute inset-y-0 right-10 px-2 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-400 focus:ring-2 focus:ring-purple-500"
+                                                className="absolute inset-y-0 right-10 px-2 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
                                                 onClick={() =>
                                                     setSale({
                                                         ...sale,
@@ -611,7 +611,7 @@ function NewSalePage() {
                                             </button>
                                             <button
                                                 type="button"
-                                                className="absolute inset-y-0 right-0 px-2.5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500"
+                                                className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
                                                 onClick={(e) => {
                                                     modalPerson.show();
                                                     setPerson(
@@ -647,7 +647,7 @@ function NewSalePage() {
                                             value={sale.currencyType}
                                             name="currencyType"
                                             onChange={handleSale}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                         >
                                             <option value={0} disabled>
                                                 Moneda
@@ -682,7 +682,7 @@ function NewSalePage() {
                                             value={sale.saleExchangeRate}
                                             onChange={handleSale}
                                             onFocus={(e) => e.target.select()}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                             autoComplete="off"
                                         />
                                     </div>
@@ -702,7 +702,7 @@ function NewSalePage() {
                                             value={sale.serial}
                                             onChange={handleSale}
                                             onFocus={(e) => e.target.select()}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                             autoComplete="off"
                                         />
                                     </div>
@@ -722,19 +722,19 @@ function NewSalePage() {
                                             value={sale.correlative}
                                             onChange={handleSale}
                                             onFocus={(e) => e.target.select()}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                             autoComplete="off"
                                         />
                                     </div>
                                     {/* Buscar Producto o Servicio */}
-                                    <div className="md:col-span-4">
+                                    <div className="md:col-span-2">
                                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Buscar Producto o Servicio
                                         </label>
                                         <div className="relative w-full">
                                             <input
                                                 type="text"
-                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                 maxLength={100}
                                                 value={product.name}
                                                 name="name"
@@ -764,7 +764,7 @@ function NewSalePage() {
                                             </datalist>
                                             <button
                                                 type="button"
-                                                className="form-search-button-sm absolute inset-y-0 right-0 flex items-center px-2 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
                                                 onClick={(e) => {
                                                     modalProduct.show();
                                                     setProduct(
@@ -781,7 +781,7 @@ function NewSalePage() {
                                 <div className="flex justify-end py-2">
                                     <button
                                         type="button"
-                                        className="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 flex items-center gap-2"
+                                        className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
                                         onClick={(e) => {
                                             modalAddDetail.show();
                                             setSaleDetail(
@@ -848,7 +848,7 @@ function NewSalePage() {
                                                         <td className="px-4 py-2">
                                                             <div className="flex justify-end py-2 space-x-2">
                                                                 <a
-                                                                    className="hover:underline cursor-pointer text-indigo-600 dark:text-indigo-400"
+                                                                    className="hover:underline cursor-pointer text-blue-600 dark:text-blue-400"
                                                                     onClick={(
                                                                         e
                                                                     ) => {
@@ -889,7 +889,7 @@ function NewSalePage() {
                                         </tbody>
                                     </table>
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-4 md:grid-cols-4 gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                                <div className="grid grid-cols-1 sm:grid-cols-6 md:grid-cols-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
                                     <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
                                         % Descuento Global
                                     </div>

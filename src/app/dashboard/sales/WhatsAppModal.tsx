@@ -25,7 +25,7 @@ function WhatsAppModal({
             };
             setModalWhatsApp(new Modal($targetEl, options));
         }
-    }, []);
+    }, [modalWhatsApp, setModalWhatsApp]);
 
     const padCorrelative = (correlative: string | number) => {
         return correlative.toString().padStart(6, "0");
