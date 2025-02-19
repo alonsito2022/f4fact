@@ -388,7 +388,7 @@ function NewSalePage() {
 
     useEffect(() => {
         calculateTotal();
-    }, [sale.operationdetailSet, calculateTotal]);
+    }, [sale.operationdetailSet]);
 
     function calculateTotal() {
         const discountForItem = sale?.operationdetailSet?.reduce(
