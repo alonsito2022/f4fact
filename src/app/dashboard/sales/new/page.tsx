@@ -213,22 +213,6 @@ function NewSalePage() {
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
     const [modalWayPay, setModalWayPay] = useState<Modal | any>(null);
 
-    useEffect(() => {
-        if (session?.user) {
-            const user = session.user as IUser;
-            setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
-            console.log("user", user.id);
-            setUserLogged((prev) => ({
-                ...prev,
-                subsidiaryId:
-                    prev.subsidiaryId ||
-                    (user.isSuperuser ? "0" : user.subsidiaryId!),
-                isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
-            }));
-            console.log(user.isSuperuser ? "0" : user.subsidiaryId!);
-        }
-    }, [session]);
-
     const authContext = useMemo(
         () => ({
             headers: {
@@ -275,24 +259,6 @@ function NewSalePage() {
         context: authContext,
         skip: !jwtToken,
     });
-
-    // Manejo de errores
-    if (
-        personsError ||
-        productsError ||
-        typeAffectationsError ||
-        wayPaysError
-    ) {
-        return (
-            <div>
-                Error: No autorizado o error en la consulta.
-                {personsError?.message ||
-                    productsError?.message ||
-                    typeAffectationsError?.message ||
-                    wayPaysError?.message}
-            </div>
-        );
-    }
 
     const handleSale = (
         event: ChangeEvent<
@@ -387,6 +353,22 @@ function NewSalePage() {
     };
 
     useEffect(() => {
+        if (session?.user) {
+            const user = session.user as IUser;
+            setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
+            console.log("user", user.id);
+            setUserLogged((prev) => ({
+                ...prev,
+                subsidiaryId:
+                    prev.subsidiaryId ||
+                    (user.isSuperuser ? "0" : user.subsidiaryId!),
+                isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
+            }));
+            console.log(user.isSuperuser ? "0" : user.subsidiaryId!);
+        }
+    }, [session]);
+
+    useEffect(() => {
         calculateTotal();
     }, [sale.operationdetailSet]);
 
@@ -462,6 +444,24 @@ function NewSalePage() {
             totalPerception: Number(totalPerception).toFixed(2),
             totalToPay: Number(totalToPay).toFixed(2),
         }));
+    }
+
+    // Manejo de errores
+    if (
+        personsError ||
+        productsError ||
+        typeAffectationsError ||
+        wayPaysError
+    ) {
+        return (
+            <div>
+                Error: No autorizado o error en la consulta.
+                {personsError?.message ||
+                    productsError?.message ||
+                    typeAffectationsError?.message ||
+                    wayPaysError?.message}
+            </div>
+        );
     }
 
     return (
