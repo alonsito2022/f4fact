@@ -212,11 +212,12 @@ function NewSalePage() {
     const [modalProduct, setModalProduct] = useState<Modal | any>(null);
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
     const [modalWayPay, setModalWayPay] = useState<Modal | any>(null);
+
     useEffect(() => {
         if (session?.user) {
             const user = session.user as IUser;
             setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
-            console.log("accessToken", user.accessToken);
+            console.log("user", user.id);
             setUserLogged((prev) => ({
                 ...prev,
                 subsidiaryId:
@@ -274,12 +275,53 @@ function NewSalePage() {
         context: authContext,
         skip: !jwtToken,
     });
+
+    // Manejo de errores
+    if (
+        personsError ||
+        productsError ||
+        typeAffectationsError ||
+        wayPaysError
+    ) {
+        return (
+            <div>
+                Error: No autorizado o error en la consulta.
+                {personsError?.message ||
+                    productsError?.message ||
+                    typeAffectationsError?.message ||
+                    wayPaysError?.message}
+            </div>
+        );
+    }
+
     const handleSale = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
         >
     ) => {
         const { name, value } = event.target;
+        if (name === "clientName" && event.target instanceof HTMLInputElement) {
+            const dataList = event.target.list;
+            if (dataList) {
+                const option = Array.from(dataList.options).find(
+                    (option) => option.value === value
+                );
+                if (option) {
+                    const selectedId = option.getAttribute("data-key");
+                    setSale({
+                        ...sale,
+                        clientName: value,
+                        clientId: Number(selectedId),
+                    });
+                } else {
+                    setSale({ ...sale, clientName: value, clientId: 0 });
+                }
+            } else {
+                console.log("sin datalist");
+            }
+        } else {
+            setSale({ ...sale, [name]: value });
+        }
     };
     const handleProduct = (
         event: ChangeEvent<
@@ -435,24 +477,23 @@ function NewSalePage() {
                 </div>
             </div>
 
-            <div className="flex flex-col">
+            <div className="flex flex-col space-y-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
                 <div className="overflow-x-auto">
                     <div className="inline-block min-w-full align-middle">
-                        <div className="overflow-hidden shadow lg:max-w-4xl">
-                            <div className="p-4 md:p-5 space-y-4">
-                                {/* <form> */}
-
+                        <div className="overflow-hidden shadow-lg rounded-lg">
+                            <div className="p-4 md:p-5 space-y-6">
                                 <input
                                     type="hidden"
                                     name="id"
                                     id="id"
                                     value={sale.id}
                                 />
-                                <div className="grid gap-2 grid-cols-4">
-                                    <div className="sm:col-span-1">
+                                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                                    {/* IGV % */}
+                                    <div>
                                         <label
                                             htmlFor="igvType"
-                                            className="text-sm"
+                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             IGV %
                                         </label>
@@ -460,7 +501,7 @@ function NewSalePage() {
                                             value={sale.igvType}
                                             name="igvType"
                                             onChange={handleSale}
-                                            className="form-control-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             required
                                         >
                                             <option value={18}>18%</option>
@@ -470,10 +511,11 @@ function NewSalePage() {
                                             <option value={4}>4% (IVAP)</option>
                                         </select>
                                     </div>
-                                    <div className="sm:col-span-2">
+                                    {/* Tipo documento */}
+                                    <div>
                                         <label
                                             htmlFor="documentType"
-                                            className="text-sm"
+                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Tipo documento
                                         </label>
@@ -481,7 +523,7 @@ function NewSalePage() {
                                             value={sale.documentType}
                                             name="documentType"
                                             onChange={handleSale}
-                                            className="form-control-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             required
                                         >
                                             <option value={"01"}>
@@ -501,11 +543,11 @@ function NewSalePage() {
                                             </option>
                                         </select>
                                     </div>
-
-                                    <div className="sm:col-span-1">
+                                    {/* Fecha emisión */}
+                                    <div>
                                         <label
                                             htmlFor="emitDate"
-                                            className="text-sm"
+                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Fecha emisión
                                         </label>
@@ -516,85 +558,93 @@ function NewSalePage() {
                                             value={sale.emitDate}
                                             onChange={handleSale}
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             required
                                         />
                                     </div>
-                                </div>
-                                <div className="grid gap-2 grid-cols-4">
-                                    <div className="sm:col-span-4">
-                                        {personsError ? (
-                                            <div>
-                                                Error: No autorizado o error en
-                                                la consulta.{" "}
-                                                {personsError.message}
-                                            </div>
-                                        ) : (
-                                            <>
-                                                <label className="text-sm">
-                                                    Cliente
-                                                </label>
-                                                <div className="relative w-full">
-                                                    <input
-                                                        type="text"
-                                                        className="form-search-input-sm"
-                                                        maxLength={200}
-                                                        value={sale.clientName}
-                                                        name="clientName"
-                                                        onChange={handleSale}
-                                                        onFocus={(e) =>
-                                                            e.target.select()
-                                                        }
-                                                        autoComplete="off"
-                                                        disabled={
-                                                            personsLoading
-                                                        }
-                                                        placeholder="Buscar cliente..."
-                                                        list="clientNameList"
-                                                        required
-                                                    />
-                                                    <datalist id="clientNameList">
-                                                        {personsData?.allClients?.map(
-                                                            (
-                                                                n: IPerson,
-                                                                index: number
-                                                            ) => (
-                                                                <option
-                                                                    key={index}
-                                                                    data-key={
-                                                                        n.id
-                                                                    }
-                                                                    value={`${n.documentNumber} ${n.names}`}
-                                                                />
-                                                            )
-                                                        )}
-                                                    </datalist>
-                                                    <button
-                                                        type="button"
-                                                        className="form-search-button-sm"
-                                                        onClick={(e) => {
-                                                            modalPerson.show();
-                                                            setPerson(
-                                                                initialStatePerson
-                                                            );
-                                                        }}
-                                                    >
-                                                        <Add />
-                                                        <span className="sr-only">
-                                                            Search
-                                                        </span>
-                                                    </button>
-                                                </div>
-                                            </>
-                                        )}
+                                    {/* Cliente */}
+                                    <div className="md:col-span-4">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Cliente
+                                        </label>
+                                        <div className="relative w-full">
+                                            <input
+                                                type="text"
+                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                maxLength={200}
+                                                value={sale.clientName}
+                                                name="clientName"
+                                                onChange={handleSale}
+                                                onFocus={(e) =>
+                                                    e.target.select()
+                                                }
+                                                autoComplete="off"
+                                                disabled={personsLoading}
+                                                placeholder="Buscar cliente..."
+                                                list="clientNameList"
+                                                required
+                                            />
+                                            <datalist
+                                                id="clientNameList"
+                                                className="custom-datalist"
+                                            >
+                                                {personsData?.allClients?.map(
+                                                    (
+                                                        n: IPerson,
+                                                        index: number
+                                                    ) => (
+                                                        <option
+                                                            key={index}
+                                                            data-key={n.id}
+                                                            value={`${n.documentNumber} ${n.names}`}
+                                                        />
+                                                    )
+                                                )}
+                                            </datalist>
+                                            <button
+                                                type="button"
+                                                className="absolute inset-y-0 right-10 px-2 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-400 focus:ring-2 focus:ring-purple-500"
+                                                onClick={() =>
+                                                    setSale({
+                                                        ...sale,
+                                                        clientName: "",
+                                                        clientId: 0,
+                                                    })
+                                                }
+                                            >
+                                                <Delete />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="absolute inset-y-0 right-0 px-2.5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500"
+                                                onClick={(e) => {
+                                                    modalPerson.show();
+                                                    setPerson(
+                                                        initialStatePerson
+                                                    );
+                                                }}
+                                            >
+                                                <Add />
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="grid gap-2 grid-cols-4">
-                                    <div className="sm:col-span-1">
+                                    <style jsx>{`
+                                        .custom-datalist option {
+                                            background-color: #1f2937; /* Dark background */
+                                            color: #d1d5db; /* Light text */
+                                            padding: 8px;
+                                            border: 1px solid #374151; /* Border color */
+                                        }
+                                        .custom-datalist option:hover {
+                                            background-color: #4b5563; /* Hover background */
+                                            color: #ffffff; /* Hover text */
+                                        }
+                                    `}</style>
+                                    {/* Moneda */}
+                                    <div>
                                         <label
                                             htmlFor="currencyType"
-                                            className="text-sm"
+                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Moneda
                                         </label>
@@ -602,7 +652,7 @@ function NewSalePage() {
                                             value={sale.currencyType}
                                             name="currencyType"
                                             onChange={handleSale}
-                                            className="form-control-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                         >
                                             <option value={0} disabled>
                                                 Moneda
@@ -621,11 +671,11 @@ function NewSalePage() {
                                             </option>
                                         </select>
                                     </div>
-
-                                    <div className="sm:col-span-1">
+                                    {/* Tipo de Cambio */}
+                                    <div>
                                         <label
                                             htmlFor="saleExchangeRate"
-                                            className="text-sm"
+                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Tipo de cambio
                                         </label>
@@ -637,15 +687,15 @@ function NewSalePage() {
                                             value={sale.saleExchangeRate}
                                             onChange={handleSale}
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             autoComplete="off"
                                         />
                                     </div>
-
-                                    <div className="sm:col-span-1">
+                                    {/* Serie */}
+                                    <div>
                                         <label
                                             htmlFor="serial"
-                                            className="text-sm"
+                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Serie
                                         </label>
@@ -653,19 +703,19 @@ function NewSalePage() {
                                             type="text"
                                             name="serial"
                                             id="serial"
-                                            maxLength={6}
+                                            maxLength={4}
                                             value={sale.serial}
                                             onChange={handleSale}
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             autoComplete="off"
                                         />
                                     </div>
-
-                                    <div className="sm:col-span-1">
+                                    {/* Numero */}
+                                    <div>
                                         <label
                                             htmlFor="correlative"
-                                            className="text-sm"
+                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Numero
                                         </label>
@@ -677,20 +727,19 @@ function NewSalePage() {
                                             value={sale.correlative}
                                             onChange={handleSale}
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control-sm"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             autoComplete="off"
                                         />
                                     </div>
-                                </div>
-                                <div className="grid gap-2 grid-cols-4">
-                                    <div className="sm:col-span-4">
-                                        <label className="text-sm">
+                                    {/* Buscar Producto o Servicio */}
+                                    <div className="md:col-span-4">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Buscar Producto o Servicio
                                         </label>
                                         <div className="relative w-full">
                                             <input
                                                 type="text"
-                                                className="form-search-input-sm"
+                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                                 maxLength={100}
                                                 value={product.name}
                                                 name="name"
@@ -720,7 +769,7 @@ function NewSalePage() {
                                             </datalist>
                                             <button
                                                 type="button"
-                                                className="form-search-button-sm"
+                                                className="form-search-button-sm absolute inset-y-0 right-0 flex items-center px-2 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                                 onClick={(e) => {
                                                     modalProduct.show();
                                                     setProduct(
@@ -733,10 +782,11 @@ function NewSalePage() {
                                         </div>
                                     </div>
                                 </div>
+                                {/* Botón Agregar Item */}
                                 <div className="flex justify-end py-2">
                                     <button
                                         type="button"
-                                        className="btn-blue px-5 py-2 inline-flex items-center gap-2"
+                                        className="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 flex items-center gap-2"
                                         onClick={(e) => {
                                             modalAddDetail.show();
                                             setSaleDetail(
@@ -747,8 +797,7 @@ function NewSalePage() {
                                         <Add /> AGREGAR ITEM
                                     </button>
                                 </div>
-
-                                <div className="overflow-hidden shadow">
+                                <div className="overflow-hidden shadow-lg rounded-lg bg-white dark:bg-gray-800">
                                     <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
                                         <thead className="bg-gray-100 dark:bg-gray-700">
                                             <tr>
@@ -789,22 +838,22 @@ function NewSalePage() {
                                                         key={i}
                                                         className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                                                     >
-                                                        <td className="px-4 py-2">
+                                                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
                                                             {item.productName}
                                                         </td>
-                                                        <td className="px-4 py-2">
+                                                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
                                                             {item.quantity}
                                                         </td>
-                                                        <td className="px-4 py-2">
+                                                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
                                                             {item.unitValue}
                                                         </td>
-                                                        <td className="px-4 py-2">
+                                                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
                                                             {item.totalValue}
                                                         </td>
                                                         <td className="px-4 py-2">
-                                                            <div className="flex justify-end py-2">
+                                                            <div className="flex justify-end py-2 space-x-2">
                                                                 <a
-                                                                    className="hover:underline cursor-pointer"
+                                                                    className="hover:underline cursor-pointer text-indigo-600 dark:text-indigo-400"
                                                                     onClick={(
                                                                         e
                                                                     ) => {
@@ -825,9 +874,8 @@ function NewSalePage() {
                                                                 >
                                                                     <Edit />
                                                                 </a>
-
                                                                 <a
-                                                                    className="hover:underline cursor-pointer"
+                                                                    className="hover:underline cursor-pointer text-red-600 dark:text-red-400"
                                                                     onClick={() =>
                                                                         handleRemoveSaleDetail(
                                                                             Number(
@@ -846,15 +894,14 @@ function NewSalePage() {
                                         </tbody>
                                     </table>
                                 </div>
-
-                                <div className="grid grid-cols-4">
-                                    <div className="sm:col-span-3 text-right">
+                                <div className="grid grid-cols-1 sm:grid-cols-4 md:grid-cols-4 gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
                                         % Descuento Global
                                     </div>
-                                    <div className="sm:col-span-1 text-right">
+                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
                                         0.00
                                     </div>
-                                    <div className="sm:col-span-3 text-right">
+                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
                                         Descuento Global (-){" "}
                                         {sale.currencyType === "PEN"
                                             ? "S/"
@@ -866,10 +913,10 @@ function NewSalePage() {
                                             ? "£"
                                             : null}
                                     </div>
-                                    <div className="sm:col-span-1 text-right">
+                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
                                         {sale.discountGlobal}
                                     </div>
-                                    <div className="sm:col-span-3 text-right">
+                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
                                         Descuento por Item (-){" "}
                                         {sale.currencyType === "PEN"
                                             ? "S/"
@@ -881,10 +928,10 @@ function NewSalePage() {
                                             ? "£"
                                             : null}
                                     </div>
-                                    <div className="sm:col-span-1 text-right">
+                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
                                         {sale.discountForItem}
                                     </div>
-                                    <div className="sm:col-span-3 text-right">
+                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
                                         Descuento Total (-){" "}
                                         {sale.currencyType === "PEN"
                                             ? "S/"
@@ -896,10 +943,10 @@ function NewSalePage() {
                                             ? "£"
                                             : null}
                                     </div>
-                                    <div className="sm:col-span-1 text-right">
+                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
                                         {sale.totalDiscount}
                                     </div>
-                                    <div className="sm:col-span-3 text-right">
+                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
                                         Exonerada{" "}
                                         {sale.currencyType === "PEN"
                                             ? "S/"
@@ -911,10 +958,10 @@ function NewSalePage() {
                                             ? "£"
                                             : null}
                                     </div>
-                                    <div className="sm:col-span-1 text-right">
+                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
                                         {sale.totalExonerated || "0.00"}
                                     </div>
-                                    <div className="sm:col-span-3 text-right">
+                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
                                         Inafecta{" "}
                                         {sale.currencyType === "PEN"
                                             ? "S/"
@@ -926,10 +973,10 @@ function NewSalePage() {
                                             ? "£"
                                             : null}
                                     </div>
-                                    <div className="sm:col-span-1 text-right">
+                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
                                         {sale.totalUnaffected || "0.00"}
                                     </div>
-                                    <div className="sm:col-span-3 text-right">
+                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
                                         Gravada{" "}
                                         {sale.currencyType === "PEN"
                                             ? "S/"
@@ -941,10 +988,10 @@ function NewSalePage() {
                                             ? "£"
                                             : null}
                                     </div>
-                                    <div className="sm:col-span-1 text-right">
+                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
                                         {sale.totalTaxed}
                                     </div>
-                                    <div className="sm:col-span-3 text-right">
+                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
                                         IGV{" "}
                                         {sale.currencyType === "PEN"
                                             ? "S/"
@@ -956,10 +1003,10 @@ function NewSalePage() {
                                             ? "£"
                                             : null}
                                     </div>
-                                    <div className="sm:col-span-1 text-right">
+                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
                                         {sale.totalIgv}
                                     </div>
-                                    <div className="sm:col-span-3 text-right">
+                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
                                         Gratuita{" "}
                                         {sale.currencyType === "PEN"
                                             ? "S/"
@@ -971,10 +1018,10 @@ function NewSalePage() {
                                             ? "£"
                                             : null}
                                     </div>
-                                    <div className="sm:col-span-1 text-right">
+                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
                                         {sale.totalFree || "0.00"}
                                     </div>
-                                    <div className="sm:col-span-3 text-right">
+                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
                                         Otros Cargos{" "}
                                         {sale.currencyType === "PEN"
                                             ? "S/"
@@ -986,10 +1033,10 @@ function NewSalePage() {
                                             ? "£"
                                             : null}
                                     </div>
-                                    <div className="sm:col-span-1 text-right">
+                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
                                         0.00
                                     </div>
-                                    <div className="sm:col-span-3 text-right">
+                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
                                         Total{" "}
                                         {sale.currencyType === "PEN"
                                             ? "S/"
@@ -1001,7 +1048,7 @@ function NewSalePage() {
                                             ? "£"
                                             : null}
                                     </div>
-                                    <div className="sm:col-span-1 text-right">
+                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
                                         {sale.totalAmount}
                                     </div>
                                 </div>
@@ -1015,6 +1062,7 @@ function NewSalePage() {
                                                 : ""
                                         }`}
                                         onClick={async () => {
+                                            console.log("sale", sale);
                                             if (Number(sale.clientId) === 0) {
                                                 toast(
                                                     "Por favor ingrese un cliente.",
@@ -1040,6 +1088,29 @@ function NewSalePage() {
                                                 );
                                                 return;
                                             }
+                                            if (!sale.serial) {
+                                                toast(
+                                                    "Por favor ingrese la serie.",
+                                                    {
+                                                        hideProgressBar: true,
+                                                        autoClose: 2000,
+                                                        type: "warning",
+                                                    }
+                                                );
+                                                return;
+                                            }
+                                            if (!sale.correlative) {
+                                                toast(
+                                                    "Por favor ingrese el número correlativo.",
+                                                    {
+                                                        hideProgressBar: true,
+                                                        autoClose: 2000,
+                                                        type: "warning",
+                                                    }
+                                                );
+                                                return;
+                                            }
+
                                             modalWayPay.show();
                                             setSale({
                                                 ...sale,

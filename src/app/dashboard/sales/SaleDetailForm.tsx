@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState, useEffect } from "react";
+import { ChangeEvent, FormEvent, useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import Save from "@/components/icons/Save";
 import { Modal, ModalOptions } from "flowbite";
@@ -37,6 +37,7 @@ function SaleDetailForm({
     typeAffectationsData,
     productsData,
 }: any) {
+    // const modalRef = useRef<HTMLDivElement>(null);
     const getAuthContext = () => ({
         headers: {
             "Content-Type": "application/json",
@@ -63,7 +64,7 @@ function SaleDetailForm({
             };
             setModalAddDetail(new Modal($targetEl, options));
         }
-    }, []);
+    }, [modalAddDetail, setModalAddDetail]);
 
     useEffect(() => {
         if (Number(product.id) > 0) {
@@ -119,11 +120,35 @@ function SaleDetailForm({
                     }
                 },
 
-                onError: (err) => console.error("Error in products:", err),
+                onError: (err) => {
+                    console.error("Error in products:", err);
+                    toast("Error fetching product details.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
+                },
             });
         }
-    }, [product.id]);
+    }, [
+        product.id,
+        productDetailQuery,
+        sale.igvType,
+        saleDetail.quantity,
+        saleDetail.totalDiscount,
+        setSaleDetail,
+        typeAffectationsData,
+        product.name,
+    ]);
 
+    // useEffect(() => {
+    //     if (modalRef.current) {
+    //         modalRef.current.setAttribute(
+    //             "inert",
+    //             modalAddDetail?.isVisible() ? "false" : "true"
+    //         );
+    //     }
+    // }, [modalAddDetail?.isVisible()]);
     const handleInputChangeSaleDetail = async (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
@@ -159,23 +184,20 @@ function SaleDetailForm({
                 console.log("sin datalist");
             }
         } else if (name === "quantity") {
+            const formattedValue = value.replace(/[^0-9]/g, "").slice(0, 6);
+            const numberValue = Number(formattedValue);
             let totalValue =
-                Number(saleDetail.unitValue) * Number(value) -
+                Number(saleDetail.unitValue) * numberValue -
                 Number(saleDetail.totalDiscount);
             let foundTypeAffectation =
                 typeAffectationsData?.allTypeAffectations?.find(
                     (ta: ITypeAffectation) =>
                         Number(ta.id) === Number(saleDetail.typeAffectationId)
                 );
-            let code =
-                foundTypeAffectation !== null
-                    ? foundTypeAffectation.code
-                    : "10";
+            let code = foundTypeAffectation ? foundTypeAffectation.code : "10";
             let igvPercentage = code === "10" ? Number(sale.igvType) : 0;
             let totalIgv = totalValue * igvPercentage * 0.01;
             let totalAmount = totalValue + totalIgv;
-            const formattedValue = value.replace(/[^0-9]/g, "").slice(0, 6);
-            const numberValue = Number(formattedValue);
             setSaleDetail({
                 ...saleDetail,
                 quantity: formattedValue,
@@ -297,9 +319,9 @@ function SaleDetailForm({
             {/* Large Modal */}
             <div
                 id="modalAddDetail"
+                // ref={modalRef}
                 tabIndex={-1}
                 className="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
-                // inert={!modalAddDetail?.isVisible()}
             >
                 <div className="relative w-full max-w-4xl max-h-full">
                     {/* Modal content */}
