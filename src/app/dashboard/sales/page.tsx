@@ -111,14 +111,23 @@ function SalePage() {
         if (session?.user) {
             const user = session.user as IUser;
             console.log("User details:", user);
-            setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
-            setFilterObj((prev) => ({
-                ...prev,
-                subsidiaryId:
-                    prev.subsidiaryId ||
-                    (user.isSuperuser ? "0" : user.subsidiaryId!),
-                isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
-            }));
+
+            if (
+                user.accessToken &&
+                user.isSuperuser !== undefined &&
+                user.subsidiaryId
+            ) {
+                setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
+                setFilterObj((prev) => ({
+                    ...prev,
+                    subsidiaryId:
+                        prev.subsidiaryId ||
+                        (user.isSuperuser ? "0" : user.subsidiaryId!),
+                    isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
+                }));
+            } else {
+                console.log("Incomplete user details:", user);
+            }
         } else {
             console.log("No user found in session");
         }
