@@ -107,9 +107,10 @@ function SalePage() {
     const [modalWhatsApp, setModalWhatsApp] = useState<Modal | any>(null);
 
     useEffect(() => {
+        console.log("Session at useEffect start:", session);
         if (session?.user) {
             const user = session.user as IUser;
-            console.log("user", user);
+            console.log("User details:", user);
             setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
             setFilterObj((prev) => ({
                 ...prev,
@@ -118,6 +119,8 @@ function SalePage() {
                     (user.isSuperuser ? "0" : user.subsidiaryId!),
                 isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
             }));
+        } else {
+            console.log("No user found in session");
         }
     }, [session]);
     // useMemo para evitar que getAuthContext() genere un nuevo objeto en cada render
