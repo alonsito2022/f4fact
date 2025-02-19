@@ -385,16 +385,10 @@ function NewSalePage() {
             ),
         }));
     };
-    useEffect(() => {
-        if (session?.user) {
-            const user = session.user as IUser;
-            setJwtToken(user.accessToken as string);
-        }
-    }, [session]);
 
     useEffect(() => {
         calculateTotal();
-    }, [sale.operationdetailSet]);
+    }, [sale.operationdetailSet, calculateTotal]);
 
     function calculateTotal() {
         const discountForItem = sale?.operationdetailSet?.reduce(
@@ -469,6 +463,7 @@ function NewSalePage() {
             totalToPay: Number(totalToPay).toFixed(2),
         }));
     }
+
     return (
         <>
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
