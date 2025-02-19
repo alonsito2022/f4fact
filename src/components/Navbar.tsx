@@ -618,7 +618,9 @@ function Navbar() {
                             </div>
                         </div> */}
 
-                        <div className="text-xs">{u?.subsidiaryName}</div>
+                        <div className="text-xs">
+                            {u?.subsidiaryName || "NO TIENE"}
+                        </div>
 
                         <ThemeToggle />
 

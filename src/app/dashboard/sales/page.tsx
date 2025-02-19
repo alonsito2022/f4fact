@@ -109,6 +109,7 @@ function SalePage() {
     useEffect(() => {
         if (session?.user) {
             const user = session.user as IUser;
+            console.log("user", user);
             setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
             setFilterObj((prev) => ({
                 ...prev,
