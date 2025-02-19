@@ -108,6 +108,13 @@ function SalePage() {
 
     useEffect(() => {
         console.log("Session at useEffect start:", status, session, update);
+
+        if (status === "authenticated") {
+            update().then((updatedSession) => {
+                console.log("Updated session:", updatedSession);
+            });
+        }
+
         if (session?.user) {
             const user = session.user as IUser;
             console.log("User details:", user);
@@ -117,13 +124,13 @@ function SalePage() {
                 user.isSuperuser !== undefined &&
                 user.subsidiaryId
             ) {
-                setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
+                setJwtToken((prev) => prev || (user.accessToken as string));
                 setFilterObj((prev) => ({
                     ...prev,
                     subsidiaryId:
                         prev.subsidiaryId ||
                         (user.isSuperuser ? "0" : user.subsidiaryId!),
-                    isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
+                    isSuperuser: user.isSuperuser ?? false,
                 }));
             } else {
                 console.log("Incomplete user details:", user);
@@ -131,7 +138,7 @@ function SalePage() {
         } else {
             console.log("No user found in session");
         }
-    }, [session]);
+    }, [session, status, update]);
     // useMemo para evitar que getAuthContext() genere un nuevo objeto en cada render
     const authContext = useMemo(
         () => ({
