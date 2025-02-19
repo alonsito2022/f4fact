@@ -5,7 +5,7 @@ import "./styles.css";
 import AuthProvider from "@/components/providers/AuthProvider";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import { ApolloWrapper } from "@/lib/apollo-wrapper";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 // import { ApolloProvider } from "@apollo/client";
 // import client  from "../lib/apollo-client";
 // import Navbar from '../components/Navbar';
