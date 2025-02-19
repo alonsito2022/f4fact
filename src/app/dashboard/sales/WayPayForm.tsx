@@ -257,7 +257,7 @@ function WayPayForm({
                 discountGlobal: parseFloat(sale.discountGlobal) || 0,
                 discountPercentageGlobal:
                     parseFloat(sale.discountPercentageGlobal) || 0,
-                igvType: sale.igvType,
+                igvType: Number(sale.igvType),
                 totalDiscount: parseFloat(sale.totalDiscount) || 0,
                 totalTaxed: parseFloat(sale.totalTaxed),
                 totalUnaffected: parseFloat(sale.totalUnaffected),
@@ -270,6 +270,7 @@ function WayPayForm({
                 totalPayed: parseFloat(sale.totalPayed),
                 totalTurned: parseFloat(sale.totalTurned) || 0,
             };
+            // console.log("variables", variables);
             const { data, errors } = await createSale({
                 variables: variables,
             });
