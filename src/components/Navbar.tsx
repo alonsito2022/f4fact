@@ -1,23 +1,19 @@
 "use client";
-import Link from "next/link";
-import Image from "next/image";
+// import Link from "next/link";
+// import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { IUser } from "@/app/types";
 import React, { useState, useEffect } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
-import ImageCircle from "./images/ImageCircle";
-import UserCircle from "./icons/UserCircle";
-import { useRouter } from "next/navigation";
-import { formatDate } from "@/lib/functions";
+// import ImageCircle from "./images/ImageCircle";
+// import UserCircle from "./icons/UserCircle";
+// import { useRouter } from "next/navigation";
+// import { formatDate } from "@/lib/functions";
 import { useSidebar } from "@/components/context/SidebarContext";
 
 function Navbar() {
-    // const session = await getServerSession();
-    const { data: session } = useSession();
+    const { data: session, update } = useSession();
     const u = session?.user as IUser;
-    const [mounted, setMounted] = useState(false);
-    const router = useRouter();
-
     const { isSidebarOpen, toggleSidebar } = useSidebar();
 
     // useEffect(() => {
@@ -27,6 +23,10 @@ function Navbar() {
     //   if (!mounted) {
     //     return null
     //   }
+
+    const handleLogout = async () => {
+        await signOut({ redirect: true });
+    };
 
     return (
         // <nav className="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
@@ -714,13 +714,7 @@ function Navbar() {
                                     </li> */}
                                     <li>
                                         <a
-                                            onClick={() => {
-                                                signOut({
-                                                    redirect: false,
-                                                }).then(() => {
-                                                    router.push("/dashboard");
-                                                });
-                                            }}
+                                            onClick={handleLogout}
                                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer"
                                             role="menuitem"
                                         >

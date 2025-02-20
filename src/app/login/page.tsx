@@ -21,10 +21,13 @@ function LoginPage() {
         const res = await signIn("credentials", {
             email: formData.get("email"),
             password: formData.get("password"),
-            redirect: false,
+            redirect: false, // 👈 Evita la redirección automática
         });
         if (res?.error) return setError(res.error as string);
-        if (res?.ok) return router.push("/dashboard/sales");
+        if (res?.ok) {
+            router.replace("/dashboard/sales");
+            router.refresh(); // 👈 Recarga la página para actualizar la sesión
+        }
     };
 
     const handleKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -32,12 +35,6 @@ function LoginPage() {
             console.log("Enter");
         }
     };
-
-    useEffect(() => {
-        if (status === "authenticated") {
-            router.push("/");
-        }
-    }, [status, router]);
 
     return (
         <>

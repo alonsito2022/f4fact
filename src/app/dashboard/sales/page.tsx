@@ -8,6 +8,7 @@ import { initFlowbite } from "flowbite";
 import WhatsAppModal from "./WhatsAppModal";
 import { Modal } from "flowbite";
 import { useAuth } from "@/components/providers/AuthProvider";
+// import { useSession } from "next-auth/react";
 const today = new Date().toISOString().split("T")[0];
 const initialStateFilterObj = {
     startDate: today,
@@ -158,6 +159,7 @@ function SalePage() {
                 <div className="overflow-x-auto">
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden shadow">
+                            {auth?.user?.email}
                             {filteredSalesLoading ? (
                                 <div className="p-4 text-center">
                                     <span className="loader"></span>{" "}

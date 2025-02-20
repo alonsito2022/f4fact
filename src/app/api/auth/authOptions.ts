@@ -59,7 +59,9 @@ export const authOptions: NextAuthOptions = {
             },
             async authorize(credentials, req) {
                 if (!credentials?.email || !credentials?.password) {
-                    throw new Error("Username and password are required");
+                    throw new Error(
+                        "El correo y la contraseña son obligatorios."
+                    );
                 }
                 const client = createApolloClient();
                 try {
@@ -98,11 +100,11 @@ export const authOptions: NextAuthOptions = {
                             iat: data.tokenAuth?.payload.origIat,
                         };
                     } else {
-                        throw new Error("Authentication failed");
+                        throw new Error("Autenticación fallida.");
                     }
                 } catch (error) {
                     console.error("Auth error:", error);
-                    throw new Error("Authentication failed");
+                    throw new Error("Autenticación fallida.");
                 }
             },
         }),
@@ -153,6 +155,10 @@ export const authOptions: NextAuthOptions = {
                 accessToken: token.accessToken,
                 expires: new Date((token.exp as number) * 1000).toISOString(),
             };
+        },
+        async redirect({ url, baseUrl }) {
+            // console.log("baseUrl", baseUrl);
+            return baseUrl;
         },
     },
     pages: {

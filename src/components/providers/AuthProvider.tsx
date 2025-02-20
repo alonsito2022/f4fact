@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import type { Session } from "next-auth";
 import { IUser } from "@/app/types";
 
@@ -29,7 +29,6 @@ export default function AuthProvider({
     const [status, setStatus] = useState<
         "authenticated" | "unauthenticated" | "loading"
     >("loading");
-
     useEffect(() => {
         if (session) {
             const { user: userData, accessToken } = session as Session & {
@@ -42,10 +41,21 @@ export default function AuthProvider({
             setStatus("unauthenticated");
         }
     }, [session]);
-
+    // useEffect(() => {
+    //     // Obtén sesión actualizada
+    //     if (status === "authenticated" && session) {
+    //         setUser(session.user as IUser);
+    //         setJwtToken((session?.user as IUser).accessToken || null);
+    //         setStatus("authenticated");
+    //     } else if (status === "unauthenticated") {
+    //         setUser(null);
+    //         setJwtToken(null);
+    //         setStatus("unauthenticated");
+    //     }
+    // }, [sessionUseSession, statusUseSession]); // <-- Este cambio es clave
     const contextValue = useMemo(
         () => ({ user, jwtToken, status }),
-        [user, jwtToken, status]
+        [user, jwtToken, status, session]
     );
 
     return (
