@@ -8,7 +8,7 @@ import { ApolloWrapper } from "@/lib/apollo-wrapper";
 import { getServerSession } from "next-auth/next";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/authOptions";
 
 const inter = Inter({ subsets: ["latin"] });
 
