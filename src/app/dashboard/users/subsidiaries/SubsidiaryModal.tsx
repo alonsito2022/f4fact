@@ -15,6 +15,18 @@ function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialSta
             toast("Seleccione una empresa", { hideProgressBar: true, autoClose: 2000, type: 'error' });
             return;
         }
+        if(subsidiary.districtId === 0 || subsidiary.districtId === "" || subsidiary.districtId === null || subsidiary.districtId === undefined){
+            toast("Ingrese un ubigeo", { hideProgressBar: true, autoClose: 2000, type: 'error' });
+            return;
+        }
+        if (!/^\d{6}$/.test(subsidiary.districtId)) {
+            toast("El ubigeo debe contener exactamente 6 dígitos numéricos", { 
+                hideProgressBar: true, 
+                autoClose: 2000, 
+                type: 'error' 
+            });
+            return;
+        }
         let queryFetch: String = "";
         if(Number(subsidiary.id)!==0){
             queryFetch = `

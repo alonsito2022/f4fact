@@ -17,7 +17,7 @@ const initialState = {
     address: "",
     phone: "",
     districtId: "",
-    company: "",
+    companyId: 0,
 };
 
 const SUBSIDIARIES_QUERY = gql`
