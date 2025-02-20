@@ -22,6 +22,12 @@ const TOKEN_AUTH_MUTATION = gql`
                 subsidiary {
                     id
                     name
+                    serial
+                    company {
+                        id
+                        doc
+                        percentageIgv
+                    }
                 }
             }
         }
@@ -37,6 +43,10 @@ interface ExtendedUser extends User {
     isSuperuser: boolean;
     subsidiaryId: string;
     subsidiaryName: string;
+    subsidiarySerial: string;
+    companyId: number;
+    companyDoc: string;
+    companyPercentageIgv: number;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -75,6 +85,15 @@ export const authOptions: NextAuthOptions = {
                             accessToken: data.tokenAuth.token,
                             subsidiaryId: data.tokenAuth.user.subsidiary.id,
                             subsidiaryName: data.tokenAuth.user.subsidiary.name,
+                            subsidiarySerial:
+                                data.tokenAuth.user.subsidiary.serial,
+                            companyId:
+                                data.tokenAuth.user.subsidiary.company.id,
+                            companyDoc:
+                                data.tokenAuth.user.subsidiary.company.doc,
+                            companyPercentageIgv:
+                                data.tokenAuth.user.subsidiary.company
+                                    .percentageIgv,
                             exp: data.tokenAuth?.payload.exp,
                             iat: data.tokenAuth?.payload.origIat,
                         };
@@ -104,6 +123,14 @@ export const authOptions: NextAuthOptions = {
                 token.isSuperuser = (user as ExtendedUser).isSuperuser;
                 token.subsidiaryId = (user as ExtendedUser).subsidiaryId;
                 token.subsidiaryName = (user as ExtendedUser).subsidiaryName;
+                token.subsidiarySerial = (
+                    user as ExtendedUser
+                ).subsidiarySerial;
+                token.companyId = (user as ExtendedUser).companyId;
+                token.companyDoc = (user as ExtendedUser).companyDoc;
+                token.companyPercentageIgv = (
+                    user as ExtendedUser
+                ).companyPercentageIgv;
             }
             return token;
         },
@@ -118,6 +145,10 @@ export const authOptions: NextAuthOptions = {
                     isSuperuser: token.isSuperuser,
                     subsidiaryId: token.subsidiaryId,
                     subsidiaryName: token.subsidiaryName,
+                    subsidiarySerial: token.subsidiarySerial,
+                    companyId: token.companyId,
+                    companyDoc: token.companyDoc,
+                    companyPercentageIgv: token.companyPercentageIgv,
                 },
                 accessToken: token.accessToken,
                 expires: new Date((token.exp as number) * 1000).toISOString(),

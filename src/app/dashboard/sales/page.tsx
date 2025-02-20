@@ -177,6 +177,7 @@ function SalePage() {
                                     cpe={cpe}
                                     setCpe={setCpe}
                                     salesQuery={salesQuery}
+                                    user={auth?.user}
                                 />
                             )}
                         </div>

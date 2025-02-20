@@ -23,6 +23,7 @@ function SaleList({
     cpe,
     setCpe,
     salesQuery,
+    user,
 }: any) {
     const handleDownload = (url: string, filename: string) => {
         if (!url || !filename) {
@@ -176,9 +177,17 @@ function SaleList({
                 <table className="w-full border-collapse border border-gray-200 dark:border-gray-600">
                     <thead className="bg-gray-100 dark:bg-gray-700 text-xs text-left text-gray-500 uppercase dark:text-gray-400">
                         <tr>
+                            {user?.isSuperuser && (
+                                <>
+                                    <th className="p-2 border border-gray-300 dark:border-gray-600">
+                                        Id
+                                    </th>
+                                    <th className="p-2 border border-gray-300 dark:border-gray-600">
+                                        Empresa
+                                    </th>
+                                </>
+                            )}
                             {[
-                                "Id",
-                                "Empresa",
                                 "Fecha Emisión",
                                 "Tipo",
                                 "Serie",
@@ -212,12 +221,17 @@ function SaleList({
                                     key={item.id}
                                     className="border border-gray-300 dark:border-gray-600 text-sm"
                                 >
-                                    <td className="p-2 text-nowrap">
-                                        {index + 1}
-                                    </td>
-                                    <td className="p-2 text-nowrap">
-                                        {item.subsidiary.companyName}
-                                    </td>
+                                    {user?.isSuperuser && (
+                                        <>
+                                            <td className="p-2 text-nowrap">
+                                                {index + 1}
+                                            </td>
+                                            <td className="p-2 text-nowrap">
+                                                {item.subsidiary.companyName}
+                                            </td>
+                                        </>
+                                    )}
+
                                     <td className="p-2 text-nowrap">
                                         {item.emitDate}
                                     </td>
@@ -557,8 +571,16 @@ function SaleList({
                     </tbody>
                     <tfoot>
                         <tr>
+                            {user?.isSuperuser && (
+                                <td
+                                    colSpan={2}
+                                    className="p-1 text-sm font-bold text-nowrap text-right"
+                                >
+                                    Total de FACTURAS:
+                                </td>
+                            )}
                             <td
-                                colSpan={7}
+                                colSpan={5}
                                 className="p-1 text-sm font-bold text-nowrap text-right"
                             >
                                 Total de FACTURAS:
@@ -583,8 +605,16 @@ function SaleList({
                             <td colSpan={9}></td>
                         </tr>
                         <tr>
+                            {user?.isSuperuser && (
+                                <td
+                                    colSpan={2}
+                                    className="p-1 text-sm font-bold text-nowrap text-right"
+                                >
+                                    Total de FACTURAS:
+                                </td>
+                            )}
                             <td
-                                colSpan={7}
+                                colSpan={5}
                                 className="p-1 text-sm font-bold text-nowrap text-right"
                             >
                                 Total de BOLETAS DE VENTA:
@@ -609,8 +639,16 @@ function SaleList({
                             <td colSpan={9}></td>
                         </tr>
                         <tr>
+                            {user?.isSuperuser && (
+                                <td
+                                    colSpan={2}
+                                    className="p-1 text-sm font-bold text-nowrap text-right"
+                                >
+                                    Total de FACTURAS:
+                                </td>
+                            )}
                             <td
-                                colSpan={7}
+                                colSpan={5}
                                 className="p-1 text-sm font-bold text-nowrap text-right"
                             >
                                 Total de NOTAS DE CRÉDITO:
@@ -635,8 +673,16 @@ function SaleList({
                             <td colSpan={9}></td>
                         </tr>
                         <tr>
+                            {user?.isSuperuser && (
+                                <td
+                                    colSpan={2}
+                                    className="p-1 text-sm font-bold text-nowrap text-right"
+                                >
+                                    Total de FACTURAS:
+                                </td>
+                            )}
                             <td
-                                colSpan={7}
+                                colSpan={5}
                                 className="p-1 text-sm font-bold text-nowrap text-right"
                             >
                                 Total de NOTAS DE DÉBITO:
