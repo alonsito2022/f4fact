@@ -6,14 +6,9 @@ import AuthProvider from "@/components/providers/AuthProvider";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import { ApolloWrapper } from "@/lib/apollo-wrapper";
 import { getServerSession } from "next-auth/next";
-// import { ApolloProvider } from "@apollo/client";
-// import client  from "../lib/apollo-client";
-// import Navbar from '../components/Navbar';
-// import Sidebar from '../components/Sidebar';
-// import Footer from '../components/Footer';
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
-// import Script from 'next/script'; // Importa el componente Script
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,15 +22,12 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    // const client = createApolloClient();
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
 
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
                 <link rel="icon" href="/images/logo.svg" />
-                {/* <Script src="/scripts/theme-toggle.js" strategy="beforeInteractive" /> */}
-                {/* <Script src="/scripts/theme-toggle-btn.js"  strategy="beforeInteractive" /> */}
             </head>
             <body className={`${inter.className} bg-gray-50 dark:bg-gray-900 `}>
                 <AuthProvider session={session}>
@@ -44,23 +36,10 @@ export default async function RootLayout({
                         defaultTheme="system"
                         enableSystem
                     >
-                        {/* <ReduxProviders> */}
-                        {/* <Navbar /> */}
-                        {/* <div className="flex pt-16 overflow-hidden bg-gray-50 dark:bg-gray-900"> */}
-                        {/* <Sidebar />  */}
-                        {/* <div id="main-content" className="relative w-full h-full overflow-y-auto bg-gray-50 lg:ms-64 dark:bg-gray-900"> */}
-                        {/* <main> */}
                         <ApolloWrapper>{children}</ApolloWrapper>
-                        {/* </main> */}
-                        {/* <Footer /> */}
-                        {/* </div> */}
-                        {/* </div> */}
                         <ToastContainer />
-                        {/* </ReduxProviders> */}
                     </ThemeProvider>
                 </AuthProvider>
-
-                {/* <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script> */}
             </body>
         </html>
     );

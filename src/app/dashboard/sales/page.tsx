@@ -1,14 +1,13 @@
 "use client";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import Breadcrumb from "@/components/Breadcrumb";
 import SaleList from "./SaleList";
 import SaleFilter from "./SaleFilter";
 import { gql, useLazyQuery } from "@apollo/client";
-import { useSession } from "next-auth/react";
-import { IUser } from "@/app/types";
 import { initFlowbite } from "flowbite";
 import WhatsAppModal from "./WhatsAppModal";
-import { Modal, ModalOptions } from "flowbite";
+import { Modal } from "flowbite";
+import { useAuth } from "@/components/providers/AuthProvider";
 const today = new Date().toISOString().split("T")[0];
 const initialStateFilterObj = {
     startDate: today,
@@ -89,8 +88,7 @@ const SALES_QUERY = gql`
         }
     }
 `;
-// FACTURA ELECTRÓNICA F002-187
-// 10295018025 Camargo Aragón Internet Ymelda Fortunata
+
 const initialStateCpe = {
     id: 0,
     documentTypeDisplay: "NA",
@@ -102,63 +100,22 @@ const initialStateCpe = {
 function SalePage() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
     const [cpe, setCpe] = useState(initialStateCpe);
-    const { data: session, status, update } = useSession();
-    const [jwtToken, setJwtToken] = useState<string | null>(null);
-    const [modalWhatsApp, setModalWhatsApp] = useState<Modal | any>(null);
-    const [sessionUpdated, setSessionUpdated] = useState(false);
+    const [modalWhatsApp, setModalWhatsApp] = useState<Modal | null>(null);
 
-    useEffect(() => {
-        console.log("Session at useEffect start:", status, session, update);
+    // Obtenemos sesión y token desde el AuthProvider
+    const auth = useAuth();
 
-        if (status === "authenticated" && !sessionUpdated) {
-            update().then((updatedSession) => {
-                console.log("Updated session:", updatedSession);
-                setSessionUpdated(true); // Evita que se vuelva a llamar indefinidamente
-            });
-        }
-
-        if (session?.user) {
-            const user = session.user as IUser;
-            console.log("User details:", user);
-
-            if (
-                user.accessToken &&
-                user.isSuperuser !== undefined &&
-                user.subsidiaryId
-            ) {
-                setJwtToken((prev) => prev || (user.accessToken as string));
-                setFilterObj((prev) => ({
-                    ...prev,
-                    subsidiaryId:
-                        prev.subsidiaryId ||
-                        (user.isSuperuser ? "0" : user.subsidiaryId!),
-                    isSuperuser: user.isSuperuser ?? false,
-                }));
-            } else {
-                console.log("Incomplete user details:", user);
-            }
-        } else {
-            console.log("No user found in session");
-        }
-    }, [session, status, update, sessionUpdated]);
-    // useMemo para evitar que getAuthContext() genere un nuevo objeto en cada render
+    // Memorizamos el contexto de autorización para evitar recreaciones innecesarias
     const authContext = useMemo(
         () => ({
             headers: {
                 "Content-Type": "application/json",
-                Authorization: jwtToken ? `JWT ${jwtToken}` : "",
+                Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
             },
         }),
-        [jwtToken]
+        [auth?.jwtToken]
     );
 
-    // const getAuthContext = () => ({
-    //     headers: {
-    //         "Content-Type": "application/json",
-    //         Authorization: jwtToken ? `JWT ${jwtToken}` : "",
-    //     },
-    // });
-    // Si tienes habilitada la política de network-only, Apollo Client siempre intentará obtener datos frescos de la API cuando el componente se vuelva a montar.
     const [
         salesQuery,
         {
@@ -169,12 +126,19 @@ function SalePage() {
     ] = useLazyQuery(SALES_QUERY, {
         context: authContext,
         fetchPolicy: "network-only",
-        onCompleted(data) {
-            // console.log("object", data, authContext);
-            initFlowbite();
-        },
-        onError: (err) => console.error("Error in sales:", err),
+        onCompleted: () => initFlowbite(),
+        onError: (err) => console.error("Error in sales:", err, auth?.jwtToken),
     });
+
+    // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
+    if (auth?.status === "loading") {
+        return <p className="text-center">Cargando sesión...</p>;
+    }
+    // Si la sesión no está autenticada, muestra un mensaje de error o redirige
+    if (auth?.status === "unauthenticated") {
+        return <p className="text-center text-red-500">No autorizado</p>;
+    }
+
     return (
         <>
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
@@ -185,7 +149,7 @@ function SalePage() {
                         filterObj={filterObj}
                         salesQuery={salesQuery}
                         filteredSalesLoading={filteredSalesLoading}
-                        jwtToken={jwtToken}
+                        jwtToken={auth?.jwtToken}
                     />
                 </div>
             </div>

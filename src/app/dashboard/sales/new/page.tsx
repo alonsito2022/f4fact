@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useMemo, ChangeEvent, FormEvent } from "react";
 import Breadcrumb from "@/components/Breadcrumb";
-import { useSession } from "next-auth/react";
 import { Modal, ModalOptions } from "flowbite";
 import { useQuery, gql } from "@apollo/client";
 import { IOperationDetail, IPerson, IProduct, IUser } from "@/app/types";
@@ -14,6 +13,7 @@ import ProductForm from "../../logistics/products/ProductForm";
 import { toast } from "react-toastify";
 import SaleDetailForm from "../SaleDetailForm";
 import WayPayForm from "../WayPayForm";
+import { useAuth } from "@/components/providers/AuthProvider";
 const today = new Date().toISOString().split("T")[0];
 
 const CLIENTS_QUERY = gql`
@@ -199,8 +199,6 @@ function NewSalePage() {
     const [sale, setSale] = useState(initialStateSale);
     const [saleDetail, setSaleDetail] = useState(initialStateSaleDetail);
     const [person, setPerson] = useState(initialStatePerson);
-    const { data: session } = useSession();
-    const [jwtToken, setJwtToken] = useState<string | null>(null);
     const [modalPerson, setModalPerson] = useState<Modal | any>(null);
     const [product, setProduct] = useState(initialStateProduct);
     const [userLogged, setUserLogged] = useState(initialStateUserLogged);
@@ -212,15 +210,16 @@ function NewSalePage() {
     const [modalProduct, setModalProduct] = useState<Modal | any>(null);
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
     const [modalWayPay, setModalWayPay] = useState<Modal | any>(null);
+    const auth = useAuth();
 
     const authContext = useMemo(
         () => ({
             headers: {
                 "Content-Type": "application/json",
-                Authorization: jwtToken ? `JWT ${jwtToken}` : "",
+                Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
             },
         }),
-        [jwtToken]
+        [auth?.jwtToken]
     );
 
     const getVariables = () => ({
@@ -232,7 +231,7 @@ function NewSalePage() {
         data: personsData,
     } = useQuery(CLIENTS_QUERY, {
         context: authContext,
-        skip: !jwtToken,
+        skip: !auth?.jwtToken,
     });
     const {
         loading: productsLoading,
@@ -241,7 +240,7 @@ function NewSalePage() {
     } = useQuery(PRODUCTS_QUERY, {
         context: authContext,
         variables: getVariables(),
-        skip: !jwtToken,
+        skip: !auth?.jwtToken,
     });
     const {
         loading: typeAffectationsLoading,
@@ -249,7 +248,7 @@ function NewSalePage() {
         data: typeAffectationsData,
     } = useQuery(TYPE_AFFECTATION_QUERY, {
         context: authContext,
-        skip: !jwtToken,
+        skip: !auth?.jwtToken,
     });
     const {
         loading: wayPaysLoading,
@@ -257,7 +256,7 @@ function NewSalePage() {
         data: wayPaysData,
     } = useQuery(WAY_PAY_QUERY, {
         context: authContext,
-        skip: !jwtToken,
+        skip: !auth?.jwtToken,
     });
 
     const handleSale = (
@@ -353,10 +352,8 @@ function NewSalePage() {
     };
 
     useEffect(() => {
-        if (session?.user) {
-            const user = session.user as IUser;
-            setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
-            console.log("user", user.id);
+        if (auth?.status === "authenticated") {
+            const user = auth?.user as IUser;
             setUserLogged((prev) => ({
                 ...prev,
                 subsidiaryId:
@@ -366,7 +363,7 @@ function NewSalePage() {
             }));
             console.log(user.isSuperuser ? "0" : user.subsidiaryId!);
         }
-    }, [session]);
+    }, [auth?.status]);
 
     useEffect(() => {
         calculateTotal();
@@ -445,7 +442,14 @@ function NewSalePage() {
             totalToPay: Number(totalToPay).toFixed(2),
         }));
     }
-
+    // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
+    if (auth?.status === "loading") {
+        return <p className="text-center">Cargando sesión...</p>;
+    }
+    // Si la sesión no está autenticada, muestra un mensaje de error o redirige
+    if (auth?.status === "unauthenticated") {
+        return <p className="text-center text-red-500">No autorizado</p>;
+    }
     // Manejo de errores
     if (
         personsError ||
@@ -1136,7 +1140,7 @@ function NewSalePage() {
                 setModalProduct={setModalProduct}
                 product={product}
                 setProduct={setProduct}
-                jwtToken={jwtToken}
+                jwtToken={auth?.jwtToken}
                 initialStateProduct={initialStateProduct}
                 typeAffectationsData={typeAffectationsData}
                 PRODUCTS_QUERY={PRODUCTS_QUERY}
@@ -1148,7 +1152,7 @@ function NewSalePage() {
                 setModalProduct={setModalProduct}
                 product={product}
                 setProduct={setProduct}
-                jwtToken={jwtToken}
+                jwtToken={auth?.jwtToken}
                 initialStateProduct={initialStateProduct}
                 typeAffectationsData={typeAffectationsData}
                 PRODUCTS_QUERY={PRODUCTS_QUERY}
@@ -1163,7 +1167,7 @@ function NewSalePage() {
                 setSaleDetail={setSaleDetail}
                 sale={sale}
                 setSale={setSale}
-                jwtToken={jwtToken}
+                jwtToken={auth?.jwtToken}
                 initialStateProduct={initialStateProduct}
                 initialStateSaleDetail={initialStateSaleDetail}
                 typeAffectationsData={typeAffectationsData}
@@ -1178,7 +1182,7 @@ function NewSalePage() {
                 initialStateSale={initialStateSale}
                 sale={sale}
                 setSale={setSale}
-                jwtToken={jwtToken}
+                jwtToken={auth?.jwtToken}
                 wayPaysData={wayPaysData}
             />
         </>

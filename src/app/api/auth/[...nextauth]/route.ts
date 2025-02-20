@@ -32,15 +32,20 @@ interface ExtendedUser extends User {
     accessToken: string;
     iat: number;
     exp: number;
+    fullName: string;
+    avatar: string;
+    isSuperuser: boolean;
+    subsidiaryId: string;
+    subsidiaryName: string;
 }
 
 interface ExtendedSession extends Session {
     accessToken: string;
     iat: number;
     exp: number;
+    user: ExtendedUser;
 }
-
-const handler = NextAuth({
+export const authOptions = {
     providers: [
         CredentialsProvider({
             name: "Credentials",
@@ -87,92 +92,41 @@ const handler = NextAuth({
                     console.error("Auth error:", error);
                     throw new Error("Authentication failed");
                 }
-                // let queryfecth = `
-                //     mutation {
-                //         tokenAuth(email: "${credentials?.email}", password: "${credentials?.password}") {
-                //             token
-                //             payload
-                //             refreshToken
-                //             refreshExpiresIn
-                //             user{
-                //                 id
-                //                 username
-                //                 fullName
-                //                 avatar
-                //                 avatarUrl
-                //             }
-                //         }
-                //     }
-                // `;
-                // const apiUserResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-                //     method: 'POST',
-                //     headers: { "Content-Type": "application/json" },
-                //     body: JSON.stringify({
-                //         query: queryfecth
-                //     })
-                // });
-                // const data: any = await apiUserResponse.json();
-                // console.log("data", data.data.tokenAuth.user)
-                // // If no error and we have user data, return it
-                // if (apiUserResponse.ok && data) {
-                //     const user = {
-                //         "id": data.data.tokenAuth.user.id,
-                //         "username": data.data.tokenAuth.user.username,
-                //         "fullName": data.data.tokenAuth.user.fullName,
-                //         "email": data.data.tokenAuth.payload.email,
-                //         "avatar": data.data.tokenAuth.user.avatar,
-                //         // "avatarUrl": data.data.tokenAuth.user.avatarUrl,
-                //         "refreshToken": data.data.tokenAuth.refreshToken,
-                //         "accessToken": data.data.tokenAuth.token,
-                //         "exp": data.data.tokenAuth?.payload.exp,
-                //         "origIat": data.data.tokenAuth?.payload.origIat
-                //     }
-                //     return user
-                // }
-                // // Return null if user data could not be retrieved
-                // return null
             },
         }),
     ],
     session: {
-        strategy: "jwt",
+        strategy: "jwt" as const,
         // maxAge: 5 * 60, // 5 minutos en segundos
         maxAge: 365 * 24 * 60 * 60, // 1 año para que no caduque en NextAuth
     },
     callbacks: {
         async jwt({ token, user }: { token: JWT; user: User }) {
-            // const usr = user as ExtendedUser;
-            // if (usr) {
-            //     token.user = usr;
-            //     token.accessToken = usr.accessToken;
-            //     token.iat = usr.iat;
-            //     token.exp = usr.exp;
-            // }
-            // // Verifica si el token ha expirado
-            // if (Date.now() >= (token?.exp as number) * 1000) {
-            //     console.log("Token expirado, invalidando sesión");
-            //     return {};
-            // }
-            // return token;
             if (user) {
                 token.user = user as ExtendedUser; // Guarda todos los datos en el token
                 token.accessToken = (user as ExtendedUser).accessToken;
                 token.iat = (user as ExtendedUser).iat;
                 token.exp = (user as ExtendedUser).exp;
+                token.fullName = (user as ExtendedUser).fullName;
+                token.avatar = (user as ExtendedUser).avatar;
+                token.isSuperuser = (user as ExtendedUser).isSuperuser;
+                token.subsidiaryId = (user as ExtendedUser).subsidiaryId;
+                token.subsidiaryName = (user as ExtendedUser).subsidiaryName;
             }
             return token;
         },
         async session({ session, token }: { session: Session; token: JWT }) {
-            // let defaultSession = session as ExtendedSession;
-            // defaultSession.user = token.user as ExtendedUser;
-            // defaultSession.accessToken = token?.accessToken as string;
-            // defaultSession.expires = new Date(
-            //     (token?.exp as number) * 1000
-            // ).toISOString(); // Expira según el backend
-            // return defaultSession;
             return {
                 ...session,
-                user: token.user as ExtendedUser, // Asegura que la sesión contiene el usuario completo
+                user: {
+                    id: token.sub, // Asegurar que se pase el ID del usuario
+                    fullName: token.fullName,
+                    email: token.email,
+                    avatar: token.avatar,
+                    isSuperuser: token.isSuperuser,
+                    subsidiaryId: token.subsidiaryId,
+                    subsidiaryName: token.subsidiaryName,
+                },
                 accessToken: token.accessToken,
                 expires: new Date((token.exp as number) * 1000).toISOString(),
             };
@@ -181,21 +135,9 @@ const handler = NextAuth({
     pages: {
         signIn: "/login",
         signOut: "/custom-signout", // Página personalizada de cierre de sesión
-
-        // signOut:`/`,
     },
-    // redirect:{
-    //     signOut: `/`
-    // }
-    // events: {
-    //     signOut: `${process.env.NEXTAUTH_URL_INTERNAL}/`,
-    //     // signOut(message) {
+};
 
-    //     // },(){
-
-    //     //     return `${process.env.NEXTAUTH_URL_INTERNAL}/`;
-    //     // },
-    // }
-});
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

@@ -1,8 +1,58 @@
-"use client"
-import { SessionProvider } from 'next-auth/react'
-import type { Session } from "next-auth"
+"use client";
 
-export default function AuthProvider({ session, children }: { session: Session | null, children: React.ReactNode }) {
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { SessionProvider } from "next-auth/react";
+import type { Session } from "next-auth";
+import { IUser } from "@/app/types";
 
-    return <SessionProvider session={session}>{children}</SessionProvider>;
+interface AuthContextType {
+    user: IUser | null;
+    jwtToken: string | null;
+    status: "authenticated" | "unauthenticated" | "loading";
+}
+
+const AuthContext = createContext<AuthContextType | null>(null);
+
+export function useAuth() {
+    return useContext(AuthContext);
+}
+
+export default function AuthProvider({
+    session,
+    children,
+}: {
+    session: Session | null;
+    children: React.ReactNode;
+}) {
+    const [user, setUser] = useState<IUser | null>(null);
+    const [jwtToken, setJwtToken] = useState<string | null>(null);
+    const [status, setStatus] = useState<
+        "authenticated" | "unauthenticated" | "loading"
+    >("loading");
+
+    useEffect(() => {
+        if (session) {
+            const { user: userData, accessToken } = session as Session & {
+                accessToken: string;
+            };
+            setUser(userData as IUser);
+            setJwtToken(accessToken || null);
+            setStatus("authenticated");
+        } else {
+            setStatus("unauthenticated");
+        }
+    }, [session]);
+
+    const contextValue = useMemo(
+        () => ({ user, jwtToken, status }),
+        [user, jwtToken, status]
+    );
+
+    return (
+        <SessionProvider session={session}>
+            <AuthContext.Provider value={contextValue}>
+                {children}
+            </AuthContext.Provider>
+        </SessionProvider>
+    );
 }
