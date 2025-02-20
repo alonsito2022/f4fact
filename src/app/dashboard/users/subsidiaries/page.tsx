@@ -52,7 +52,7 @@ const SEARCH_SUBSIDIARIES_QUERY = gql`
 `;
 const SUBSIDIARIES_QUERY_BY_COMPANY_ID = gql`
     query (
-        $companyId: Int!
+        $companyId: ID!
     ) {
         subsidiariesByCompanyId(companyId: $companyId) {
             id
@@ -89,7 +89,7 @@ function SubsidiaryPage() {
         }),
         [auth?.jwtToken]
     );
-    console.log("aurth:", auth?.status)
+    console.log("usuario:", auth?.user);
     useEffect(() => {
         if (auth?.user) {
             const user = auth?.user as IUser;
@@ -117,15 +117,14 @@ function SubsidiaryPage() {
     });
 
     useEffect(() => {
-        console.log(auth?.user)
-        if(auth?.user){
+        if(auth?.user?.companyId){
             subsidiariesQuery({variables: {companyId: Number(auth?.user?.companyId),}});
         }        
     }, [auth?.user]);
    
     const filteredSubsidiaries = useMemo(() => {
         if (subsidiariesData) {
-            let newdata = subsidiariesData.subsidiaries?.filter(
+            let newdata = subsidiariesData.subsidiariesByCompanyId?.filter(
                 (w: ISubsidiary) =>
                     searchField === "name"
                         ? w?.name
@@ -232,6 +231,7 @@ function SubsidiaryPage() {
                 setSubsidiary={setSubsidiary}
                 initialState={initialState}
                 subsidiariesQuery={subsidiariesQuery}
+                user={auth?.user}
             />
         </>
     );

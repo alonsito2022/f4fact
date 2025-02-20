@@ -2,7 +2,7 @@ import { ChangeEvent, FormEvent ,useState, useEffect } from "react";
 import { Modal, ModalOptions } from 'flowbite'
 import { toast } from "react-toastify";
 import { ICompany } from '@/app/types';
-function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialState, subsidiariesQuery}:any) {
+function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialState, subsidiariesQuery, user}:any) {
     const [companies, setCompanies] = useState< ICompany[]>([]);
 
     const handleInputChange = ({target: {name, value} }: ChangeEvent<HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement>) => {
@@ -36,7 +36,7 @@ function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialSta
             .then(data=>{
                 toast(data.data.updateSubsidiary.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
                 setSubsidiary(initialState);
-                subsidiariesQuery();
+                subsidiariesQuery({variables: {companyId: user.companyId}});
                 modal.hide();
 
             }).catch(e=>console.log(e))
@@ -61,7 +61,7 @@ function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialSta
             .then(data=>{
                 toast(data.data.createSubsidiary.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
                 setSubsidiary(initialState);
-                subsidiariesQuery();
+                subsidiariesQuery({variables: {companyId: user.companyId}});
                 modal.hide();
             }).catch(e=>console.log(e))
         }
