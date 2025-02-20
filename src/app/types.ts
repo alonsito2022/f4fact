@@ -22,6 +22,8 @@ export interface IUser {
     accessToken?: string;
     exp?: number;
     origIat?: number;
+    companyId?: number;
+    companyName?: string;
 }
 export interface ICompany {
     id?: number;

@@ -1,5 +1,5 @@
 "use client"
-import { ChangeEvent, FormEvent, useState, useEffect } from "react";
+import { ChangeEvent, FormEvent, useState, useEffect, useMemo } from "react";
 import { ICompany, IUser } from '@/app/types';
 import { toast } from "react-toastify";
 import { it } from "node:test";
@@ -10,6 +10,7 @@ import Breadcrumb from "@/components/Breadcrumb";
 import CompanyFilter from "./CompanyFilter";
 import { useSession } from 'next-auth/react'
 import { DocumentNode, gql, useMutation } from "@apollo/client";
+import { useAuth } from "@/components/providers/AuthProvider";
 const initialState = {
   id: 0,
   typeDoc: "6",
@@ -113,12 +114,19 @@ function CompanyPage() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const { data: session, status } = useSession();
   const [jwtToken, setJwtToken] = useState<string | null>(null);
-  useEffect(() => {
-    if (session?.user) {
-        const user = session.user as IUser;
-        setJwtToken(user.accessToken as string);
-    }
-}, [session]);
+   // Obtenemos sesión y token desde el AuthProvider
+      const auth = useAuth();
+  
+      // Memorizamos el contexto de autorización para evitar recreaciones innecesarias
+      const authContext = useMemo(
+          () => ({
+              headers: {
+                  "Content-Type": "application/json",
+                  Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
+              },
+          }),
+          [auth?.jwtToken]
+      );
   async function fetchCompanies() {
     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
       method: 'POST',
@@ -199,6 +207,14 @@ function CompanyPage() {
   const handleInputSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
+   // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
+   if (auth?.status === "loading") {
+    return <p className="text-center">Cargando sesión...</p>;
+  }
+  // Si la sesión no está autenticada, muestra un mensaje de error o redirige
+  if (auth?.status === "unauthenticated") {
+      return <p className="text-center text-red-500">No autorizado</p>;
+  }
   return (
     <>
       <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">

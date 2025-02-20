@@ -2,7 +2,7 @@ import { ChangeEvent, FormEvent ,useState, useEffect } from "react";
 import { Modal, ModalOptions } from 'flowbite'
 import { toast } from "react-toastify";
 import { ICompany } from '@/app/types';
-function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialState, fetchSubsidiaries}:any) {
+function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialState, subsidiariesQuery}:any) {
     const [companies, setCompanies] = useState< ICompany[]>([]);
 
     const handleInputChange = ({target: {name, value} }: ChangeEvent<HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement>) => {
@@ -36,7 +36,7 @@ function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialSta
             .then(data=>{
                 toast(data.data.updateSubsidiary.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
                 setSubsidiary(initialState);
-                fetchSubsidiaries();
+                subsidiariesQuery();
                 modal.hide();
 
             }).catch(e=>console.log(e))
@@ -61,7 +61,7 @@ function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialSta
             .then(data=>{
                 toast(data.data.createSubsidiary.message, { hideProgressBar: true, autoClose: 2000, type: 'success' })
                 setSubsidiary(initialState);
-                fetchSubsidiaries();
+                subsidiariesQuery();
                 modal.hide();
             }).catch(e=>console.log(e))
         }
@@ -164,8 +164,11 @@ function SubsidiaryModal({modal, setModal, subsidiary, setSubsidiary, initialSta
                         <div className="relative z-0 w-full mb-6 group">
                             <div className="flex items-center">
                                 <input type="text" name="token" id="token" value={subsidiary.token ? subsidiary.token : ''} disabled onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
-                                <button type="button" onClick={handleCopyToken} className="ml-2 px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                                    Copiar
+                                <button type="button" onClick={handleCopyToken} className="ml-2 px-1 py-1 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                                <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                    <path fillRule="evenodd" d="M18 3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1V9a4 4 0 0 0-4-4h-3a1.99 1.99 0 0 0-1 .267V5a2 2 0 0 1 2-2h7Z" clipRule="evenodd"/>
+                                    <path fillRule="evenodd" d="M8 7.054V11H4.2a2 2 0 0 1 .281-.432l2.46-2.87A2 2 0 0 1 8 7.054ZM10 7v4a2 2 0 0 1-2 2H4v6a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3Z" clipRule="evenodd"/>
+                                </svg>
                                 </button>
                             </div>
                             <label htmlFor="token" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Token</label>

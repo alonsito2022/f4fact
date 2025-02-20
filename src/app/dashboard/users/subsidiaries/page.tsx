@@ -9,7 +9,7 @@ import { Modal, ModalOptions } from "flowbite";
 import { gql, useLazyQuery, useQuery } from "@apollo/client";
 import { useSession } from "next-auth/react";
 import Breadcrumb from "@/components/Breadcrumb";
-
+import { useAuth } from "@/components/providers/AuthProvider";
 const initialState = {
     id: 0,
     serial: "",
@@ -50,26 +50,49 @@ const SEARCH_SUBSIDIARIES_QUERY = gql`
         }
     }
 `;
+const SUBSIDIARIES_QUERY_BY_COMPANY_ID = gql`
+    query (
+        $companyId: Int!
+    ) {
+        subsidiariesByCompanyId(companyId: $companyId) {
+            id
+            serial
+            name
+            address
+            phone
+            districtId
+            districtName
+            companyId
+        }
+    }
+`;
 const initialStateFilterObj = {
     subsidiaryId: "",
     isSuperuser: false,
 };
 function SubsidiaryPage() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
-    const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
     const [modal, setModal] = useState<Modal | any>(null);
     const [subsidiary, setSubsidiary] = useState(initialState);
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [searchField, setSearchField] = useState<"name" | "serial">("name");
-    const { data: session, status } = useSession();
-    const [jwtToken, setJwtToken] = useState<string | null>(null);
-
+    // Obtenemos sesión y token desde el AuthProvider
+    const auth = useAuth();
+  
+    // Memorizamos el contexto de autorización para evitar recreaciones innecesarias
+    const authContext = useMemo(
+        () => ({
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
+            },
+        }),
+        [auth?.jwtToken]
+    );
+    console.log("aurth:", auth?.status)
     useEffect(() => {
-        if (session?.user) {
-            const user = session.user as IUser;
-            console.log(user)
-            setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
-
+        if (auth?.user) {
+            const user = auth?.user as IUser;
             setFilterObj((prev) => ({
                 ...prev,
                 subsidiaryId:
@@ -78,26 +101,28 @@ function SubsidiaryPage() {
                 isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
             }));
         }
-    }, [session]);
-
-    const authContext = useMemo(
-        () => ({
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: jwtToken ? `JWT ${jwtToken}` : "",
-            },
-        }),
-        [jwtToken]
-    );
-    const {
-        loading: subsidiariesLoading,
-        error: subsidiariesError,
-        data: subsidiariesData,
-    } = useQuery(SUBSIDIARIES_QUERY, {
+    }, [auth?.user]);
+    const [
+        subsidiariesQuery,
+        {
+            loading: subsidiariesLoading,
+            error: subsidiariesError,
+            data: subsidiariesData,
+        },
+    ] = useLazyQuery(SUBSIDIARIES_QUERY_BY_COMPANY_ID, {
         context: authContext,
-        skip: !jwtToken, // Esto evita que la consulta se ejecute si no hay token
+        fetchPolicy: "network-only",
+        // onCompleted: () => initFlowbite(),
+        onError: (err) => console.error("Error:", err, auth?.jwtToken),
     });
 
+    useEffect(() => {
+        console.log(auth?.user)
+        if(auth?.user){
+            subsidiariesQuery({variables: {companyId: Number(auth?.user?.companyId),}});
+        }        
+    }, [auth?.user]);
+   
     const filteredSubsidiaries = useMemo(() => {
         if (subsidiariesData) {
             let newdata = subsidiariesData.subsidiaries?.filter(
@@ -120,6 +145,14 @@ function SubsidiaryPage() {
     ) => {
         setSearchTerm(event.target.value);
     };
+     // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
+    if (auth?.status === "loading") {
+    return <p className="text-center">Cargando sesión...</p>;
+   }
+   // Si la sesión no está autenticada, muestra un mensaje de error o redirige
+   if (auth?.status === "unauthenticated") {
+      return <p className="text-center text-red-500">No autorizado</p>;
+   }
     return (
         <>
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
@@ -185,7 +218,7 @@ function SubsidiaryPage() {
                                     subsidiary={subsidiary}
                                     setSubsidiary={setSubsidiary}
                                     filterObj={filterObj}
-                                    user={session?.user}
+                                    user={auth?.user}
                                 />
                             )}
                         </div>
@@ -198,7 +231,7 @@ function SubsidiaryPage() {
                 subsidiary={subsidiary}
                 setSubsidiary={setSubsidiary}
                 initialState={initialState}
-                SUBSIDIARIES_QUERY={SUBSIDIARIES_QUERY}
+                subsidiariesQuery={subsidiariesQuery}
             />
         </>
     );
