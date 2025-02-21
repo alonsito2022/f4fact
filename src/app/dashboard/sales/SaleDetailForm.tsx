@@ -87,7 +87,7 @@ function SaleDetailForm({
                             );
                         let code =
                             foundTypeAffectation !== null
-                                ? foundTypeAffectation.code
+                                ? foundTypeAffectation?.code
                                 : "10";
                         let igvPercentage =
                             code === "10" ? Number(sale.igvType) : 0;
@@ -361,9 +361,9 @@ function SaleDetailForm({
 
                         <form onSubmit={handleAddDetail}>
                             <div className="p-4 md:p-5 space-y-4">
-                                <div className="grid grid-cols-6 gap-4">
+                                <div className="grid sm:grid-cols-1 md:grid-cols-6 gap-4">
                                     <div className="sm:col-span-4">
-                                        <label className="form-label">
+                                        <label className="form-label text-gray-900 dark:text-gray-200">
                                             Producto - Servicio (CATÁLOGO)
                                         </label>
                                         <input
@@ -375,7 +375,7 @@ function SaleDetailForm({
                                             onChange={
                                                 handleInputChangeSaleDetail
                                             }
-                                            className="form-control"
+                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
                                             list="productList"
                                             autoComplete="off"
                                             required
@@ -396,19 +396,10 @@ function SaleDetailForm({
                                         </datalist>
                                     </div>
 
-                                    {/* <div className="sm:col-span-4">
-                                    <label htmlFor="priceWithoutIgv3" className="form-label">Detalle adicional</label>
-                                    <input type="number" name="priceWithoutIgv3'
-                                        onWheel={(e) => e.currentTarget.blur()}
-                                        value={saleDetail.priceWithoutIgv3}
-                                        onChange={handleInputChangesaleDetail} onFocus={(e) => e.target.select()}
-                                        className="form-control" />
-                                </div> */}
-
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="remainingQuantity"
-                                            className="form-label"
+                                            className="form-label text-gray-900 dark:text-gray-200"
                                         >
                                             Stock actual disponible
                                         </label>
@@ -423,14 +414,14 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control cursor-not-allowed"
+                                            className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
                                         />
                                     </div>
 
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="quantity"
-                                            className="form-label"
+                                            className="form-label text-gray-900 dark:text-gray-200"
                                         >
                                             Cantidad
                                         </label>
@@ -445,7 +436,7 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control"
+                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
                                             required
                                         />
                                     </div>
@@ -453,7 +444,7 @@ function SaleDetailForm({
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="unitValue"
-                                            className="form-label"
+                                            className="form-label text-gray-900 dark:text-gray-200"
                                         >
                                             VALOR Unit. (Sin IGV)
                                         </label>
@@ -468,14 +459,14 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control cursor-not-allowed"
+                                            className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
                                         />
                                     </div>
 
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="totalValue"
-                                            className="form-label"
+                                            className="form-label text-gray-900 dark:text-gray-200"
                                         >
                                             Subtotal
                                         </label>
@@ -491,7 +482,7 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control cursor-not-allowed"
+                                            className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
                                         />
                                     </div>
 
@@ -500,10 +491,10 @@ function SaleDetailForm({
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="totalDiscount"
-                                            className="form-label"
+                                            className="form-label text-gray-900 dark:text-gray-200"
                                         >
                                             Descuento por Item{" "}
-                                            <span className=" text-xs">
+                                            <span className="text-xs">
                                                 (aplica al Subtotal)
                                             </span>
                                         </label>
@@ -518,7 +509,7 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control"
+                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
                                         />
                                     </div>
 
@@ -527,7 +518,7 @@ function SaleDetailForm({
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="typeAffectationId"
-                                            className="form-label"
+                                            className="form-label text-gray-900 dark:text-gray-200"
                                         >
                                             Tipo IGV
                                         </label>
@@ -538,7 +529,7 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             value={saleDetail.typeAffectationId}
-                                            className="form-control"
+                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
                                             required
                                         >
                                             <option value={0}>
@@ -563,7 +554,7 @@ function SaleDetailForm({
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="totalIgv"
-                                            className="form-label"
+                                            className="form-label text-gray-900 dark:text-gray-200"
                                         >
                                             IGV de la linea
                                         </label>
@@ -578,14 +569,14 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control cursor-not-allowed"
+                                            className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
                                         />
                                     </div>
 
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="totalAmount"
-                                            className="form-label"
+                                            className="form-label text-gray-900 dark:text-gray-200"
                                         >
                                             Total
                                         </label>
@@ -600,7 +591,7 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control cursor-not-allowed"
+                                            className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
                                         />
                                     </div>
                                 </div>
@@ -613,15 +604,14 @@ function SaleDetailForm({
                                     onClick={() => {
                                         modalAddDetail.hide();
                                     }}
-                                    className="btn-dark px-5 py-2 inline-flex items-center gap-2"
+                                    className="btn-dark px-5 py-2 inline-flex items-center gap-2 dark:bg-gray-800 dark:text-gray-200"
                                 >
                                     Cerrar
                                 </button>
                                 <button
                                     type="submit"
-                                    className="btn-green px-5 py-2 inline-flex items-center gap-2"
+                                    className="btn-green px-5 py-2 inline-flex items-center gap-2 dark:bg-green-700 dark:text-gray-200"
                                 >
-                                    {" "}
                                     <Save /> Aceptar
                                 </button>
                             </div>

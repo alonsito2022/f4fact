@@ -5,6 +5,8 @@ import Popover from "@/components/Popover";
 import Check from "@/components/icons/Check";
 import { toast } from "react-toastify";
 import { gql, useMutation } from "@apollo/client";
+import SunatCheck from "@/components/icons/SunatCheck";
+import SunatCancel from "@/components/icons/SunatCancel";
 
 const CANCEL_INVOICE = gql`
     mutation CancelInvoice($operationId: Int!, $lowDate: Date!) {
@@ -219,7 +221,11 @@ function SaleList({
                             (item: IOperation, index: number) => (
                                 <tr
                                     key={item.id}
-                                    className="border border-gray-300 dark:border-gray-600 text-sm"
+                                    className={`border border-gray-300 dark:border-gray-600 text-sm ${
+                                        item.operationStatus === "06"
+                                            ? "line-through text-red-600 dark:text-red-400"
+                                            : ""
+                                    }`}
                                 >
                                     {user?.isSuperuser && (
                                         <>
@@ -366,10 +372,10 @@ function SaleList({
                                                 className={
                                                     item.operationStatus ===
                                                     "02"
-                                                        ? "bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300"
+                                                        ? "bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300"
                                                         : item.operationStatus ===
                                                           "06"
-                                                        ? "bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap"
+                                                        ? "bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap"
                                                         : ""
                                                 }
                                             >
@@ -379,35 +385,12 @@ function SaleList({
                                                         {item?.documentType ===
                                                         "01" ? (
                                                             <>
-                                                                <svg
-                                                                    className="inline-block w-4 h-4 "
-                                                                    stroke="currentColor"
-                                                                    fill="currentColor"
-                                                                    strokeWidth="0"
-                                                                    viewBox="0 0 512 512"
-                                                                    height="1em"
-                                                                    width="1em"
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                >
-                                                                    <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"></path>
-                                                                </svg>{" "}
-                                                                0
+                                                                <SunatCheck /> 0
                                                             </>
                                                         ) : item?.documentType ===
                                                           "03" ? (
                                                             <>
-                                                                <svg
-                                                                    className="inline-block w-4 h-4 "
-                                                                    stroke="currentColor"
-                                                                    fill="currentColor"
-                                                                    strokeWidth="0"
-                                                                    viewBox="0 0 512 512"
-                                                                    height="1em"
-                                                                    width="1em"
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                >
-                                                                    <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"></path>
-                                                                </svg>
+                                                                <SunatCheck />
                                                             </>
                                                         ) : (
                                                             "-"
@@ -416,9 +399,7 @@ function SaleList({
                                                 ) : item.operationStatus ===
                                                   "06" ? (
                                                     <>
-                                                        {
-                                                            item.operationStatusReadable
-                                                        }
+                                                        <SunatCancel />
                                                     </>
                                                 ) : (
                                                     ""
@@ -437,7 +418,7 @@ function SaleList({
                                                     <p>
                                                         {item.sunatDescriptionLow
                                                             ? item.sunatDescriptionLow
-                                                            : "No tiene descripción"}
+                                                            : "Los documentos no aceptados por la SUNAT se consideran como documentos ANULADOS para efectos tributarios en la mayoría de casos."}
                                                     </p>
                                                 ) : (
                                                     <p>Sin información</p>
@@ -519,26 +500,37 @@ function SaleList({
                                                     TRANSPORTISTA
                                                 </a>
                                                 <br />
-                                                <a
-                                                    className="font-medium text-red-600 dark:text-red-500 hover:underline"
-                                                    href="#"
-                                                    onClick={(e) => {
-                                                        e.preventDefault(); // Evita que el enlace cambie de página
-                                                        const confirmDelete =
-                                                            window.confirm(
-                                                                "¿Estás seguro de que deseas anular esta factura? Esta acción no se puede deshacer."
-                                                            );
+                                                {item.operationStatus !==
+                                                    "06" && (
+                                                    <>
+                                                        <a
+                                                            className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                                                            href="#"
+                                                            onClick={(e) => {
+                                                                e.preventDefault(); // Evita que el enlace cambie de página
+                                                                const confirmDelete =
+                                                                    window.confirm(
+                                                                        "¿Estás seguro de que deseas anular esta factura? Esta acción no se puede deshacer."
+                                                                    );
 
-                                                        if (confirmDelete) {
-                                                            handleCancelInvoice(
-                                                                Number(item?.id)
-                                                            );
-                                                        }
-                                                    }}
-                                                >
-                                                    ANULAR o COMUNICAR DE BAJA
-                                                </a>
-                                                <br />
+                                                                if (
+                                                                    confirmDelete
+                                                                ) {
+                                                                    handleCancelInvoice(
+                                                                        Number(
+                                                                            item?.id
+                                                                        )
+                                                                    );
+                                                                }
+                                                            }}
+                                                        >
+                                                            ANULAR o COMUNICAR
+                                                            DE BAJA
+                                                        </a>
+                                                        <br />
+                                                    </>
+                                                )}
+
                                                 <a
                                                     className="font-medium text-green-600 dark:text-green-500 hover:underline"
                                                     target="_blank"

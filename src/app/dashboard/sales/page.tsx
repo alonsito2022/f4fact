@@ -67,6 +67,7 @@ const SALES_QUERY = gql`
                 linkCdr
                 linkCdrLow
                 sunatStatus
+                sendSunat
                 sunatDescription
                 sunatDescriptionLow
                 client {

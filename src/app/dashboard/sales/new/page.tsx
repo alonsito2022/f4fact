@@ -14,6 +14,8 @@ import { toast } from "react-toastify";
 import SaleDetailForm from "../SaleDetailForm";
 import WayPayForm from "../WayPayForm";
 import { useAuth } from "@/components/providers/AuthProvider";
+import SunatCancel from "@/components/icons/SunatCancel";
+import ClientForm from "../ClientForm";
 const today = new Date().toISOString().split("T")[0];
 
 const CLIENTS_QUERY = gql`
@@ -23,6 +25,7 @@ const CLIENTS_QUERY = gql`
             id
             address
             documentNumber
+            documentType
         }
     }
 `;
@@ -70,7 +73,6 @@ const WAY_PAY_QUERY = gql`
         }
     }
 `;
-
 const initialStateSale = {
     id: 0,
     serial: "",
@@ -141,8 +143,8 @@ const initialStatePerson = {
     documentType: "6",
     documentNumber: "",
     isEnabled: true,
-    isSupplier: true,
-    isClient: false,
+    isSupplier: false,
+    isClient: true,
     economicActivityMain: 0,
 };
 const initialStateProduct = {
@@ -199,14 +201,13 @@ function NewSalePage() {
     const [sale, setSale] = useState(initialStateSale);
     const [saleDetail, setSaleDetail] = useState(initialStateSaleDetail);
     const [person, setPerson] = useState(initialStatePerson);
-    const [modalPerson, setModalPerson] = useState<Modal | any>(null);
     const [product, setProduct] = useState(initialStateProduct);
-    const [userLogged, setUserLogged] = useState(initialStateUserLogged);
+    // const [userLogged, setUserLogged] = useState(initialStateUserLogged);
     const [productFilterObj, setProductFilterObj] = useState(
         initialStateProductFilterObj
     );
     const [cashFlow, setCashFlow] = useState(initialStateCashFlow);
-    const [modalAddPerson, setModalAddPerson] = useState<Modal | any>(null);
+    const [modalAddClient, setModalAddClient] = useState<Modal | any>(null);
     const [modalProduct, setModalProduct] = useState<Modal | any>(null);
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
     const [modalWayPay, setModalWayPay] = useState<Modal | any>(null);
@@ -222,8 +223,68 @@ function NewSalePage() {
         [auth?.jwtToken]
     );
 
+    useEffect(() => {
+        if (auth?.user?.companyPercentageIgv) {
+            setSale((prevSale) => ({
+                ...prevSale,
+                igvType: Number(auth?.user?.companyPercentageIgv),
+            }));
+        }
+    }, [auth?.user?.companyPercentageIgv]);
+
+    useEffect(() => {
+        if (Number(sale.clientId) > 0) {
+            const client = personsData?.allClients?.find(
+                (n: IPerson) => Number(n.id) === Number(sale.clientId)
+            );
+            if (client) {
+                setSale((prevSale) => ({
+                    ...prevSale,
+                    documentType:
+                        client?.documentType?.replace("A_", "") === "6"
+                            ? "01"
+                            : "03",
+                }));
+            }
+        }
+    }, [sale?.clientId]);
+
+    useEffect(() => {
+        const subsidiarySerial = auth?.user?.subsidiarySerial;
+        if (subsidiarySerial) {
+            const lastTwoDigits = subsidiarySerial.slice(-2);
+            let prefix = "";
+
+            switch (sale.documentType) {
+                case "01":
+                    prefix = "F0";
+                    break;
+                case "03":
+                    prefix = "B0";
+                    break;
+                case "07":
+                    prefix = "NC";
+                    break;
+                case "08":
+                    prefix = "ND";
+                    break;
+                case "09":
+                    prefix = "GT";
+                    break;
+                default:
+                    prefix = "";
+            }
+
+            const customSerial = `${prefix}${lastTwoDigits}`;
+            setSale((prevSale) => ({
+                ...prevSale,
+                serial: customSerial,
+            }));
+        }
+    }, [auth?.user?.subsidiarySerial, sale.documentType]);
+
     const getVariables = () => ({
-        subsidiaryId: Number(userLogged.subsidiaryId),
+        subsidiaryId: Number(auth?.user?.subsidiaryId),
     });
     const {
         loading: personsLoading,
@@ -351,19 +412,19 @@ function NewSalePage() {
         }));
     };
 
-    useEffect(() => {
-        if (auth?.status === "authenticated") {
-            const user = auth?.user as IUser;
-            setUserLogged((prev) => ({
-                ...prev,
-                subsidiaryId:
-                    prev.subsidiaryId ||
-                    (user.isSuperuser ? "0" : user.subsidiaryId!),
-                isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
-            }));
-            console.log(user.isSuperuser ? "0" : user.subsidiaryId!);
-        }
-    }, [auth?.status]);
+    // useEffect(() => {
+    //     if (auth?.status === "authenticated") {
+    //         const user = auth?.user as IUser;
+    //         setUserLogged((prev) => ({
+    //             ...prev,
+    //             subsidiaryId:
+    //                 prev.subsidiaryId ||
+    //                 (user.isSuperuser ? "0" : user.subsidiaryId!),
+    //             isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
+    //         }));
+    //         console.log(user.isSuperuser ? "0" : user.subsidiaryId!);
+    //     }
+    // }, [auth?.status]);
 
     useEffect(() => {
         calculateTotal();
@@ -494,7 +555,7 @@ function NewSalePage() {
                                             htmlFor="igvType"
                                             className="text-sm font-medium text-gray-700 dark:text-gray-300"
                                         >
-                                            IGV %
+                                            IGV %{" "}
                                         </label>
                                         <select
                                             value={sale.igvType}
@@ -602,7 +663,7 @@ function NewSalePage() {
                                             </datalist>
                                             <button
                                                 type="button"
-                                                className="absolute inset-y-0 right-10 px-2 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
+                                                className="absolute inset-y-0 right-10 px-2 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
                                                 onClick={() =>
                                                     setSale({
                                                         ...sale,
@@ -611,13 +672,13 @@ function NewSalePage() {
                                                     })
                                                 }
                                             >
-                                                <Delete />
+                                                <SunatCancel />
                                             </button>
                                             <button
                                                 type="button"
                                                 className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
                                                 onClick={(e) => {
-                                                    modalPerson.show();
+                                                    modalAddClient.show();
                                                     setPerson(
                                                         initialStatePerson
                                                     );
@@ -1146,18 +1207,18 @@ function NewSalePage() {
                 PRODUCTS_QUERY={PRODUCTS_QUERY}
                 productFilterObj={productFilterObj}
             />
-            {/* <ClientForm modalAddPerson={modalAddPerson} setModalAddPerson={setModalAddPerson} person={person} setPerson={setPerson} jwtToken={jwtToken} SUPPLIERS_QUERY={SUPPLIERS_QUERY} purchase={purchase} setPurchase={setPurchase} /> */}
-            <ProductForm
-                modalProduct={modalProduct}
-                setModalProduct={setModalProduct}
-                product={product}
-                setProduct={setProduct}
+            <ClientForm
+                modalAddClient={modalAddClient}
+                setModalAddClient={setModalAddClient}
+                person={person}
+                setPerson={setPerson}
                 jwtToken={auth?.jwtToken}
-                initialStateProduct={initialStateProduct}
-                typeAffectationsData={typeAffectationsData}
-                PRODUCTS_QUERY={PRODUCTS_QUERY}
-                productFilterObj={productFilterObj}
+                authContext={authContext}
+                CLIENTS_QUERY={CLIENTS_QUERY}
+                sale={sale}
+                setSale={setSale}
             />
+
             <SaleDetailForm
                 modalAddDetail={modalAddDetail}
                 setModalAddDetail={setModalAddDetail}

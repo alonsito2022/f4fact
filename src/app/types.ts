@@ -13,6 +13,7 @@ export interface IUser {
     fullName?: string;
     subsidiaryId?: string;
     subsidiaryName?: string;
+    subsidiarySerial?: string;
     subsidiary?: ISubsidiary;
     isActive?: boolean;
     isSuperuser?: boolean;
@@ -24,6 +25,8 @@ export interface IUser {
     origIat?: number;
     companyId?: number;
     companyName?: string;
+    companyDoc?: string;
+    companyPercentageIgv?: number;
 }
 export interface ICompany {
     id?: number;
@@ -313,6 +316,7 @@ export interface IOperation {
     fileNameXml: string;
     fileNameCdr: string;
     sunatStatus: boolean;
+    sendSunat: boolean;
     sunatDescription: string;
     sunatDescriptionLow: string;
 
