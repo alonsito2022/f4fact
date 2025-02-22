@@ -297,6 +297,31 @@ function CreditPage() {
                                                         required
                                                     />
                                                 </div>
+                                                {/* Fecha de Venc. */}
+                                                <div>
+                                                    <label
+                                                        htmlFor="dueDate"
+                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        Fecha de Venc.
+                                                    </label>
+                                                    <input
+                                                        type="date"
+                                                        name="dueDate"
+                                                        id="dueDate"
+                                                        value={
+                                                            creditNote.dueDate
+                                                        }
+                                                        onChange={
+                                                            handleCreditNote
+                                                        }
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        required
+                                                    />
+                                                </div>
                                             </div>
                                         </fieldset>
                                         <fieldset className=" sm:col-span-3 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
