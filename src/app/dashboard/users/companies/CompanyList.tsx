@@ -40,6 +40,7 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
             invoiceB
             guide
             app
+            ose
         }
     }
 `

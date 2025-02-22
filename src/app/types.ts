@@ -59,6 +59,7 @@ export interface ICompany {
     invoiceB?: boolean;
     guide?: boolean;
     app?: boolean;
+    ose?: boolean;
 }
 export interface IPerson {
     id: number;

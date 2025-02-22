@@ -40,7 +40,8 @@ const initialState = {
   invoiceF: false,
   invoiceB: false,
   guide: false,
-  app: false
+  app: false,
+  ose: false,
 }
 const COMPANIES_QUERY = gql`
   query Companies {
@@ -104,6 +105,7 @@ const COMPANY_QUERY = gql`
             invoiceB
             guide
             app
+            ose
         }
     }
 `;
