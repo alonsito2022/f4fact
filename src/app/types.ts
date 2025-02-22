@@ -258,6 +258,11 @@ export interface IWayPay {
     name: string;
 }
 
+export interface ICreditNoteType {
+    code: number;
+    name: string;
+}
+
 export interface IProductTariff {
     id: number;
     productId?: number;
@@ -315,6 +320,7 @@ export interface IOperation {
     linkCdrLow: string;
     fileNameXml: string;
     fileNameCdr: string;
+    codeHash: string;
     sunatStatus: boolean;
     sendSunat: boolean;
     sunatDescription: string;

@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { gql, useMutation } from "@apollo/client";
 import SunatCheck from "@/components/icons/SunatCheck";
 import SunatCancel from "@/components/icons/SunatCancel";
+import Link from "next/link";
 
 const CANCEL_INVOICE = gql`
     mutation CancelInvoice($operationId: Int!, $lowDate: Date!) {
@@ -433,7 +434,7 @@ function SaleList({
                                                     "popover-options-" + item.id
                                                 }
                                                 className={
-                                                    "font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                    "font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer"
                                                 }
                                             >
                                                 Opciones
@@ -474,62 +475,78 @@ function SaleList({
                                                     Enviar por WhatsApp
                                                 </a>
                                                 <br />
-                                                <a
-                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                    target="_blank"
-                                                    href="#"
-                                                >
-                                                    Generar NOTA DE DÉBITO
-                                                </a>
-                                                <br />
-                                                <a
-                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                    target="_blank"
-                                                    href="#"
-                                                >
-                                                    Generar GUIA DE REMISIÓN
-                                                    REMITENTE
-                                                </a>
-                                                <br />
-                                                <a
-                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                    target="_blank"
-                                                    href="#"
-                                                >
-                                                    Generar GUIA DE REMISIÓN
-                                                    TRANSPORTISTA
-                                                </a>
-                                                <br />
-                                                {item.operationStatus !==
-                                                    "06" && (
-                                                    <>
-                                                        <a
-                                                            className="font-medium text-red-600 dark:text-red-500 hover:underline"
-                                                            href="#"
-                                                            onClick={(e) => {
-                                                                e.preventDefault(); // Evita que el enlace cambie de página
-                                                                const confirmDelete =
-                                                                    window.confirm(
-                                                                        "¿Estás seguro de que deseas anular esta factura? Esta acción no se puede deshacer."
-                                                                    );
 
-                                                                if (
-                                                                    confirmDelete
-                                                                ) {
-                                                                    handleCancelInvoice(
-                                                                        Number(
-                                                                            item?.id
-                                                                        )
-                                                                    );
-                                                                }
-                                                            }}
-                                                        >
-                                                            ANULAR o COMUNICAR
-                                                            DE BAJA
-                                                        </a>
-                                                        <br />
-                                                    </>
-                                                )}
+                                                {item.operationStatus !==
+                                                    "06" &&
+                                                    item.codeHash && (
+                                                        <>
+                                                            <Link
+                                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                                href={`/dashboard/sales/credit_note/${item.id}`}
+                                                            >
+                                                                Generar NOTA DE
+                                                                CREDITO
+                                                            </Link>
+                                                            <br />
+                                                            <a
+                                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                                target="_blank"
+                                                                href="#"
+                                                            >
+                                                                Generar NOTA DE
+                                                                DÉBITO
+                                                            </a>
+                                                            <br />
+                                                            <a
+                                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                                target="_blank"
+                                                                href="#"
+                                                            >
+                                                                Generar GUIA DE
+                                                                REMISIÓN
+                                                                REMITENTE
+                                                            </a>
+                                                            <br />
+                                                            <a
+                                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                                target="_blank"
+                                                                href="#"
+                                                            >
+                                                                Generar GUIA DE
+                                                                REMISIÓN
+                                                                TRANSPORTISTA
+                                                            </a>
+                                                            <br />
+                                                            <a
+                                                                className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                                                                href="#"
+                                                                onClick={(
+                                                                    e
+                                                                ) => {
+                                                                    e.preventDefault(); // Evita que el enlace cambie de página
+                                                                    const confirmDelete =
+                                                                        window.confirm(
+                                                                            "¿Estás seguro de que deseas anular esta factura? Esta acción no se puede deshacer."
+                                                                        );
+
+                                                                    if (
+                                                                        confirmDelete
+                                                                    ) {
+                                                                        handleCancelInvoice(
+                                                                            Number(
+                                                                                item?.id
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                ANULAR o
+                                                                COMUNICAR DE
+                                                                BAJA
+                                                            </a>
+                                                            <br />
+                                                        </>
+                                                    )}
 
                                                 <a
                                                     className="font-medium text-green-600 dark:text-green-500 hover:underline"

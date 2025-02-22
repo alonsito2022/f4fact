@@ -70,6 +70,7 @@ const SALES_QUERY = gql`
                 sendSunat
                 sunatDescription
                 sunatDescriptionLow
+                codeHash
                 client {
                     names
                     documentNumber
