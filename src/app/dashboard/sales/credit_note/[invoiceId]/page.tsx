@@ -336,6 +336,8 @@ function CreditPage() {
                     totalAmount: Number(detail.totalAmount).toFixed(2),
                     totalPerception: Number(detail.totalPerception).toFixed(2),
                     totalToPay: Number(detail.totalToPay).toFixed(2),
+                    temporaryId: index + 1,
+                    id: Number(detail.id),
                 })
             );
 

@@ -43,6 +43,7 @@ function SaleFilter({
 }: any) {
     const router = useRouter();
     const [hostname, setHostname] = useState("");
+
     useEffect(() => {
         if (hostname == "") {
             setHostname(`${process.env.NEXT_PUBLIC_BASE_API}`);
@@ -58,7 +59,7 @@ function SaleFilter({
         // Llama a salesQuery con la página reinicializada
         salesQuery({
             variables: {
-                subsidiaryId: Number(auth?.user?.subsidiaryId),
+                subsidiaryId: Number(filterObj.subsidiaryId),
                 clientId: Number(filterObj.clientId),
                 startDate: filterObj.startDate,
                 endDate: filterObj.endDate,
@@ -153,6 +154,22 @@ function SaleFilter({
         context: getAuthContext(),
         skip: !auth?.jwtToken,
     });
+    useEffect(() => {
+        if (auth?.user?.subsidiaryId && subsidiariesData?.subsidiaries) {
+            const subsidiaryFound = subsidiariesData?.subsidiaries.find(
+                (subsidiary: ISubsidiary) =>
+                    Number(subsidiary.id) === Number(auth?.user?.subsidiaryId)
+            );
+            setFilterObj({
+                ...filterObj,
+                subsidiaryId: auth?.user?.subsidiaryId,
+                subsidiaryName:
+                    subsidiaryFound?.company?.businessName +
+                    " " +
+                    subsidiaryFound?.serial,
+            });
+        }
+    }, [auth?.user?.subsidiaryId, subsidiariesData?.subsidiaries]);
     return (
         <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             <select
@@ -223,7 +240,7 @@ function SaleFilter({
                     Filtrar
                 </button>
                 <a
-                    href={`${hostname}/operations/export_sales_to_excel/${auth?.user?.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/`}
+                    href={`${hostname}/operations/export_sales_to_excel/${filterObj.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/`}
                     target="_blank"
                     title="Descargar EXCEL"
                     download
