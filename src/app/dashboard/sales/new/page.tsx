@@ -16,6 +16,8 @@ import WayPayForm from "../WayPayForm";
 import { useAuth } from "@/components/providers/AuthProvider";
 import SunatCancel from "@/components/icons/SunatCancel";
 import ClientForm from "../ClientForm";
+import SaleDetailList from "../SaleDetailList";
+import SaleTotalList from "../SaleTotalList";
 const today = new Date().toISOString().split("T")[0];
 
 const CLIENTS_QUERY = gql`
@@ -401,15 +403,6 @@ function NewSalePage() {
                 console.log("sin datalist");
             }
         } else setProduct({ ...product, [name]: value });
-    };
-    const handleRemoveSaleDetail = async (indexToRemove: number) => {
-        setSale((prevPurchase: any) => ({
-            ...prevPurchase,
-            operationdetailSet: prevPurchase?.operationdetailSet?.filter(
-                (detail: IOperationDetail) =>
-                    detail.temporaryId !== indexToRemove
-            ),
-        }));
     };
 
     // useEffect(() => {
@@ -857,261 +850,16 @@ function NewSalePage() {
                                         <Add /> AGREGAR ITEM
                                     </button>
                                 </div>
-                                <div className="overflow-hidden shadow-lg rounded-lg bg-white dark:bg-gray-800">
-                                    <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
-                                        <thead className="bg-gray-100 dark:bg-gray-700">
-                                            <tr>
-                                                <th
-                                                    scope="col"
-                                                    className="p-3 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                                                >
-                                                    Descripción
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="p-3 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                                                >
-                                                    Cantidad
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="p-3 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                                                >
-                                                    C/U
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="p-3 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                                                >
-                                                    Subtotal
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="p-3 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                                                ></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {sale?.operationdetailSet?.map(
-                                                (item: any, i: number) => (
-                                                    <tr
-                                                        key={i}
-                                                        className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-                                                    >
-                                                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                                                            {item.productName}
-                                                        </td>
-                                                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                                                            {item.quantity}
-                                                        </td>
-                                                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                                                            {item.unitValue}
-                                                        </td>
-                                                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                                                            {item.totalValue}
-                                                        </td>
-                                                        <td className="px-4 py-2">
-                                                            <div className="flex justify-end py-2 space-x-2">
-                                                                <a
-                                                                    className="hover:underline cursor-pointer text-blue-600 dark:text-blue-400"
-                                                                    onClick={(
-                                                                        e
-                                                                    ) => {
-                                                                        modalAddDetail.show();
-                                                                        setSaleDetail(
-                                                                            item
-                                                                        );
-                                                                        setProduct(
-                                                                            {
-                                                                                ...product,
-                                                                                id: Number(
-                                                                                    item.productId
-                                                                                ),
-                                                                                name: item.productName,
-                                                                            }
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    <Edit />
-                                                                </a>
-                                                                <a
-                                                                    className="hover:underline cursor-pointer text-red-600 dark:text-red-400"
-                                                                    onClick={() =>
-                                                                        handleRemoveSaleDetail(
-                                                                            Number(
-                                                                                item?.temporaryId
-                                                                            )
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <Delete />
-                                                                </a>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                )
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-6 md:grid-cols-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        % Descuento Global
-                                    </div>
-                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        0.00
-                                    </div>
-                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        Descuento Global (-){" "}
-                                        {sale.currencyType === "PEN"
-                                            ? "S/"
-                                            : sale.currencyType === "USD"
-                                            ? "US$"
-                                            : sale.currencyType === "EUR"
-                                            ? "€"
-                                            : sale.currencyType === "GBP"
-                                            ? "£"
-                                            : null}
-                                    </div>
-                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        {sale.discountGlobal}
-                                    </div>
-                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        Descuento por Item (-){" "}
-                                        {sale.currencyType === "PEN"
-                                            ? "S/"
-                                            : sale.currencyType === "USD"
-                                            ? "US$"
-                                            : sale.currencyType === "EUR"
-                                            ? "€"
-                                            : sale.currencyType === "GBP"
-                                            ? "£"
-                                            : null}
-                                    </div>
-                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        {sale.discountForItem}
-                                    </div>
-                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        Descuento Total (-){" "}
-                                        {sale.currencyType === "PEN"
-                                            ? "S/"
-                                            : sale.currencyType === "USD"
-                                            ? "US$"
-                                            : sale.currencyType === "EUR"
-                                            ? "€"
-                                            : sale.currencyType === "GBP"
-                                            ? "£"
-                                            : null}
-                                    </div>
-                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        {sale.totalDiscount}
-                                    </div>
-                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        Exonerada{" "}
-                                        {sale.currencyType === "PEN"
-                                            ? "S/"
-                                            : sale.currencyType === "USD"
-                                            ? "US$"
-                                            : sale.currencyType === "EUR"
-                                            ? "€"
-                                            : sale.currencyType === "GBP"
-                                            ? "£"
-                                            : null}
-                                    </div>
-                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        {sale.totalExonerated || "0.00"}
-                                    </div>
-                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        Inafecta{" "}
-                                        {sale.currencyType === "PEN"
-                                            ? "S/"
-                                            : sale.currencyType === "USD"
-                                            ? "US$"
-                                            : sale.currencyType === "EUR"
-                                            ? "€"
-                                            : sale.currencyType === "GBP"
-                                            ? "£"
-                                            : null}
-                                    </div>
-                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        {sale.totalUnaffected || "0.00"}
-                                    </div>
-                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        Gravada{" "}
-                                        {sale.currencyType === "PEN"
-                                            ? "S/"
-                                            : sale.currencyType === "USD"
-                                            ? "US$"
-                                            : sale.currencyType === "EUR"
-                                            ? "€"
-                                            : sale.currencyType === "GBP"
-                                            ? "£"
-                                            : null}
-                                    </div>
-                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        {sale.totalTaxed}
-                                    </div>
-                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        IGV{" "}
-                                        {sale.currencyType === "PEN"
-                                            ? "S/"
-                                            : sale.currencyType === "USD"
-                                            ? "US$"
-                                            : sale.currencyType === "EUR"
-                                            ? "€"
-                                            : sale.currencyType === "GBP"
-                                            ? "£"
-                                            : null}
-                                    </div>
-                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        {sale.totalIgv}
-                                    </div>
-                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        Gratuita{" "}
-                                        {sale.currencyType === "PEN"
-                                            ? "S/"
-                                            : sale.currencyType === "USD"
-                                            ? "US$"
-                                            : sale.currencyType === "EUR"
-                                            ? "€"
-                                            : sale.currencyType === "GBP"
-                                            ? "£"
-                                            : null}
-                                    </div>
-                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        {sale.totalFree || "0.00"}
-                                    </div>
-                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        Otros Cargos{" "}
-                                        {sale.currencyType === "PEN"
-                                            ? "S/"
-                                            : sale.currencyType === "USD"
-                                            ? "US$"
-                                            : sale.currencyType === "EUR"
-                                            ? "€"
-                                            : sale.currencyType === "GBP"
-                                            ? "£"
-                                            : null}
-                                    </div>
-                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        0.00
-                                    </div>
-                                    <div className="sm:col-span-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        Total{" "}
-                                        {sale.currencyType === "PEN"
-                                            ? "S/"
-                                            : sale.currencyType === "USD"
-                                            ? "US$"
-                                            : sale.currencyType === "EUR"
-                                            ? "€"
-                                            : sale.currencyType === "GBP"
-                                            ? "£"
-                                            : null}
-                                    </div>
-                                    <div className="sm:col-span-1 text-right font-medium text-gray-700 dark:text-gray-300">
-                                        {sale.totalAmount}
-                                    </div>
-                                </div>
+                                <SaleDetailList
+                                    invoice={sale}
+                                    setInvoice={setSale}
+                                    product={product}
+                                    setProduct={setProduct}
+                                    setInvoiceDetail={setSaleDetail}
+                                    modalAddDetail={modalAddDetail}
+                                />
+                                <SaleTotalList invoice={sale} />
+                                {/* Botón Continuar con el Pago */}
                                 <div className="flex justify-end py-2">
                                     <button
                                         type="button"
@@ -1159,17 +907,17 @@ function NewSalePage() {
                                                 );
                                                 return;
                                             }
-                                            if (!sale.correlative) {
-                                                toast(
-                                                    "Por favor ingrese el número correlativo.",
-                                                    {
-                                                        hideProgressBar: true,
-                                                        autoClose: 2000,
-                                                        type: "warning",
-                                                    }
-                                                );
-                                                return;
-                                            }
+                                            // if (!sale.correlative) {
+                                            //     toast(
+                                            //         "Por favor ingrese el número correlativo.",
+                                            //         {
+                                            //             hideProgressBar: true,
+                                            //             autoClose: 2000,
+                                            //             type: "warning",
+                                            //         }
+                                            //     );
+                                            //     return;
+                                            // }
 
                                             modalWayPay.show();
                                             setSale({
@@ -1224,10 +972,10 @@ function NewSalePage() {
                 setModalAddDetail={setModalAddDetail}
                 product={product}
                 setProduct={setProduct}
-                saleDetail={saleDetail}
-                setSaleDetail={setSaleDetail}
-                sale={sale}
-                setSale={setSale}
+                invoiceDetail={saleDetail}
+                setInvoiceDetail={setSaleDetail}
+                invoice={sale}
+                setInvoice={setSale}
                 jwtToken={auth?.jwtToken}
                 initialStateProduct={initialStateProduct}
                 initialStateSaleDetail={initialStateSaleDetail}

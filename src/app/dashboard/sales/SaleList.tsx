@@ -69,7 +69,7 @@ function SaleList({
                     toast.success("Factura anulada correctamente.");
                     salesQuery({
                         variables: {
-                            subsidiaryId: Number(filterObj.subsidiaryId),
+                            subsidiaryId: Number(user?.subsidiaryId),
                             clientId: Number(filterObj.clientId),
                             startDate: filterObj.startDate,
                             endDate: filterObj.endDate,
@@ -729,9 +729,7 @@ function SaleList({
                             // Llama a salesQuery con los nuevos parámetros
                             salesQuery({
                                 variables: {
-                                    subsidiaryId: Number(
-                                        filterObj.subsidiaryId
-                                    ),
+                                    subsidiaryId: Number(user?.subsidiaryId),
                                     clientId: Number(filterObj.clientId),
                                     startDate: filterObj.startDate,
                                     endDate: filterObj.endDate,
@@ -754,9 +752,7 @@ function SaleList({
                             });
                             salesQuery({
                                 variables: {
-                                    subsidiaryId: Number(
-                                        filterObj.subsidiaryId
-                                    ),
+                                    subsidiaryId: Number(user?.subsidiaryId),
                                     clientId: Number(filterObj.clientId),
                                     startDate: filterObj.startDate,
                                     endDate: filterObj.endDate,

@@ -200,7 +200,9 @@ function WayPayForm({
         try {
             const variables = {
                 serial: sale.serial,
-                correlative: parseInt(sale.correlative),
+                correlative: parseInt(
+                    sale.correlative === "" ? "0" : sale.correlative
+                ),
                 documentType: sale.documentType,
                 currencyType: sale.currencyType,
                 saleExchangeRate: parseFloat(sale.saleExchangeRate) || 0,
@@ -270,7 +272,7 @@ function WayPayForm({
                 totalPayed: parseFloat(sale.totalPayed),
                 totalTurned: parseFloat(sale.totalTurned) || 0,
             };
-            // console.log("variables", variables);
+            console.log("variables", variables);
             const { data, errors } = await createSale({
                 variables: variables,
             });

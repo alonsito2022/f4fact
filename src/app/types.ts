@@ -264,6 +264,11 @@ export interface ICreditNoteType {
     name: string;
 }
 
+export interface IOperationType {
+    code: number;
+    name: string;
+}
+
 export interface IProductTariff {
     id: number;
     productId?: number;

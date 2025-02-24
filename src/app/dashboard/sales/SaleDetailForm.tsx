@@ -27,10 +27,10 @@ function SaleDetailForm({
     setModalAddDetail,
     product,
     setProduct,
-    saleDetail,
-    setSaleDetail,
-    sale,
-    setSale,
+    invoiceDetail,
+    setInvoiceDetail,
+    invoice,
+    setInvoice,
     jwtToken,
     initialStateProduct,
     initialStateSaleDetail,
@@ -48,9 +48,9 @@ function SaleDetailForm({
     const [productDetailQuery] = useLazyQuery(PRODUCT_DETAIL_QUERY);
 
     // useEffect(() => {
-    //     if(Number(saleDetail.productId)>0)
-    //     console.log(" useEffect saleDetail", saleDetail)
-    // }, [saleDetail.productId]);
+    //     if(Number(invoiceDetail.productId)>0)
+    //     console.log(" useEffect invoiceDetail", invoiceDetail)
+    // }, [invoiceDetail.productId]);
 
     useEffect(() => {
         if (modalAddDetail == null) {
@@ -77,8 +77,8 @@ function SaleDetailForm({
                     if (productDetail) {
                         let totalValue =
                             Number(productDetail.priceWithoutIgv1) *
-                                Number(saleDetail.quantity) -
-                            Number(saleDetail.totalDiscount);
+                                Number(invoiceDetail.quantity) -
+                            Number(invoiceDetail.totalDiscount);
                         let foundTypeAffectation =
                             typeAffectationsData?.allTypeAffectations?.find(
                                 (ta: ITypeAffectation) =>
@@ -90,11 +90,11 @@ function SaleDetailForm({
                                 ? foundTypeAffectation?.code
                                 : "10";
                         let igvPercentage =
-                            code === "10" ? Number(sale.igvType) : 0;
+                            code === "10" ? Number(invoice.igvType) : 0;
                         let totalIgv = totalValue * igvPercentage * 0.01;
                         let totalAmount = totalValue + totalIgv;
-                        setSaleDetail({
-                            ...saleDetail,
+                        setInvoiceDetail({
+                            ...invoiceDetail,
                             productTariffId: Number(
                                 productDetail.productTariffId1
                             ),
@@ -133,10 +133,10 @@ function SaleDetailForm({
     }, [
         product.id,
         productDetailQuery,
-        sale.igvType,
-        saleDetail.quantity,
-        saleDetail.totalDiscount,
-        setSaleDetail,
+        invoice.igvType,
+        invoiceDetail.quantity,
+        invoiceDetail.totalDiscount,
+        setInvoiceDetail,
         typeAffectationsData,
         product.name,
     ]);
@@ -170,14 +170,14 @@ function SaleDetailForm({
                     const selectedId = option.getAttribute("data-key");
                     const selectedValue = option.getAttribute("value");
                     // console.log("option", option, selectedId, selectedValue)
-                    // setSaleDetail({ ...saleDetail, productId: Number(selectedId), productName: value });
+                    // setInvoiceDetail({ ...invoiceDetail, productId: Number(selectedId), productName: value });
                     setProduct({
                         ...product,
                         id: Number(selectedId),
                         name: selectedValue,
                     });
                 } else {
-                    // setSaleDetail({ ...saleDetail, [name]: value, productId: 0 });
+                    // setInvoiceDetail({ ...invoiceDetail, [name]: value, productId: 0 });
                     setProduct({ ...product, id: 0, name: "" });
                 }
             } else {
@@ -187,19 +187,22 @@ function SaleDetailForm({
             const formattedValue = value.replace(/[^0-9]/g, "").slice(0, 6);
             const numberValue = Number(formattedValue);
             let totalValue =
-                Number(saleDetail.unitValue) * numberValue -
-                Number(saleDetail.totalDiscount);
+                Number(invoiceDetail.unitValue) * numberValue -
+                Number(invoiceDetail.totalDiscount);
+
             let foundTypeAffectation =
                 typeAffectationsData?.allTypeAffectations?.find(
                     (ta: ITypeAffectation) =>
-                        Number(ta.id) === Number(saleDetail.typeAffectationId)
+                        Number(ta.id) ===
+                        Number(invoiceDetail.typeAffectationId)
                 );
+
             let code = foundTypeAffectation ? foundTypeAffectation.code : "10";
-            let igvPercentage = code === "10" ? Number(sale.igvType) : 0;
+            let igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
             let totalIgv = totalValue * igvPercentage * 0.01;
             let totalAmount = totalValue + totalIgv;
-            setSaleDetail({
-                ...saleDetail,
+            setInvoiceDetail({
+                ...invoiceDetail,
                 quantity: formattedValue,
                 totalValue: Number(totalValue).toFixed(2),
                 totalIgv: Number(totalIgv).toFixed(2),
@@ -207,18 +210,20 @@ function SaleDetailForm({
             });
         } else if (name === "totalDiscount") {
             let totalValue =
-                Number(saleDetail.unitValue) * Number(saleDetail.quantity) -
+                Number(invoiceDetail.unitValue) *
+                    Number(invoiceDetail.quantity) -
                 Number(value);
             let foundTypeAffectation =
                 typeAffectationsData?.allTypeAffectations?.find(
                     (ta: ITypeAffectation) =>
-                        Number(ta.id) === Number(saleDetail.typeAffectationId)
+                        Number(ta.id) ===
+                        Number(invoiceDetail.typeAffectationId)
                 );
             let code =
                 foundTypeAffectation !== null
                     ? foundTypeAffectation.code
                     : "10";
-            let igvPercentage = code === "10" ? Number(sale.igvType) : 0;
+            let igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
             let totalIgv = totalValue * igvPercentage * 0.01;
             let totalAmount = totalValue + totalIgv;
             // Limitar a 6 dígitos enteros y 2 decimales (máximo 999999.99)
@@ -232,8 +237,8 @@ function SaleDetailForm({
                 );
             }
 
-            setSaleDetail({
-                ...saleDetail,
+            setInvoiceDetail({
+                ...invoiceDetail,
                 totalDiscount: formattedValue,
                 totalValue: Number(totalValue).toFixed(2),
                 totalIgv: Number(totalIgv).toFixed(2),
@@ -248,22 +253,22 @@ function SaleDetailForm({
                 foundTypeAffectation !== null
                     ? foundTypeAffectation.code
                     : "10";
-            let igvPercentage = code === "10" ? Number(sale.igvType) : 0;
-            let totalIgv = saleDetail.totalValue * igvPercentage * 0.01;
-            let totalAmount = saleDetail.totalValue + totalIgv;
-            setSaleDetail({
-                ...saleDetail,
+            let igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
+            let totalIgv = invoiceDetail.totalValue * igvPercentage * 0.01;
+            let totalAmount = invoiceDetail.totalValue + totalIgv;
+            setInvoiceDetail({
+                ...invoiceDetail,
                 [name]: value,
                 igvPercentage: igvPercentage,
                 totalIgv: totalIgv,
                 totalAmount: totalAmount,
             });
-        } else setSaleDetail({ ...saleDetail, [name]: value });
+        } else setInvoiceDetail({ ...invoiceDetail, [name]: value });
     };
 
     const handleAddDetail = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (saleDetail?.typeAffectationId === 0) {
+        if (invoiceDetail?.typeAffectationId === 0) {
             toast("Por favor ingrese un tipo de afectacion.", {
                 hideProgressBar: true,
                 autoClose: 2000,
@@ -271,7 +276,7 @@ function SaleDetailForm({
             });
             return;
         }
-        if (Number(saleDetail?.quantity) === 0) {
+        if (Number(invoiceDetail?.quantity) === 0) {
             toast("Por favor ingrese una cantidad.", {
                 hideProgressBar: true,
                 autoClose: 2000,
@@ -279,14 +284,14 @@ function SaleDetailForm({
             });
             return;
         }
-        if (Number(saleDetail?.temporaryId) > 0) {
+        if (Number(invoiceDetail?.temporaryId) > 0) {
             // Combina la eliminación y la edición en una sola operación
             const newSaleDetail = {
-                ...saleDetail,
-                temporaryId: saleDetail.temporaryId,
+                ...invoiceDetail,
+                temporaryId: invoiceDetail.temporaryId,
             };
 
-            setSale((prevSale: IOperation) => ({
+            setInvoice((prevSale: IOperation) => ({
                 ...prevSale,
                 operationdetailSet: prevSale?.operationdetailSet?.map(
                     (detail: IOperationDetail) =>
@@ -297,19 +302,19 @@ function SaleDetailForm({
             }));
         } else {
             let newSaleDetail = {
-                ...saleDetail,
-                temporaryId: sale.operationdetailSet.length + 1,
+                ...invoiceDetail,
+                temporaryId: invoice.operationdetailSet.length + 1,
             };
-            setSale((prevsale: IOperation) => ({
-                ...prevsale,
+            setInvoice((previnvoice: IOperation) => ({
+                ...previnvoice,
                 operationdetailSet: [
-                    ...prevsale.operationdetailSet!,
+                    ...previnvoice.operationdetailSet!,
                     newSaleDetail,
                 ],
             }));
         }
 
-        setSaleDetail(initialStateSaleDetail);
+        setInvoiceDetail(initialStateSaleDetail);
         setProduct(initialStateProduct);
         modalAddDetail.hide();
     };
@@ -330,7 +335,7 @@ function SaleDetailForm({
                         <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                             <h3 className="text-xl font-medium text-gray-900 dark:text-white">
                                 Detalle de la LINEA o ITEM{" "}
-                                {saleDetail.temporaryId}
+                                {invoiceDetail.temporaryId}
                             </h3>
                             <button
                                 type="button"
@@ -409,7 +414,9 @@ function SaleDetailForm({
                                             onWheel={(e) =>
                                                 e.currentTarget.blur()
                                             }
-                                            value={saleDetail.remainingQuantity}
+                                            value={
+                                                invoiceDetail.remainingQuantity
+                                            }
                                             onChange={
                                                 handleInputChangeSaleDetail
                                             }
@@ -431,7 +438,7 @@ function SaleDetailForm({
                                             onWheel={(e) =>
                                                 e.currentTarget.blur()
                                             }
-                                            value={saleDetail.quantity}
+                                            value={invoiceDetail.quantity}
                                             onChange={
                                                 handleInputChangeSaleDetail
                                             }
@@ -454,7 +461,7 @@ function SaleDetailForm({
                                             onWheel={(e) =>
                                                 e.currentTarget.blur()
                                             }
-                                            value={saleDetail.unitValue}
+                                            value={invoiceDetail.unitValue}
                                             onChange={
                                                 handleInputChangeSaleDetail
                                             }
@@ -476,7 +483,7 @@ function SaleDetailForm({
                                             onWheel={(e) =>
                                                 e.currentTarget.blur()
                                             }
-                                            value={saleDetail.totalValue}
+                                            value={invoiceDetail.totalValue}
                                             readOnly
                                             onChange={
                                                 handleInputChangeSaleDetail
@@ -504,7 +511,7 @@ function SaleDetailForm({
                                             onWheel={(e) =>
                                                 e.currentTarget.blur()
                                             }
-                                            value={saleDetail.totalDiscount}
+                                            value={invoiceDetail.totalDiscount}
                                             onChange={
                                                 handleInputChangeSaleDetail
                                             }
@@ -528,7 +535,9 @@ function SaleDetailForm({
                                             onChange={
                                                 handleInputChangeSaleDetail
                                             }
-                                            value={saleDetail.typeAffectationId}
+                                            value={
+                                                invoiceDetail.typeAffectationId
+                                            }
                                             className="form-control dark:bg-gray-800 dark:text-gray-200"
                                             required
                                         >
@@ -564,7 +573,7 @@ function SaleDetailForm({
                                             onWheel={(e) =>
                                                 e.currentTarget.blur()
                                             }
-                                            value={saleDetail.totalIgv}
+                                            value={invoiceDetail.totalIgv}
                                             onChange={
                                                 handleInputChangeSaleDetail
                                             }
@@ -586,7 +595,7 @@ function SaleDetailForm({
                                             onWheel={(e) =>
                                                 e.currentTarget.blur()
                                             }
-                                            value={saleDetail.totalAmount}
+                                            value={invoiceDetail.totalAmount}
                                             onChange={
                                                 handleInputChangeSaleDetail
                                             }

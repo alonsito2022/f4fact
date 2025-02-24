@@ -39,7 +39,7 @@ function SaleFilter({
     filterObj,
     salesQuery,
     filteredSaleLoading,
-    jwtToken,
+    auth,
 }: any) {
     const router = useRouter();
     const [hostname, setHostname] = useState("");
@@ -58,7 +58,7 @@ function SaleFilter({
         // Llama a salesQuery con la página reinicializada
         salesQuery({
             variables: {
-                subsidiaryId: Number(filterObj.subsidiaryId),
+                subsidiaryId: Number(auth?.user?.subsidiaryId),
                 clientId: Number(filterObj.clientId),
                 startDate: filterObj.startDate,
                 endDate: filterObj.endDate,
@@ -134,7 +134,7 @@ function SaleFilter({
     const getAuthContext = () => ({
         headers: {
             "Content-Type": "application/json",
-            Authorization: jwtToken ? `JWT ${jwtToken}` : "",
+            Authorization: auth?.jwtToken ? `JWT ${auth?.jwtToken}` : "",
         },
     });
     const {
@@ -143,7 +143,7 @@ function SaleFilter({
         data: suppliersData,
     } = useQuery(SUPPLIERS_QUERY, {
         context: getAuthContext(),
-        skip: !jwtToken,
+        skip: !auth?.jwtToken,
     });
     const {
         loading: subsidiariesLoading,
@@ -151,7 +151,7 @@ function SaleFilter({
         data: subsidiariesData,
     } = useQuery(SUBSIDIARIES_QUERY, {
         context: getAuthContext(),
-        skip: !jwtToken,
+        skip: !auth?.jwtToken,
     });
     return (
         <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -167,7 +167,7 @@ function SaleFilter({
                 <option value={"07"}>NOTA DE CRÉDITO ELECTRÓNICA</option>
                 <option value={"08"}>NOTA DE DÉBITO ELECTRÓNICA</option>
             </select>
-            {filterObj.isSuperuser ? (
+            {auth?.user?.isSuperuser ? (
                 <>
                     <input
                         type="search"
@@ -223,7 +223,7 @@ function SaleFilter({
                     Filtrar
                 </button>
                 <a
-                    href={`${hostname}/operations/export_sales_to_excel/${filterObj.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/`}
+                    href={`${hostname}/operations/export_sales_to_excel/${auth?.user?.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/`}
                     target="_blank"
                     title="Descargar EXCEL"
                     download

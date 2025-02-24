@@ -152,7 +152,7 @@ function SalePage() {
                         filterObj={filterObj}
                         salesQuery={salesQuery}
                         filteredSalesLoading={filteredSalesLoading}
-                        jwtToken={auth?.jwtToken}
+                        auth={auth}
                     />
                 </div>
             </div>
