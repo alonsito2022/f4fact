@@ -4,6 +4,7 @@ import Delete from "@/components/icons/Delete";
 import Save from "@/components/icons/Save";
 import { DocumentNode, gql, useMutation } from "@apollo/client";
 import { Modal, ModalOptions } from "flowbite";
+import { useRouter } from "next/navigation";
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -48,6 +49,8 @@ const CREATE_SALE_MUTATION = gql`
         $totalToPay: Float!
         $totalPayed: Float!
         $totalTurned: Float!
+        $creditNoteType: String!
+        $parentOperationId: Int!
     ) {
         createSale(
             serial: $serial
@@ -89,6 +92,8 @@ const CREATE_SALE_MUTATION = gql`
             totalToPay: $totalToPay
             totalPayed: $totalPayed
             totalTurned: $totalTurned
+            creditNoteType: $creditNoteType
+            parentOperationId: $parentOperationId
         ) {
             message
             error
@@ -102,8 +107,8 @@ const CREATE_SALE_MUTATION = gql`
 //     setCashFlow: (cashFlow: ICashFlow) => void;
 //     initialStateCashFlow: ICashFlow;
 //     initialStateSale: IOperation;
-//     sale: IOperation;
-//     setSale: (sale: IOperation) => void;
+//     invoice: IOperation;
+//     setInvoice: (invoice: IOperation) => void;
 //     jwtToken: string;
 //     wayPaysData: { allWayPays: IWayPay[] };
 // }
@@ -114,21 +119,17 @@ function WayPayForm({
     setCashFlow,
     initialStateCashFlow,
     initialStateSale,
-    sale,
-    setSale,
+    invoice,
+    setInvoice,
     jwtToken,
+    authContext,
     wayPaysData,
 }: any) {
-    function useCustomMutation(mutation: DocumentNode) {
-        const getAuthContext = () => ({
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: jwtToken ? `JWT ${jwtToken}` : "",
-            },
-        });
+    const router = useRouter();
 
+    function useCustomMutation(mutation: DocumentNode) {
         return useMutation(mutation, {
-            context: getAuthContext(),
+            context: authContext,
             onError: (err) => console.error("Error in unit:", err), // Log the error for debugging
         });
     }
@@ -167,31 +168,31 @@ function WayPayForm({
     const handleAddWayPay = useCallback(() => {
         let newCashFlow = {
             ...cashFlow,
-            temporaryId: sale.cashflowSet.length + 1,
+            temporaryId: invoice.cashflowSet.length + 1,
         };
-        setSale((prevSale: IOperation) => ({
+        setInvoice((prevSale: IOperation) => ({
             ...prevSale,
             cashflowSet: [...prevSale.cashflowSet!, newCashFlow],
         }));
         setCashFlow(initialStateCashFlow);
     }, [
         cashFlow,
-        sale.cashflowSet,
+        invoice.cashflowSet,
         setCashFlow,
-        setSale,
+        setInvoice,
         initialStateCashFlow,
     ]);
 
     const handleRemoveCashFlow = useCallback(
         async (indexToRemove: number) => {
-            setSale((prevSale: any) => ({
+            setInvoice((prevSale: any) => ({
                 ...prevSale,
                 cashflowSet: prevSale?.cashflowSet?.filter(
                     (detail: ICashFlow) => detail.temporaryId !== indexToRemove
                 ),
             }));
         },
-        [setSale]
+        [setInvoice]
     );
 
     // const [createPurchase] = useMutation(CREATE_PURCHASE_MUTATION);
@@ -199,80 +200,82 @@ function WayPayForm({
     const handleSaveSale = useCallback(async () => {
         try {
             const variables = {
-                serial: sale.serial,
+                serial: invoice.serial,
                 correlative: parseInt(
-                    sale.correlative === "" ? "0" : sale.correlative
+                    invoice.correlative === "" ? "0" : invoice.correlative
                 ),
-                documentType: sale.documentType,
-                currencyType: sale.currencyType,
-                saleExchangeRate: parseFloat(sale.saleExchangeRate) || 0,
-                emitDate: sale.emitDate,
-                clientId: parseInt(sale.clientId),
-                productTariffIdSet: sale.operationdetailSet.map(
+                documentType: invoice.documentType,
+                currencyType: invoice.currencyType,
+                saleExchangeRate: parseFloat(invoice.saleExchangeRate) || 0,
+                emitDate: invoice.emitDate,
+                clientId: parseInt(invoice.clientId),
+                productTariffIdSet: invoice.operationdetailSet.map(
                     (item: any) => item.productTariffId
                 ),
-                typeAffectationIdSet: sale.operationdetailSet.map(
+                typeAffectationIdSet: invoice.operationdetailSet.map(
                     (item: any) => item.typeAffectationId
                 ),
-                quantitySet: sale.operationdetailSet.map((item: any) =>
+                quantitySet: invoice.operationdetailSet.map((item: any) =>
                     parseInt(item.quantity)
                 ),
-                unitValueSet: sale.operationdetailSet.map((item: any) =>
+                unitValueSet: invoice.operationdetailSet.map((item: any) =>
                     parseFloat(item.unitValue)
                 ),
-                unitPriceSet: sale.operationdetailSet.map((item: any) =>
+                unitPriceSet: invoice.operationdetailSet.map((item: any) =>
                     parseFloat(item.unitPrice)
                 ),
-                discountPercentageSet: sale.operationdetailSet.map(
+                discountPercentageSet: invoice.operationdetailSet.map(
                     (item: any) => parseFloat(item.discountPercentage) || 0
                 ),
-                igvPercentageSet: sale.operationdetailSet.map((item: any) =>
+                igvPercentageSet: invoice.operationdetailSet.map((item: any) =>
                     parseFloat(item.igvPercentage)
                 ),
-                perceptionPercentageSet: sale.operationdetailSet.map(
+                perceptionPercentageSet: invoice.operationdetailSet.map(
                     (item: any) => parseFloat(item.totalPerception) || 0
                 ),
-                totalDiscountSet: sale.operationdetailSet.map(
+                totalDiscountSet: invoice.operationdetailSet.map(
                     (item: any) => parseFloat(item.totalDiscount) || 0
                 ),
-                totalValueSet: sale.operationdetailSet.map((item: any) =>
+                totalValueSet: invoice.operationdetailSet.map((item: any) =>
                     parseFloat(item.totalValue)
                 ),
-                totalIgvSet: sale.operationdetailSet.map((item: any) =>
+                totalIgvSet: invoice.operationdetailSet.map((item: any) =>
                     parseFloat(item.totalIgv)
                 ),
-                totalAmountSet: sale.operationdetailSet.map((item: any) =>
+                totalAmountSet: invoice.operationdetailSet.map((item: any) =>
                     parseFloat(item.totalAmount)
                 ),
-                totalPerceptionSet: sale.operationdetailSet.map(
+                totalPerceptionSet: invoice.operationdetailSet.map(
                     (item: any) => parseFloat(item.totalPerception) || 0
                 ),
-                totalToPaySet: sale.operationdetailSet.map(
+                totalToPaySet: invoice.operationdetailSet.map(
                     (item: any) => parseFloat(item.totalToPay) || 0
                 ),
-                wayPaySet: sale.cashflowSet.map((item: any) => item.wayPay),
-                totalSet: sale.cashflowSet.map((item: any) => item.total),
-                descriptionSet: sale.cashflowSet.map(
+                wayPaySet: invoice.cashflowSet.map((item: any) => item.wayPay),
+                totalSet: invoice.cashflowSet.map((item: any) => item.total),
+                descriptionSet: invoice.cashflowSet.map(
                     (item: any) => item.description || ""
                 ),
-                discountForItem: parseFloat(sale.discountForItem) || 0,
-                discountGlobal: parseFloat(sale.discountGlobal) || 0,
+                discountForItem: parseFloat(invoice.discountForItem) || 0,
+                discountGlobal: parseFloat(invoice.discountGlobal) || 0,
                 discountPercentageGlobal:
-                    parseFloat(sale.discountPercentageGlobal) || 0,
-                igvType: Number(sale.igvType),
-                totalDiscount: parseFloat(sale.totalDiscount) || 0,
-                totalTaxed: parseFloat(sale.totalTaxed),
-                totalUnaffected: parseFloat(sale.totalUnaffected),
-                totalExonerated: parseFloat(sale.totalExonerated),
-                totalIgv: parseFloat(sale.totalIgv),
-                totalFree: parseFloat(sale.totalFree) || 0,
-                totalAmount: parseFloat(sale.totalAmount),
-                totalPerception: parseFloat(sale.totalPerception) || 0,
-                totalToPay: parseFloat(sale.totalToPay),
-                totalPayed: parseFloat(sale.totalPayed),
-                totalTurned: parseFloat(sale.totalTurned) || 0,
+                    parseFloat(invoice.discountPercentageGlobal) || 0,
+                igvType: Number(invoice.igvType),
+                totalDiscount: parseFloat(invoice.totalDiscount) || 0,
+                totalTaxed: parseFloat(invoice.totalTaxed),
+                totalUnaffected: parseFloat(invoice.totalUnaffected),
+                totalExonerated: parseFloat(invoice.totalExonerated),
+                totalIgv: parseFloat(invoice.totalIgv),
+                totalFree: parseFloat(invoice.totalFree) || 0,
+                totalAmount: parseFloat(invoice.totalAmount),
+                totalPerception: parseFloat(invoice.totalPerception) || 0,
+                totalToPay: parseFloat(invoice.totalToPay),
+                totalPayed: parseFloat(invoice.totalPayed),
+                totalTurned: parseFloat(invoice.totalTurned) || 0,
+                creditNoteType: invoice.creditNoteType,
+                parentOperationId: Number(invoice.parentOperationId) || 0,
             };
-            console.log("variables", variables);
+            // console.log("variables al guardar", variables);
             const { data, errors } = await createSale({
                 variables: variables,
             });
@@ -296,35 +299,37 @@ function WayPayForm({
                         autoClose: 2000,
                         type: "success",
                     });
-                    setSale(initialStateSale);
+                    // setInvoice(initialStateSale);
                     modalWayPay.hide();
+
+                    router.push("/dashboard/sales");
                 }
             }
         } catch (error) {
-            console.error("Error creating sale:", error);
+            console.error("Error creating invoice:", error);
         }
-    }, [createSale, sale, setSale, initialStateSale, modalWayPay]);
+    }, [createSale, invoice, setInvoice, initialStateSale, modalWayPay]);
 
     useEffect(() => {
         calculateTotalPayed();
-    }, [sale.cashflowSet]);
+    }, [invoice.cashflowSet]);
 
     const calculateTotalPayed = useCallback(() => {
-        const totalPayed = sale?.cashflowSet?.reduce(
+        const totalPayed = invoice?.cashflowSet?.reduce(
             (total: number, detail: ICashFlow) => {
                 return total + Number(detail.total);
             },
             0
         );
 
-        const totalTurned = totalPayed - Number(sale?.totalToPay);
+        const totalTurned = totalPayed - Number(invoice?.totalToPay);
 
-        setSale((prevEntry: any) => ({
+        setInvoice((prevEntry: any) => ({
             ...prevEntry,
             totalTurned: Number(totalTurned).toFixed(2),
             totalPayed: Number(totalPayed).toFixed(2),
         }));
-    }, [sale, setSale]);
+    }, [invoice, setInvoice]);
 
     return (
         <>
@@ -350,7 +355,6 @@ function WayPayForm({
                         >
                             <svg
                                 className="w-4 h-4"
-                                aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 14 14"
@@ -434,7 +438,7 @@ function WayPayForm({
                             </button>
                         </div>
                     </div>
-                    {sale?.cashflowSet?.length > 0 ? (
+                    {invoice?.cashflowSet?.length > 0 ? (
                         <div className="overflow-hidden shadow rounded-lg max-h-[30vh] overflow-y-auto">
                             <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
                                 <thead className="bg-gray-100 dark:bg-gray-700">
@@ -464,7 +468,7 @@ function WayPayForm({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {sale?.cashflowSet?.map(
+                                    {invoice?.cashflowSet?.map(
                                         (item: ICashFlow, c: number) => (
                                             <tr
                                                 key={c}
@@ -516,7 +520,7 @@ function WayPayForm({
                                     </label>
                                     <input
                                         type="number"
-                                        value={sale.totalToPay}
+                                        value={invoice.totalToPay}
                                         readOnly
                                         className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
                                     />
@@ -528,7 +532,7 @@ function WayPayForm({
                                     </label>
                                     <input
                                         type="number"
-                                        value={sale.totalPayed}
+                                        value={invoice.totalPayed}
                                         readOnly
                                         className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
                                     />
@@ -540,7 +544,7 @@ function WayPayForm({
                                     </label>
                                     <input
                                         type="number"
-                                        value={sale.totalTurned}
+                                        value={invoice.totalTurned}
                                         readOnly
                                         className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
                                     />
@@ -565,7 +569,7 @@ function WayPayForm({
                             className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 flex items-center gap-2"
                         >
                             <Save />
-                            Crear Compra
+                            Crear Comprobante
                         </button>
                     </div>
                 </div>

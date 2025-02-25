@@ -141,7 +141,7 @@ function SaleDetailList({
                             >
                                 <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
                                     {item.productName} - {item.id} -{" "}
-                                    {item.temporaryId}
+                                    {item.productTariffId} - {item.temporaryId}
                                 </td>
                                 <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
                                     {item.quantity}

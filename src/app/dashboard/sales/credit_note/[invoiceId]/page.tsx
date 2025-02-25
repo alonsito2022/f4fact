@@ -9,6 +9,9 @@ import SaleDetailList from "../../SaleDetailList";
 import { Modal } from "flowbite";
 import SaleDetailForm from "../../SaleDetailForm";
 import SaleTotalList from "../../SaleTotalList";
+import WayPayForm from "../../WayPayForm";
+import Save from "@/components/icons/Save";
+import { toast } from "react-toastify";
 const today = new Date().toISOString().split("T")[0];
 
 const initialStateCreditNote = {
@@ -20,6 +23,7 @@ const initialStateCreditNote = {
     clientName: "",
     clientId: 0,
     igvType: 18,
+    igvPercentage: 18,
     operationType: "01",
     documentType: "07",
     currencyType: "PEN",
@@ -44,6 +48,7 @@ const initialStateCreditNote = {
     totalTurned: "",
 
     creditNoteType: "NA",
+    parentOperationId: 0,
 };
 const initialStateSale = {
     id: 0,
@@ -55,6 +60,7 @@ const initialStateSale = {
         names: "",
     },
     igvType: 18,
+    igvPercentage: 18,
     operationType: "01",
     documentType: "01",
     currencyType: "PEN",
@@ -77,6 +83,7 @@ const initialStateSale = {
     totalToPay: "",
     totalPayed: "",
     totalTurned: "",
+    parentOperationId: 0,
 };
 const initialStateSaleDetail = {
     id: 0,
@@ -84,6 +91,8 @@ const initialStateSaleDetail = {
     productName: "",
 
     quantity: "",
+    quantityReturned: 0,
+    quantityAvailable: 0,
 
     unitValue: "",
     unitPrice: "",
@@ -130,6 +139,11 @@ const initialStateProduct = {
     maximumFactor: "1",
     minimumFactor: "1",
 };
+const initialStateCashFlow = {
+    wayPay: 1,
+    total: 0,
+    description: "",
+};
 const TYPE_OPERATION_QUERY = gql`
     query {
         allOperationTypes {
@@ -158,6 +172,7 @@ const SALE_QUERY_BY_ID = gql`
             documentTypeReadable
             documentType
             igvType
+            igvPercentage
             operationType
             serial
             correlative
@@ -182,6 +197,7 @@ const SALE_QUERY_BY_ID = gql`
             sunatDescriptionLow
             codeHash
             client {
+                id
                 names
             }
             subsidiary {
@@ -207,7 +223,17 @@ const SALE_QUERY_BY_ID = gql`
                 typeAffectationId
                 productTariffId
                 remainingQuantity
+                quantityReturned
+                quantityAvailable
             }
+        }
+    }
+`;
+const WAY_PAY_QUERY = gql`
+    query {
+        allWayPays {
+            code
+            name
         }
     }
 `;
@@ -257,6 +283,8 @@ function CreditPage() {
     );
     const [product, setProduct] = useState(initialStateProduct);
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
+    const [modalWayPay, setModalWayPay] = useState<Modal | any>(null);
+    const [cashFlow, setCashFlow] = useState(initialStateCashFlow);
 
     const auth = useAuth();
 
@@ -269,7 +297,14 @@ function CreditPage() {
         }),
         [auth?.jwtToken]
     );
-
+    const {
+        loading: wayPaysLoading,
+        error: wayPaysError,
+        data: wayPaysData,
+    } = useQuery(WAY_PAY_QUERY, {
+        context: authContext,
+        skip: !auth?.jwtToken,
+    });
     const {
         loading: creditNoteTypesLoading,
         error: creditNoteTypesError,
@@ -319,11 +354,19 @@ function CreditPage() {
         fetchPolicy: "network-only",
         onCompleted: (data) => {
             const dataSale = data.getSaleById;
+            const igv = Number(dataSale?.igvPercentage) / 100;
+            console.log(igv);
             setSale(dataSale);
-            const formattedOperationdetailSet = dataSale.operationdetailSet.map(
-                (detail: IOperationDetail, index: number) => ({
+            const formattedOperationdetailSet = dataSale.operationdetailSet
+                .filter(
+                    (detail: IOperationDetail) =>
+                        Number(detail.quantityAvailable) > 0
+                )
+                .map((detail: IOperationDetail, index: number) => ({
                     ...detail,
-                    quantity: Number(detail.quantity).toFixed(1),
+                    quantity: Number(detail.quantityAvailable).toString(),
+                    quantityReturned: Number(detail.quantityReturned),
+                    quantityAvailable: Number(detail.quantityAvailable),
                     unitValue: Number(detail.unitValue).toFixed(2),
                     unitPrice: Number(detail.unitPrice).toFixed(2),
                     igvPercentage: Number(detail.igvPercentage).toFixed(2),
@@ -331,15 +374,26 @@ function CreditPage() {
                         detail.discountPercentage
                     ).toFixed(2),
                     totalDiscount: Number(detail.totalDiscount).toFixed(2),
-                    totalValue: Number(detail.totalValue).toFixed(2),
-                    totalIgv: Number(detail.totalIgv).toFixed(2),
-                    totalAmount: Number(detail.totalAmount).toFixed(2),
+                    totalValue: Number(
+                        Number(detail.unitValue) *
+                            Number(detail.quantityAvailable)
+                    ).toFixed(2),
+                    totalIgv: Number(
+                        Number(detail.unitValue) *
+                            Number(detail.quantityAvailable) *
+                            igv
+                    ).toFixed(2),
+                    totalAmount: Number(
+                        Number(detail.unitValue) *
+                            Number(detail.quantityAvailable) *
+                            (1 + igv)
+                    ).toFixed(2),
                     totalPerception: Number(detail.totalPerception).toFixed(2),
                     totalToPay: Number(detail.totalToPay).toFixed(2),
                     temporaryId: index + 1,
+                    productTariffId: Number(detail.productTariffId),
                     id: Number(detail.id),
-                })
-            );
+                }));
 
             setCreditNote((prevSale) => ({
                 ...prevSale,
@@ -351,6 +405,9 @@ function CreditPage() {
                     ? dataSale?.saleExchangeRate
                     : "",
                 operationdetailSet: formattedOperationdetailSet,
+                clientId: Number(dataSale?.client?.id),
+                clientName: dataSale?.client?.names,
+                parentOperationId: Number(dataSale?.id),
                 totalAmount: Number(dataSale?.totalAmount).toFixed(2),
                 totalFree: Number(dataSale?.totalFree).toFixed(2),
                 totalIgv: Number(dataSale?.totalIgv).toFixed(2),
@@ -376,7 +433,6 @@ function CreditPage() {
     useEffect(() => {
         if (invoiceId) {
             // Aquí puedes manejar el parámetro invoiceId
-            console.log("invoiceId:", invoiceId);
             saleQuery({
                 variables: {
                     pk: Number(invoiceId),
@@ -385,26 +441,11 @@ function CreditPage() {
         }
     }, [invoiceId]);
 
-    // useEffect(() => {
-    //     if (filteredSaleData?.getSaleById?.documentType) {
-    //         console.log(filteredSaleData?.getSaleById?.documentType);
-    //         setCreditNote((prevSale) => ({
-    //             ...prevSale,
-    //             documentType:
-    //                 filteredSaleData?.getSaleById?.documentType?.replace(
-    //                     "A_",
-    //                     ""
-    //                 ),
-    //         }));
-    //     }
-    // }, [filteredSaleData?.getSaleById?.documentType]);
     useEffect(() => {
         const subsidiarySerial = auth?.user?.subsidiarySerial;
         if (subsidiarySerial && sale.documentType) {
             const lastTwoDigits = subsidiarySerial.slice(-2);
             let prefix = "";
-            console.log("documentType", sale.documentType.replace("A_", ""));
-
             switch (sale.documentType.replace("A_", "")) {
                 case "01":
                     prefix = "FN";
@@ -415,7 +456,6 @@ function CreditPage() {
                 default:
                     prefix = "";
             }
-
             const customSerial = `${prefix}${lastTwoDigits}`;
             setCreditNote((prevSale) => ({
                 ...prevSale,
@@ -468,16 +508,17 @@ function CreditPage() {
                                 </div>
                             ) : (
                                 <div className="p-4 md:p-5 space-y-6">
-                                    {invoiceId && <p>Code Hash: {invoiceId}</p>}
-                                    <div className="grid gap-4  lg:grid-cols-5 sm:grid-cols-1 md:grid-cols-3">
-                                        <fieldset className=" sm:col-span-3 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                                            <legend>Motivo de emisión</legend>
-                                            <div className="grid gap-2 lg:grid-cols-3 sm:grid-cols-1 md:grid-cols-1 ">
+                                    <div className="grid gap-6 lg:grid-cols-5 sm:grid-cols-1 md:grid-cols-3">
+                                        <fieldset className="sm:col-span-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                            <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                                Motivo de emisión
+                                            </legend>
+                                            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                                                 {/* Tipo de Nota de Crédito */}
                                                 <div>
                                                     <label
                                                         htmlFor="creditNoteType"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
                                                     >
                                                         Tipo de Nota de Crédito
                                                     </label>
@@ -489,7 +530,7 @@ function CreditPage() {
                                                         onChange={
                                                             handleCreditNote
                                                         }
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                         required
                                                     >
                                                         {creditNoteTypesData?.allCreditNoteTypes?.map(
@@ -514,7 +555,7 @@ function CreditPage() {
                                                 <div>
                                                     <label
                                                         htmlFor="emitDate"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
                                                     >
                                                         Fecha emisión
                                                     </label>
@@ -531,7 +572,7 @@ function CreditPage() {
                                                         onFocus={(e) =>
                                                             e.target.select()
                                                         }
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                         required
                                                     />
                                                 </div>
@@ -539,7 +580,7 @@ function CreditPage() {
                                                 <div>
                                                     <label
                                                         htmlFor="dueDate"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
                                                     >
                                                         Fecha de Venc.
                                                     </label>
@@ -556,7 +597,7 @@ function CreditPage() {
                                                         onFocus={(e) =>
                                                             e.target.select()
                                                         }
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                         required
                                                     />
                                                 </div>
@@ -564,7 +605,7 @@ function CreditPage() {
                                                 <div>
                                                     <label
                                                         htmlFor="serial"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
                                                     >
                                                         Serie
                                                     </label>
@@ -582,7 +623,7 @@ function CreditPage() {
                                                         onFocus={(e) =>
                                                             e.target.select()
                                                         }
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                         autoComplete="off"
                                                     />
                                                 </div>
@@ -590,7 +631,7 @@ function CreditPage() {
                                                 <div>
                                                     <label
                                                         htmlFor="correlative"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
                                                     >
                                                         Numero
                                                     </label>
@@ -608,22 +649,23 @@ function CreditPage() {
                                                         onFocus={(e) =>
                                                             e.target.select()
                                                         }
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                         autoComplete="off"
                                                     />
                                                 </div>
                                             </div>
                                         </fieldset>
-                                        <fieldset className=" sm:col-span-3 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                                            <legend>
+                                        <fieldset className="sm:col-span-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                            <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
                                                 Documento que se modifica
                                             </legend>
-                                            <div className="grid gap-2 lg:grid-cols-3 sm:grid-cols-1 md:grid-cols-1 ">
+
+                                            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                                                 {/* CPE Tipo documento */}
                                                 <div>
                                                     <label
                                                         htmlFor="invoiceDocumentType"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
                                                     >
                                                         Tipo documento
                                                     </label>
@@ -635,35 +677,36 @@ function CreditPage() {
                                                         onChange={handleSale}
                                                         id="invoiceDocumentType"
                                                         name="invoiceDocumentType"
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                         disabled
                                                     >
-                                                        <option value={"07"}>
+                                                        <option value="07">
                                                             NOTA DE CRÉDITO
                                                             ELECTRÓNICA
                                                         </option>
-                                                        <option value={"08"}>
+                                                        <option value="08">
                                                             NOTA DE DÉBITO
                                                             ELECTRÓNICA
                                                         </option>
-                                                        <option value={"09"}>
-                                                            GUIA DE REMISIÓN
+                                                        <option value="09">
+                                                            GUÍA DE REMISIÓN
                                                             REMITENTE
                                                         </option>
-                                                        <option value={"03"}>
+                                                        <option value="03">
                                                             BOLETA DE VENTA
                                                             ELECTRÓNICA
                                                         </option>
-                                                        <option value={"01"}>
+                                                        <option value="01">
                                                             FACTURA ELECTRÓNICA
                                                         </option>
                                                     </select>
                                                 </div>
+
                                                 {/* CPE Serie */}
                                                 <div>
                                                     <label
                                                         htmlFor="invoiceSerial"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
                                                     >
                                                         Serie
                                                     </label>
@@ -677,18 +720,19 @@ function CreditPage() {
                                                         onFocus={(e) =>
                                                             e.target.select()
                                                         }
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                         autoComplete="off"
                                                         disabled
                                                     />
                                                 </div>
+
                                                 {/* CPE Numero */}
                                                 <div>
                                                     <label
                                                         htmlFor="invoiceCorrelative"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
                                                     >
-                                                        Numero
+                                                        Número
                                                     </label>
                                                     <input
                                                         type="text"
@@ -700,7 +744,7 @@ function CreditPage() {
                                                         onFocus={(e) =>
                                                             e.target.select()
                                                         }
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                         autoComplete="off"
                                                         disabled
                                                     />
@@ -708,141 +752,165 @@ function CreditPage() {
                                             </div>
                                         </fieldset>
 
-                                        <div className=" sm:col-span-3 grid gap-2 lg:grid-cols-3 sm:grid-cols-1 md:grid-cols-1 ">
-                                            {/* IGV % */}
+                                        <fieldset className="sm:col-span-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                            <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                                Información adicional
+                                            </legend>
+
                                             <div>
-                                                <label
-                                                    htmlFor="igvType"
-                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                >
-                                                    IGV %{" "}
-                                                </label>
-                                                <select
-                                                    value={creditNote.igvType}
-                                                    name="igvType"
-                                                    onChange={handleCreditNote}
-                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                    required
-                                                >
-                                                    <option value={4}>
-                                                        4% (IVAP)
-                                                    </option>
-                                                    <option value={18}>
-                                                        18%
-                                                    </option>
-                                                    <option value={10}>
-                                                        10% (Ley 31556)
-                                                    </option>
-                                                </select>
-                                            </div>
-                                            {/* Tipo de Operacion */}
-                                            <div>
-                                                <label
-                                                    htmlFor="operationType"
-                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                >
-                                                    Tipo de Operacion
-                                                </label>
-                                                <select
-                                                    value={
-                                                        creditNote.operationType
-                                                    }
-                                                    name="operationType"
-                                                    onChange={handleCreditNote}
-                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                    required
-                                                >
-                                                    {operationTypesData?.allOperationTypes?.map(
-                                                        (
-                                                            o: IOperationType,
-                                                            k: number
-                                                        ) => (
-                                                            <option
-                                                                key={k}
-                                                                value={o.code}
-                                                            >
-                                                                {o.name}
-                                                            </option>
-                                                        )
-                                                    )}
-                                                </select>
-                                            </div>
-                                            {/* Moneda */}
-                                            <div>
-                                                <label
-                                                    htmlFor="currencyType"
-                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                >
-                                                    Moneda
-                                                </label>
-                                                <select
-                                                    value={
-                                                        creditNote.currencyType
-                                                    }
-                                                    name="currencyType"
-                                                    onChange={handleCreditNote}
-                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                >
-                                                    <option value={0} disabled>
+                                                {/* IGV % */}
+                                                <div>
+                                                    <label
+                                                        htmlFor="igvType"
+                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        IGV %{" "}
+                                                    </label>
+                                                    <select
+                                                        value={
+                                                            creditNote.igvType
+                                                        }
+                                                        name="igvType"
+                                                        onChange={
+                                                            handleCreditNote
+                                                        }
+                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        required
+                                                    >
+                                                        <option value={4}>
+                                                            4% (IVAP)
+                                                        </option>
+                                                        <option value={18}>
+                                                            18%
+                                                        </option>
+                                                        <option value={10}>
+                                                            10% (Ley 31556)
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                {/* Tipo de Operacion */}
+                                                <div>
+                                                    <label
+                                                        htmlFor="operationType"
+                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        Tipo de Operacion
+                                                    </label>
+                                                    <select
+                                                        value={
+                                                            creditNote.operationType
+                                                        }
+                                                        name="operationType"
+                                                        onChange={
+                                                            handleCreditNote
+                                                        }
+                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        required
+                                                    >
+                                                        {operationTypesData?.allOperationTypes?.map(
+                                                            (
+                                                                o: IOperationType,
+                                                                k: number
+                                                            ) => (
+                                                                <option
+                                                                    key={k}
+                                                                    value={
+                                                                        o.code
+                                                                    }
+                                                                >
+                                                                    {o.name}
+                                                                </option>
+                                                            )
+                                                        )}
+                                                    </select>
+                                                </div>
+                                                {/* Moneda */}
+                                                <div>
+                                                    <label
+                                                        htmlFor="currencyType"
+                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                    >
                                                         Moneda
-                                                    </option>
-                                                    <option value={"PEN"}>
-                                                        S/ PEN - SOLES
-                                                    </option>
-                                                    <option value={"USD"}>
-                                                        US$ USD - DÓLARES
-                                                        AMERICANOS
-                                                    </option>
-                                                    <option value={"EUR"}>
-                                                        € EUR - EUROS
-                                                    </option>
-                                                    <option value={"GBP"}>
-                                                        £ GBP - LIBRA ESTERLINA
-                                                    </option>
-                                                </select>
+                                                    </label>
+                                                    <select
+                                                        value={
+                                                            creditNote.currencyType
+                                                        }
+                                                        name="currencyType"
+                                                        onChange={
+                                                            handleCreditNote
+                                                        }
+                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                    >
+                                                        <option
+                                                            value={0}
+                                                            disabled
+                                                        >
+                                                            Moneda
+                                                        </option>
+                                                        <option value={"PEN"}>
+                                                            S/ PEN - SOLES
+                                                        </option>
+                                                        <option value={"USD"}>
+                                                            US$ USD - DÓLARES
+                                                            AMERICANOS
+                                                        </option>
+                                                        <option value={"EUR"}>
+                                                            € EUR - EUROS
+                                                        </option>
+                                                        <option value={"GBP"}>
+                                                            £ GBP - LIBRA
+                                                            ESTERLINA
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                {/* Tipo de Cambio */}
+                                                <div>
+                                                    <label
+                                                        htmlFor="saleExchangeRate"
+                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        Tipo de cambio
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        name="saleExchangeRate"
+                                                        id="saleExchangeRate"
+                                                        maxLength={10}
+                                                        value={
+                                                            creditNote.saleExchangeRate
+                                                        }
+                                                        onChange={
+                                                            handleCreditNote
+                                                        }
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        autoComplete="off"
+                                                    />
+                                                </div>
+                                                {/* CPE Cliente */}
+                                                <div className="sm:col-span-2">
+                                                    <label
+                                                        htmlFor="invoiceClientName"
+                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        Cliente
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        id="invoiceClientName"
+                                                        value={
+                                                            sale?.client?.names
+                                                        }
+                                                        onChange={handleSale}
+                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        disabled
+                                                    />
+                                                </div>
                                             </div>
-                                            {/* Tipo de Cambio */}
-                                            <div>
-                                                <label
-                                                    htmlFor="saleExchangeRate"
-                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                >
-                                                    Tipo de cambio
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="saleExchangeRate"
-                                                    id="saleExchangeRate"
-                                                    maxLength={10}
-                                                    value={
-                                                        creditNote.saleExchangeRate
-                                                    }
-                                                    onChange={handleCreditNote}
-                                                    onFocus={(e) =>
-                                                        e.target.select()
-                                                    }
-                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                    autoComplete="off"
-                                                />
-                                            </div>
-                                            {/* CPE Cliente */}
-                                            <div className="sm:col-span-2">
-                                                <label
-                                                    htmlFor="invoiceClientName"
-                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                >
-                                                    Cliente
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id="invoiceClientName"
-                                                    value={sale?.client?.names}
-                                                    onChange={handleSale}
-                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                    disabled
-                                                />
-                                            </div>
-                                        </div>
+                                        </fieldset>
                                     </div>
                                     <SaleDetailList
                                         invoice={creditNote}
@@ -853,6 +921,104 @@ function CreditPage() {
                                         modalAddDetail={modalAddDetail}
                                     />
                                     <SaleTotalList invoice={creditNote} />
+                                    {/* Botón Continuar con el Pago */}
+                                    <div className="flex justify-end py-2">
+                                        <button
+                                            type="button"
+                                            className={`btn-blue px-5 py-2 inline-flex items-center gap-2 ${
+                                                creditNote?.operationdetailSet
+                                                    ?.length === 0
+                                                    ? "cursor-not-allowed"
+                                                    : ""
+                                            }`}
+                                            onClick={async () => {
+                                                // console.log(
+                                                //     "creditNote antes de pagar",
+                                                //     creditNote
+                                                // );
+                                                if (
+                                                    creditNote.creditNoteType ===
+                                                    "NA"
+                                                ) {
+                                                    toast(
+                                                        "Por favor ingrese un motivo de nota de credito.",
+                                                        {
+                                                            hideProgressBar:
+                                                                true,
+                                                            autoClose: 2000,
+                                                            type: "warning",
+                                                        }
+                                                    );
+                                                    return;
+                                                }
+                                                if (
+                                                    creditNote.clientId &&
+                                                    Number(
+                                                        creditNote.clientId
+                                                    ) === 0
+                                                ) {
+                                                    toast(
+                                                        "Por favor ingrese un cliente.",
+                                                        {
+                                                            hideProgressBar:
+                                                                true,
+                                                            autoClose: 2000,
+                                                            type: "warning",
+                                                        }
+                                                    );
+                                                    return;
+                                                }
+                                                if (
+                                                    creditNote
+                                                        .operationdetailSet
+                                                        .length === 0
+                                                ) {
+                                                    toast(
+                                                        "Por favor ingrese al menos un item.",
+                                                        {
+                                                            hideProgressBar:
+                                                                true,
+                                                            autoClose: 2000,
+                                                            type: "warning",
+                                                        }
+                                                    );
+                                                    return;
+                                                }
+                                                if (!creditNote.serial) {
+                                                    toast(
+                                                        "Por favor ingrese la serie.",
+                                                        {
+                                                            hideProgressBar:
+                                                                true,
+                                                            autoClose: 2000,
+                                                            type: "warning",
+                                                        }
+                                                    );
+                                                    return;
+                                                }
+
+                                                modalWayPay.show();
+                                                setCreditNote({
+                                                    ...creditNote,
+                                                    totalPayed: "",
+                                                    cashflowSet: [],
+                                                });
+                                                setCashFlow({
+                                                    ...cashFlow,
+                                                    total: Number(
+                                                        creditNote.totalToPay
+                                                    ),
+                                                });
+                                            }}
+                                            disabled={
+                                                creditNote?.operationdetailSet
+                                                    ?.length === 0
+                                            }
+                                        >
+                                            <Save />
+                                            CONTINUAR CON EL PAGO
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -873,6 +1039,19 @@ function CreditPage() {
                 initialStateSaleDetail={initialStateSaleDetail}
                 typeAffectationsData={typeAffectationsData}
                 productsData={productsData}
+            />
+            <WayPayForm
+                modalWayPay={modalWayPay}
+                setModalWayPay={setModalWayPay}
+                cashFlow={cashFlow}
+                setCashFlow={setCashFlow}
+                initialStateCashFlow={initialStateCashFlow}
+                initialStateSale={initialStateSale}
+                invoice={creditNote}
+                setInvoice={setCreditNote}
+                jwtToken={auth?.jwtToken}
+                authContext={authContext}
+                wayPaysData={wayPaysData}
             />
         </>
     );

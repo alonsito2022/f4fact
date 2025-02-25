@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import UnitList from "./UnitList";
 import UnitForm from "./UnitForm";
 import UnitFilter from "./UnitFilter";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 import { useQuery, gql } from "@apollo/client";
 
@@ -54,13 +55,19 @@ function UnitPage() {
     const [searchField, setSearchField] = useState<"shortName" | "code">(
         "shortName"
     );
-    const { data: session, status } = useSession();
-    const [jwtToken, setJwtToken] = useState<string | null>(null);
-
+    const auth = useAuth();
+    const authContext = useMemo(
+        () => ({
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
+            },
+        }),
+        [auth?.jwtToken]
+    );
     useEffect(() => {
-        if (session?.user) {
-            const user = session.user as IUser;
-            setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
+        if (auth?.user) {
+            const user = auth.user as IUser;
 
             setFilterObj((prev) => ({
                 ...prev,
@@ -70,20 +77,15 @@ function UnitPage() {
                 isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
             }));
         }
-    }, [session]);
+    }, [auth?.user]);
 
     const {
         loading: unitsLoading,
         error: unitsError,
         data: unitsData,
     } = useQuery(UNITS_QUERY, {
-        context: {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: jwtToken ? `JWT ${jwtToken}` : "",
-            },
-        },
-        skip: !jwtToken, // Esto evita que la consulta se ejecute si no hay token
+        context: authContext,
+        skip: !auth?.jwtToken, // Esto evita que la consulta se ejecute si no hay token
     });
 
     const {
@@ -91,12 +93,7 @@ function UnitPage() {
         error: unitError,
         data: unitData,
     } = useQuery(UNIT_QUERY, {
-        context: {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: jwtToken ? `JWT ${jwtToken}` : "",
-            },
-        },
+        context: authContext,
         variables: { pk: unit.id },
         onError: (err) => console.error("Error to get unit:", err), // Log the error for debugging
         skip: unit.id === 0,
@@ -169,7 +166,7 @@ function UnitPage() {
                 unit={unit}
                 setUnit={setUnit}
                 initialState={initialState}
-                jwtToken={jwtToken}
+                jwtToken={auth?.jwtToken}
                 UNITS_QUERY={UNITS_QUERY}
             />
         </>

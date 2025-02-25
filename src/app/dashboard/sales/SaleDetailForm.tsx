@@ -14,9 +14,9 @@ const PRODUCT_DETAIL_QUERY = gql`
     query ($productId: Int!) {
         productDetailByProductId(productId: $productId) {
             remainingQuantity
-            priceWithoutIgv1
-            priceWithIgv1
-            productTariffId1
+            priceWithoutIgv3
+            priceWithIgv3
+            productTariffId3
             typeAffectationId
         }
     }
@@ -76,7 +76,7 @@ function SaleDetailForm({
                     const productDetail = data.productDetailByProductId;
                     if (productDetail) {
                         let totalValue =
-                            Number(productDetail.priceWithoutIgv1) *
+                            Number(productDetail.priceWithoutIgv3) *
                                 Number(invoiceDetail.quantity) -
                             Number(invoiceDetail.totalDiscount);
                         let foundTypeAffectation =
@@ -96,15 +96,15 @@ function SaleDetailForm({
                         setInvoiceDetail({
                             ...invoiceDetail,
                             productTariffId: Number(
-                                productDetail.productTariffId1
+                                productDetail.productTariffId3
                             ),
                             productId: Number(product.id),
                             productName: product.name,
                             unitValue: Number(
-                                productDetail.priceWithoutIgv1
+                                productDetail.priceWithoutIgv3
                             ).toFixed(2),
                             unitPrice: Number(
-                                productDetail.priceWithIgv1
+                                productDetail.priceWithIgv3
                             ).toFixed(2),
                             igvPercentage: Number(igvPercentage).toFixed(2),
                             totalValue: Number(totalValue).toFixed(2),
@@ -184,6 +184,19 @@ function SaleDetailForm({
                 console.log("sin datalist");
             }
         } else if (name === "quantity") {
+            if (invoice?.documentType === "07") {
+                if (Number(value) > Number(invoiceDetail?.quantityAvailable)) {
+                    toast(
+                        "La cantidad no puede ser mayor al máximo permitido.",
+                        {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        }
+                    );
+                    return;
+                }
+            }
             const formattedValue = value.replace(/[^0-9]/g, "").slice(0, 6);
             const numberValue = Number(formattedValue);
             let totalValue =
@@ -346,7 +359,6 @@ function SaleDetailForm({
                             >
                                 <svg
                                     className="w-3 h-3"
-                                    aria-hidden="true"
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 14 14"

@@ -383,7 +383,9 @@ export interface IOperationDetail {
     totalValue?: number;
     totalIgv?: number;
     totalDiscount?: number;
-    temporaryId?: number;
+    quantityReturned?: number; // for credit note
+    quantityAvailable?: number; // for credit note
+    temporaryId?: number; // for credit note
     typeAffectationId?: number;
     productTariffId?: number;
     igvPercentage?: number;

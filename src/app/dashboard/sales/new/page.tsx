@@ -104,6 +104,8 @@ const initialStateSale = {
     totalToPay: "",
     totalPayed: "",
     totalTurned: "",
+    creditNoteType: "NA",
+    parentOperationId: 0,
 };
 const initialStateSaleDetail = {
     id: 0,
@@ -111,6 +113,7 @@ const initialStateSaleDetail = {
     productName: "",
 
     quantity: "",
+    maxQuantity: "",
 
     unitValue: "",
     unitPrice: "",
@@ -912,9 +915,10 @@ function NewSalePage() {
                 setCashFlow={setCashFlow}
                 initialStateCashFlow={initialStateCashFlow}
                 initialStateSale={initialStateSale}
-                sale={sale}
-                setSale={setSale}
+                invoice={sale}
+                setInvoice={setSale}
                 jwtToken={auth?.jwtToken}
+                authContext={authContext}
                 wayPaysData={wayPaysData}
             />
         </>

@@ -5,7 +5,7 @@ import ProductForm from "./ProductForm";
 import ProductFilter from "./ProductFilter";
 import ProductCriteriaForm from "./ProductCriteriaForm";
 import Breadcrumb from "@/components/Breadcrumb";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { IUser, IProduct, ITypeAffectation } from "@/app/types";
 import { Modal, ModalOptions } from "flowbite";
 import { gql, useLazyQuery, useQuery } from "@apollo/client";
@@ -101,13 +101,21 @@ function ProductPage() {
     const [productFilterObj, setProductFilterObj] = useState(
         initialStateProductFilterObj
     );
-    const { data: session } = useSession();
-    const [jwtToken, setJwtToken] = useState<string | null>(null);
+    const auth = useAuth();
+
+    const authContext = useMemo(
+        () => ({
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
+            },
+        }),
+        [auth?.jwtToken]
+    );
 
     useEffect(() => {
-        if (session?.user) {
-            const user = session.user as IUser;
-            setJwtToken((prev) => prev || (user.accessToken as string)); // Solo cambia si es null
+        if (auth?.user) {
+            const user = auth?.user as IUser;
 
             setProductFilterObj((prev) => ({
                 ...prev,
@@ -117,17 +125,7 @@ function ProductPage() {
                 isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
             }));
         }
-    }, [session]);
-
-    const authContext = useMemo(
-        () => ({
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: jwtToken ? `JWT ${jwtToken}` : "",
-            },
-        }),
-        [jwtToken]
-    );
+    }, [auth?.user]);
 
     const [products, setProducts] = useState<IProduct[]>([]);
     const [product, setProduct] = useState(initialStateProduct);
@@ -139,10 +137,10 @@ function ProductPage() {
     );
 
     useEffect(() => {
-        if (jwtToken) {
+        if (auth?.jwtToken) {
             fetchProducts(); // Llama a productsQuery() a través de fetchProducts()
         }
-    }, [jwtToken]);
+    }, [auth?.jwtToken]);
 
     const {
         loading: typeAffectationsLoading,
@@ -150,7 +148,7 @@ function ProductPage() {
         data: typeAffectationsData,
     } = useQuery(TYPE_AFFECTATION_QUERY, {
         context: authContext,
-        skip: !jwtToken, // Esto evita que la consulta se ejecute si no hay token
+        skip: !auth?.jwtToken, // Esto evita que la consulta se ejecute si no hay token
         onError: (err) => console.error("Error in typeAffectations:", err),
     });
 
@@ -212,7 +210,7 @@ function ProductPage() {
                         setProduct={setProduct}
                         fetchProducts={fetchProducts}
                         authContext={authContext}
-                        jwtToken={jwtToken}
+                        jwtToken={auth?.jwtToken}
                     />
                 </div>
             </div>
@@ -232,7 +230,7 @@ function ProductPage() {
                                     filteredProducts={filteredProducts}
                                     modalProduct={modalProduct}
                                     setProduct={setProduct}
-                                    jwtToken={jwtToken}
+                                    jwtToken={auth?.jwtToken}
                                 />
                             )}
                         </div>
@@ -246,7 +244,7 @@ function ProductPage() {
                 product={product}
                 setProduct={setProduct}
                 initialStateProduct={initialStateProduct}
-                jwtToken={jwtToken}
+                jwtToken={auth?.jwtToken}
                 typeAffectationsData={typeAffectationsData}
                 PRODUCTS_QUERY={PRODUCTS_QUERY}
                 productFilterObj={productFilterObj}
