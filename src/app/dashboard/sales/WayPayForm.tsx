@@ -166,15 +166,23 @@ function WayPayForm({
         [cashFlow, setCashFlow]
     );
     const handleAddWayPay = useCallback(() => {
-        let newCashFlow = {
-            ...cashFlow,
-            temporaryId: invoice.cashflowSet.length + 1,
-        };
-        setInvoice((prevSale: IOperation) => ({
-            ...prevSale,
-            cashflowSet: [...prevSale.cashflowSet!, newCashFlow],
-        }));
-        setCashFlow(initialStateCashFlow);
+        if (Number(cashFlow.total) > 0) {
+            let newCashFlow = {
+                ...cashFlow,
+                temporaryId: invoice.cashflowSet.length + 1,
+            };
+            setInvoice((prevSale: IOperation) => ({
+                ...prevSale,
+                cashflowSet: [...prevSale.cashflowSet!, newCashFlow],
+            }));
+            setCashFlow(initialStateCashFlow);
+        } else {
+            toast("Valor no valido", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "error",
+            });
+        }
     }, [
         cashFlow,
         invoice.cashflowSet,
@@ -252,7 +260,9 @@ function WayPayForm({
                     (item: any) => parseFloat(item.totalToPay) || 0
                 ),
                 wayPaySet: invoice.cashflowSet.map((item: any) => item.wayPay),
-                totalSet: invoice.cashflowSet.map((item: any) => item.total),
+                totalSet: invoice.cashflowSet.map((item: any) =>
+                    Number(item.total)
+                ),
                 descriptionSet: invoice.cashflowSet.map(
                     (item: any) => item.description || ""
                 ),
@@ -275,7 +285,7 @@ function WayPayForm({
                 creditNoteType: invoice.creditNoteType,
                 parentOperationId: Number(invoice.parentOperationId) || 0,
             };
-            // console.log("variables al guardar", variables);
+            console.log("variables al guardar", variables);
             const { data, errors } = await createSale({
                 variables: variables,
             });
@@ -441,29 +451,29 @@ function WayPayForm({
                     {invoice?.cashflowSet?.length > 0 ? (
                         <div className="overflow-hidden shadow rounded-lg max-h-[30vh] overflow-y-auto">
                             <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
-                                <thead className="bg-gray-100 dark:bg-gray-700">
+                                <thead className="bg-yellow-300 dark:bg-cyan-500">
                                     <tr>
                                         <th
                                             scope="col"
-                                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
                                         >
                                             TIPO
                                         </th>
                                         <th
                                             scope="col"
-                                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
                                         >
                                             IMPORTE
                                         </th>
                                         <th
                                             scope="col"
-                                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
                                         >
                                             NOTA
                                         </th>
                                         <th
                                             scope="col"
-                                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
                                         ></th>
                                     </tr>
                                 </thead>
@@ -472,7 +482,7 @@ function WayPayForm({
                                         (item: ICashFlow, c: number) => (
                                             <tr
                                                 key={c}
-                                                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                                                className="bg-yellow-400 border-b dark:bg-cyan-700 dark:border-gray-700 hover:bg-cyan-100"
                                             >
                                                 <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
                                                     {wayPaysData?.allWayPays?.find(
