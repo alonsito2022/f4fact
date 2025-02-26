@@ -128,25 +128,18 @@ function ProductForm({
     product,
     setProduct,
     initialStateProduct,
-    jwtToken,
+    auth,
+    authContext,
     typeAffectationsData,
     PRODUCTS_QUERY,
-    productFilterObj,
 }: any) {
-    const getAuthContext = () => ({
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: jwtToken ? `JWT ${jwtToken}` : "",
-        },
-    });
-
     const {
         loading: unitsLoading,
         error: unitsError,
         data: unitsData,
     } = useQuery(UNIT_QUERY, {
-        context: getAuthContext(),
-        skip: !jwtToken,
+        context: authContext,
+        skip: !auth?.jwtToken,
     });
 
     function useCustomMutation(
@@ -154,21 +147,15 @@ function ProductForm({
         refetchQuery: DocumentNode
     ) {
         const getVariables = () => ({
-            criteria: productFilterObj.criteria,
-            searchText: productFilterObj.searchText,
-            available: productFilterObj.available,
-            activeType: productFilterObj.activeType,
-            subjectPerception: productFilterObj.subjectPerception,
-            typeAffectationId: Number(productFilterObj.typeAffectationId),
-            limit: Number(productFilterObj.limit),
+            subsidiaryId: Number(auth?.user?.subsidiaryId),
         });
 
         return useMutation(mutation, {
-            context: getAuthContext(),
+            context: authContext,
             refetchQueries: () => [
                 {
                     query: refetchQuery,
-                    context: getAuthContext(),
+                    context: authContext,
                     variables: getVariables(),
                 },
             ],
@@ -226,6 +213,7 @@ function ProductForm({
         // }
 
         if (Number(product.id) !== 0) {
+            // for updating
             const values = {
                 id: Number(product.id),
                 code: product.code,
@@ -256,7 +244,6 @@ function ProductForm({
             const { data, errors } = await updateProduct({
                 variables: values,
             });
-            console.log(data, errors);
             if (errors) {
                 toast(errors.toString(), {
                     hideProgressBar: true,
@@ -273,6 +260,7 @@ function ProductForm({
                 modalProduct.hide();
             }
         } else {
+            // for creating
             const values = {
                 code: product.code,
                 name: product.name,
@@ -395,6 +383,7 @@ function ProductForm({
                                 />
 
                                 <div className="grid gap-4 mb-4 sm:grid-cols-6">
+                                    {/* Nombre del producto */}
                                     <div className="sm:col-span-4">
                                         <label
                                             htmlFor="name"
@@ -416,7 +405,7 @@ function ProductForm({
                                             autoComplete="off"
                                         />
                                     </div>
-
+                                    {/* Tipo */}
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="activeType"
@@ -444,7 +433,7 @@ function ProductForm({
                                             </option>
                                         </select>
                                     </div>
-
+                                    {/* Código Producto Sunat */}
                                     <div className="sm:col-span-2 hidden">
                                         <label
                                             htmlFor="code"
@@ -464,7 +453,7 @@ function ProductForm({
                                             autoComplete="off"
                                         />
                                     </div>
-
+                                    {/* EAN */}
                                     <div className="sm:col-span-2 hidden">
                                         <label
                                             htmlFor="ean"
@@ -483,7 +472,7 @@ function ProductForm({
                                             className="form-control"
                                         />
                                     </div>
-
+                                    {/* Peso */}
                                     <div className="sm:col-span-2 hidden">
                                         <label
                                             htmlFor="weightInKilograms"
@@ -501,7 +490,7 @@ function ProductForm({
                                             className="form-control"
                                         />
                                     </div>
-
+                                    {/* Tipo afectacion */}
                                     <div className="sm:col-span-6">
                                         <label
                                             htmlFor="typeAffectationId"
@@ -535,7 +524,7 @@ function ProductForm({
                                             )}
                                         </select>
                                     </div>
-
+                                    {/*Unidad de medida SUNAT */}
                                     <div className="sm:col-span-3">
                                         <label
                                             htmlFor="minimumUnitId"

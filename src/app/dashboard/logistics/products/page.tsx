@@ -50,6 +50,7 @@ const initialStateProductFilterObj = {
     subjectPerception: false,
     typeAffectationId: 0,
     subsidiaryId: "",
+    subsidiaryName: "",
     isSuperuser: false,
     limit: 50,
 };
@@ -119,9 +120,7 @@ function ProductPage() {
 
             setProductFilterObj((prev) => ({
                 ...prev,
-                subsidiaryId:
-                    prev.subsidiaryId ||
-                    (user.isSuperuser ? "0" : user.subsidiaryId!),
+                subsidiaryId: user.subsidiaryId! || "0",
                 isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
             }));
         }
@@ -162,11 +161,9 @@ function ProductPage() {
     ] = useLazyQuery(PRODUCTS_QUERY, {
         context: authContext,
         variables: {
-            subsidiaryId: Number(productFilterObj.subsidiaryId),
+            subsidiaryId: Number(productFilterObj?.subsidiaryId),
         },
-        onCompleted: (data) => {
-            console.log(data.allProducts.length);
-        },
+        // onCompleted: (data) => {},
         onError: (err) => console.error("Error in products:", err),
     });
 
@@ -230,7 +227,7 @@ function ProductPage() {
                                     filteredProducts={filteredProducts}
                                     modalProduct={modalProduct}
                                     setProduct={setProduct}
-                                    jwtToken={auth?.jwtToken}
+                                    authContext={authContext}
                                 />
                             )}
                         </div>
@@ -244,10 +241,10 @@ function ProductPage() {
                 product={product}
                 setProduct={setProduct}
                 initialStateProduct={initialStateProduct}
-                jwtToken={auth?.jwtToken}
+                auth={auth}
+                authContext={authContext}
                 typeAffectationsData={typeAffectationsData}
                 PRODUCTS_QUERY={PRODUCTS_QUERY}
-                productFilterObj={productFilterObj}
             />
             <ProductCriteriaForm
                 modalCriteria={modalCriteria}

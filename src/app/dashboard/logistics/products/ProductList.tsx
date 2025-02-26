@@ -1,8 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useCallback } from "react";
 import Edit from "@/components/icons/Edit";
 import { IProduct } from "@/app/types";
 import { gql, useLazyQuery } from "@apollo/client";
-import { toast } from "react-toastify";
 
 const PRODUCT_QUERY = gql`
     query ($pk: ID!) {
@@ -35,12 +34,8 @@ function ProductList({
     filteredProducts,
     modalProduct,
     setProduct,
-    jwtToken,
+    authContext,
 }: any) {
-    const hostname = useMemo(() => {
-        return process.env.NEXT_PUBLIC_BASE_API || "";
-    }, []);
-
     const [
         productQuery,
         {
@@ -49,30 +44,34 @@ function ProductList({
             data: foundProductData,
         },
     ] = useLazyQuery(PRODUCT_QUERY, {
-        context: {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: jwtToken ? `JWT ${jwtToken}` : "",
-            },
-        },
+        context: authContext,
     });
 
-    const handleEditProduct = async (productId: number) => {
-        const result = await productQuery({
-            variables: { pk: Number(productId) },
-        });
-        const { data, error } = result;
-        if (error) {
-            toast(error?.message, {
-                hideProgressBar: true,
-                autoClose: 2000,
-                type: "error",
+    const handleEditProduct = useCallback(
+        async (productId: number) => {
+            const { data } = await productQuery({
+                variables: { pk: Number(productId) },
             });
-        } else {
-            setProduct(data.productById);
+            const productFound = data.productById;
+            const updatedProduct = {
+                ...productFound,
+                code: productFound?.code ?? "",
+                ean: productFound?.ean ?? "",
+                activeType: String(productFound?.activeType).replace("A_", ""),
+                priceWithIgv1: Number(productFound?.priceWithIgv1).toFixed(2),
+                priceWithoutIgv1: Number(
+                    productFound?.priceWithoutIgv1
+                ).toFixed(2),
+                priceWithIgv3: Number(productFound?.priceWithIgv3).toFixed(2),
+                priceWithoutIgv3: Number(
+                    productFound?.priceWithoutIgv3
+                ).toFixed(2),
+            };
+            setProduct(updatedProduct);
             modalProduct.show();
-        }
-    };
+        },
+        [productQuery, setProduct, modalProduct]
+    );
     if (foundProductLoading) return <p>Loading...</p>;
     if (foundProductError) return <p>Error: {foundProductError.message}</p>;
 

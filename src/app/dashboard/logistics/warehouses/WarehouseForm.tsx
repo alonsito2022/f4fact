@@ -9,7 +9,7 @@ function WarehouseForm({
     setWarehouse,
     fetchWarehouses,
     initialState,
-    accessToken,
+    jwtToken,
 }: any) {
     const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
 
@@ -41,7 +41,7 @@ function WarehouseForm({
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `JWT ${accessToken}`,
+                    Authorization: `JWT ${jwtToken}`,
                 },
                 body: JSON.stringify({ query: queryFetch }),
             })
@@ -71,7 +71,7 @@ function WarehouseForm({
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `JWT ${accessToken}`,
+                    Authorization: `JWT ${jwtToken}`,
                 },
                 body: JSON.stringify({ query: queryFetch }),
             })
@@ -104,7 +104,7 @@ function WarehouseForm({
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `JWT ${accessToken}`,
+                Authorization: `JWT ${jwtToken}`,
             },
             body: JSON.stringify({
                 query: queryfetch,
@@ -118,10 +118,10 @@ function WarehouseForm({
     }
 
     useEffect(() => {
-        if (accessToken.length > 0) {
+        if (jwtToken) {
             fetchSubsidiaries();
         }
-    }, [accessToken]);
+    }, [jwtToken]);
 
     return (
         <>

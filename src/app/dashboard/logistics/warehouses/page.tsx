@@ -5,7 +5,8 @@ import WarehouseForm from "./WarehouseForm";
 import WarehouseFilter from "./WarehouseFilter";
 import Breadcrumb from "@/components/Breadcrumb";
 import { Modal, ModalOptions } from "flowbite";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/providers/AuthProvider";
+
 import { IUser, IWarehouse } from "@/app/types";
 
 const initialState = {
@@ -23,16 +24,14 @@ function WarehousePage() {
     const [searchField, setSearchField] = useState<"name" | "subsidiaryName">(
         "name"
     );
-    const [accessToken, setAccessToken] = useState<string>("");
-    const { data: session } = useSession();
-    const u = session?.user as IUser;
+    const auth = useAuth();
 
     async function fetchWarehouses() {
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `JWT ${accessToken}`,
+                Authorization: `JWT ${auth?.jwtToken}`,
             },
             body: JSON.stringify({
                 query: `
@@ -59,7 +58,7 @@ function WarehousePage() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `JWT ${accessToken}`,
+                Authorization: `JWT ${auth?.jwtToken}`,
             },
             body: JSON.stringify({
                 query: `
@@ -81,9 +80,8 @@ function WarehousePage() {
     }
 
     useEffect(() => {
-        if (u !== undefined && u.accessToken != undefined)
-            setAccessToken(u.accessToken);
-    }, [u]);
+        if (auth?.user) fetchWarehouses();
+    }, [auth?.user]);
 
     useEffect(() => {
         if (modal == null) {
@@ -99,12 +97,6 @@ function WarehousePage() {
             setModal(new Modal($targetEl, options));
         }
     }, []);
-
-    useEffect(() => {
-        if (accessToken.length > 0) {
-            fetchWarehouses();
-        }
-    }, [accessToken]);
 
     const filteredWarehouses = useMemo(() => {
         return warehouses.filter((w: IWarehouse) =>
@@ -153,7 +145,7 @@ function WarehousePage() {
                 setWarehouse={setWarehouse}
                 fetchWarehouses={fetchWarehouses}
                 initialState={initialState}
-                accessToken={accessToken}
+                jwtToken={auth?.jwtToken}
             />
         </>
     );
