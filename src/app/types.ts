@@ -62,6 +62,7 @@ export interface ICompany {
     guide?: boolean;
     app?: boolean;
     ose?: boolean;
+    deductionAccount?: String;
 }
 export interface IPerson {
     id: number;

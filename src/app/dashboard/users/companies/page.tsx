@@ -30,6 +30,7 @@ const initialState = {
   percentageIgv: 18,
   idClient:  "",
   tokenClient:  "",
+  deductionAccount:  "",
   isEnabled: false,
   isProduction: false,
   productionDate: "",
