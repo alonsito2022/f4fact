@@ -28,6 +28,8 @@ const initialState = {
   emissionReceiptWithPreviousDate: 0,
   includeIgv: false,
   percentageIgv: 18,
+  idClient:  "",
+  tokenClient:  "",
   isEnabled: false,
   isProduction: false,
   productionDate: "",
