@@ -45,6 +45,8 @@ export interface ICompany {
     emissionReceiptWithPreviousDate?: number;
     includeIgv?: boolean;
     percentageIgv?: number;
+    idClient?: string;
+    tokenClient?: string;
     isEnabled?: boolean;
     isProduction?: boolean;
     productionDate?: string;
