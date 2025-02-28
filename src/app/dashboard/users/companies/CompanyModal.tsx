@@ -25,8 +25,8 @@ const CREATE_COMPANY = gql`
     $certification: String!, # Upload,  
     $certificationExpirationDate: String!,
     $certificationKey: String!, #Upload,    
-    $idClient: String!,
-    $tokenClient: String!,
+    $guideClientId: String!,
+    $guideClientSecret: String!,
     $deductionAccount: String!,
     $withStock: Boolean!,
     $catalog: Boolean!,
@@ -57,8 +57,8 @@ const CREATE_COMPANY = gql`
       certification: $certification, 
       certificationExpirationDate: $certificationExpirationDate,
       certificationKey: $certificationKey,      
-      idClient: $idClient,
-      tokenClient: $tokenClient,
+      guideClientId: $guideClientId,
+      guideClientSecret: $guideClientSecret,
       deductionAccount: $deductionAccount,
       withStock: $withStock,
       catalog: $catalog,
@@ -96,8 +96,8 @@ const UPDATE_COMPANY = gql`
     $certification: String!, #Upload,  
     $certificationExpirationDate: String!,
     $certificationKey: String!, #Upload,
-    $idClient: String!,
-    $tokenClient: String!,
+    $guideClientId: String!,
+    $guideClientSecret: String!,
     $deductionAccount: String!,
     $withStock: Boolean!,
     $catalog: Boolean!,
@@ -129,8 +129,8 @@ const UPDATE_COMPANY = gql`
       certification: $certification, 
       certificationExpirationDate: $certificationExpirationDate,
       certificationKey: $certificationKey,
-      idClient: $idClient,
-      tokenClient: $tokenClient,
+      guideClientId: $guideClientId,
+      guideClientSecret: $guideClientSecret,
       deductionAccount: $deductionAccount,
       withStock: $withStock,
       catalog: $catalog,
@@ -248,8 +248,8 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
                         certification: company.certification || "" ,
                         certificationExpirationDate: company.certificationExpirationDate,
                         certificationKey: company.certificationKey || "",                        
-                        idClient: company.idClient,
-                        tokenClient: company.tokenClient,
+                        guideClientId: company.guideClientId,
+                        guideClientSecret: company.guideClientSecret,
                         deductionAccount: company.deductionAccount,
                         withStock: company.withStock,
                         catalog: company.catalog,
@@ -300,8 +300,8 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
                         certification: company.certification || "" ,
                         certificationExpirationDate: company.certificationExpirationDate,
                         certificationKey: company.certificationKey || "",
-                        idClient: company.idClient,
-                        tokenClient: company.tokenClient,
+                        guideClientId: company.guideClientId,
+                        guideClientSecret: company.guideClientSecret,
                         deductionAccount: company.deductionAccount,
                         withStock: company.withStock,                        
                         catalog: company.catalog,
@@ -510,12 +510,12 @@ function CompanyModal({ modal, setModal, jwtToken, company, setCompany, initialS
                                             <label htmlFor="certificationExpirationDate" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Fecha expiración</label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <input type="text" name="idClient" id="idClient" maxLength={500} value={company?.idClient ? company?.idClient : ''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-                                            <label htmlFor="idClient" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">ID cliente</label>
+                                            <input type="text" name="guideClientId" id="guideClientId" maxLength={500} value={company?.guideClientId ? company?.guideClientId : ''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                                            <label htmlFor="guideClientId" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">ID Guia cliente</label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <input type="text" name="tokenClient" id="tokenClient" maxLength={500} value={company?.tokenClient ? company.tokenClient : ''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
-                                            <label htmlFor="tokenClient" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Token Cliente</label>
+                                            <input type="text" name="guideClientSecret" id="guideClientSecret" maxLength={500} value={company?.guideClientSecret ? company.guideClientSecret : ''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />
+                                            <label htmlFor="guideClientSecret" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Token Guia Cliente</label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
                                             <input type="text" name="deductionAccount" id="deductionAccount" maxLength={100} value={company?.deductionAccount ? company.deductionAccount : ''} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " />

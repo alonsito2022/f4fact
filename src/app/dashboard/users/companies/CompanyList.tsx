@@ -35,8 +35,8 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
             certificationKey
             certificationExpirationDate
             deductionAccount
-            idClient
-            tokenClient
+            guideClientId
+            guideClientSecret
             withStock
             catalog
             invoiceF
