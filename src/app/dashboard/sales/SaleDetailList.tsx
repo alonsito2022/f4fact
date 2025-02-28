@@ -1,6 +1,7 @@
 import { IOperationDetail } from "@/app/types";
 import Delete from "@/components/icons/Delete";
 import Edit from "@/components/icons/Edit";
+import SunatCancel from "@/components/icons/SunatCancel";
 import React, { useEffect } from "react";
 
 function SaleDetailList({
@@ -100,35 +101,35 @@ function SaleDetailList({
     return (
         <div className="overflow-hidden shadow-lg rounded-lg bg-white dark:bg-gray-800">
             <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
-                <thead className="bg-gray-100 dark:bg-gray-700">
+                <thead className="bg-yellow-300 dark:bg-cyan-500">
                     <tr>
                         <th
                             scope="col"
-                            className="p-3 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                            className="p-3 text-xs font-medium text-left text-gray-600 uppercase dark:text-gray-800"
                         >
                             Descripción
                         </th>
                         <th
                             scope="col"
-                            className="p-3 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                            className="p-3 text-xs font-medium text-left text-gray-600 uppercase dark:text-gray-800"
                         >
                             Cantidad
                         </th>
                         <th
                             scope="col"
-                            className="p-3 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                            className="p-3 text-xs font-medium text-left text-gray-600 uppercase dark:text-gray-800"
                         >
                             C/U
                         </th>
                         <th
                             scope="col"
-                            className="p-3 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                            className="p-3 text-xs font-medium text-left text-gray-600 uppercase dark:text-gray-800"
                         >
                             Subtotal
                         </th>
                         <th
                             scope="col"
-                            className="p-3 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                            className="p-3 text-xs font-medium text-left text-gray-600 uppercase dark:text-gray-800"
                         ></th>
                     </tr>
                 </thead>
@@ -137,7 +138,7 @@ function SaleDetailList({
                         (item: any, i: number) => (
                             <tr
                                 key={i}
-                                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                                className="bg-yellow-400 border-b dark:bg-cyan-700 dark:border-gray-700 hover:bg-cyan-100 "
                             >
                                 <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
                                     {item.productName} - {item.id} -{" "}

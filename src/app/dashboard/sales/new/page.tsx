@@ -230,6 +230,7 @@ function NewSalePage() {
 
     useEffect(() => {
         if (auth?.user?.companyPercentageIgv) {
+            console.log(auth.jwtToken);
             setSale((prevSale) => ({
                 ...prevSale,
                 igvType: Number(auth?.user?.companyPercentageIgv),
