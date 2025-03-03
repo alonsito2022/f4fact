@@ -462,311 +462,344 @@ function NewSalePage() {
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden shadow-lg rounded-lg">
                             <div className="p-4 md:p-5 space-y-6">
-                                <input
-                                    type="hidden"
-                                    name="id"
-                                    id="id"
-                                    value={sale.id}
-                                />
-                                <div className="grid gap-4  lg:grid-cols-5 sm:grid-cols-1 md:grid-cols-3">
-                                    {/* IGV % */}
-                                    <div>
-                                        <label
-                                            htmlFor="igvType"
-                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        >
-                                            IGV %{" "}
-                                        </label>
-                                        <select
-                                            value={sale.igvType}
-                                            name="igvType"
-                                            onChange={handleSale}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            required
-                                        >
-                                            <option value={18}>18%</option>
-                                            <option value={10}>
-                                                10% (Ley 31556)
-                                            </option>
-                                            <option value={4}>4% (IVAP)</option>
-                                        </select>
-                                    </div>
-                                    {/* Tipo documento */}
-                                    <div>
-                                        <label
-                                            htmlFor="documentType"
-                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        >
-                                            Tipo documento
-                                        </label>
-                                        <select
-                                            value={sale.documentType}
-                                            name="documentType"
-                                            onChange={handleSale}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            required
-                                        >
-                                            <option value={"01"}>
-                                                FACTURA ELECTRÓNICA
-                                            </option>
-                                            <option value={"03"}>
-                                                BOLETA DE VENTA ELECTRÓNICA
-                                            </option>
-                                            <option value={"07"}>
-                                                NOTA DE CRÉDITO ELECTRÓNICA
-                                            </option>
-                                            <option value={"08"}>
-                                                NOTA DE DÉBITO ELECTRÓNICA
-                                            </option>
-                                            <option value={"09"}>
-                                                GUIA DE REMISIÓN REMITENTE
-                                            </option>
-                                        </select>
-                                    </div>
-                                    {/* Fecha emisión */}
-                                    <div>
-                                        <label
-                                            htmlFor="emitDate"
-                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        >
-                                            Fecha emisión
-                                        </label>
-                                        <input
-                                            type="date"
-                                            name="emitDate"
-                                            id="emitDate"
-                                            value={sale.emitDate}
-                                            onChange={handleSale}
-                                            onFocus={(e) => e.target.select()}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            required
-                                        />
-                                    </div>
-                                    {/* Cliente */}
-                                    <div className="md:col-span-4">
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Cliente
-                                        </label>
-                                        <div className="relative w-full">
-                                            <input
-                                                type="text"
-                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                maxLength={200}
-                                                value={sale.clientName}
-                                                name="clientName"
-                                                onChange={handleSale}
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                autoComplete="off"
-                                                disabled={personsLoading}
-                                                placeholder="Buscar cliente..."
-                                                list="clientNameList"
-                                                required
-                                            />
-                                            <datalist
-                                                id="clientNameList"
-                                                className="custom-datalist"
-                                            >
-                                                {personsData?.allClients?.map(
-                                                    (
-                                                        n: IPerson,
-                                                        index: number
-                                                    ) => (
-                                                        <option
-                                                            key={index}
-                                                            data-key={n.id}
-                                                            value={`${n.documentNumber} ${n.names}`}
-                                                        />
-                                                    )
-                                                )}
-                                            </datalist>
-                                            <button
-                                                type="button"
-                                                className="absolute inset-y-0 right-10 px-2 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
-                                                onClick={() =>
-                                                    setSale({
-                                                        ...sale,
-                                                        clientName: "",
-                                                        clientId: 0,
-                                                    })
-                                                }
-                                            >
-                                                <SunatCancel />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
-                                                onClick={(e) => {
-                                                    modalAddClient.show();
-                                                    setPerson(
-                                                        initialStatePerson
-                                                    );
-                                                }}
-                                            >
-                                                <Add />
-                                            </button>
+                                <div className="grid gap-6 lg:grid-cols-5 sm:grid-cols-1 md:grid-cols-3">
+                                    <fieldset className="sm:col-span-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                                            {/* IGV % */}
+                                            <div>
+                                                <label
+                                                    htmlFor="igvType"
+                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >
+                                                    IGV %{" "}
+                                                </label>
+                                                <select
+                                                    value={sale.igvType}
+                                                    name="igvType"
+                                                    onChange={handleSale}
+                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                    required
+                                                >
+                                                    <option value={18}>
+                                                        18%
+                                                    </option>
+                                                    <option value={10}>
+                                                        10% (Ley 31556)
+                                                    </option>
+                                                    <option value={4}>
+                                                        4% (IVAP)
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            {/* Tipo documento */}
+                                            <div>
+                                                <label
+                                                    htmlFor="documentType"
+                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Tipo documento
+                                                </label>
+                                                <select
+                                                    value={sale.documentType}
+                                                    name="documentType"
+                                                    onChange={handleSale}
+                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                    required
+                                                >
+                                                    <option value={"01"}>
+                                                        FACTURA ELECTRÓNICA
+                                                    </option>
+                                                    <option value={"03"}>
+                                                        BOLETA DE VENTA
+                                                        ELECTRÓNICA
+                                                    </option>
+                                                    <option value={"07"}>
+                                                        NOTA DE CRÉDITO
+                                                        ELECTRÓNICA
+                                                    </option>
+                                                    <option value={"08"}>
+                                                        NOTA DE DÉBITO
+                                                        ELECTRÓNICA
+                                                    </option>
+                                                    <option value={"09"}>
+                                                        GUIA DE REMISIÓN
+                                                        REMITENTE
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            {/* Fecha emisión */}
+                                            <div>
+                                                <label
+                                                    htmlFor="emitDate"
+                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Fecha emisión
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    name="emitDate"
+                                                    id="emitDate"
+                                                    value={sale.emitDate}
+                                                    onChange={handleSale}
+                                                    onFocus={(e) =>
+                                                        e.target.select()
+                                                    }
+                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                    required
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <style jsx>{`
-                                        .custom-datalist option {
-                                            background-color: #1f2937; /* Dark background */
-                                            color: #d1d5db; /* Light text */
-                                            padding: 8px;
-                                            border: 1px solid #374151; /* Border color */
-                                        }
-                                        .custom-datalist option:hover {
-                                            background-color: #4b5563; /* Hover background */
-                                            color: #ffffff; /* Hover text */
-                                        }
-                                    `}</style>
-                                    {/* Moneda */}
-                                    <div>
-                                        <label
-                                            htmlFor="currencyType"
-                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        >
-                                            Moneda
-                                        </label>
-                                        <select
-                                            value={sale.currencyType}
-                                            name="currencyType"
-                                            onChange={handleSale}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                        >
-                                            <option value={0} disabled>
-                                                Moneda
-                                            </option>
-                                            <option value={"PEN"}>
-                                                S/ PEN - SOLES
-                                            </option>
-                                            <option value={"USD"}>
-                                                US$ USD - DÓLARES AMERICANOS
-                                            </option>
-                                            <option value={"EUR"}>
-                                                € EUR - EUROS
-                                            </option>
-                                            <option value={"GBP"}>
-                                                £ GBP - LIBRA ESTERLINA
-                                            </option>
-                                        </select>
-                                    </div>
-                                    {/* Tipo de Cambio */}
-                                    <div>
-                                        <label
-                                            htmlFor="saleExchangeRate"
-                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        >
-                                            Tipo de cambio
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="saleExchangeRate"
-                                            id="saleExchangeRate"
-                                            maxLength={10}
-                                            value={sale.saleExchangeRate}
-                                            onChange={handleSale}
-                                            onFocus={(e) => e.target.select()}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            autoComplete="off"
-                                        />
-                                    </div>
-                                    {/* Serie */}
-                                    <div>
-                                        <label
-                                            htmlFor="serial"
-                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        >
-                                            Serie
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="serial"
-                                            id="serial"
-                                            maxLength={4}
-                                            value={sale.serial}
-                                            onChange={handleSale}
-                                            onFocus={(e) => e.target.select()}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            autoComplete="off"
-                                        />
-                                    </div>
-                                    {/* Numero */}
-                                    <div>
-                                        <label
-                                            htmlFor="correlative"
-                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        >
-                                            Numero
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="correlative"
-                                            id="correlative"
-                                            maxLength={10}
-                                            value={sale.correlative}
-                                            onChange={handleSale}
-                                            onFocus={(e) => e.target.select()}
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            autoComplete="off"
-                                        />
-                                    </div>
-                                    {/* Buscar Producto o Servicio */}
-                                    <div className="md:col-span-2">
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Buscar Producto o Servicio
-                                        </label>
-                                        <div className="relative w-full">
-                                            <input
-                                                type="text"
-                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                maxLength={100}
-                                                value={product.name}
-                                                name="name"
-                                                onChange={handleProduct}
-                                                onFocus={(e) =>
-                                                    e.target.select()
+                                    </fieldset>
+
+                                    <fieldset className="sm:col-span-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                                            {/* Cliente */}
+                                            <div className="md:col-span-4">
+                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Cliente
+                                                </label>
+                                                <div className="relative w-full">
+                                                    <input
+                                                        type="text"
+                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        maxLength={200}
+                                                        value={sale.clientName}
+                                                        name="clientName"
+                                                        onChange={handleSale}
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        autoComplete="off"
+                                                        disabled={
+                                                            personsLoading
+                                                        }
+                                                        placeholder="Buscar cliente..."
+                                                        list="clientNameList"
+                                                        required
+                                                    />
+                                                    <datalist
+                                                        id="clientNameList"
+                                                        className="custom-datalist"
+                                                    >
+                                                        {personsData?.allClients?.map(
+                                                            (
+                                                                n: IPerson,
+                                                                index: number
+                                                            ) => (
+                                                                <option
+                                                                    key={index}
+                                                                    data-key={
+                                                                        n.id
+                                                                    }
+                                                                    value={`${n.documentNumber} ${n.names}`}
+                                                                />
+                                                            )
+                                                        )}
+                                                    </datalist>
+                                                    <button
+                                                        type="button"
+                                                        className="absolute inset-y-0 right-10 px-2 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
+                                                        onClick={() =>
+                                                            setSale({
+                                                                ...sale,
+                                                                clientName: "",
+                                                                clientId: 0,
+                                                            })
+                                                        }
+                                                    >
+                                                        <SunatCancel />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+                                                        onClick={(e) => {
+                                                            modalAddClient.show();
+                                                            setPerson(
+                                                                initialStatePerson
+                                                            );
+                                                        }}
+                                                    >
+                                                        <Add />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <style jsx>{`
+                                                .custom-datalist option {
+                                                    background-color: #1f2937; /* Dark background */
+                                                    color: #d1d5db; /* Light text */
+                                                    padding: 8px;
+                                                    border: 1px solid #374151; /* Border color */
                                                 }
-                                                autoComplete="off"
-                                                disabled={productsLoading}
-                                                placeholder="Buscar Producto..."
-                                                list="productNameList"
-                                                required
-                                            />
-                                            <datalist id="productNameList">
-                                                {productsData?.allProducts?.map(
-                                                    (
-                                                        n: IProduct,
-                                                        index: number
-                                                    ) => (
-                                                        <option
-                                                            key={index}
-                                                            data-key={n.id}
-                                                            value={n.name}
-                                                        />
-                                                    )
-                                                )}
-                                            </datalist>
-                                            <button
-                                                type="button"
-                                                className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
-                                                onClick={(e) => {
-                                                    modalProduct.show();
-                                                    setProduct(
-                                                        initialStateProduct
-                                                    );
-                                                }}
-                                            >
-                                                <Add />
-                                            </button>
+                                                .custom-datalist option:hover {
+                                                    background-color: #4b5563; /* Hover background */
+                                                    color: #ffffff; /* Hover text */
+                                                }
+                                            `}</style>
+                                            {/* Moneda */}
+                                            <div>
+                                                <label
+                                                    htmlFor="currencyType"
+                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Moneda
+                                                </label>
+                                                <select
+                                                    value={sale.currencyType}
+                                                    name="currencyType"
+                                                    onChange={handleSale}
+                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                >
+                                                    <option value={0} disabled>
+                                                        Moneda
+                                                    </option>
+                                                    <option value={"PEN"}>
+                                                        S/ PEN - SOLES
+                                                    </option>
+                                                    <option value={"USD"}>
+                                                        US$ USD - DÓLARES
+                                                        AMERICANOS
+                                                    </option>
+                                                    <option value={"EUR"}>
+                                                        € EUR - EUROS
+                                                    </option>
+                                                    <option value={"GBP"}>
+                                                        £ GBP - LIBRA ESTERLINA
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            {/* Tipo de Cambio */}
+                                            <div>
+                                                <label
+                                                    htmlFor="saleExchangeRate"
+                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Tipo de cambio
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="saleExchangeRate"
+                                                    id="saleExchangeRate"
+                                                    maxLength={10}
+                                                    value={
+                                                        sale.saleExchangeRate
+                                                    }
+                                                    onChange={handleSale}
+                                                    onFocus={(e) =>
+                                                        e.target.select()
+                                                    }
+                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                    autoComplete="off"
+                                                />
+                                            </div>
+                                            {/* Serie */}
+                                            <div>
+                                                <label
+                                                    htmlFor="serial"
+                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Serie
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="serial"
+                                                    id="serial"
+                                                    maxLength={4}
+                                                    value={sale.serial}
+                                                    onChange={handleSale}
+                                                    onFocus={(e) =>
+                                                        e.target.select()
+                                                    }
+                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                    autoComplete="off"
+                                                />
+                                            </div>
+                                            {/* Numero */}
+                                            <div>
+                                                <label
+                                                    htmlFor="correlative"
+                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Numero
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="correlative"
+                                                    id="correlative"
+                                                    maxLength={10}
+                                                    value={sale.correlative}
+                                                    onChange={handleSale}
+                                                    onFocus={(e) =>
+                                                        e.target.select()
+                                                    }
+                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                    autoComplete="off"
+                                                />
+                                            </div>
+
+                                            {/* Buscar Producto o Servicio */}
+                                            <div className="md:col-span-4">
+                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Buscar Producto o Servicio
+                                                </label>
+                                                <div className="relative w-full">
+                                                    <input
+                                                        type="text"
+                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        maxLength={100}
+                                                        value={product.name}
+                                                        name="name"
+                                                        onChange={handleProduct}
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        autoComplete="off"
+                                                        disabled={
+                                                            productsLoading
+                                                        }
+                                                        placeholder="Buscar Producto..."
+                                                        list="productNameList"
+                                                        required
+                                                    />
+                                                    <datalist id="productNameList">
+                                                        {productsData?.allProducts?.map(
+                                                            (
+                                                                n: IProduct,
+                                                                index: number
+                                                            ) => (
+                                                                <option
+                                                                    key={index}
+                                                                    data-key={
+                                                                        n.id
+                                                                    }
+                                                                    value={
+                                                                        n.name
+                                                                    }
+                                                                />
+                                                            )
+                                                        )}
+                                                    </datalist>
+                                                    <button
+                                                        type="button"
+                                                        className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+                                                        onClick={(e) => {
+                                                            modalProduct.show();
+                                                            setProduct(
+                                                                initialStateProduct
+                                                            );
+                                                        }}
+                                                    >
+                                                        <Add />
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </fieldset>
                                 </div>
                                 {/* Botón Agregar Item */}
                                 <div className="flex justify-end py-2">
                                     <button
                                         type="button"
-                                        className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
+                                        className="px-5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
                                         onClick={(e) => {
                                             modalAddDetail.show();
                                             setSaleDetail(
@@ -790,7 +823,7 @@ function NewSalePage() {
                                 <div className="flex justify-end py-2">
                                     <button
                                         type="button"
-                                        className={`btn-blue px-5 py-2 inline-flex items-center gap-2 ${
+                                        className={`px-5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2 ${
                                             sale?.operationdetailSet?.length ===
                                             0
                                                 ? "cursor-not-allowed"

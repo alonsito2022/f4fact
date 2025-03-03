@@ -64,38 +64,52 @@ export interface ICompany {
     ose?: boolean;
     deductionAccount?: String;
 }
-export interface IPerson {
+export interface IVehicle {
     id: number;
+    index: number;
+    typeVehicle?: string;
+    licensePlate?: string;
+    company?: ICompany;
+    capacity?: number;
+}
+export interface IPerson {
+    id?: number;
+    index?: number;
     documentNumber?: string;
     documentType?: string;
     names?: string;
     shortName?: string;
-    address: string;
+    address?: string;
 
-    departmentId: string;
-    provinceId: string;
-    districtId: string;
-    countryReadable: string;
-    country: string;
+    departmentId?: string;
+    provinceId?: string;
+    districtId?: string;
+    countryReadable?: string;
+    country?: string;
     economicActivityMain?: number;
     economicActivityMainReadable?: string;
-    email: string;
+    email?: string;
     phone?: string;
-    isSupplier: boolean;
-    isEnabled: boolean;
+    isSupplier?: boolean;
+    isEnabled?: boolean;
 
     isClient?: boolean;
-    code: string;
+    code?: string;
     documentTypeReadable?: string;
     typeTradeName?: String;
     nationality?: string;
-    creditLine: number;
+    creditLine?: number;
     businessTypeId?: number;
     typeTradeId?: number;
     role?: string;
     roleReadable?: string;
     personaddressSet?: Array<ISupplierAddress>;
     checked?: boolean;
+
+    mainDriverDocumentType?: string;
+    mainDriverDocumentNumber?: string;
+    mainDriverNames?: string;
+    mainDriverDriverLicense?: string;
 }
 export interface ISupplier {
     id: number;
@@ -168,6 +182,10 @@ export interface ISubsidiary {
     companyId?: number;
     companyName?: string;
     company?: ICompany;
+
+    districtDescription?: string;
+    provinceDescription?: string;
+    departmentDescription?: string;
 }
 
 export interface IWarehouse {
@@ -263,6 +281,16 @@ export interface IWayPay {
 }
 
 export interface ICreditNoteType {
+    code: number;
+    name: string;
+}
+
+export interface IGuideModeType {
+    code: number;
+    name: string;
+}
+
+export interface IGuideReasonType {
     code: number;
     name: string;
 }
@@ -379,8 +407,10 @@ export interface IOperationDetail {
     remainingQuantity?: number;
     remainingPrice?: number;
     remainingPriceTotal?: number;
+    index?: number;
     productId?: number;
     productName?: string;
+    description?: string;
     unitValue?: number;
     unitPrice?: number;
     totalValue?: number;
@@ -397,4 +427,11 @@ export interface IOperationDetail {
     totalAmount?: number;
     totalToPay?: number;
     totalPerception?: number;
+}
+export interface IRelatedDocument {
+    id?: number;
+    index?: number;
+    documentType?: string;
+    serial?: string;
+    correlative?: number;
 }

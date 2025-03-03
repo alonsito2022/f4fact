@@ -295,14 +295,13 @@ function Sidebar() {
                                     </ul>
                                 </li>
 
-                                <li>
+                                {/* <li>
                                     <button
                                         type="button"
                                         className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
                                         aria-controls="dropdown-purchases"
                                         data-collapse-toggle="dropdown-purchases"
                                     >
-                                        {/* <svg className="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path></svg> */}
                                         <svg
                                             className="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
                                             aria-hidden="true"
@@ -357,7 +356,7 @@ function Sidebar() {
                                             </Link>
                                         </li>
                                     </ul>
-                                </li>
+                                </li> */}
 
                                 <li>
                                     <button
@@ -413,6 +412,66 @@ function Sidebar() {
                                                 className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
                                             >
                                                 Nueva Venta
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </li>
+
+                                <li>
+                                    <button
+                                        type="button"
+                                        className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                        aria-controls="dropdown-guides"
+                                        data-collapse-toggle="dropdown-guides"
+                                    >
+                                        <svg
+                                            className="w-6 h-4 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                            aria-hidden="true"
+                                            stroke="currentColor"
+                                            fill="currentColor"
+                                            strokeWidth="0"
+                                            role="img"
+                                            viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path d="M.8 24h13.6c.88 0 1.6-.72 1.6-1.6v-4.8c0-.88-.72-1.6-1.6-1.6H9.6c-.88 0-1.6-.72-1.6-1.6V9.6C8 8.72 7.28 8 6.4 8H1.6C.72 8 0 8.72 0 9.6v13.6c0 .44.36.8.8.8zM23.2 0H9.6C8.72 0 8 .72 8 1.6v4.8C8 7.28 8.72 8 9.6 8h4.8c.88 0 1.6.72 1.6 1.6v4.8c0 .88.72 1.6 1.6 1.6h4.8c.88 0 1.6-.72 1.6-1.6V.8c0-.44-.36-.8-.8-.8Z"></path>
+                                        </svg>
+
+                                        <span className="flex-1 ml-3 text-left whitespace-nowrap">
+                                            Guías de Remisión
+                                        </span>
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clipRule="evenodd"
+                                            ></path>
+                                        </svg>
+                                    </button>
+                                    <ul
+                                        suppressHydrationWarning
+                                        id="dropdown-guides"
+                                        className="hidden py-2 space-y-2"
+                                    >
+                                        <li>
+                                            <Link
+                                                href="/dashboard/guides"
+                                                className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                            >
+                                                Ver Guías
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href="/dashboard/guides/new"
+                                                className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                            >
+                                                Nueva Guía
                                             </Link>
                                         </li>
                                     </ul>
