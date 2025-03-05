@@ -37,7 +37,7 @@ const GuideDetailItem: React.FC<GuideDetailItemProps> = ({
                         Producto - Servicio
                     </label>
                     <input
-                        type="text"
+                        type="search"
                         name="productName"
                         maxLength={100}
                         onFocus={(e) => e.target.select()}

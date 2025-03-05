@@ -106,6 +106,8 @@ export interface IPerson {
     personaddressSet?: Array<ISupplierAddress>;
     checked?: boolean;
 
+    driverLicense?: string;
+
     mainDriverDocumentType?: string;
     mainDriverDocumentNumber?: string;
     mainDriverNames?: string;
@@ -351,6 +353,7 @@ export interface IOperation {
     operationStatus: string;
     operationStatusReadable: string;
     sendClient: boolean;
+    sendWhatsapp: boolean;
     linkXml: string;
     linkXmlLow: string;
     linkCdr: string;
