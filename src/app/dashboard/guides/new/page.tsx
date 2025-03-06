@@ -1053,7 +1053,7 @@ function NewGuidePage() {
                                             onClick={saveGuide}
                                         >
                                             <Save />
-                                            CONTINUAR CON EL PAGO
+                                            GENERAR GUIA
                                         </button>
                                     </div>
                                 </div>

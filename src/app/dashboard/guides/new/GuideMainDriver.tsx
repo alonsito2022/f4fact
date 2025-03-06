@@ -15,6 +15,7 @@ const SNT_PERSON_MUTATION = gql`
                 sntDepartment
                 sntProvince
                 sntDistrict
+                sntDriverLicense
             }
         }
     }
@@ -89,6 +90,7 @@ function GuideMainDriver({
             setGuide({
                 ...guide,
                 mainDriverNames: data.sntPerson.person.sntNames,
+                mainDriverDriverLicense: data.sntPerson.person.sntDriverLicense,
             });
             toast(data.sntPerson.message, {
                 hideProgressBar: true,
