@@ -196,7 +196,7 @@ function GuideList({
                                             href={
                                                 process.env
                                                     .NEXT_PUBLIC_BASE_API +
-                                                "/operations/print_invoice/" +
+                                                "/operations/print_guide/" +
                                                 item.id +
                                                 "/"
                                             }
@@ -393,50 +393,6 @@ function GuideList({
                                                     Enviar por WhatsApp
                                                 </a>
                                                 <br />
-
-                                                {item.operationStatus !==
-                                                    "06" &&
-                                                    item.codeHash && (
-                                                        <>
-                                                            <Link
-                                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                                href={`/dashboard/sales/credit_note/${item.id}`}
-                                                            >
-                                                                Generar NOTA DE
-                                                                CREDITO
-                                                            </Link>
-                                                            <br />
-                                                            <a
-                                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                                target="_blank"
-                                                                href="#"
-                                                            >
-                                                                Generar NOTA DE
-                                                                DÉBITO
-                                                            </a>
-                                                            <br />
-                                                            <a
-                                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                                target="_blank"
-                                                                href="#"
-                                                            >
-                                                                Generar GUIA DE
-                                                                REMISIÓN
-                                                                REMITENTE
-                                                            </a>
-                                                            <br />
-                                                            <a
-                                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                                target="_blank"
-                                                                href="#"
-                                                            >
-                                                                Generar GUIA DE
-                                                                REMISIÓN
-                                                                TRANSPORTISTA
-                                                            </a>
-                                                            <br />
-                                                        </>
-                                                    )}
 
                                                 <a
                                                     className="font-medium text-green-600 dark:text-green-500 hover:underline"
