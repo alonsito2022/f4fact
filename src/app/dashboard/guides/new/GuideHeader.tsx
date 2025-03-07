@@ -88,6 +88,37 @@ function GuideHeader({ guide, setGuide, handleGuide, auth, authContext }: any) {
             });
         }
     }, [clientSearch]);
+
+    useEffect(() => {
+        if (
+            (guide?.guideReasonTransfer === "02" ||
+                guide?.guideReasonTransfer === "04") &&
+            guide?.guideModeTransfer === "02"
+        ) {
+            searchClientQuery({
+                variables: { search: auth?.user?.companyDoc },
+                onCompleted: (data) => {
+                    const clientFound = data?.searchClientByParameter[0];
+                    if (clientFound) {
+                        const selectedOption = `${clientFound.documentNumber} ${clientFound.names}`;
+                        setClientSearch(selectedOption);
+                        setGuide({
+                            ...guide,
+                            clientId: clientFound.id,
+                            clientName: clientFound.names,
+                        });
+                    }
+                },
+            });
+        } else {
+            setClientSearch("");
+            setGuide({
+                ...guide,
+                clientId: "",
+                clientName: "",
+            });
+        }
+    }, [guide?.guideReasonTransfer, guide?.guideModeTransfer]);
     return (
         <>
             <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">

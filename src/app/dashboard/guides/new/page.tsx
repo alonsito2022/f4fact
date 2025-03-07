@@ -72,7 +72,7 @@ const initialStateGuide = {
     correlative: "",
     emitDate: today,
     guideModeTransfer: "01",
-    guideReasonTransfer: "04",
+    guideReasonTransfer: "01",
     operationdetailSet: [
         {
             index: 0,
@@ -311,7 +311,6 @@ function NewGuidePage() {
     useEffect(() => {
         if (auth?.user?.subsidiarySerial) {
             const subsidiarySerial = auth?.user?.subsidiarySerial;
-            console.log("subsidiarySerial", subsidiarySerial);
             if (subsidiarySerial) {
                 const lastTwoDigits = subsidiarySerial.slice(-2);
                 let prefix = "";
@@ -350,7 +349,6 @@ function NewGuidePage() {
         onCompleted: (data) => {
             const dataSale = data.getSaleById;
             const igv = Number(dataSale?.igvPercentage) / 100;
-            console.log(igv);
             setSale(dataSale);
             const formattedOperationdetailSet = dataSale.operationdetailSet
                 .filter(
@@ -424,7 +422,6 @@ function NewGuidePage() {
     ) => {
         const { name, value } = event.target;
         let formattedValue = value;
-        console.log(name, value);
         if (name === "correlative") {
             formattedValue = formattedValue.replace(/[^0-9]/g, ""); // Permite solo números
             formattedValue = formattedValue.slice(0, 6); // Limita a 4 dígitos
@@ -822,6 +819,22 @@ function NewGuidePage() {
             if (guide.guideArrivalAddress.length === 0) {
                 toast(
                     "La guia debe tener una direccion como punto de llegada.",
+                    {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    }
+                );
+                return false;
+            }
+
+            if (
+                (guide.guideOriginSerial.length === 0 ||
+                    guide.guideArrivalSerial.length === 0) &&
+                guide.guideReasonTransfer === "04"
+            ) {
+                toast(
+                    "Los puntos de partida y llegada deben tener un codigo de establecimiento.",
                     {
                         hideProgressBar: true,
                         autoClose: 2000,

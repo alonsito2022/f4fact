@@ -193,7 +193,7 @@ function GuideTransportation({
                     )}
 
                     {/* Número de registro MTC (condicional) */}
-                    <div>
+                    <div className="hidden">
                         <label
                             htmlFor="transportationCompanyMtcRegistrationNumber"
                             className="text-sm font-medium text-gray-900 dark:text-gray-200"
