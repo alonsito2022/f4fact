@@ -384,7 +384,7 @@ function ProductForm({
 
                                 <div className="grid gap-4 mb-4 sm:grid-cols-6">
                                     {/* Nombre del producto */}
-                                    <div className="sm:col-span-4">
+                                    <div className="sm:col-span-3">
                                         <label
                                             htmlFor="name"
                                             className="form-label"
@@ -434,12 +434,12 @@ function ProductForm({
                                         </select>
                                     </div>
                                     {/* Código Producto Sunat */}
-                                    <div className="sm:col-span-2 hidden">
+                                    <div className="sm:col-span-1">
                                         <label
                                             htmlFor="code"
                                             className="form-label"
                                         >
-                                            Código Producto Sunat
+                                            Código interno
                                         </label>
                                         <input
                                             type="text"
@@ -459,7 +459,7 @@ function ProductForm({
                                             htmlFor="ean"
                                             className="form-label"
                                         >
-                                            EAN
+                                            Código Producto Sunat
                                         </label>
                                         <input
                                             type="text"

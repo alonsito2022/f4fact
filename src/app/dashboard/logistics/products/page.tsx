@@ -37,6 +37,7 @@ const initialStateProduct = {
     maximumUnitId: 0,
     maximumFactor: "1",
     minimumFactor: "1",
+    // subsidiaryId: 0,
 };
 
 const initialStateProductFilterObj = {
@@ -117,12 +118,16 @@ function ProductPage() {
     useEffect(() => {
         if (auth?.user) {
             const user = auth?.user as IUser;
-
             setProductFilterObj((prev) => ({
                 ...prev,
                 subsidiaryId: user.subsidiaryId! || "0",
+                subsidiaryName: user.subsidiaryName! || "",
                 isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
             }));
+            // setProduct({
+            //     ...product,
+            //     subsidiaryId: Number(user.subsidiaryId! || "0"),
+            // });
         }
     }, [auth?.user]);
 
