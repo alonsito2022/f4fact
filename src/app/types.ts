@@ -246,6 +246,9 @@ export interface IProduct {
     priceWithIgv3: number;
     priceWithoutIgv3: number;
 
+    priceWithIgv4: number;
+    priceWithoutIgv4: number;
+
     minimumUnitId: number;
     maximumUnitId: number;
     maximumFactor: number;

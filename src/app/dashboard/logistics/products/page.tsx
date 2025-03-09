@@ -33,6 +33,9 @@ const initialStateProduct = {
     priceWithIgv3: 0,
     priceWithoutIgv3: 0,
 
+    priceWithIgv4: 0,
+    priceWithoutIgv4: 0,
+
     minimumUnitId: 0,
     maximumUnitId: 0,
     maximumFactor: "1",
@@ -82,6 +85,14 @@ const PRODUCTS_QUERY = gql`
                 serial
                 companyName
             }
+            priceWithIgv1
+            priceWithIgv2
+            priceWithIgv3
+            priceWithIgv4
+            priceWithoutIgv1
+            priceWithoutIgv2
+            priceWithoutIgv3
+            priceWithoutIgv4
         }
     }
 `;
@@ -168,6 +179,7 @@ function ProductPage() {
         variables: {
             subsidiaryId: Number(productFilterObj?.subsidiaryId),
         },
+        fetchPolicy: "network-only",
         // onCompleted: (data) => {},
         onError: (err) => console.error("Error in products:", err),
     });

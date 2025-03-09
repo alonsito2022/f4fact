@@ -23,6 +23,8 @@ const ADD_PRODUCT = gql`
         $priceWithoutIgv2: Float!
         $priceWithIgv3: Float!
         $priceWithoutIgv3: Float!
+        $priceWithIgv4: Float!
+        $priceWithoutIgv4: Float!
         $minimumUnitId: Int!
         $maximumUnitId: Int!
         $maximumFactor: Int!
@@ -44,6 +46,8 @@ const ADD_PRODUCT = gql`
             priceWithoutIgv2: $priceWithoutIgv2
             priceWithIgv3: $priceWithIgv3
             priceWithoutIgv3: $priceWithoutIgv3
+            priceWithIgv4: $priceWithIgv4
+            priceWithoutIgv4: $priceWithoutIgv4
             minimumUnitId: $minimumUnitId
             maximumUnitId: $maximumUnitId
             maximumFactor: $maximumFactor
@@ -79,6 +83,8 @@ const UPDATE_PRODUCT = gql`
         $priceWithoutIgv2: Float!
         $priceWithIgv3: Float!
         $priceWithoutIgv3: Float!
+        $priceWithIgv4: Float!
+        $priceWithoutIgv4: Float!
         $minimumUnitId: Int!
         $maximumUnitId: Int!
         $maximumFactor: Int!
@@ -101,6 +107,8 @@ const UPDATE_PRODUCT = gql`
             priceWithoutIgv2: $priceWithoutIgv2
             priceWithIgv3: $priceWithIgv3
             priceWithoutIgv3: $priceWithoutIgv3
+            priceWithIgv4: $priceWithIgv4
+            priceWithoutIgv4: $priceWithoutIgv4
             minimumUnitId: $minimumUnitId
             maximumUnitId: $maximumUnitId
             maximumFactor: $maximumFactor
@@ -207,10 +215,32 @@ function ProductForm({
     const handleSaveProduct = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        // if (Number(product.minimumFactor) === 0) {
-        //     toast('Por favor ingrese un factor para la unidad minima.', { hideProgressBar: true, autoClose: 2000, type: 'warning' })
-        //     return;
-        // }
+        if (Number(product.typeAffectationId) === 0) {
+            toast("Por favor ingrese un tipo de afectacion", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            return;
+        }
+
+        if (Number(product.minimumUnitId) === 0) {
+            toast("Por favor ingrese una unidad de medida SUNAT Minima.", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            return;
+        }
+
+        if (Number(product.minimumFactor) === 0) {
+            toast("Por favor ingrese un factor para la unidad minima.", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            return;
+        }
 
         if (Number(product.id) !== 0) {
             // for updating
@@ -235,12 +265,14 @@ function ProductForm({
                 priceWithIgv3: Number(product.priceWithIgv3),
                 priceWithoutIgv3: Number(product.priceWithoutIgv3),
 
+                priceWithIgv4: Number(product.priceWithIgv4),
+                priceWithoutIgv4: Number(product.priceWithoutIgv4),
+
                 minimumUnitId: Number(product.minimumUnitId),
                 maximumUnitId: Number(product.maximumUnitId),
                 maximumFactor: Number(product.maximumFactor),
                 minimumFactor: Number(product.minimumFactor),
             };
-
             const { data, errors } = await updateProduct({
                 variables: values,
             });
@@ -281,6 +313,9 @@ function ProductForm({
                 priceWithIgv3: Number(product.priceWithIgv3),
                 priceWithoutIgv3: Number(product.priceWithoutIgv3),
 
+                priceWithIgv4: Number(product.priceWithIgv4),
+                priceWithoutIgv4: Number(product.priceWithoutIgv4),
+
                 minimumUnitId: Number(product.minimumUnitId),
                 maximumUnitId: Number(product.maximumUnitId),
                 maximumFactor: Number(product.maximumFactor),
@@ -289,6 +324,7 @@ function ProductForm({
             const { data, errors } = await createProduct({
                 variables: values,
             });
+
             if (errors) {
                 toast(errors.toString(), {
                     hideProgressBar: true,
@@ -338,7 +374,7 @@ function ProductForm({
                     {/* Modal content */}
                     <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
                         {/* Modal header */}
-                        <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                        <div className="flex items-center justify-between p-6 border-b rounded-t dark:border-gray-600 bg-gray-50 dark:bg-gray-800">
                             <h3
                                 className="text-lg font-semibold text-gray-900 dark:text-white"
                                 id="modal-title"
@@ -372,7 +408,10 @@ function ProductForm({
                             </button>
                         </div>
 
-                        <form onSubmit={handleSaveProduct}>
+                        <form
+                            onSubmit={handleSaveProduct}
+                            className="space-y-6"
+                        >
                             {/* Modal body */}
                             <div className="p-4 md:p-5 space-y-4">
                                 <input
@@ -382,12 +421,13 @@ function ProductForm({
                                     value={product.id}
                                 />
 
-                                <div className="grid gap-4 mb-4 sm:grid-cols-6">
+                                {/* Main form grid with better spacing */}
+                                <div className="grid gap-6 mb-6 md:grid-cols-6">
                                     {/* Nombre del producto */}
-                                    <div className="sm:col-span-3">
+                                    <div className="md:col-span-3">
                                         <label
                                             htmlFor="name"
-                                            className="form-label"
+                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                         >
                                             Nombre del producto o servicio
                                         </label>
@@ -399,17 +439,17 @@ function ProductForm({
                                             value={product.name}
                                             onChange={handleInputChange}
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                                             placeholder="Escriba un nombre aquí"
                                             required
                                             autoComplete="off"
                                         />
                                     </div>
                                     {/* Tipo */}
-                                    <div className="sm:col-span-2">
+                                    <div className="md:col-span-2">
                                         <label
                                             htmlFor="activeType"
-                                            className="form-label"
+                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                         >
                                             Tipo
                                         </label>
@@ -421,7 +461,7 @@ function ProductForm({
                                                 "A_",
                                                 ""
                                             )}
-                                            className="form-control"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                             required
                                         >
                                             <option value={"01"}>
@@ -628,41 +668,6 @@ function ProductForm({
                                         setProduct={setProduct}
                                         product={product}
                                     />
-
-                                    <div className="sm:col-span-3 mb-2">
-                                        <input
-                                            id="available3"
-                                            name="available"
-                                            checked={product.available}
-                                            type="checkbox"
-                                            onChange={handleCheckboxChange}
-                                            className="form-check-input"
-                                        />
-                                        <label
-                                            htmlFor="available3"
-                                            className="form-check-label"
-                                        >
-                                            Activo
-                                        </label>
-                                    </div>
-
-                                    <div className="sm:col-span-3 mb-2">
-                                        <input
-                                            id="subjectPerception3"
-                                            name="subjectPerception"
-                                            checked={product.subjectPerception}
-                                            type="checkbox"
-                                            onChange={handleCheckboxChange}
-                                            className="form-check-input"
-                                        />
-                                        <label
-                                            htmlFor="subjectPerception3"
-                                            className="form-check-label"
-                                        >
-                                            Sujeto a percepcion
-                                        </label>
-                                    </div>
-
                                     <div className="sm:col-span-6 mb-2">
                                         <label
                                             htmlFor="observation3"
@@ -681,6 +686,43 @@ function ProductForm({
                                             onFocus={(e) => e.target.select()}
                                             placeholder="Escribe un comentario aquí"
                                         ></textarea>
+                                    </div>
+                                    <div className="sm:col-span-6 flex gap-6 mt-6">
+                                        <div className="flex items-center">
+                                            <input
+                                                id="available3"
+                                                name="available"
+                                                checked={product.available}
+                                                type="checkbox"
+                                                onChange={handleCheckboxChange}
+                                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                                            />
+                                            <label
+                                                htmlFor="available3"
+                                                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                                            >
+                                                Activo
+                                            </label>
+                                        </div>
+
+                                        <div className="flex items-center">
+                                            <input
+                                                id="subjectPerception3"
+                                                name="subjectPerception"
+                                                checked={
+                                                    product.subjectPerception
+                                                }
+                                                type="checkbox"
+                                                onChange={handleCheckboxChange}
+                                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                                            />
+                                            <label
+                                                htmlFor="subjectPerception3"
+                                                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                                            >
+                                                Sujeto a percepcion
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
