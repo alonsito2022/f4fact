@@ -236,8 +236,8 @@ function ClientForm({
 
     const handleSntDocument = async (documentNumber: string) => {
         let departmentId = "04";
-        let provinceId = "0406";
-        let districtId = "040601";
+        let provinceId = "0401";
+        let districtId = "040101";
         let address = "";
 
         if (person?.documentType === "6" && documentNumber.length !== 11) {
@@ -401,7 +401,7 @@ function ClientForm({
             name === "documentNumber" &&
             event.target instanceof HTMLInputElement
         ) {
-            let documentType = person.documentType.replace("A_", "");
+            let documentType = person.documentType;
             // Reemplaza todos los caracteres que no son numéricos con una cadena vacía
             const formattedValue = value.replace(/[^0-9]/g, "");
             // Limita a 6 dígitos
@@ -584,434 +584,541 @@ function ClientForm({
                         {/* Modal body */}
 
                         <form onSubmit={handleSaveSupplier}>
-                            <div className="p-4 md:p-5 space-y-4">
-                                <div className="grid gap-4 mb-4 sm:grid-cols-4 items-end">
-                                    <div className="sm:col-span-3">
-                                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Número (RUC, DNI, Etc){" "}
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                                <svg
-                                                    className="w-4 h-4 text-gray-500 dark:text-gray-400"
-                                                    aria-hidden="true"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 20 20"
+                            <div className="p-6 md:p-8 space-y-6">
+                                <div className="grid gap-6 mb-6 sm:grid-cols-4 items-start">
+                                    {/* Group document fields */}
+                                    <fieldset className="sm:col-span-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-4">
+                                        <legend className="text-sm font-semibold px-2">
+                                            Información del Documento
+                                        </legend>
+                                        <div className="grid gap-4 sm:grid-cols-4">
+                                            {/* Document Type and Number fields */}
+                                            <div className="sm:col-span-1">
+                                                <label
+                                                    htmlFor="documentType"
+                                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                                 >
-                                                    <path
-                                                        stroke="currentColor"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                                                    />
-                                                </svg>
+                                                    Tipo
+                                                </label>
+                                                <select
+                                                    id="documentType"
+                                                    name="documentType"
+                                                    value={person.documentType}
+                                                    onChange={handleInputChange}
+                                                    className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                >
+                                                    {documentTypesData?.allDocumentTypes?.map(
+                                                        (
+                                                            d: IDocumentType,
+                                                            k: number
+                                                        ) => (
+                                                            <option
+                                                                key={k}
+                                                                value={d.code}
+                                                            >
+                                                                {d.name}
+                                                            </option>
+                                                        )
+                                                    )}
+                                                </select>
                                             </div>
-                                            <input
-                                                type="text"
-                                                name="documentNumber"
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                inputMode="numeric"
-                                                autoComplete="off"
-                                                value={person.documentNumber}
-                                                onChange={handleInputChange}
-                                                className="block w-full py-2 pl-10 pr-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            />
-                                            {person.documentType.replace(
-                                                "A_",
-                                                ""
-                                            ) === "1" ||
-                                            person.documentType.replace(
-                                                "A_",
-                                                ""
-                                            ) === "6" ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        handleSntDocument(
+                                            <div className="sm:col-span-3">
+                                                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Número (RUC, DNI, Etc){" "}
+                                                </label>
+                                                <div className="relative">
+                                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                        <svg
+                                                            className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                                                            aria-hidden="true"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 20 20"
+                                                        >
+                                                            <path
+                                                                stroke="currentColor"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        maxLength={
+                                                            person.documentType ===
+                                                            "1"
+                                                                ? 8
+                                                                : person.documentType ===
+                                                                  "6"
+                                                                ? 11
+                                                                : 15
+                                                        }
+                                                        name="documentNumber"
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        onKeyDown={(e) => {
+                                                            if (
+                                                                e.key ===
+                                                                "Enter"
+                                                            ) {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
+                                                        inputMode="numeric"
+                                                        autoComplete="off"
+                                                        value={
                                                             person.documentNumber
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        foundSntPersonLoading
-                                                    }
-                                                    className="absolute right-1 bottom-1 px-3 py-1 text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-xs dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
-                                                >
-                                                    EXTRAER
-                                                </button>
-                                            ) : null}
+                                                        }
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        className="block w-full py-2 pl-10 pr-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    />
+                                                    {person.documentType ===
+                                                        "1" ||
+                                                    person.documentType ===
+                                                        "6" ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                handleSntDocument(
+                                                                    person.documentNumber
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                foundSntPersonLoading
+                                                            }
+                                                            className="absolute right-1 bottom-1 px-3 py-1 text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-xs dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+                                                        >
+                                                            EXTRAER
+                                                        </button>
+                                                    ) : null}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </fieldset>
+                                    {/* Group personal information */}
+                                    <fieldset className="sm:col-span-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-4">
+                                        <legend className="text-sm font-semibold px-2">
+                                            Información Personal
+                                        </legend>
+                                        <div className="grid gap-4 sm:grid-cols-2">
+                                            {/* Names, Email, Phone fields */}
+                                            <div className="sm:col-span-2">
+                                                <label
+                                                    htmlFor="names"
+                                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                >
+                                                    Razón social o nombre
+                                                    completo
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    id="names"
+                                                    name="names"
+                                                    value={person.names}
+                                                    onChange={handleInputChange}
+                                                    autoComplete="off"
+                                                    className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                />
+                                            </div>
 
-                                    <div className="sm:col-span-1">
-                                        <label
-                                            htmlFor="documentType"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            Tipo
-                                        </label>
-                                        <select
-                                            id="documentType"
-                                            name="documentType"
-                                            value={person.documentType.replace(
-                                                "A_",
-                                                ""
-                                            )}
-                                            onChange={handleInputChange}
-                                            className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        >
-                                            {documentTypesData?.allDocumentTypes?.map(
-                                                (
-                                                    d: IDocumentType,
-                                                    k: number
-                                                ) => (
-                                                    <option
-                                                        key={k}
-                                                        value={d.code}
+                                            {person.documentType === "6" && (
+                                                <div className="sm:col-span-2">
+                                                    <label
+                                                        htmlFor="shortName"
+                                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                                     >
-                                                        {d.name}
-                                                    </option>
-                                                )
-                                            )}
-                                        </select>
-                                    </div>
-
-                                    <div className="sm:col-span-2">
-                                        <label
-                                            htmlFor="names"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            Razón social o nombre completo
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="names"
-                                            name="names"
-                                            value={person.names}
-                                            onChange={handleInputChange}
-                                            autoComplete="off"
-                                            className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        />
-                                    </div>
-
-                                    <div className="sm:col-span-2">
-                                        <label
-                                            htmlFor="shortName"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            Razón comercial (Marca)
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="shortName"
-                                            name="shortName"
-                                            value={person.shortName}
-                                            onChange={handleInputChange}
-                                            autoComplete="off"
-                                            className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        />
-                                    </div>
-
-                                    <div className="sm:col-span-4">
-                                        <label
-                                            htmlFor="address"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            Dirección fiscal
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="address"
-                                            name="address"
-                                            value={person.address || ""}
-                                            onChange={handleInputChange}
-                                            autoComplete="off"
-                                            className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="Av. Aviacion S/N"
-                                        />
-                                    </div>
-
-                                    <div className="sm:col-span-1">
-                                        {departmentsLoading ? (
-                                            <div className="text-gray-900 dark:text-white">
-                                                Cargando...
-                                            </div>
-                                        ) : departmentsError ? (
-                                            <div className="text-red-600 dark:text-red-400">
-                                                Error: No autorizado o error en
-                                                la consulta.{" "}
-                                                {departmentsError.message}
-                                            </div>
-                                        ) : departmentsData ? (
-                                            <>
-                                                <label
-                                                    htmlFor="departmentId"
-                                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                >
-                                                    Departamento
-                                                </label>
-                                                <select
-                                                    id="departmentId"
-                                                    name="departmentId"
-                                                    value={person?.departmentId}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                    className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                >
-                                                    <option value={"0"}>
-                                                        ELEGIR
-                                                    </option>
-                                                    {departmentsData?.departments?.map(
-                                                        (
-                                                            d: IDepartment,
-                                                            k: number
-                                                        ) => (
-                                                            <option
-                                                                key={k}
-                                                                value={d.id}
-                                                            >
-                                                                {d.description.replace(
-                                                                    "DEPARTAMENTO ",
-                                                                    ""
-                                                                )}
-                                                            </option>
-                                                        )
-                                                    )}
-                                                </select>
-                                            </>
-                                        ) : (
-                                            <input
-                                                type="text"
-                                                className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                disabled
-                                                value={"No hay datos..."}
-                                            />
-                                        )}
-                                    </div>
-
-                                    <div className="sm:col-span-1">
-                                        {provincesLoading ? (
-                                            <div className="text-gray-900 dark:text-white">
-                                                Cargando...
-                                            </div>
-                                        ) : provincesError ? (
-                                            <div className="text-red-600 dark:text-red-400">
-                                                Error: No autorizado o error en
-                                                la consulta.{" "}
-                                                {provincesError.message}
-                                            </div>
-                                        ) : provincesData ? (
-                                            <>
-                                                <label
-                                                    htmlFor="provinceId"
-                                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                >
-                                                    Provincia
-                                                </label>
-                                                <select
-                                                    id="provinceId"
-                                                    name="provinceId"
-                                                    value={person?.provinceId}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                    className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                >
-                                                    <option value={"0"}>
-                                                        ELEGIR
-                                                    </option>
-                                                    {provincesData?.provincesByDepartmentId?.map(
-                                                        (
-                                                            d: IProvince,
-                                                            k: number
-                                                        ) => (
-                                                            <option
-                                                                key={k}
-                                                                value={d.id}
-                                                            >
-                                                                {d.description}
-                                                            </option>
-                                                        )
-                                                    )}
-                                                </select>
-                                            </>
-                                        ) : (
-                                            <input
-                                                type="text"
-                                                className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                disabled
-                                                value={"No hay datos..."}
-                                            />
-                                        )}
-                                    </div>
-
-                                    <div className="sm:col-span-1">
-                                        {districtsLoading ? (
-                                            <div className="text-gray-900 dark:text-white">
-                                                Cargando...
-                                            </div>
-                                        ) : districtsError ? (
-                                            <div className="text-red-600 dark:text-red-400">
-                                                Error: No autorizado o error en
-                                                la consulta.{" "}
-                                                {districtsError.message}
-                                            </div>
-                                        ) : districtsData ? (
-                                            <>
-                                                <label
-                                                    htmlFor="districtId"
-                                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                                >
-                                                    Distrito
-                                                </label>
-                                                <select
-                                                    id="districtId"
-                                                    name="districtId"
-                                                    value={person?.districtId}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                    className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                >
-                                                    <option value={"0"}>
-                                                        ELEGIR
-                                                    </option>
-                                                    {districtsData?.districtsByProvinceId?.map(
-                                                        (
-                                                            d: IDistrict,
-                                                            k: number
-                                                        ) => (
-                                                            <option
-                                                                key={k}
-                                                                value={d.id}
-                                                            >
-                                                                {d.description}
-                                                            </option>
-                                                        )
-                                                    )}
-                                                </select>
-                                            </>
-                                        ) : (
-                                            <input
-                                                type="text"
-                                                className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                disabled
-                                                value={"No hay datos..."}
-                                            />
-                                        )}
-                                    </div>
-
-                                    <div className="sm:col-span-1">
-                                        <label
-                                            htmlFor="countryReadable"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            País
-                                        </label>
-                                        <input
-                                            type="search"
-                                            id="countryReadable"
-                                            disabled={countriesLoading}
-                                            name="countryReadable"
-                                            value={person.countryReadable}
-                                            onChange={handleInputChange}
-                                            autoComplete="off"
-                                            list="countryList"
-                                            className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="País"
-                                        />
-                                        <datalist id="countryList">
-                                            {countriesData?.allCountries?.map(
-                                                (
-                                                    n: ICountry,
-                                                    index: number
-                                                ) => (
-                                                    <option
-                                                        key={index}
-                                                        value={n.name}
-                                                        data-key={n.code}
+                                                        Razón comercial (Marca)
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        id="shortName"
+                                                        name="shortName"
+                                                        value={person.shortName}
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        autoComplete="off"
+                                                        className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                     />
-                                                )
+                                                </div>
                                             )}
-                                        </datalist>
-                                    </div>
 
-                                    <div className="sm:col-span-4">
-                                        <label
-                                            htmlFor="economicActivityMainReadable"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            Actividad Económica (Principal):
-                                        </label>
-                                        <input
-                                            type="search"
-                                            id="economicActivityMainReadable"
-                                            disabled={economicActivitiesLoading}
-                                            name="economicActivityMainReadable"
-                                            value={
-                                                person.economicActivityMainReadable ||
-                                                ""
-                                            }
-                                            onChange={handleInputChange}
-                                            autoComplete="off"
-                                            list="economicActivityMainReadableList"
-                                            className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="Actividad(es) Económica(s)"
-                                        />
-                                        <datalist id="economicActivityMainReadableList">
-                                            {economicActivitiesData?.allEconomicActivities?.map(
-                                                (
-                                                    n: IEconomicActivity,
-                                                    index: number
-                                                ) => (
-                                                    <option
-                                                        key={index}
-                                                        value={n.name}
-                                                        data-key={n.code}
+                                            {person.documentType === "6" && (
+                                                <div className="sm:col-span-4">
+                                                    <label
+                                                        htmlFor="economicActivityMainReadable"
+                                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                    >
+                                                        Actividad Económica
+                                                        (Principal):
+                                                    </label>
+                                                    <input
+                                                        type="search"
+                                                        id="economicActivityMainReadable"
+                                                        disabled={
+                                                            economicActivitiesLoading
+                                                        }
+                                                        name="economicActivityMainReadable"
+                                                        value={
+                                                            person.economicActivityMainReadable ||
+                                                            ""
+                                                        }
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        autoComplete="off"
+                                                        list="economicActivityMainReadableList"
+                                                        className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                        placeholder="Actividad(es) Económica(s)"
                                                     />
-                                                )
+                                                    <datalist id="economicActivityMainReadableList">
+                                                        {economicActivitiesData?.allEconomicActivities?.map(
+                                                            (
+                                                                n: IEconomicActivity,
+                                                                index: number
+                                                            ) => (
+                                                                <option
+                                                                    key={index}
+                                                                    value={
+                                                                        n.name
+                                                                    }
+                                                                    data-key={
+                                                                        n.code
+                                                                    }
+                                                                />
+                                                            )
+                                                        )}
+                                                    </datalist>
+                                                </div>
                                             )}
-                                        </datalist>
-                                    </div>
+                                            <div className="sm:col-span-2">
+                                                <label
+                                                    htmlFor="email"
+                                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                >
+                                                    Email
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    id="email"
+                                                    name="email"
+                                                    value={person.email || ""}
+                                                    onChange={handleInputChange}
+                                                    autoComplete="off"
+                                                    className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    placeholder="uncorreo@gmail.com"
+                                                />
+                                            </div>
 
-                                    <div className="sm:col-span-2">
-                                        <label
-                                            htmlFor="email"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            Email
-                                        </label>
-                                        <input
-                                            type="email"
-                                            id="email"
-                                            name="email"
-                                            value={person.email || ""}
-                                            onChange={handleInputChange}
-                                            autoComplete="off"
-                                            className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="uncorreo@gmail.com"
-                                        />
-                                    </div>
+                                            <div className="sm:col-span-2">
+                                                <label
+                                                    htmlFor="phone"
+                                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                >
+                                                    Celular
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    id="phone"
+                                                    name="phone"
+                                                    value={person.phone || ""}
+                                                    onChange={handleInputChange}
+                                                    autoComplete="off"
+                                                    className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    placeholder="921267878"
+                                                />
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    {/* Group address information */}
+                                    <fieldset className="sm:col-span-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-4">
+                                        <legend className="text-sm font-semibold px-2">
+                                            Ubicación
+                                        </legend>
+                                        <div className="grid gap-4 sm:grid-cols-4">
+                                            {/* Address, Department, Province, District fields */}
+                                            {person.documentType === "6" && (
+                                                <div className="sm:col-span-4">
+                                                    <label
+                                                        htmlFor="address"
+                                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                    >
+                                                        Dirección fiscal
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        id="address"
+                                                        name="address"
+                                                        value={
+                                                            person.address || ""
+                                                        }
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        autoComplete="off"
+                                                        className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                        placeholder="Av. Aviacion S/N"
+                                                    />
+                                                </div>
+                                            )}
+                                            <div className="sm:col-span-1">
+                                                {departmentsLoading ? (
+                                                    <div className="text-gray-900 dark:text-white">
+                                                        Cargando...
+                                                    </div>
+                                                ) : departmentsError ? (
+                                                    <div className="text-red-600 dark:text-red-400">
+                                                        Error: No autorizado o
+                                                        error en la consulta.{" "}
+                                                        {
+                                                            departmentsError.message
+                                                        }
+                                                    </div>
+                                                ) : departmentsData ? (
+                                                    <>
+                                                        <label
+                                                            htmlFor="departmentId"
+                                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                        >
+                                                            Departamento
+                                                        </label>
+                                                        <select
+                                                            id="departmentId"
+                                                            name="departmentId"
+                                                            value={
+                                                                person?.departmentId
+                                                            }
+                                                            onChange={
+                                                                handleInputChange
+                                                            }
+                                                            required
+                                                            className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                        >
+                                                            <option value={"0"}>
+                                                                ELEGIR
+                                                            </option>
+                                                            {departmentsData?.departments?.map(
+                                                                (
+                                                                    d: IDepartment,
+                                                                    k: number
+                                                                ) => (
+                                                                    <option
+                                                                        key={k}
+                                                                        value={
+                                                                            d.id
+                                                                        }
+                                                                    >
+                                                                        {d.description.replace(
+                                                                            "DEPARTAMENTO ",
+                                                                            ""
+                                                                        )}
+                                                                    </option>
+                                                                )
+                                                            )}
+                                                        </select>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                            Departamento
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                            disabled
+                                                            value={
+                                                                "No hay datos..."
+                                                            }
+                                                        />
+                                                    </>
+                                                )}
+                                            </div>
 
-                                    <div className="sm:col-span-1">
-                                        <label
-                                            htmlFor="phone"
-                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                        >
-                                            Celular
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="phone"
-                                            name="phone"
-                                            value={person.phone || ""}
-                                            onChange={handleInputChange}
-                                            autoComplete="off"
-                                            className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="921267878"
-                                        />
-                                    </div>
+                                            <div className="sm:col-span-1">
+                                                {provincesLoading ? (
+                                                    <div className="text-gray-900 dark:text-white">
+                                                        Cargando...
+                                                    </div>
+                                                ) : provincesError ? (
+                                                    <div className="text-red-600 dark:text-red-400">
+                                                        Error: No autorizado o
+                                                        error en la consulta.{" "}
+                                                        {provincesError.message}
+                                                    </div>
+                                                ) : provincesData ? (
+                                                    <>
+                                                        <label
+                                                            htmlFor="provinceId"
+                                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                        >
+                                                            Provincia
+                                                        </label>
+                                                        <select
+                                                            id="provinceId"
+                                                            name="provinceId"
+                                                            value={
+                                                                person?.provinceId
+                                                            }
+                                                            onChange={
+                                                                handleInputChange
+                                                            }
+                                                            required
+                                                            className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                        >
+                                                            <option value={"0"}>
+                                                                ELEGIR
+                                                            </option>
+                                                            {provincesData?.provincesByDepartmentId?.map(
+                                                                (
+                                                                    d: IProvince,
+                                                                    k: number
+                                                                ) => (
+                                                                    <option
+                                                                        key={k}
+                                                                        value={
+                                                                            d.id
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            d.description
+                                                                        }
+                                                                    </option>
+                                                                )
+                                                            )}
+                                                        </select>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                            Provincia
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                            disabled
+                                                            value={
+                                                                "Seleccione..."
+                                                            }
+                                                        />
+                                                    </>
+                                                )}
+                                            </div>
+
+                                            <div className="sm:col-span-1">
+                                                {districtsLoading ? (
+                                                    <div className="text-gray-900 dark:text-white">
+                                                        Cargando...
+                                                    </div>
+                                                ) : districtsError ? (
+                                                    <div className="text-red-600 dark:text-red-400">
+                                                        Error: No autorizado o
+                                                        error en la consulta.{" "}
+                                                        {districtsError.message}
+                                                    </div>
+                                                ) : districtsData ? (
+                                                    <>
+                                                        <label
+                                                            htmlFor="districtId"
+                                                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                        >
+                                                            Distrito
+                                                        </label>
+                                                        <select
+                                                            id="districtId"
+                                                            name="districtId"
+                                                            value={
+                                                                person?.districtId
+                                                            }
+                                                            onChange={
+                                                                handleInputChange
+                                                            }
+                                                            required
+                                                            className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                        >
+                                                            <option value={"0"}>
+                                                                ELEGIR
+                                                            </option>
+                                                            {districtsData?.districtsByProvinceId?.map(
+                                                                (
+                                                                    d: IDistrict,
+                                                                    k: number
+                                                                ) => (
+                                                                    <option
+                                                                        key={k}
+                                                                        value={
+                                                                            d.id
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            d.description
+                                                                        }
+                                                                    </option>
+                                                                )
+                                                            )}
+                                                        </select>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                            Distrito
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                            disabled
+                                                            value={
+                                                                "No hay datos..."
+                                                            }
+                                                        />
+                                                    </>
+                                                )}
+                                            </div>
+
+                                            <div className="sm:col-span-1">
+                                                <label
+                                                    htmlFor="countryReadable"
+                                                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                                >
+                                                    País
+                                                </label>
+                                                <input
+                                                    type="search"
+                                                    id="countryReadable"
+                                                    disabled={countriesLoading}
+                                                    name="countryReadable"
+                                                    value={
+                                                        person.countryReadable
+                                                    }
+                                                    onChange={handleInputChange}
+                                                    autoComplete="off"
+                                                    list="countryList"
+                                                    className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    placeholder="País"
+                                                />
+                                                <datalist id="countryList">
+                                                    {countriesData?.allCountries?.map(
+                                                        (
+                                                            n: ICountry,
+                                                            index: number
+                                                        ) => (
+                                                            <option
+                                                                key={index}
+                                                                value={n.name}
+                                                                data-key={
+                                                                    n.code
+                                                                }
+                                                            />
+                                                        )
+                                                    )}
+                                                </datalist>
+                                            </div>
+                                        </div>
+                                    </fieldset>
 
                                     <div className="sm:col-span-4">
                                         <div className="flex items-center">

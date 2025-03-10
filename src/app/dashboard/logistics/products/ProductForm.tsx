@@ -140,12 +140,16 @@ function ProductForm({
     authContext,
     typeAffectationsData,
     PRODUCTS_QUERY,
+    getVariables,
 }: any) {
     const {
         loading: unitsLoading,
         error: unitsError,
         data: unitsData,
     } = useQuery(UNIT_QUERY, {
+        onError(error) {
+            console.error("Units query error:", error);
+        },
         context: authContext,
         skip: !auth?.jwtToken,
     });
@@ -154,10 +158,6 @@ function ProductForm({
         mutation: DocumentNode,
         refetchQuery: DocumentNode
     ) {
-        const getVariables = () => ({
-            subsidiaryId: Number(auth?.user?.subsidiaryId),
-        });
-
         return useMutation(mutation, {
             context: authContext,
             refetchQueries: () => [
@@ -167,7 +167,23 @@ function ProductForm({
                     variables: getVariables(),
                 },
             ],
-            onError: (err) => console.error("Error in unit:", err), // Log the error for debugging
+            onError: (error) => {
+                // Check if we actually have data despite the error
+                if (error.graphQLErrors?.length === 0 && error.networkError) {
+                    console.log(
+                        "Received data despite error:",
+                        error.networkError
+                    );
+                    return; // Don't treat this as an error if we have valid data
+                }
+
+                console.error("Mutation Error:", {
+                    message: error.message,
+                    graphQLErrors: error.graphQLErrors,
+                    networkError: error.networkError,
+                    result: error.networkError,
+                });
+            },
         });
     }
 
@@ -214,135 +230,169 @@ function ProductForm({
 
     const handleSaveProduct = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
-        if (Number(product.typeAffectationId) === 0) {
-            toast("Por favor ingrese un tipo de afectacion", {
-                hideProgressBar: true,
-                autoClose: 2000,
-                type: "warning",
-            });
-            return;
-        }
-
-        if (Number(product.minimumUnitId) === 0) {
-            toast("Por favor ingrese una unidad de medida SUNAT Minima.", {
-                hideProgressBar: true,
-                autoClose: 2000,
-                type: "warning",
-            });
-            return;
-        }
-
-        if (Number(product.minimumFactor) === 0) {
-            toast("Por favor ingrese un factor para la unidad minima.", {
-                hideProgressBar: true,
-                autoClose: 2000,
-                type: "warning",
-            });
-            return;
-        }
-
-        if (Number(product.id) !== 0) {
-            // for updating
-            const values = {
-                id: Number(product.id),
-                code: product.code,
-                name: product.name,
-                available: product.available,
-                activeType: String(product.activeType).replace("A_", ""),
-                ean: product.ean,
-                weightInKilograms: Number(product.weightInKilograms),
-                typeAffectationId: Number(product.typeAffectationId),
-                subjectPerception: product.subjectPerception,
-                observation: product.observation,
-
-                priceWithIgv1: Number(product.priceWithIgv1),
-                priceWithoutIgv1: Number(product.priceWithoutIgv1),
-
-                priceWithIgv2: Number(product.priceWithIgv2),
-                priceWithoutIgv2: Number(product.priceWithoutIgv2),
-
-                priceWithIgv3: Number(product.priceWithIgv3),
-                priceWithoutIgv3: Number(product.priceWithoutIgv3),
-
-                priceWithIgv4: Number(product.priceWithIgv4),
-                priceWithoutIgv4: Number(product.priceWithoutIgv4),
-
-                minimumUnitId: Number(product.minimumUnitId),
-                maximumUnitId: Number(product.maximumUnitId),
-                maximumFactor: Number(product.maximumFactor),
-                minimumFactor: Number(product.minimumFactor),
-            };
-            const { data, errors } = await updateProduct({
-                variables: values,
-            });
-            if (errors) {
-                toast(errors.toString(), {
+        try {
+            if (Number(product.typeAffectationId) === 0) {
+                toast("Por favor ingrese un tipo de afectacion", {
                     hideProgressBar: true,
                     autoClose: 2000,
-                    type: "error",
+                    type: "warning",
                 });
-            } else {
-                toast(data.updateProduct.message, {
-                    hideProgressBar: true,
-                    autoClose: 2000,
-                    type: "success",
-                });
-                setProduct(initialStateProduct);
-                modalProduct.hide();
+                return;
             }
-        } else {
-            // for creating
-            const values = {
-                code: product.code,
-                name: product.name,
-                available: product.available,
-                activeType: product.activeType,
-                ean: product.ean,
-                weightInKilograms: Number(product.weightInKilograms),
-                typeAffectationId: Number(product.typeAffectationId),
-                subjectPerception: product.subjectPerception,
-                observation: product.observation,
 
-                priceWithIgv1: Number(product.priceWithIgv1),
-                priceWithoutIgv1: Number(product.priceWithoutIgv1),
-
-                priceWithIgv2: Number(product.priceWithIgv2),
-                priceWithoutIgv2: Number(product.priceWithoutIgv2),
-
-                priceWithIgv3: Number(product.priceWithIgv3),
-                priceWithoutIgv3: Number(product.priceWithoutIgv3),
-
-                priceWithIgv4: Number(product.priceWithIgv4),
-                priceWithoutIgv4: Number(product.priceWithoutIgv4),
-
-                minimumUnitId: Number(product.minimumUnitId),
-                maximumUnitId: Number(product.maximumUnitId),
-                maximumFactor: Number(product.maximumFactor),
-                minimumFactor: Number(product.minimumFactor),
-            };
-            const { data, errors } = await createProduct({
-                variables: values,
-            });
-
-            if (errors) {
-                toast(errors.toString(), {
+            if (Number(product.minimumUnitId) === 0) {
+                toast("Por favor ingrese una unidad de medida SUNAT Minima.", {
                     hideProgressBar: true,
                     autoClose: 2000,
-                    type: "error",
+                    type: "warning",
                 });
-            } else {
-                toast(data.createProduct.message, {
-                    hideProgressBar: true,
-                    autoClose: 2000,
-                    type: "success",
-                });
-                // const pdt = data.createProduct.product;
-                // if(pdt)
-                //     setProduct({...product, id: pdt.id, name: pdt.name});
-                setProduct(initialStateProduct);
-                modalProduct.hide();
+                return;
             }
+
+            if (Number(product.minimumFactor) === 0) {
+                toast("Por favor ingrese un factor para la unidad minima.", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "warning",
+                });
+                return;
+            }
+
+            if (Number(product.id) !== 0) {
+                // for updating
+                const values = {
+                    id: Number(product.id),
+                    code: product.code,
+                    name: product.name,
+                    available: product.available,
+                    activeType: String(product.activeType).replace("A_", ""),
+                    ean: product.ean,
+                    weightInKilograms: Number(product.weightInKilograms),
+                    typeAffectationId: Number(product.typeAffectationId),
+                    subjectPerception: product.subjectPerception,
+                    observation: product.observation,
+
+                    priceWithIgv1: Number(product.priceWithIgv1),
+                    priceWithoutIgv1: Number(product.priceWithoutIgv1),
+
+                    priceWithIgv2: Number(product.priceWithIgv2),
+                    priceWithoutIgv2: Number(product.priceWithoutIgv2),
+
+                    priceWithIgv3: Number(product.priceWithIgv3),
+                    priceWithoutIgv3: Number(product.priceWithoutIgv3),
+
+                    priceWithIgv4: Number(product.priceWithIgv4),
+                    priceWithoutIgv4: Number(product.priceWithoutIgv4),
+
+                    minimumUnitId: Number(product.minimumUnitId),
+                    maximumUnitId: Number(product.maximumUnitId),
+                    maximumFactor: Number(product.maximumFactor),
+                    minimumFactor: Number(product.minimumFactor),
+                };
+                const { data, errors } = await updateProduct({
+                    variables: values,
+                });
+                if (errors) {
+                    console.error("GraphQL Errors:", errors);
+                    toast(errors[0]?.message || "Error updating product", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
+                    return;
+                } else {
+                    toast(data.updateProduct.message, {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "success",
+                    });
+                    setProduct(initialStateProduct);
+                    modalProduct.hide();
+                }
+            } else {
+                // for creating
+                const values = {
+                    code: product.code,
+                    name: product.name,
+                    available: product.available,
+                    activeType: product.activeType,
+                    ean: product.ean,
+                    weightInKilograms: Number(product.weightInKilograms),
+                    typeAffectationId: Number(product.typeAffectationId),
+                    subjectPerception: product.subjectPerception,
+                    observation: product.observation,
+
+                    priceWithIgv1: Number(product.priceWithIgv1),
+                    priceWithoutIgv1: Number(product.priceWithoutIgv1),
+
+                    priceWithIgv2: Number(product.priceWithIgv2),
+                    priceWithoutIgv2: Number(product.priceWithoutIgv2),
+
+                    priceWithIgv3: Number(product.priceWithIgv3),
+                    priceWithoutIgv3: Number(product.priceWithoutIgv3),
+
+                    priceWithIgv4: Number(product.priceWithIgv4),
+                    priceWithoutIgv4: Number(product.priceWithoutIgv4),
+
+                    minimumUnitId: Number(product.minimumUnitId),
+                    maximumUnitId: Number(product.maximumUnitId),
+                    maximumFactor: Number(product.maximumFactor),
+                    minimumFactor: Number(product.minimumFactor),
+                };
+                try {
+                    const response = await createProduct({
+                        variables: values,
+                    });
+
+                    // Check if we have data despite any errors
+                    if (response.data?.createProduct) {
+                        toast(response.data.createProduct.message, {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "success",
+                        });
+                        setProduct(initialStateProduct);
+                        modalProduct.hide();
+                    } else if (response.errors) {
+                        console.error("GraphQL Errors:", response.errors);
+                        toast(
+                            response.errors[0]?.message ||
+                                "Error creating product",
+                            {
+                                hideProgressBar: true,
+                                autoClose: 2000,
+                                type: "error",
+                            }
+                        );
+                    }
+                } catch (error: any) {
+                    // Check if we have data in the error response
+                    if (error.networkError?.result?.data?.createProduct) {
+                        const data = error.networkError.result.data;
+                        toast(data.createProduct.message, {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "success",
+                        });
+                        setProduct(initialStateProduct);
+                        modalProduct.hide();
+                    } else {
+                        console.error("Mutation Error:", error);
+                        toast(error?.message || "Error processing request", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                        });
+                    }
+                }
+            }
+        } catch (error: any) {
+            console.error("Form Submission Error:", error);
+            toast(error?.message || "An unexpected error occurred", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "error",
+            });
         }
     };
 
@@ -360,7 +410,16 @@ function ProductForm({
             setModalProduct(new Modal($targetEl, options));
         }
     }, [modalProduct, setModalProduct]);
-
+    // // Add this to check the query status
+    // useEffect(() => {
+    //     console.log({
+    //         loading: unitsLoading,
+    //         error: unitsError,
+    //         data: unitsData,
+    //         authToken: auth?.jwtToken,
+    //         context: authContext,
+    //     });
+    // }, [unitsLoading, unitsError, unitsData, auth, authContext]);
     return (
         <>
             {/* Large Modal */}

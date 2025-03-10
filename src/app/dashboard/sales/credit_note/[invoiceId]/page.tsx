@@ -12,8 +12,16 @@ import SaleTotalList from "../../SaleTotalList";
 import WayPayForm from "../../WayPayForm";
 import Save from "@/components/icons/Save";
 import { toast } from "react-toastify";
-const today = new Date().toISOString().split("T")[0];
-
+// Replace the current today constant with this:
+const limaDate = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+);
+const today =
+    limaDate.getFullYear() +
+    "-" +
+    String(limaDate.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(limaDate.getDate()).padStart(2, "0");
 const initialStateCreditNote = {
     id: 0,
     serial: "",

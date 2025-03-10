@@ -369,69 +369,147 @@ function ProductList({
                             className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                         >
                             {visibleColumns.id && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {item.id}
                                 </td>
                             )}
 
                             {visibleColumns.name && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {item.name}
                                 </td>
                             )}
 
                             {visibleColumns.code && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {item.code}
                                 </td>
                             )}
                             {visibleColumns.price1WithIgv && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {Number(item.priceWithIgv1).toFixed(2)}
                                 </td>
                             )}
                             {visibleColumns.price1WithoutIgv && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {Number(item.priceWithoutIgv1).toFixed(2)}
                                 </td>
                             )}
                             {visibleColumns.price2WithIgv && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {Number(item.priceWithIgv2).toFixed(2)}
                                 </td>
                             )}
                             {visibleColumns.price2WithoutIgv && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {Number(item.priceWithoutIgv2).toFixed(2)}
                                 </td>
                             )}
                             {visibleColumns.price3WithIgv && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {Number(item.priceWithIgv3).toFixed(2)}
                                 </td>
                             )}
                             {visibleColumns.price3WithoutIgv && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {Number(item.priceWithoutIgv3).toFixed(2)}
                                 </td>
                             )}
                             {visibleColumns.price4WithIgv && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {Number(item.priceWithIgv4).toFixed(2)}
                                 </td>
                             )}
                             {visibleColumns.price4WithoutIgv && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {Number(item.priceWithoutIgv4).toFixed(2)}
                                 </td>
                             )}
                             {visibleColumns.company && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {item?.subsidiary?.companyName}
                                 </td>
                             )}
                             {visibleColumns.subsidiary && (
-                                <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td
+                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
+                                        !item.available
+                                            ? "text-red-500 line-through"
+                                            : "text-gray-900 dark:text-white"
+                                    }`}
+                                >
                                     {item.subsidiary?.serial}
                                 </td>
                             )}

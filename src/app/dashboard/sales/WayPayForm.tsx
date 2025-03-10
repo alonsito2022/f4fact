@@ -12,6 +12,7 @@ const CREATE_SALE_MUTATION = gql`
     mutation CreateSale(
         $serial: String!
         $correlative: Int!
+        $operationType: String!
         $documentType: String!
         $currencyType: String!
         $saleExchangeRate: Float!
@@ -55,6 +56,7 @@ const CREATE_SALE_MUTATION = gql`
         createSale(
             serial: $serial
             correlative: $correlative
+            operationType: $operationType
             documentType: $documentType
             currencyType: $currencyType
             saleExchangeRate: $saleExchangeRate
@@ -212,6 +214,7 @@ function WayPayForm({
                 correlative: parseInt(
                     invoice.correlative === "" ? "0" : invoice.correlative
                 ),
+                operationType: invoice.operationType,
                 documentType: invoice.documentType,
                 currencyType: invoice.currencyType,
                 saleExchangeRate: parseFloat(invoice.saleExchangeRate) || 0,

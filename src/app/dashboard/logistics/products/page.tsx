@@ -151,12 +151,6 @@ function ProductPage() {
         "name"
     );
 
-    useEffect(() => {
-        if (auth?.jwtToken) {
-            fetchProducts(); // Llama a productsQuery() a través de fetchProducts()
-        }
-    }, [auth?.jwtToken]);
-
     const {
         loading: typeAffectationsLoading,
         error: typeAffectationsError,
@@ -166,7 +160,9 @@ function ProductPage() {
         skip: !auth?.jwtToken, // Esto evita que la consulta se ejecute si no hay token
         onError: (err) => console.error("Error in typeAffectations:", err),
     });
-
+    const getVariables = () => ({
+        subsidiaryId: Number(productFilterObj?.subsidiaryId),
+    });
     const [
         productsQuery,
         {
@@ -176,9 +172,7 @@ function ProductPage() {
         },
     ] = useLazyQuery(PRODUCTS_QUERY, {
         context: authContext,
-        variables: {
-            subsidiaryId: Number(productFilterObj?.subsidiaryId),
-        },
+        variables: getVariables(),
         fetchPolicy: "network-only",
         // onCompleted: (data) => {},
         onError: (err) => console.error("Error in products:", err),
@@ -188,6 +182,12 @@ function ProductPage() {
         setProducts([]);
         productsQuery();
     };
+
+    useEffect(() => {
+        if (auth?.jwtToken) {
+            fetchProducts(); // Llama a productsQuery() a través de fetchProducts()
+        }
+    }, [auth?.jwtToken]);
 
     const filteredProducts = useMemo(() => {
         if (filteredProductsData) {
@@ -262,6 +262,7 @@ function ProductPage() {
                 authContext={authContext}
                 typeAffectationsData={typeAffectationsData}
                 PRODUCTS_QUERY={PRODUCTS_QUERY}
+                getVariables={getVariables}
             />
             <ProductCriteriaForm
                 modalCriteria={modalCriteria}

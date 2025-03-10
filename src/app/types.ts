@@ -301,7 +301,7 @@ export interface IGuideReasonType {
 }
 
 export interface IOperationType {
-    code: number;
+    code: string;
     name: string;
 }
 
@@ -323,6 +323,7 @@ export interface IOperation {
     serial?: string;
     correlative?: string;
     emitDate?: string;
+    operationType?: string;
     operationDate?: string;
     supplierName?: string;
     supplierId?: number;

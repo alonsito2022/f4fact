@@ -3,7 +3,13 @@ import { useState, useEffect, useMemo, ChangeEvent, FormEvent } from "react";
 import Breadcrumb from "@/components/Breadcrumb";
 import { Modal, ModalOptions } from "flowbite";
 import { useQuery, gql } from "@apollo/client";
-import { IOperationDetail, IPerson, IProduct, IUser } from "@/app/types";
+import {
+    IOperationDetail,
+    IOperationType,
+    IPerson,
+    IProduct,
+    IUser,
+} from "@/app/types";
 import Search from "@/components/icons/Search";
 import Add from "@/components/icons/Add";
 import Edit from "@/components/icons/Edit";
@@ -18,7 +24,16 @@ import SunatCancel from "@/components/icons/SunatCancel";
 import ClientForm from "../ClientForm";
 import SaleDetailList from "../SaleDetailList";
 import SaleTotalList from "../SaleTotalList";
-const today = new Date().toISOString().split("T")[0];
+// Replace the current today constant with this:
+const limaDate = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+);
+const today =
+    limaDate.getFullYear() +
+    "-" +
+    String(limaDate.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(limaDate.getDate()).padStart(2, "0");
 
 const CLIENTS_QUERY = gql`
     query {
@@ -32,8 +47,8 @@ const CLIENTS_QUERY = gql`
     }
 `;
 const PRODUCTS_QUERY = gql`
-    query ($subsidiaryId: Int!) {
-        allProducts(subsidiaryId: $subsidiaryId) {
+    query ($subsidiaryId: Int!, $available: Boolean!) {
+        allProducts(subsidiaryId: $subsidiaryId, available: $available) {
             id
             code
             name
@@ -52,6 +67,22 @@ const PRODUCTS_QUERY = gql`
             typeAffectationName
             subjectPerception
             observation
+            priceWithIgv1
+            priceWithIgv2
+            priceWithIgv3
+            priceWithIgv4
+            priceWithoutIgv1
+            priceWithoutIgv2
+            priceWithoutIgv3
+            priceWithoutIgv4
+        }
+    }
+`;
+const TYPE_OPERATION_QUERY = gql`
+    query {
+        allOperationTypes {
+            code
+            name
         }
     }
 `;
@@ -106,6 +137,7 @@ const initialStateSale = {
     totalTurned: "",
     creditNoteType: "NA",
     parentOperationId: 0,
+    operationType: "0101",
 };
 const initialStateSaleDetail = {
     id: 0,
@@ -174,6 +206,9 @@ const initialStateProduct = {
 
     priceWithIgv3: 0,
     priceWithoutIgv3: 0,
+
+    priceWithIgv4: 0,
+    priceWithoutIgv4: 0,
 
     minimumUnitId: 0,
     maximumUnitId: 0,
@@ -291,6 +326,7 @@ function NewSalePage() {
 
     const getVariables = () => ({
         subsidiaryId: Number(auth?.user?.subsidiaryId),
+        available: true,
     });
     const {
         loading: personsLoading,
@@ -307,8 +343,20 @@ function NewSalePage() {
     } = useQuery(PRODUCTS_QUERY, {
         context: authContext,
         variables: getVariables(),
+        fetchPolicy: "network-only",
+        onError: (err) => console.error("Error in products:", err),
         skip: !auth?.jwtToken,
     });
+
+    const {
+        loading: operationTypesLoading,
+        error: operationTypesError,
+        data: operationTypesData,
+    } = useQuery(TYPE_OPERATION_QUERY, {
+        context: authContext,
+        skip: !auth?.jwtToken,
+    });
+
     const {
         loading: typeAffectationsLoading,
         error: typeAffectationsError,
@@ -463,7 +511,10 @@ function NewSalePage() {
                         <div className="overflow-hidden shadow-lg rounded-lg">
                             <div className="p-4 md:p-5 space-y-6">
                                 <div className="grid gap-6 lg:grid-cols-5 sm:grid-cols-1 md:grid-cols-3">
-                                    <fieldset className="sm:col-span-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                    <fieldset className="sm:col-span-2 border-2 border-blue-200 dark:border-blue-900 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
+                                        <legend className="px-2 text-blue-600 dark:text-blue-400 font-semibold text-sm">
+                                            Información General
+                                        </legend>
                                         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                                             {/* IGV % */}
                                             <div>
@@ -527,6 +578,54 @@ function NewSalePage() {
                                                     </option>
                                                 </select>
                                             </div>
+                                            {/* Tipo operacion */}
+                                            <div>
+                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Tipo operacion
+                                                </label>
+                                                <select
+                                                    value={sale.operationType}
+                                                    name="operationType"
+                                                    onChange={handleSale}
+                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm uppercase"
+                                                    required
+                                                >
+                                                    {operationTypesData?.allOperationTypes
+                                                        ?.filter(
+                                                            (
+                                                                o: IOperationType
+                                                            ) =>
+                                                                [
+                                                                    "0101", // Venta interna
+                                                                    "0200", // Exportación
+                                                                    "0502", // Anticipos
+                                                                    "0401", // Ventas no domiciliados
+                                                                    "1001", // Operación Sujeta a Detracción
+                                                                    "1002", // Operación Sujeta a Detracción- Recursos Hidrobiológicos
+                                                                    "1003", // Operación Sujeta a Detracción- Servicios de Transporte Pasajeros
+                                                                    "1004", // Operación Sujeta a Detracción- Servicios de Transporte Carga
+                                                                    "2001", // Operación Sujeta a Percepción
+                                                                ].includes(
+                                                                    o.code
+                                                                )
+                                                        )
+                                                        .map(
+                                                            (
+                                                                o: IOperationType,
+                                                                k: number
+                                                            ) => (
+                                                                <option
+                                                                    key={k}
+                                                                    value={
+                                                                        o.code
+                                                                    }
+                                                                >
+                                                                    {o.name}
+                                                                </option>
+                                                            )
+                                                        )}
+                                                </select>
+                                            </div>
                                             {/* Fecha emisión */}
                                             <div>
                                                 <label
@@ -551,9 +650,13 @@ function NewSalePage() {
                                         </div>
                                     </fieldset>
 
-                                    <fieldset className="sm:col-span-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                    <fieldset className="sm:col-span-3 border-2 border-cyan-200 dark:border-cyan-900 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative hover:border-cyan-300 dark:hover:border-cyan-800 transition-colors duration-300">
+                                        <legend className="px-2 text-cyan-600 dark:text-cyan-400 font-semibold text-sm">
+                                            Datos del Cliente
+                                        </legend>
                                         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                                             {/* Cliente */}
+
                                             <div className="md:col-span-4">
                                                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                     Cliente
@@ -909,11 +1012,12 @@ function NewSalePage() {
                 setModalProduct={setModalProduct}
                 product={product}
                 setProduct={setProduct}
-                jwtToken={auth?.jwtToken}
                 initialStateProduct={initialStateProduct}
+                auth={auth}
+                authContext={authContext}
                 typeAffectationsData={typeAffectationsData}
                 PRODUCTS_QUERY={PRODUCTS_QUERY}
-                productFilterObj={productFilterObj}
+                getVariables={getVariables}
             />
             <ClientForm
                 modalAddClient={modalAddClient}
