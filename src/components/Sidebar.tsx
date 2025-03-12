@@ -12,7 +12,7 @@ import { useSidebar } from "@/components/context/SidebarContext";
 function Sidebar() {
     const { data: session } = useSession();
     const u = session?.user as IUser;
-    const { isSidebarOpen } = useSidebar();
+    const { isSidebarOpen, toggleSidebar } = useSidebar();
 
     useEffect(() => {
         if (u !== undefined) {
@@ -32,7 +32,9 @@ function Sidebar() {
     const seleccionarOpcion = (indice: number) => {
         setOpcionSeleccionada(indice);
     };
-
+    const handleLinkClick = () => {
+        toggleSidebar();
+    };
     return (
         <>
             <aside
@@ -142,6 +144,7 @@ function Sidebar() {
                                             <Link
                                                 href="/dashboard/users/users"
                                                 className="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                                onClick={handleLinkClick}
                                             >
                                                 Usuarios
                                             </Link>
@@ -150,6 +153,7 @@ function Sidebar() {
                                             <Link
                                                 href="/dashboard/users/companies"
                                                 className="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                                onClick={handleLinkClick}
                                             >
                                                 Empresa
                                             </Link>
@@ -158,6 +162,7 @@ function Sidebar() {
                                             <Link
                                                 href="/dashboard/users/subsidiaries"
                                                 className="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                                onClick={handleLinkClick}
                                             >
                                                 Sedes/locales
                                             </Link>
@@ -209,6 +214,7 @@ function Sidebar() {
                                             <Link
                                                 href="/dashboard/logistics/products"
                                                 className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                                onClick={handleLinkClick}
                                             >
                                                 Productos
                                             </Link>
@@ -217,6 +223,7 @@ function Sidebar() {
                                             <Link
                                                 href="/dashboard/logistics/units"
                                                 className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                                onClick={handleLinkClick}
                                             >
                                                 Unidades
                                             </Link>
@@ -226,6 +233,7 @@ function Sidebar() {
                                             <Link
                                                 href="/dashboard/logistics/warehouses"
                                                 className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                                onClick={handleLinkClick}
                                             >
                                                 Almacenes
                                             </Link>
@@ -283,6 +291,7 @@ function Sidebar() {
                                             <Link
                                                 href="/dashboard/persons"
                                                 className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                                onClick={handleLinkClick}
                                             >
                                                 Clientes y Proveedores
                                             </Link>
@@ -402,6 +411,7 @@ function Sidebar() {
                                             <Link
                                                 href="/dashboard/sales"
                                                 className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                                onClick={handleLinkClick}
                                             >
                                                 Ventas
                                             </Link>
@@ -410,6 +420,7 @@ function Sidebar() {
                                             <Link
                                                 href="/dashboard/sales/new"
                                                 className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                                onClick={handleLinkClick}
                                             >
                                                 Nueva Venta
                                             </Link>
@@ -462,6 +473,7 @@ function Sidebar() {
                                             <Link
                                                 href="/dashboard/guides"
                                                 className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                                onClick={handleLinkClick}
                                             >
                                                 Ver Guías
                                             </Link>
@@ -470,6 +482,7 @@ function Sidebar() {
                                             <Link
                                                 href="/dashboard/guides/new"
                                                 className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                                onClick={handleLinkClick}
                                             >
                                                 Nueva Guía
                                             </Link>
