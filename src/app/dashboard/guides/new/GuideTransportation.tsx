@@ -249,47 +249,50 @@ function GuideTransportation({
                                             </div>
                                         </div>
                                     </fieldset>
-                                    <fieldset className="border border-gray-300 dark:border-gray-600 p-4 rounded-lg shadow-sm bg-white dark:bg-gray-800">
-                                        <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                            Datos de los Vehículos Secundarios
-                                            (Máximo 2 vehículos)
-                                        </legend>
-                                        <div className="grid  gap-4">
-                                            {guide.othersVehicles.map(
-                                                (
-                                                    item: IVehicle,
-                                                    index: number
-                                                ) => (
-                                                    <div
-                                                        key={index}
-                                                        className="grid md:grid-cols-6 lg:grid-cols-6 gap-4"
-                                                    >
-                                                        <GuideVehicleItem
-                                                            index={index}
-                                                            item={item}
-                                                            onRemove={() =>
-                                                                handleRemoveVehicle(
-                                                                    index
-                                                                )
-                                                            }
-                                                            onChange={
-                                                                handleVehicleChange
-                                                            }
-                                                        />
-                                                    </div>
-                                                )
-                                            )}
-                                        </div>
-                                    </fieldset>
+                                    {guide?.documentType === "09" && (
+                                        <fieldset className="border border-gray-300 dark:border-gray-600 p-4 rounded-lg shadow-sm bg-white dark:bg-gray-800">
+                                            <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                                Datos de los Vehículos
+                                                Secundarios (Máximo 2 vehículos)
+                                            </legend>
+                                            <div className="grid  gap-4">
+                                                {guide.othersVehicles.map(
+                                                    (
+                                                        item: IVehicle,
+                                                        index: number
+                                                    ) => (
+                                                        <div
+                                                            key={index}
+                                                            className="grid md:grid-cols-6 lg:grid-cols-6 gap-4"
+                                                        >
+                                                            <GuideVehicleItem
+                                                                index={index}
+                                                                item={item}
+                                                                onRemove={() =>
+                                                                    handleRemoveVehicle(
+                                                                        index
+                                                                    )
+                                                                }
+                                                                onChange={
+                                                                    handleVehicleChange
+                                                                }
+                                                            />
+                                                        </div>
+                                                    )
+                                                )}
+                                            </div>
+                                        </fieldset>
+                                    )}
                                 </div>
-
-                                <button
-                                    type="button"
-                                    className="px-5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
-                                    onClick={handleAddVehicle}
-                                >
-                                    AGREGAR VEHÍCULO
-                                </button>
+                                {guide?.documentType === "09" && (
+                                    <button
+                                        type="button"
+                                        className="px-5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
+                                        onClick={handleAddVehicle}
+                                    >
+                                        AGREGAR VEHÍCULO
+                                    </button>
+                                )}
                             </div>
                         </>
                     )}

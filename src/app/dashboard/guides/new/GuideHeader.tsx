@@ -3,8 +3,8 @@ import { gql, useLazyQuery, useQuery } from "@apollo/client";
 import React, { ChangeEvent, useEffect, useState } from "react";
 
 const SEARCH_CLIENT_BY_PARAMETER = gql`
-    query ($search: String!) {
-        searchClientByParameter(search: $search) {
+    query ($search: String!, $documentType: String) {
+        searchClientByParameter(search: $search, documentType: $documentType) {
             id
             documentType
             documentNumber
@@ -83,8 +83,17 @@ function GuideHeader({ guide, setGuide, handleGuide, auth, authContext }: any) {
     };
     useEffect(() => {
         if (clientSearch.length > 2) {
+            const queryVariables: { search: string; documentType?: string } = {
+                search: clientSearch,
+            };
+
+            if (guide?.documentType === "31") {
+                queryVariables.documentType = "6";
+            }
+            console.log(queryVariables);
+
             searchClientQuery({
-                variables: { search: clientSearch },
+                variables: queryVariables,
             });
         }
     }, [clientSearch]);
@@ -96,7 +105,9 @@ function GuideHeader({ guide, setGuide, handleGuide, auth, authContext }: any) {
             guide?.guideModeTransfer === "02"
         ) {
             searchClientQuery({
-                variables: { search: auth?.user?.companyDoc },
+                variables: {
+                    search: auth?.user?.companyDoc,
+                },
                 onCompleted: (data) => {
                     const clientFound = data?.searchClientByParameter[0];
                     if (clientFound) {
@@ -119,6 +130,18 @@ function GuideHeader({ guide, setGuide, handleGuide, auth, authContext }: any) {
             });
         }
     }, [guide?.guideReasonTransfer, guide?.guideModeTransfer]);
+
+    useEffect(() => {
+        if (guide?.documentType === "31") {
+            setGuide({
+                ...guide,
+                guideModeTransfer: "02",
+                clientId: "",
+                clientName: "",
+            });
+        }
+    }, [guide?.documentType]);
+
     return (
         <>
             <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">

@@ -56,7 +56,15 @@ function SaleList({
     const [cancelInvoice, { loading, error, data }] =
         useMutation(CANCEL_INVOICE);
     const handleCancelInvoice = (operationId: number) => {
-        const today = new Date().toISOString().split("T")[0]; // Obtiene la fecha actual en formato YYYY-MM-DD
+        const limaDate = new Date(
+            new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+        );
+        const today =
+            limaDate.getFullYear() +
+            "-" +
+            String(limaDate.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            String(limaDate.getDate()).padStart(2, "0");
 
         cancelInvoice({
             variables: {

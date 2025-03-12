@@ -9,7 +9,15 @@ import WhatsAppModal from "./WhatsAppModal";
 import { Modal } from "flowbite";
 import { useAuth } from "@/components/providers/AuthProvider";
 // import { useSession } from "next-auth/react";
-const today = new Date().toISOString().split("T")[0];
+const limaDate = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+);
+const today =
+    limaDate.getFullYear() +
+    "-" +
+    String(limaDate.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(limaDate.getDate()).padStart(2, "0");
 const initialStateFilterObj = {
     startDate: today,
     endDate: today,
