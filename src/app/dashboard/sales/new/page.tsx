@@ -132,12 +132,19 @@ const initialStateSale = {
     totalFree: "",
     totalAmount: "",
     totalPerception: "",
+    totalRetention: "",
     totalToPay: "",
     totalPayed: "",
     totalTurned: "",
     creditNoteType: "NA",
+    perceptionType: 0,
+    retentionType: 0,
     parentOperationId: 0,
     operationType: "0101",
+
+    hasPerception: false,
+    hasRetention: false,
+    hasDetraction: false,
 };
 const initialStateSaleDetail = {
     id: 0,
@@ -373,13 +380,22 @@ function NewSalePage() {
         context: authContext,
         skip: !auth?.jwtToken,
     });
-
     const handleSale = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
         >
     ) => {
         const { name, value } = event.target;
+        const target = event.target as HTMLInputElement;
+
+        if (target.type === "checkbox") {
+            setSale((prev) => ({
+                ...prev,
+                [name]: target.checked,
+            }));
+            return;
+        }
+
         if (name === "clientName" && event.target instanceof HTMLInputElement) {
             const dataList = event.target.list;
             if (dataList) {
@@ -396,8 +412,6 @@ function NewSalePage() {
                 } else {
                     setSale({ ...sale, clientName: value, clientId: 0 });
                 }
-            } else {
-                console.log("sin datalist");
             }
         } else {
             setSale({ ...sale, [name]: value });
@@ -921,7 +935,10 @@ function NewSalePage() {
                                     setInvoiceDetail={setSaleDetail}
                                     modalAddDetail={modalAddDetail}
                                 />
-                                <SaleTotalList invoice={sale} />
+                                <SaleTotalList
+                                    invoice={sale}
+                                    handleSale={handleSale}
+                                />
                                 {/* Botón Continuar con el Pago */}
                                 <div className="flex justify-end py-2">
                                     <button
