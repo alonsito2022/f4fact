@@ -8,6 +8,7 @@ import { gql, useMutation } from "@apollo/client";
 import SunatCheck from "@/components/icons/SunatCheck";
 import SunatCancel from "@/components/icons/SunatCancel";
 import Link from "next/link";
+import SalePagination from "./SalePagination";
 
 const CANCEL_INVOICE = gql`
     mutation CancelInvoice($operationId: Int!, $lowDate: Date!) {
@@ -183,6 +184,12 @@ function SaleList({
                             className="form-control-sm w-16 text-center"
                         />
                     </div>
+                    <SalePagination
+                        filterObj={filterObj}
+                        setFilterObj={setFilterObj}
+                        salesQuery={salesQuery}
+                        filteredSalesData={filteredSalesData}
+                    />
                 </div>
 
                 <table className="w-full border-collapse border border-gray-200 dark:border-gray-600">
@@ -725,62 +732,12 @@ function SaleList({
                         </tr>
                     </tfoot>
                 </table>
-                <div className="flex flex-row items-center my-4 gap-4 pl-3">
-                    <button
-                        className="btn-blue-xs"
-                        disabled={filterObj.page === 1}
-                        onClick={() => {
-                            setFilterObj({
-                                ...filterObj,
-                                page: filterObj.page - 1,
-                            });
-                            // Llama a salesQuery con los nuevos parámetros
-                            salesQuery({
-                                variables: {
-                                    subsidiaryId: Number(user?.subsidiaryId),
-                                    clientId: Number(filterObj.clientId),
-                                    startDate: filterObj.startDate,
-                                    endDate: filterObj.endDate,
-                                    documentType: filterObj.documentType,
-                                    page: filterObj.page - 1,
-                                    pageSize: Number(filterObj.pageSize),
-                                },
-                            });
-                        }}
-                    >
-                        Prev
-                    </button>
-                    <span className="text-sm">Página {filterObj.page}</span>
-                    <button
-                        className="btn-blue-xs"
-                        onClick={() => {
-                            setFilterObj({
-                                ...filterObj,
-                                page: filterObj.page + 1,
-                            });
-                            salesQuery({
-                                variables: {
-                                    subsidiaryId: Number(user?.subsidiaryId),
-                                    clientId: Number(filterObj.clientId),
-                                    startDate: filterObj.startDate,
-                                    endDate: filterObj.endDate,
-                                    documentType: filterObj.documentType,
-                                    page: filterObj.page + 1,
-                                    pageSize: Number(filterObj.pageSize),
-                                },
-                            });
-                        }}
-                        style={{
-                            display:
-                                filterObj.page ===
-                                filteredSalesData?.allSales?.totalNumberOfPages
-                                    ? "none"
-                                    : "inline-block",
-                        }}
-                    >
-                        Next
-                    </button>
-                </div>
+                <SalePagination
+                    filterObj={filterObj}
+                    setFilterObj={setFilterObj}
+                    salesQuery={salesQuery}
+                    filteredSalesData={filteredSalesData}
+                />
             </div>
         </>
     );
