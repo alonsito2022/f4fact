@@ -306,6 +306,24 @@ function WayPayForm({
                 totalTurned: parseFloat(invoice.totalTurned) || 0,
                 creditNoteType: invoice.creditNoteType,
                 parentOperationId: Number(invoice.parentOperationId) || 0,
+
+                hasPerception: invoice.hasPerception,
+                hasRetention: invoice.hasRetention,
+                hasDetraction: invoice.hasDetraction,
+
+                perceptionType: Number(invoice.perceptionType),
+                perceptionPercentage: invoice.perceptionPercentage,
+
+                retentionType: Number(invoice.retentionType),
+                totalRetention: invoice.totalRetention,
+                retentionPercentage: invoice.retentionPercentage,
+
+                detractionType: Number(invoice.detractionType),
+                detractionPaymentMethod: Number(
+                    invoice.detractionPaymentMethod
+                ),
+                totalDetraction: invoice.totalDetraction,
+                detractionPercentage: invoice.detractionPercentage,
             };
             console.log("variables al guardar", variables);
             const { data, errors } = await createSale({

@@ -27,6 +27,7 @@ const TOKEN_AUTH_MUTATION = gql`
                         id
                         doc
                         percentageIgv
+                        isEnabled
                     }
                 }
             }
@@ -47,6 +48,7 @@ interface ExtendedUser extends User {
     companyId: number;
     companyDoc: string;
     companyPercentageIgv: number;
+    companyIsEnabled: boolean;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -96,6 +98,9 @@ export const authOptions: NextAuthOptions = {
                             companyPercentageIgv:
                                 data.tokenAuth.user.subsidiary.company
                                     .percentageIgv,
+                            companyIsEnabled:
+                                data.tokenAuth.user.subsidiary.company
+                                    .isEnabled,
                             exp: data.tokenAuth?.payload.exp,
                             iat: data.tokenAuth?.payload.origIat,
                         };
@@ -133,6 +138,9 @@ export const authOptions: NextAuthOptions = {
                 token.companyPercentageIgv = (
                     user as ExtendedUser
                 ).companyPercentageIgv;
+                token.companyIsEnabled = (
+                    user as ExtendedUser
+                ).companyIsEnabled;
             }
             return token;
         },
@@ -151,6 +159,7 @@ export const authOptions: NextAuthOptions = {
                     companyId: token.companyId,
                     companyDoc: token.companyDoc,
                     companyPercentageIgv: token.companyPercentageIgv,
+                    companyIsEnabled: token.companyIsEnabled,
                 },
                 accessToken: token.accessToken,
                 expires: new Date((token.exp as number) * 1000).toISOString(),

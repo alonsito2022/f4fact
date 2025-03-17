@@ -27,6 +27,7 @@ export interface IUser {
     companyName?: string;
     companyDoc?: string;
     companyPercentageIgv?: number;
+    companyIsEnabled?: boolean;
 }
 export interface ICompany {
     id?: number;
