@@ -5,7 +5,13 @@ import Save from "@/components/icons/Save";
 import { DocumentNode, gql, useMutation } from "@apollo/client";
 import { Modal, ModalOptions } from "flowbite";
 import { useRouter } from "next/navigation";
-import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
+import React, {
+    ChangeEvent,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import { toast } from "react-toastify";
 
 const CREATE_SALE_MUTATION = gql`
@@ -127,7 +133,20 @@ function WayPayForm({
     authContext,
     wayPaysData,
 }: any) {
+    // Add ref for the close button
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
     const router = useRouter();
+    // Modify the modal close function
+    const handleCloseModal = () => {
+        // Remove focus from any element inside the modal before closing
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+
+        setCashFlow(initialStateCashFlow);
+        setInvoice(initialStateSale);
+        modalWayPay.hide();
+    };
 
     function useCustomMutation(mutation: DocumentNode) {
         return useMutation(mutation, {
@@ -312,8 +331,8 @@ function WayPayForm({
                         autoClose: 2000,
                         type: "success",
                     });
-                    // setInvoice(initialStateSale);
-                    modalWayPay.hide();
+                    // Use the new close function
+                    handleCloseModal();
 
                     router.push("/dashboard/sales");
                 }
@@ -355,19 +374,18 @@ function WayPayForm({
                 <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-lg">
                     {" "}
                     {/* Modal header */}
-                    <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            Completar
+                    <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-blue-600 dark:to-cyan-600 rounded-t-xl">
+                        <h3 className="text-2xl font-bold text-white">
+                            Forma de Pago
                         </h3>
                         <button
+                            ref={closeButtonRef}
                             type="button"
-                            onClick={() => {
-                                modalWayPay.hide();
-                            }}
-                            className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 flex items-center justify-center dark:hover:bg-gray-700 dark:hover:text-white"
+                            onClick={handleCloseModal}
+                            className="text-white bg-transparent hover:bg-white/20 rounded-lg text-sm w-8 h-8 flex items-center justify-center transition-colors duration-200"
                         >
                             <svg
-                                className="w-4 h-4"
+                                className="w-5 h-5"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 14 14"
@@ -385,9 +403,9 @@ function WayPayForm({
                     </div>
                     {/* Modal body */}
                     <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
-                        <fieldset className="border p-4 dark:border-gray-600 border-gray-300 rounded-lg dark:bg-gray-800 bg-white">
-                            <legend className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Forma de pago
+                        <fieldset className="border-2 p-6 rounded-xl border-blue-200 dark:border-blue-900 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 hover:shadow-blue-500/20">
+                            <legend className="px-2 text-lg font-semibold text-blue-600 dark:text-blue-400">
+                                Agregar Medio de Pago
                             </legend>
                             <div className="grid grid-cols-4 gap-4">
                                 <div className="col-span-3">
@@ -433,6 +451,7 @@ function WayPayForm({
                                     <input
                                         type="text"
                                         name="description"
+                                        autoComplete="off"
                                         onFocus={(e) => e.target.select()}
                                         value={cashFlow.description}
                                         onChange={handleInputChangeWayPay}
@@ -441,9 +460,9 @@ function WayPayForm({
                                 </div>
                             </div>
                         </fieldset>
-                        <div className="flex justify-end mt-4">
+                        <div className="flex justify-end mt-6">
                             <button
-                                className="btn-blue inline-flex items-center gap-2"
+                                className="btn-blue px-6 py-2.5 text-sm font-medium inline-flex items-center gap-2 rounded-lg transition-all duration-200 transform hover:scale-105"
                                 onClick={handleAddWayPay}
                             >
                                 <Add />
@@ -451,80 +470,84 @@ function WayPayForm({
                             </button>
                         </div>
                     </div>
+                    {/* Payment list section */}
                     {invoice?.cashflowSet?.length > 0 ? (
-                        <div className="overflow-hidden shadow rounded-lg max-h-[30vh] overflow-y-auto">
-                            <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
-                                <thead className="bg-yellow-300 dark:bg-cyan-500">
-                                    <tr>
-                                        <th
-                                            scope="col"
-                                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
-                                        >
-                                            TIPO
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
-                                        >
-                                            IMPORTE
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
-                                        >
-                                            NOTA
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
-                                        ></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {invoice?.cashflowSet?.map(
-                                        (item: ICashFlow, c: number) => (
-                                            <tr
-                                                key={c}
-                                                className="bg-yellow-400 border-b dark:bg-cyan-700 dark:border-gray-700 hover:bg-cyan-100"
+                        <div className="px-6 pb-6">
+                            <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead className="bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-blue-600 dark:to-cyan-600">
+                                        <tr>
+                                            <th
+                                                scope="col"
+                                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
                                             >
-                                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
-                                                    {wayPaysData?.allWayPays?.find(
-                                                        (w: IWayPay) =>
-                                                            w.code ===
-                                                            item.wayPay
-                                                    )?.name || item.wayPay}
-                                                </td>
-                                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
-                                                    {item.total}
-                                                </td>
-                                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
-                                                    {item.description}
-                                                </td>
-                                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
-                                                    <a
-                                                        className="hover:underline cursor-pointer text-red-600 dark:text-red-400"
-                                                        onClick={() =>
-                                                            handleRemoveCashFlow(
-                                                                Number(
-                                                                    item?.temporaryId
+                                                TIPO
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
+                                            >
+                                                IMPORTE
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
+                                            >
+                                                NOTA
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
+                                            ></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                        {invoice?.cashflowSet?.map(
+                                            (item: ICashFlow, c: number) => (
+                                                <tr
+                                                    key={c}
+                                                    className="bg-yellow-400 border-b dark:bg-cyan-700 dark:border-gray-700 hover:bg-cyan-100"
+                                                >
+                                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
+                                                        {wayPaysData?.allWayPays?.find(
+                                                            (w: IWayPay) =>
+                                                                w.code ===
+                                                                item.wayPay
+                                                        )?.name || item.wayPay}
+                                                    </td>
+                                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
+                                                        {item.total}
+                                                    </td>
+                                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
+                                                        {item.description}
+                                                    </td>
+                                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
+                                                        <a
+                                                            className="hover:underline cursor-pointer text-red-600 dark:text-red-400"
+                                                            onClick={() =>
+                                                                handleRemoveCashFlow(
+                                                                    Number(
+                                                                        item?.temporaryId
+                                                                    )
                                                                 )
-                                                            )
-                                                        }
-                                                    >
-                                                        <Delete />
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        )
-                                    )}
-                                </tbody>
-                            </table>
+                                                            }
+                                                        >
+                                                            <Delete />
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     ) : null}
-                    <div className="p-4 md:p-5 space-y-4">
-                        <fieldset className="border p-4 dark:border-gray-600 border-gray-300 rounded-lg dark:bg-gray-800 bg-white">
-                            <legend className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Totales
+                    {/* Totals section */}
+                    <div className="p-6 rounded-b-xl">
+                        <fieldset className="border-2 p-6 rounded-xl border-cyan-200 dark:border-cyan-900 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 hover:shadow-cyan-500/20">
+                            <legend className="px-2 text-lg font-semibold text-cyan-600 dark:text-cyan-400">
+                                Resumen de Pago
                             </legend>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="col-span-1">
@@ -565,24 +588,22 @@ function WayPayForm({
                             </div>
                         </fieldset>
                     </div>
-                    {/* Modal footer */}
-                    <div className="flex items-center justify-end p-6 space-x-4 border-t border-gray-200 dark:border-gray-700">
+                    {/* Footer buttons */}
+                    <div className="flex items-center justify-end space-x-4 mt-6">
                         <button
                             type="button"
-                            onClick={() => {
-                                modalWayPay.hide();
-                            }}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                            onClick={handleCloseModal}
+                            className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
                         >
-                            Cerrar
+                            Cancelar
                         </button>
                         <button
                             type="button"
                             onClick={handleSaveSale}
-                            className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 flex items-center gap-2"
+                            className="px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 inline-flex items-center gap-2 transition-all duration-200 transform hover:scale-105"
                         >
                             <Save />
-                            Crear Comprobante
+                            Finalizar Venta
                         </button>
                     </div>
                 </div>

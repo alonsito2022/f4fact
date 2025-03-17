@@ -23,6 +23,7 @@ function SaleDetailList({
     };
     useEffect(() => {
         calculateTotal();
+        console.log("calculateTotal");
     }, [invoice.operationdetailSet]);
 
     function calculateTotal() {
@@ -69,7 +70,7 @@ function SaleDetailList({
 
         const totalAmount =
             totalExonerated + totalUnaffected + totalTaxed + totalIgv;
-        const totalPerception = 0;
+        const totalPerception = Number(invoice?.totalPerception || 0);
         const totalToPay = totalAmount + totalPerception;
 
         // quantity: "",

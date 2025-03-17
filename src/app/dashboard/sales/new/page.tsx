@@ -1,8 +1,15 @@
 "use client";
-import { useState, useEffect, useMemo, ChangeEvent, FormEvent } from "react";
+import {
+    useState,
+    useEffect,
+    useMemo,
+    ChangeEvent,
+    FormEvent,
+    useRef,
+} from "react";
 import Breadcrumb from "@/components/Breadcrumb";
 import { Modal, ModalOptions } from "flowbite";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, gql, useLazyQuery } from "@apollo/client";
 import {
     IOperationDetail,
     IOperationType,
@@ -35,14 +42,13 @@ const today =
     "-" +
     String(limaDate.getDate()).padStart(2, "0");
 
-const CLIENTS_QUERY = gql`
-    query {
-        allClients {
-            names
+const SEARCH_CLIENT_BY_PARAMETER = gql`
+    query ($search: String!, $documentType: String) {
+        searchClientByParameter(search: $search, documentType: $documentType) {
             id
-            address
-            documentNumber
             documentType
+            documentNumber
+            names
         }
     }
 `;
@@ -106,6 +112,43 @@ const WAY_PAY_QUERY = gql`
         }
     }
 `;
+
+const PERCEPTION_TYPE_QUERY = gql`
+    query {
+        allPerceptionTypes {
+            code
+            name
+        }
+    }
+`;
+
+const RETENTION_TYPE_QUERY = gql`
+    query {
+        allRetentionTypes {
+            code
+            name
+        }
+    }
+`;
+
+const DETRACTION_TYPE_QUERY = gql`
+    query {
+        allDetractionTypes {
+            code
+            name
+        }
+    }
+`;
+
+const DETRACTION_PAYMENT_METHOD_QUERY = gql`
+    query {
+        allDetractionPaymentMethods {
+            code
+            name
+        }
+    }
+`;
+
 const initialStateSale = {
     id: 0,
     serial: "",
@@ -131,20 +174,32 @@ const initialStateSale = {
     totalIgv: "",
     totalFree: "",
     totalAmount: "",
-    totalPerception: "",
-    totalRetention: "",
+
     totalToPay: "",
     totalPayed: "",
     totalTurned: "",
     creditNoteType: "NA",
-    perceptionType: 0,
-    retentionType: 0,
+    // perceptionType: 0,
+    // retentionType: 0,
     parentOperationId: 0,
     operationType: "0101",
 
     hasPerception: false,
     hasRetention: false,
     hasDetraction: false,
+
+    perceptionType: 0,
+    totalPerception: "",
+    perceptionPercentage: "",
+
+    retentionType: 0,
+    totalRetention: "",
+    retentionPercentage: "",
+
+    detractionType: 0,
+    detractionPaymentMethod: 0,
+    totalDetraction: "",
+    detractionPercentage: "",
 };
 const initialStateSaleDetail = {
     id: 0,
@@ -239,11 +294,6 @@ const initialStateCashFlow = {
     total: 0,
     description: "",
 };
-const initialStateUserLogged = {
-    id: 0,
-    subsidiaryId: "",
-    isSuperuser: false,
-};
 function NewSalePage() {
     const [sale, setSale] = useState(initialStateSale);
     const [saleDetail, setSaleDetail] = useState(initialStateSaleDetail);
@@ -259,6 +309,8 @@ function NewSalePage() {
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
     const [modalWayPay, setModalWayPay] = useState<Modal | any>(null);
     const auth = useAuth();
+    // Add this near the top of your component with other refs
+    const clientInputRef = useRef<HTMLInputElement>(null);
 
     const authContext = useMemo(
         () => ({
@@ -272,30 +324,12 @@ function NewSalePage() {
 
     useEffect(() => {
         if (auth?.user?.companyPercentageIgv) {
-            console.log(auth.jwtToken);
             setSale((prevSale) => ({
                 ...prevSale,
                 igvType: Number(auth?.user?.companyPercentageIgv),
             }));
         }
     }, [auth?.user?.companyPercentageIgv]);
-
-    useEffect(() => {
-        if (Number(sale.clientId) > 0) {
-            const client = personsData?.allClients?.find(
-                (n: IPerson) => Number(n.id) === Number(sale.clientId)
-            );
-            if (client) {
-                setSale((prevSale) => ({
-                    ...prevSale,
-                    documentType:
-                        client?.documentType?.replace("A_", "") === "6"
-                            ? "01"
-                            : "03",
-                }));
-            }
-        }
-    }, [sale?.clientId]);
 
     useEffect(() => {
         const subsidiarySerial = auth?.user?.subsidiarySerial;
@@ -335,13 +369,18 @@ function NewSalePage() {
         subsidiaryId: Number(auth?.user?.subsidiaryId),
         available: true,
     });
-    const {
-        loading: personsLoading,
-        error: personsError,
-        data: personsData,
-    } = useQuery(CLIENTS_QUERY, {
+    const [clientSearch, setClientSearch] = useState("");
+    const [
+        searchClientQuery,
+        {
+            loading: searchClientLoading,
+            error: searchClientError,
+            data: searchClientData,
+        },
+    ] = useLazyQuery(SEARCH_CLIENT_BY_PARAMETER, {
         context: authContext,
-        skip: !auth?.jwtToken,
+        fetchPolicy: "network-only",
+        onError: (err) => console.error("Error in Search Client:", err),
     });
     const {
         loading: productsLoading,
@@ -377,6 +416,38 @@ function NewSalePage() {
         error: wayPaysError,
         data: wayPaysData,
     } = useQuery(WAY_PAY_QUERY, {
+        context: authContext,
+        skip: !auth?.jwtToken,
+    });
+    const {
+        loading: perceptionTypesLoading,
+        error: perceptionTypesError,
+        data: perceptionTypesData,
+    } = useQuery(PERCEPTION_TYPE_QUERY, {
+        context: authContext,
+        skip: !auth?.jwtToken,
+    });
+    const {
+        loading: retentionTypesLoading,
+        error: retentionTypesError,
+        data: retentionTypesData,
+    } = useQuery(RETENTION_TYPE_QUERY, {
+        context: authContext,
+        skip: !auth?.jwtToken,
+    });
+    const {
+        loading: detractionTypesLoading,
+        error: detractionTypesError,
+        data: detractionTypesData,
+    } = useQuery(DETRACTION_TYPE_QUERY, {
+        context: authContext,
+        skip: !auth?.jwtToken,
+    });
+    const {
+        loading: detractionPaymentMethodsLoading,
+        error: detractionPaymentMethodsError,
+        data: detractionPaymentMethodsData,
+    } = useQuery(DETRACTION_PAYMENT_METHOD_QUERY, {
         context: authContext,
         skip: !auth?.jwtToken,
     });
@@ -438,30 +509,7 @@ function NewSalePage() {
                     });
 
                     modalAddDetail.show();
-                    // setPurchaseDetail({
-                    //     ...purchaseDetail,
-
-                    //     id: 0,
-                    //     productId: Number(selectedId),
-                    //     productName: value,
-
-                    //     quantity: "1",
-
-                    //     unitValue: "",
-                    //     unitPrice: "",
-                    //     igvPercentage: "",
-                    //     discountPercentage: "",
-                    //     totalDiscount: "",
-                    //     totalValue: "",
-                    //     totalIgv: "",
-                    //     totalAmount: "",
-                    //     totalPerception: "",
-                    //     totalToPay: "",
-
-                    //     typeAffectationId: 0,
-                    //     productTariffId: 0,
-                    //     remainingQuantity: 0,
-                    // });
+                    // setPurchaseDetail({...purchaseDetail, id: 0});
                 } else {
                     setProduct({ ...product, id: 0, name: value });
                 }
@@ -470,20 +518,150 @@ function NewSalePage() {
             }
         } else setProduct({ ...product, [name]: value });
     };
+    const validateBeforePayment = () => {
+        if (Number(sale.clientId) === 0) {
+            toast("Por favor ingrese un cliente.", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            clientInputRef.current?.focus();
+            return false;
+        }
+        if (sale.operationdetailSet.length === 0) {
+            toast("Por favor ingrese al menos un item.", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            return false;
+        }
+        if (!sale.serial) {
+            toast("Por favor ingrese la serie.", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            return false;
+        }
+        // Operation type specific validations
+        switch (sale.operationType) {
+            case "0101": // Venta interna
+                if (sale.hasDetraction || sale.hasPerception) {
+                    toast(
+                        "Para venta interna no se permite Detracción ni Percepción.",
+                        {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        }
+                    );
+                    return false;
+                }
+                // Retention is optional for "0101"
+                if (sale.hasRetention) {
+                    if (
+                        !sale.retentionType ||
+                        !sale.totalRetention ||
+                        !sale.retentionPercentage
+                    ) {
+                        toast("Complete los datos de retención.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        });
+                        return false;
+                    }
+                }
+                break;
 
-    // useEffect(() => {
-    //     if (auth?.status === "authenticated") {
-    //         const user = auth?.user as IUser;
-    //         setUserLogged((prev) => ({
-    //             ...prev,
-    //             subsidiaryId:
-    //                 prev.subsidiaryId ||
-    //                 (user.isSuperuser ? "0" : user.subsidiaryId!),
-    //             isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
-    //         }));
-    //         console.log(user.isSuperuser ? "0" : user.subsidiaryId!);
-    //     }
-    // }, [auth?.status]);
+            case "1001": // Operación Sujeta a Detracción
+                if (!sale.hasDetraction) {
+                    toast(
+                        "Para operaciones con detracción, debe activar y completar los datos de detracción.",
+                        {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        }
+                    );
+                    return false;
+                }
+                if (
+                    !sale.detractionType ||
+                    !sale.detractionPaymentMethod ||
+                    !sale.totalDetraction ||
+                    !sale.detractionPercentage
+                ) {
+                    toast("Complete todos los datos de detracción.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "warning",
+                    });
+                    return false;
+                }
+                break;
+
+            case "2001": // Operación Sujeta a Percepción
+                if (!sale.hasPerception) {
+                    toast(
+                        "Para operaciones con percepción, debe activar y completar los datos de percepción.",
+                        {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        }
+                    );
+                    return false;
+                }
+                if (
+                    !sale.perceptionType ||
+                    !sale.totalPerception ||
+                    !sale.perceptionPercentage
+                ) {
+                    toast("Complete todos los datos de percepción.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "warning",
+                    });
+                    return false;
+                }
+                break;
+        }
+        return true;
+    };
+
+    const handleClientSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setClientSearch(event.target.value);
+    };
+    const handleClientSelect = (event: ChangeEvent<HTMLInputElement>) => {
+        const selectedOption = event.target.value;
+
+        const selectedData = searchClientData?.searchClientByParameter?.find(
+            (person: IPerson) =>
+                `${person.documentNumber} ${person.names}` === selectedOption
+        );
+
+        if (selectedData) {
+            setSale({
+                ...sale,
+                clientId: selectedData.id,
+                clientName: selectedData.names,
+            });
+        }
+    };
+
+    useEffect(() => {
+        if (clientSearch.length > 2) {
+            const queryVariables: { search: string; documentType?: string } = {
+                search: clientSearch,
+            };
+
+            searchClientQuery({
+                variables: queryVariables,
+            });
+        }
+    }, [clientSearch]);
 
     // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
     if (auth?.status === "loading") {
@@ -494,17 +672,11 @@ function NewSalePage() {
         return <p className="text-center text-red-500">No autorizado</p>;
     }
     // Manejo de errores
-    if (
-        personsError ||
-        productsError ||
-        typeAffectationsError ||
-        wayPaysError
-    ) {
+    if (productsError || typeAffectationsError || wayPaysError) {
         return (
             <div>
                 Error: No autorizado o error en la consulta.
-                {personsError?.message ||
-                    productsError?.message ||
+                {productsError?.message ||
                     typeAffectationsError?.message ||
                     wayPaysError?.message}
             </div>
@@ -523,13 +695,28 @@ function NewSalePage() {
                 <div className="overflow-x-auto">
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden shadow-lg rounded-lg">
-                            <div className="p-4 md:p-5 space-y-6">
-                                <div className="grid gap-6 lg:grid-cols-5 sm:grid-cols-1 md:grid-cols-3">
-                                    <fieldset className="sm:col-span-2 border-2 border-blue-200 dark:border-blue-900 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
-                                        <legend className="px-2 text-blue-600 dark:text-blue-400 font-semibold text-sm">
-                                            Información General
+                            <div className="p-4 md:p-5 space-y-4">
+                                <div className="grid gap-4 ">
+                                    <fieldset className="border-2 border-blue-200 dark:border-blue-900 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative group transition-all duration-300 hover:shadow-blue-500/20 hover:shadow-2xl">
+                                        <legend className="px-2 text-blue-600 dark:text-blue-400 font-semibold text-sm transition-all duration-300 group-hover:text-blue-700 dark:group-hover:text-blue-300">
+                                            <div className="flex items-center gap-2">
+                                                <svg
+                                                    className="w-4 h-4"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                    />
+                                                </svg>
+                                                Información General
+                                            </div>
                                         </legend>
-                                        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                                        <div className="grid gap-6 lg:grid-cols-6 sm:grid-cols-1 md:grid-cols-3">
                                             {/* IGV % */}
                                             <div>
                                                 <label
@@ -557,7 +744,7 @@ function NewSalePage() {
                                                 </select>
                                             </div>
                                             {/* Tipo documento */}
-                                            <div>
+                                            <div className="md:col-span-2">
                                                 <label
                                                     htmlFor="documentType"
                                                     className="text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -582,10 +769,10 @@ function NewSalePage() {
                                                         NOTA DE CRÉDITO
                                                         ELECTRÓNICA
                                                     </option>
-                                                    <option value={"08"}>
+                                                    {/* <option value={"08"}>
                                                         NOTA DE DÉBITO
                                                         ELECTRÓNICA
-                                                    </option>
+                                                    </option> */}
                                                     <option value={"09"}>
                                                         GUIA DE REMISIÓN
                                                         REMITENTE
@@ -593,7 +780,7 @@ function NewSalePage() {
                                                 </select>
                                             </div>
                                             {/* Tipo operacion */}
-                                            <div>
+                                            <div className="md:col-span-2">
                                                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                     Tipo operacion
                                                 </label>
@@ -611,13 +798,13 @@ function NewSalePage() {
                                                             ) =>
                                                                 [
                                                                     "0101", // Venta interna
-                                                                    "0200", // Exportación
-                                                                    "0502", // Anticipos
+                                                                    // "0200", // Exportación
+                                                                    // "0502", // Anticipos
                                                                     "0401", // Ventas no domiciliados
                                                                     "1001", // Operación Sujeta a Detracción
-                                                                    "1002", // Operación Sujeta a Detracción- Recursos Hidrobiológicos
-                                                                    "1003", // Operación Sujeta a Detracción- Servicios de Transporte Pasajeros
-                                                                    "1004", // Operación Sujeta a Detracción- Servicios de Transporte Carga
+                                                                    // "1002", // Operación Sujeta a Detracción- Recursos Hidrobiológicos
+                                                                    // "1003", // Operación Sujeta a Detracción- Servicios de Transporte Pasajeros
+                                                                    // "1004", // Operación Sujeta a Detracción- Servicios de Transporte Carga
                                                                     "2001", // Operación Sujeta a Percepción
                                                                 ].includes(
                                                                     o.code
@@ -634,6 +821,7 @@ function NewSalePage() {
                                                                         o.code
                                                                     }
                                                                 >
+                                                                    {`[${o.code}] `}
                                                                     {o.name}
                                                                 </option>
                                                             )
@@ -661,97 +849,6 @@ function NewSalePage() {
                                                     required
                                                 />
                                             </div>
-                                        </div>
-                                    </fieldset>
-
-                                    <fieldset className="sm:col-span-3 border-2 border-cyan-200 dark:border-cyan-900 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative hover:border-cyan-300 dark:hover:border-cyan-800 transition-colors duration-300">
-                                        <legend className="px-2 text-cyan-600 dark:text-cyan-400 font-semibold text-sm">
-                                            Datos del Cliente
-                                        </legend>
-                                        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-                                            {/* Cliente */}
-
-                                            <div className="md:col-span-4">
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    Cliente
-                                                </label>
-                                                <div className="relative w-full">
-                                                    <input
-                                                        type="text"
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        maxLength={200}
-                                                        value={sale.clientName}
-                                                        name="clientName"
-                                                        onChange={handleSale}
-                                                        onFocus={(e) =>
-                                                            e.target.select()
-                                                        }
-                                                        autoComplete="off"
-                                                        disabled={
-                                                            personsLoading
-                                                        }
-                                                        placeholder="Buscar cliente..."
-                                                        list="clientNameList"
-                                                        required
-                                                    />
-                                                    <datalist
-                                                        id="clientNameList"
-                                                        className="custom-datalist"
-                                                    >
-                                                        {personsData?.allClients?.map(
-                                                            (
-                                                                n: IPerson,
-                                                                index: number
-                                                            ) => (
-                                                                <option
-                                                                    key={index}
-                                                                    data-key={
-                                                                        n.id
-                                                                    }
-                                                                    value={`${n.documentNumber} ${n.names}`}
-                                                                />
-                                                            )
-                                                        )}
-                                                    </datalist>
-                                                    <button
-                                                        type="button"
-                                                        className="absolute inset-y-0 right-10 px-2 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
-                                                        onClick={() =>
-                                                            setSale({
-                                                                ...sale,
-                                                                clientName: "",
-                                                                clientId: 0,
-                                                            })
-                                                        }
-                                                    >
-                                                        <SunatCancel />
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
-                                                        onClick={(e) => {
-                                                            modalAddClient.show();
-                                                            setPerson(
-                                                                initialStatePerson
-                                                            );
-                                                        }}
-                                                    >
-                                                        <Add />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <style jsx>{`
-                                                .custom-datalist option {
-                                                    background-color: #1f2937; /* Dark background */
-                                                    color: #d1d5db; /* Light text */
-                                                    padding: 8px;
-                                                    border: 1px solid #374151; /* Border color */
-                                                }
-                                                .custom-datalist option:hover {
-                                                    background-color: #4b5563; /* Hover background */
-                                                    color: #ffffff; /* Hover text */
-                                                }
-                                            `}</style>
                                             {/* Moneda */}
                                             <div>
                                                 <label
@@ -852,35 +949,77 @@ function NewSalePage() {
                                                     autoComplete="off"
                                                 />
                                             </div>
+                                        </div>
+                                    </fieldset>
 
-                                            {/* Buscar Producto o Servicio */}
+                                    <fieldset className="border-2 border-cyan-200 dark:border-cyan-900 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative group transition-all duration-300 hover:shadow-cyan-500/20 hover:shadow-2xl">
+                                        <legend className="px-2 text-cyan-600 dark:text-cyan-400 font-semibold text-sm transition-all duration-300 group-hover:text-cyan-700 dark:group-hover:text-cyan-300">
+                                            <div className="flex items-center gap-2">
+                                                <svg
+                                                    className="w-4 h-4"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                                    />
+                                                </svg>
+                                                <span className="flex items-center gap-2">
+                                                    Datos del Cliente
+                                                    <span className="text-xs font-normal text-cyan-500 dark:text-cyan-400">
+                                                        (Buscar por RUC/DNI o
+                                                        Nombre)
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        </legend>
+                                        <div className="grid gap-6 lg:grid-cols-4 sm:grid-cols-1 md:grid-cols-2">
+                                            {/* Cliente */}
+
                                             <div className="md:col-span-4">
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    Buscar Producto o Servicio
+                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                                    Cliente
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
+                                                        {sale.clientId > 0
+                                                            ? "✓ Cliente seleccionado"
+                                                            : "⚠️ Seleccione un cliente"}
+                                                    </span>
                                                 </label>
-                                                <div className="relative w-full">
+                                                <div className="relative w-full mt-1 group">
                                                     <input
+                                                        ref={clientInputRef}
                                                         type="text"
                                                         className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        maxLength={100}
-                                                        value={product.name}
-                                                        name="name"
-                                                        onChange={handleProduct}
+                                                        maxLength={200}
+                                                        value={clientSearch}
+                                                        onChange={
+                                                            handleClientSearchChange
+                                                        }
+                                                        onInput={
+                                                            handleClientSelect
+                                                        }
                                                         onFocus={(e) =>
                                                             e.target.select()
                                                         }
                                                         autoComplete="off"
-                                                        disabled={
-                                                            productsLoading
-                                                        }
-                                                        placeholder="Buscar Producto..."
-                                                        list="productNameList"
+                                                        // disabled={
+                                                        //     searchClientLoading
+                                                        // }
+                                                        placeholder="Buscar cliente..."
+                                                        list="clientNameList"
                                                         required
                                                     />
-                                                    <datalist id="productNameList">
-                                                        {productsData?.allProducts?.map(
+                                                    <datalist
+                                                        id="clientNameList"
+                                                        className="custom-datalist"
+                                                    >
+                                                        {searchClientData?.searchClientByParameter?.map(
                                                             (
-                                                                n: IProduct,
+                                                                n: IPerson,
                                                                 index: number
                                                             ) => (
                                                                 <option
@@ -888,20 +1027,32 @@ function NewSalePage() {
                                                                     data-key={
                                                                         n.id
                                                                     }
-                                                                    value={
-                                                                        n.name
-                                                                    }
+                                                                    value={`${n.documentNumber} ${n.names}`}
                                                                 />
                                                             )
                                                         )}
                                                     </datalist>
                                                     <button
                                                         type="button"
+                                                        className="absolute inset-y-0 right-10 px-2 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
+                                                        onClick={() => {
+                                                            setSale({
+                                                                ...sale,
+                                                                clientName: "",
+                                                                clientId: 0,
+                                                            });
+                                                            setClientSearch("");
+                                                        }}
+                                                    >
+                                                        <SunatCancel />
+                                                    </button>
+                                                    <button
+                                                        type="button"
                                                         className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
                                                         onClick={(e) => {
-                                                            modalProduct.show();
-                                                            setProduct(
-                                                                initialStateProduct
+                                                            modalAddClient.show();
+                                                            setPerson(
+                                                                initialStatePerson
                                                             );
                                                         }}
                                                     >
@@ -909,35 +1060,119 @@ function NewSalePage() {
                                                     </button>
                                                 </div>
                                             </div>
+                                            <style jsx>{`
+                                                .custom-datalist option {
+                                                    background-color: #1f2937; /* Dark background */
+                                                    color: #d1d5db; /* Light text */
+                                                    padding: 8px;
+                                                    border: 1px solid #374151; /* Border color */
+                                                }
+                                                .custom-datalist option:hover {
+                                                    background-color: #4b5563; /* Hover background */
+                                                    color: #ffffff; /* Hover text */
+                                                }
+                                            `}</style>
                                         </div>
                                     </fieldset>
                                 </div>
-                                {/* Botón Agregar Item */}
-                                <div className="flex justify-end py-2">
-                                    <button
-                                        type="button"
-                                        className="px-5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
-                                        onClick={(e) => {
-                                            modalAddDetail.show();
-                                            setSaleDetail(
-                                                initialStateSaleDetail
-                                            );
-                                        }}
-                                    >
-                                        <Add /> AGREGAR ITEM
-                                    </button>
+
+                                {/* Búsqueda de Productos */}
+                                <div className="p-6 border-2 border-emerald-200 dark:border-emerald-900 bg-white dark:bg-gray-900 rounded-xl shadow-lg relative group transition-all duration-300 hover:shadow-emerald-500/20 hover:shadow-2xl">
+                                    <div className="flex items-center gap-2 mb-4 text-emerald-600 dark:text-emerald-400">
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                            />
+                                        </svg>
+                                        <h3 className="font-semibold text-sm">
+                                            Búsqueda de Productos
+                                        </h3>
+                                    </div>
+                                    <div className="relative w-full">
+                                        <input
+                                            type="text"
+                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                            maxLength={100}
+                                            value={product.name}
+                                            name="name"
+                                            onChange={handleProduct}
+                                            onFocus={(e) => e.target.select()}
+                                            autoComplete="off"
+                                            disabled={productsLoading}
+                                            placeholder="Buscar Producto..."
+                                            list="productNameList"
+                                            required
+                                        />
+                                        <datalist id="productNameList">
+                                            {productsData?.allProducts?.map(
+                                                (
+                                                    n: IProduct,
+                                                    index: number
+                                                ) => (
+                                                    <option
+                                                        key={index}
+                                                        data-key={n.id}
+                                                        value={n.name}
+                                                    />
+                                                )
+                                            )}
+                                        </datalist>
+                                        <button
+                                            type="button"
+                                            className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+                                            onClick={(e) => {
+                                                modalProduct.show();
+                                                setProduct(initialStateProduct);
+                                            }}
+                                        >
+                                            <Add />
+                                        </button>
+                                    </div>
                                 </div>
-                                <SaleDetailList
-                                    invoice={sale}
-                                    setInvoice={setSale}
-                                    product={product}
-                                    setProduct={setProduct}
-                                    setInvoiceDetail={setSaleDetail}
-                                    modalAddDetail={modalAddDetail}
-                                />
+                                {/* Lista de Detalles */}
+                                <div className="flex flex-col gap-4">
+                                    <SaleDetailList
+                                        invoice={sale}
+                                        setInvoice={setSale}
+                                        product={product}
+                                        setProduct={setProduct}
+                                        setInvoiceDetail={setSaleDetail}
+                                        modalAddDetail={modalAddDetail}
+                                    />
+                                    <div className="flex justify-end">
+                                        <button
+                                            type="button"
+                                            className="px-5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
+                                            onClick={(e) => {
+                                                modalAddDetail.show();
+                                                setSaleDetail(
+                                                    initialStateSaleDetail
+                                                );
+                                            }}
+                                        >
+                                            <Add /> AGREGAR ITEM
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <SaleTotalList
                                     invoice={sale}
+                                    setSale={setSale}
                                     handleSale={handleSale}
+                                    perceptionTypesData={perceptionTypesData}
+                                    retentionTypesData={retentionTypesData}
+                                    detractionTypesData={detractionTypesData}
+                                    detractionPaymentMethodsData={
+                                        detractionPaymentMethodsData
+                                    }
                                 />
                                 {/* Botón Continuar con el Pago */}
                                 <div className="flex justify-end py-2">
@@ -950,65 +1185,20 @@ function NewSalePage() {
                                                 : ""
                                         }`}
                                         onClick={async () => {
-                                            console.log("sale", sale);
-                                            if (Number(sale.clientId) === 0) {
-                                                toast(
-                                                    "Por favor ingrese un cliente.",
-                                                    {
-                                                        hideProgressBar: true,
-                                                        autoClose: 2000,
-                                                        type: "warning",
-                                                    }
-                                                );
-                                                return;
+                                            if (validateBeforePayment()) {
+                                                modalWayPay.show();
+                                                setSale({
+                                                    ...sale,
+                                                    totalPayed: "",
+                                                    cashflowSet: [],
+                                                });
+                                                setCashFlow({
+                                                    ...cashFlow,
+                                                    total: Number(
+                                                        sale.totalToPay
+                                                    ),
+                                                });
                                             }
-                                            if (
-                                                sale.operationdetailSet
-                                                    .length === 0
-                                            ) {
-                                                toast(
-                                                    "Por favor ingrese al menos un item.",
-                                                    {
-                                                        hideProgressBar: true,
-                                                        autoClose: 2000,
-                                                        type: "warning",
-                                                    }
-                                                );
-                                                return;
-                                            }
-                                            if (!sale.serial) {
-                                                toast(
-                                                    "Por favor ingrese la serie.",
-                                                    {
-                                                        hideProgressBar: true,
-                                                        autoClose: 2000,
-                                                        type: "warning",
-                                                    }
-                                                );
-                                                return;
-                                            }
-                                            // if (!sale.correlative) {
-                                            //     toast(
-                                            //         "Por favor ingrese el número correlativo.",
-                                            //         {
-                                            //             hideProgressBar: true,
-                                            //             autoClose: 2000,
-                                            //             type: "warning",
-                                            //         }
-                                            //     );
-                                            //     return;
-                                            // }
-
-                                            modalWayPay.show();
-                                            setSale({
-                                                ...sale,
-                                                totalPayed: "",
-                                                cashflowSet: [],
-                                            });
-                                            setCashFlow({
-                                                ...cashFlow,
-                                                total: Number(sale.totalToPay),
-                                            });
                                         }}
                                         disabled={
                                             sale?.operationdetailSet?.length ===
@@ -1043,7 +1233,7 @@ function NewSalePage() {
                 setPerson={setPerson}
                 jwtToken={auth?.jwtToken}
                 authContext={authContext}
-                CLIENTS_QUERY={CLIENTS_QUERY}
+                SEARCH_CLIENT_BY_PARAMETER={SEARCH_CLIENT_BY_PARAMETER}
                 sale={sale}
                 setSale={setSale}
             />

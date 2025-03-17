@@ -305,6 +305,26 @@ export interface IOperationType {
     name: string;
 }
 
+export interface IPerceptionType {
+    code: number;
+    name: string;
+}
+
+export interface IRetentionType {
+    code: number;
+    name: string;
+}
+
+export interface IDetractionType {
+    code: number;
+    name: string;
+}
+
+export interface IDetractionPaymentMethod {
+    code: number;
+    name: string;
+}
+
 export interface IProductTariff {
     id: number;
     productId?: number;
@@ -430,10 +450,17 @@ export interface IOperationDetail {
     productTariffId?: number;
     igvPercentage?: number;
     perceptionPercentage?: number;
+    retentionPercentage?: number;
+    detractionPercentage?: number;
     discountPercentage?: number;
     totalAmount?: number;
     totalToPay?: number;
     totalPerception?: number;
+    totalRetention?: number;
+    totalDetraction?: number;
+    perceptionType?: number;
+    retentionType?: number;
+    detractionType?: number;
 }
 export interface IRelatedDocument {
     id?: number;

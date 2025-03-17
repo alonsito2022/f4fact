@@ -46,11 +46,8 @@ function SaleDetailForm({
     });
 
     const [productDetailQuery] = useLazyQuery(PRODUCT_DETAIL_QUERY);
-
-    // useEffect(() => {
-    //     if(Number(invoiceDetail.productId)>0)
-    //     console.log(" useEffect invoiceDetail", invoiceDetail)
-    // }, [invoiceDetail.productId]);
+    // Add ref for the close button
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         if (modalAddDetail == null) {
@@ -141,14 +138,6 @@ function SaleDetailForm({
         product.name,
     ]);
 
-    // useEffect(() => {
-    //     if (modalRef.current) {
-    //         modalRef.current.setAttribute(
-    //             "inert",
-    //             modalAddDetail?.isVisible() ? "false" : "true"
-    //         );
-    //     }
-    // }, [modalAddDetail?.isVisible()]);
     const handleInputChangeSaleDetail = async (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
@@ -279,6 +268,18 @@ function SaleDetailForm({
         } else setInvoiceDetail({ ...invoiceDetail, [name]: value });
     };
 
+    // Modify the modal close function
+    const handleCloseModal = () => {
+        // Remove focus from any element inside the modal before closing
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+
+        setInvoiceDetail(initialStateSaleDetail);
+        setProduct(initialStateProduct);
+        modalAddDetail.hide();
+    };
+
     const handleAddDetail = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (invoiceDetail?.typeAffectationId === 0) {
@@ -327,9 +328,8 @@ function SaleDetailForm({
             }));
         }
 
-        setInvoiceDetail(initialStateSaleDetail);
-        setProduct(initialStateProduct);
-        modalAddDetail.hide();
+        // Use the new close function
+        handleCloseModal();
     };
 
     return (
@@ -351,10 +351,9 @@ function SaleDetailForm({
                                 {invoiceDetail.temporaryId}
                             </h3>
                             <button
+                                ref={closeButtonRef}
                                 type="button"
-                                onClick={() => {
-                                    modalAddDetail.hide();
-                                }}
+                                onClick={handleCloseModal}
                                 className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                             >
                                 <svg
@@ -622,9 +621,7 @@ function SaleDetailForm({
                             <div className="flex items-center p-4 md:p-5 space-x-3 rtl:space-x-reverse border-t border-gray-200 rounded-b dark:border-gray-600">
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        modalAddDetail.hide();
-                                    }}
+                                    onClick={handleCloseModal}
                                     className="btn-dark px-5 py-2 inline-flex items-center gap-2 dark:bg-gray-800 dark:text-gray-200"
                                 >
                                     Cerrar

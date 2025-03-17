@@ -141,13 +141,19 @@ function ClientForm({
     setPerson,
     jwtToken,
     authContext,
-    CLIENTS_QUERY,
+    SEARCH_CLIENT_BY_PARAMETER,
     sale,
     setSale,
 }: any) {
     const [addPerson] = useMutation(ADD_PERSON_MUTATION, {
         context: authContext,
-        refetchQueries: () => [{ query: CLIENTS_QUERY, context: authContext }],
+        refetchQueries: () => [
+            {
+                query: SEARCH_CLIENT_BY_PARAMETER,
+                context: authContext,
+                variables: { search: person.documentNumber },
+            },
+        ],
         onError: (err) => console.error("Error in person mutation:", err), // Log the error for debugging
     });
     useEffect(() => {
