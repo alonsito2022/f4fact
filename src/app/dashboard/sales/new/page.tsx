@@ -155,6 +155,7 @@ const initialStateSale = {
     correlative: "",
     emitDate: today,
     clientName: "",
+    clientDocumentType: "",
     clientId: 0,
     igvType: 18,
     documentType: "01",
@@ -544,6 +545,33 @@ function NewSalePage() {
             });
             return false;
         }
+
+        // Validate document types for special operations
+        if (sale.hasDetraction || sale.hasRetention || sale.hasPerception) {
+            if (sale.clientDocumentType !== "6") {
+                toast(
+                    "Solo clientes con RUC pueden realizar operaciones de Detracción, Retención o Percepción.",
+                    {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "warning",
+                    }
+                );
+                return false;
+            }
+
+            if (!["01", "03"].includes(sale.documentType)) {
+                toast(
+                    "Las operaciones de Detracción, Retención o Percepción solo están permitidas para Facturas y Boletas.",
+                    {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "warning",
+                    }
+                );
+                return false;
+            }
+        }
         // Operation type specific validations
         switch (sale.operationType) {
             case "0101": // Venta interna
@@ -694,6 +722,10 @@ function NewSalePage() {
                 ...sale,
                 clientId: selectedData.id,
                 clientName: selectedData.names,
+                clientDocumentType: selectedData?.documentType?.replace(
+                    "A_",
+                    ""
+                ),
             });
         }
     };

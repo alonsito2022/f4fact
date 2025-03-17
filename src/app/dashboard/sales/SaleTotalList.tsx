@@ -428,102 +428,128 @@ function SaleTotalList({
                                 </div>
                             </div>
                         )}
-                        <label className="flex items-center space-x-3 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                name="hasDetraction"
-                                checked={invoice.hasDetraction}
-                                onChange={handleSale}
-                                className="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
-                            />
-                            <span className="text-gray-700 dark:text-gray-300">
-                                ¿Detracción?
-                            </span>
-                        </label>
 
-                        {invoice?.hasDetraction && (
-                            <div className="grid sm:grid-cols-1 md:grid-cols-6 gap-4 py-4">
-                                <div className="sm:col-span-2">
-                                    <label
-                                        htmlFor="detractionType"
-                                        className="form-label text-gray-900 dark:text-gray-200"
-                                    >
-                                        Tipo de detracción
-                                    </label>
-                                    <select
-                                        name="detractionType"
-                                        id="detractionType"
-                                        onChange={handleSale}
-                                        value={invoice.detractionType}
-                                        className="form-control dark:bg-gray-800 dark:text-gray-200"
-                                        required
-                                    >
-                                        {detractionTypesData?.allDetractionTypes?.map(
-                                            (o: IDetractionType, k: number) => (
-                                                <option key={k} value={o.code}>
-                                                    {o.name}
-                                                </option>
-                                            )
-                                        )}
-                                    </select>
-                                </div>
-                                <div className="sm:col-span-2">
-                                    <label
-                                        htmlFor="detractionPaymentMethod"
-                                        className="form-label text-gray-900 dark:text-gray-200"
-                                    >
-                                        Medio de Pago
-                                    </label>
-                                    <select
-                                        name="detractionPaymentMethod"
-                                        id="detractionPaymentMethod"
-                                        onChange={handleSale}
-                                        value={invoice.detractionPaymentMethod}
-                                        className="form-control dark:bg-gray-800 dark:text-gray-200"
-                                        required
-                                    >
-                                        {detractionPaymentMethodsData?.allDetractionPaymentMethods?.map(
-                                            (
-                                                o: IDetractionPaymentMethod,
-                                                k: number
-                                            ) => (
-                                                <option key={k} value={o.code}>
-                                                    {o.name}
-                                                </option>
-                                            )
-                                        )}
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm text-gray-600 dark:text-gray-400">
-                                        Porcentaje detracción (%)
-                                    </label>
+                        {invoice?.operationType === "1001" && (
+                            <>
+                                <label className="flex items-center space-x-3 cursor-pointer">
                                     <input
-                                        type="number"
-                                        name="detractionPercentage"
-                                        onWheel={(e) => e.currentTarget.blur()}
-                                        value={invoice.detractionPercentage}
+                                        type="checkbox"
+                                        name="hasDetraction"
+                                        checked={invoice.hasDetraction}
                                         onChange={handleSale}
-                                        onFocus={(e) => e.target.select()}
-                                        className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                                        className="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
                                     />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm text-gray-600 dark:text-gray-400">
-                                        Total detracción
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="totalDetraction"
-                                        onWheel={(e) => e.currentTarget.blur()}
-                                        value={invoice.totalDetraction}
-                                        onChange={handleSale}
-                                        onFocus={(e) => e.target.select()}
-                                        disabled
-                                        className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
-                            </div>
+                                    <span className="text-gray-700 dark:text-gray-300">
+                                        ¿Detracción?
+                                    </span>
+                                </label>
+
+                                {invoice?.hasDetraction && (
+                                    <div className="grid sm:grid-cols-1 md:grid-cols-6 gap-4 py-4">
+                                        <div className="sm:col-span-2">
+                                            <label
+                                                htmlFor="detractionType"
+                                                className="form-label text-gray-900 dark:text-gray-200"
+                                            >
+                                                Tipo de detracción
+                                            </label>
+                                            <select
+                                                name="detractionType"
+                                                id="detractionType"
+                                                onChange={handleSale}
+                                                value={invoice.detractionType}
+                                                className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                                required
+                                            >
+                                                {detractionTypesData?.allDetractionTypes?.map(
+                                                    (
+                                                        o: IDetractionType,
+                                                        k: number
+                                                    ) => (
+                                                        <option
+                                                            key={k}
+                                                            value={o.code}
+                                                        >
+                                                            {o.name}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </select>
+                                        </div>
+                                        <div className="sm:col-span-2">
+                                            <label
+                                                htmlFor="detractionPaymentMethod"
+                                                className="form-label text-gray-900 dark:text-gray-200"
+                                            >
+                                                Medio de Pago
+                                            </label>
+                                            <select
+                                                name="detractionPaymentMethod"
+                                                id="detractionPaymentMethod"
+                                                onChange={handleSale}
+                                                value={
+                                                    invoice.detractionPaymentMethod
+                                                }
+                                                className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                                required
+                                            >
+                                                {detractionPaymentMethodsData?.allDetractionPaymentMethods?.map(
+                                                    (
+                                                        o: IDetractionPaymentMethod,
+                                                        k: number
+                                                    ) => (
+                                                        <option
+                                                            key={k}
+                                                            value={o.code}
+                                                        >
+                                                            {o.name}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm text-gray-600 dark:text-gray-400">
+                                                Porcentaje detracción (%)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                name="detractionPercentage"
+                                                onWheel={(e) =>
+                                                    e.currentTarget.blur()
+                                                }
+                                                value={
+                                                    invoice.detractionPercentage
+                                                }
+                                                onChange={handleSale}
+                                                onFocus={(e) =>
+                                                    e.target.select()
+                                                }
+                                                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm text-gray-600 dark:text-gray-400">
+                                                Total detracción
+                                            </label>
+                                            <input
+                                                type="number"
+                                                name="totalDetraction"
+                                                onWheel={(e) =>
+                                                    e.currentTarget.blur()
+                                                }
+                                                value={invoice.totalDetraction}
+                                                onChange={handleSale}
+                                                onFocus={(e) =>
+                                                    e.target.select()
+                                                }
+                                                disabled
+                                                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
