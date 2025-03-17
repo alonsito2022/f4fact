@@ -58,6 +58,18 @@ const CREATE_SALE_MUTATION = gql`
         $totalTurned: Float!
         $creditNoteType: String!
         $parentOperationId: Int!
+        $hasPerception: Boolean
+        $hasRetention: Boolean
+        $hasDetraction: Boolean
+        $perceptionType: Int
+        $perceptionPercentage: Float
+        $retentionType: Int
+        $totalRetention: Float
+        $retentionPercentage: Float
+        $detractionType: Int
+        $detractionPaymentMethod: Int
+        $totalDetraction: Float
+        $detractionPercentage: Float
     ) {
         createSale(
             serial: $serial
@@ -102,6 +114,18 @@ const CREATE_SALE_MUTATION = gql`
             totalTurned: $totalTurned
             creditNoteType: $creditNoteType
             parentOperationId: $parentOperationId
+            hasPerception: $hasPerception
+            hasRetention: $hasRetention
+            hasDetraction: $hasDetraction
+            perceptionType: $perceptionType
+            perceptionPercentage: $perceptionPercentage
+            retentionType: $retentionType
+            totalRetention: $totalRetention
+            retentionPercentage: $retentionPercentage
+            detractionType: $detractionType
+            detractionPaymentMethod: $detractionPaymentMethod
+            totalDetraction: $totalDetraction
+            detractionPercentage: $detractionPercentage
         ) {
             message
             error
@@ -312,18 +336,18 @@ function WayPayForm({
                 hasDetraction: invoice.hasDetraction,
 
                 perceptionType: Number(invoice.perceptionType),
-                perceptionPercentage: invoice.perceptionPercentage,
+                perceptionPercentage: Number(invoice.perceptionPercentage),
 
                 retentionType: Number(invoice.retentionType),
-                totalRetention: invoice.totalRetention,
-                retentionPercentage: invoice.retentionPercentage,
+                totalRetention: Number(invoice.totalRetention),
+                retentionPercentage: Number(invoice.retentionPercentage),
 
                 detractionType: Number(invoice.detractionType),
                 detractionPaymentMethod: Number(
                     invoice.detractionPaymentMethod
                 ),
-                totalDetraction: invoice.totalDetraction,
-                detractionPercentage: invoice.detractionPercentage,
+                totalDetraction: Number(invoice.totalDetraction),
+                detractionPercentage: Number(invoice.detractionPercentage),
             };
             console.log("variables al guardar", variables);
             const { data, errors } = await createSale({
