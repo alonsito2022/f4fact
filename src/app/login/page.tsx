@@ -16,6 +16,7 @@ function LoginPage() {
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setError(""); // Reset error state
         const formData = new FormData(e.currentTarget);
 
         const res = await signIn("credentials", {

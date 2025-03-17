@@ -547,18 +547,15 @@ function NewSalePage() {
         // Operation type specific validations
         switch (sale.operationType) {
             case "0101": // Venta interna
-                if (sale.hasDetraction || sale.hasPerception) {
-                    toast(
-                        "Para venta interna no se permite Detracción ni Percepción.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "warning",
-                        }
-                    );
+                if (sale.hasDetraction) {
+                    toast("Para venta interna no se permite Detracción.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "warning",
+                    });
                     return false;
                 }
-                // Retention is optional for "0101"
+                // Validate retention if enabled
                 if (sale.hasRetention) {
                     if (
                         !sale.retentionType ||
@@ -573,39 +570,73 @@ function NewSalePage() {
                         return false;
                     }
                 }
-                break;
-
-            case "1001": // Operación Sujeta a Detracción
-                if (!sale.hasDetraction) {
-                    toast(
-                        "Para operaciones con detracción, debe activar y completar los datos de detracción.",
-                        {
+                // Validate perception if enabled
+                if (sale.hasPerception) {
+                    if (
+                        !sale.perceptionType ||
+                        !sale.totalPerception ||
+                        !sale.perceptionPercentage
+                    ) {
+                        toast("Complete los datos de percepción.", {
                             hideProgressBar: true,
                             autoClose: 2000,
                             type: "warning",
-                        }
-                    );
-                    return false;
+                        });
+                        return false;
+                    }
                 }
-                if (
-                    !sale.detractionType ||
-                    !sale.detractionPaymentMethod ||
-                    !sale.totalDetraction ||
-                    !sale.detractionPercentage
-                ) {
-                    toast("Complete todos los datos de detracción.", {
-                        hideProgressBar: true,
-                        autoClose: 2000,
-                        type: "warning",
-                    });
-                    return false;
+                break;
+
+            case "1001": // Operación Sujeta a Detracción
+                if (sale.hasDetraction) {
+                    if (
+                        !sale.detractionType ||
+                        !sale.detractionPaymentMethod ||
+                        !sale.totalDetraction ||
+                        !sale.detractionPercentage
+                    ) {
+                        toast("Complete todos los datos de detracción.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        });
+                        return false;
+                    }
+                }
+                if (sale.hasRetention) {
+                    if (
+                        !sale.retentionType ||
+                        !sale.totalRetention ||
+                        !sale.retentionPercentage
+                    ) {
+                        toast("Complete los datos de retención.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        });
+                        return false;
+                    }
+                }
+                if (sale.hasPerception) {
+                    if (
+                        !sale.perceptionType ||
+                        !sale.totalPerception ||
+                        !sale.perceptionPercentage
+                    ) {
+                        toast("Complete los datos de percepción.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        });
+                        return false;
+                    }
                 }
                 break;
 
             case "2001": // Operación Sujeta a Percepción
-                if (!sale.hasPerception) {
+                if (sale.hasDetraction) {
                     toast(
-                        "Para operaciones con percepción, debe activar y completar los datos de percepción.",
+                        "Para operaciones con percepción no se permite Detracción.",
                         {
                             hideProgressBar: true,
                             autoClose: 2000,
@@ -614,17 +645,33 @@ function NewSalePage() {
                     );
                     return false;
                 }
-                if (
-                    !sale.perceptionType ||
-                    !sale.totalPerception ||
-                    !sale.perceptionPercentage
-                ) {
-                    toast("Complete todos los datos de percepción.", {
-                        hideProgressBar: true,
-                        autoClose: 2000,
-                        type: "warning",
-                    });
-                    return false;
+                if (sale.hasPerception) {
+                    if (
+                        !sale.perceptionType ||
+                        !sale.totalPerception ||
+                        !sale.perceptionPercentage
+                    ) {
+                        toast("Complete todos los datos de percepción.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        });
+                        return false;
+                    }
+                }
+                if (sale.hasRetention) {
+                    if (
+                        !sale.retentionType ||
+                        !sale.totalRetention ||
+                        !sale.retentionPercentage
+                    ) {
+                        toast("Complete los datos de retención.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        });
+                        return false;
+                    }
                 }
                 break;
         }
@@ -800,7 +847,7 @@ function NewSalePage() {
                                                                     "0101", // Venta interna
                                                                     // "0200", // Exportación
                                                                     // "0502", // Anticipos
-                                                                    "0401", // Ventas no domiciliados
+                                                                    // "0401", // Ventas no domiciliados
                                                                     "1001", // Operación Sujeta a Detracción
                                                                     // "1002", // Operación Sujeta a Detracción- Recursos Hidrobiológicos
                                                                     // "1003", // Operación Sujeta a Detracción- Servicios de Transporte Pasajeros

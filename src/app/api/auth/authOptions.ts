@@ -77,7 +77,16 @@ export const authOptions: NextAuthOptions = {
                         variables: values,
                     });
 
-                    if (errors) console.log(errors.toString());
+                    // Manejamos errores de GraphQL "clásicos"
+                    if (errors) {
+                        // Extract the actual error message from the GraphQL error
+                        const errorMessage = errors[0]?.message || "";
+                        const cleanedMessage = errorMessage.replace(
+                            "Error: ",
+                            ""
+                        );
+                        throw new Error(cleanedMessage);
+                    }
 
                     if (data.tokenAuth && data.tokenAuth.token) {
                         return {
@@ -107,9 +116,11 @@ export const authOptions: NextAuthOptions = {
                     } else {
                         throw new Error("Autenticación fallida.");
                     }
-                } catch (error) {
-                    console.error("Auth error:", error);
-                    throw new Error("Autenticación fallida.");
+                } catch (error: any) {
+                    // Preserve the original error message
+                    throw error instanceof Error
+                        ? error
+                        : new Error(error?.message || "Autenticación fallida.");
                 }
             },
         }),
