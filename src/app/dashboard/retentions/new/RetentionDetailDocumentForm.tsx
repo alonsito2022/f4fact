@@ -151,7 +151,40 @@ function RetentionDetailDocumentForm({
         >
     ) => {
         const { name, value } = event.target;
-        setRetentionDetail({ ...retentionDetail, [name]: value });
+
+        // Update the state with the new value
+        setRetentionDetail((prev: any) => {
+            const newState = { ...prev, [name]: value };
+
+            // If total amount is being updated and there's at least one quota
+            if (name === "totalAmount" && newState.quotas.length > 0) {
+                // Update the first quota's total with the total amount
+                newState.quotas[0] = {
+                    ...newState.quotas[0],
+                    total: value,
+                };
+            }
+
+            // If retention type or total amount changes, calculate retention amount
+            if (name === "retentionType" || name === "totalAmount") {
+                const selectedRetentionType =
+                    retentionTypesData?.allRetentionTypes?.find(
+                        (rt: IRetentionType) =>
+                            rt.code === Number(newState.retentionType)
+                    );
+
+                if (selectedRetentionType && newState.totalAmount) {
+                    // Calculate retention amount based on percentage
+                    const retentionRate = selectedRetentionType.rate || 0;
+                    const totalAmount = parseFloat(newState.totalAmount);
+                    const retentionAmount = (totalAmount * retentionRate) / 100;
+
+                    newState.totalRetention = retentionAmount.toFixed(2);
+                }
+            }
+
+            return newState;
+        });
     };
 
     // Add these handlers near your other handlers
@@ -338,7 +371,7 @@ function RetentionDetailDocumentForm({
                                         </div>
 
                                         {/* Tipo de moneda */}
-                                        <div className="col-span-2">
+                                        <div className="col-span-1">
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 Tipo de moneda
                                             </label>
@@ -370,50 +403,56 @@ function RetentionDetailDocumentForm({
                                             </select>
                                         </div>
 
-                                        {/* Tipo de Cambio */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Tipo de cambio
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="saleExchangeRate"
-                                                maxLength={10}
-                                                value={
-                                                    retentionDetail.saleExchangeRate
-                                                }
-                                                onChange={
-                                                    handleInputChangeSaleDetail
-                                                }
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                                                autoComplete="off"
-                                            />
-                                        </div>
+                                        {/* Show exchange rate and date only when currency is not PEN */}
+                                        {retentionDetail.currencyType !==
+                                            "PEN" && (
+                                            <>
+                                                {/* Tipo de Cambio */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                        Tipo de cambio
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        name="saleExchangeRate"
+                                                        maxLength={10}
+                                                        value={
+                                                            retentionDetail.saleExchangeRate
+                                                        }
+                                                        onChange={
+                                                            handleInputChangeSaleDetail
+                                                        }
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                        autoComplete="off"
+                                                    />
+                                                </div>
 
-                                        {/* Fecha de cambio */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Fecha de cambio
-                                            </label>
-                                            <input
-                                                type="date"
-                                                name="currencyDateChange"
-                                                value={
-                                                    retentionDetail.currencyDateChange
-                                                }
-                                                onChange={
-                                                    handleInputChangeSaleDetail
-                                                }
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                                                required
-                                            />
-                                        </div>
+                                                {/* Fecha de T/C */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                        Fecha de T/C
+                                                    </label>
+                                                    <input
+                                                        type="date"
+                                                        name="currencyDateChange"
+                                                        value={
+                                                            retentionDetail.currencyDateChange
+                                                        }
+                                                        onChange={
+                                                            handleInputChangeSaleDetail
+                                                        }
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                        required
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
 
                                         {/* Importe total */}
                                         <div>
@@ -487,7 +526,7 @@ function RetentionDetailDocumentForm({
 
                                                     <div className="col-span-1">
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                            Numero correlativo
+                                                            Número de pago
                                                         </label>
                                                         <input
                                                             type="text"
@@ -508,7 +547,7 @@ function RetentionDetailDocumentForm({
 
                                                     <div className="col-span-1">
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                            Importe de pago
+                                                            Pago sin retención
                                                         </label>
                                                         <input
                                                             type="number"
@@ -570,6 +609,7 @@ function RetentionDetailDocumentForm({
                                                 value={
                                                     retentionDetail.retentionType
                                                 }
+                                                disabled
                                                 className="form-control dark:bg-gray-800 dark:text-gray-200"
                                             >
                                                 {retentionTypesData?.allRetentionTypes?.map(

@@ -154,6 +154,38 @@ function RetentionDetailDocumentList({
                             </tr>
                         )
                     )}
+                    {/* Totals row */}
+                    {retention?.relatedDocuments?.length > 0 && (
+                        <tr className="bg-yellow-500 dark:bg-cyan-800 font-semibold">
+                            <td
+                                colSpan={7}
+                                className="px-4 py-2 text-right text-gray-700 dark:text-gray-300"
+                            >
+                                Totales:
+                            </td>
+                            <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
+                                {retention.relatedDocuments
+                                    .reduce(
+                                        (sum: number, item: IRelatedDocument) =>
+                                            sum + Number(item.totalRetention),
+                                        0
+                                    )
+                                    .toFixed(2)}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
+                                {retention.relatedDocuments
+                                    .reduce(
+                                        (sum: number, item: IRelatedDocument) =>
+                                            sum +
+                                            (Number(item.totalAmount) -
+                                                Number(item.totalRetention)),
+                                        0
+                                    )
+                                    .toFixed(2)}
+                            </td>
+                            <td></td>
+                        </tr>
+                    )}
                 </tbody>
             </table>
         </div>

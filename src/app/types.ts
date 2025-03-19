@@ -314,6 +314,7 @@ export interface IPerceptionType {
 export interface IRetentionType {
     code: number;
     name: string;
+    rate?: number;
 }
 
 export interface IDetractionType {

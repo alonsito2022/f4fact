@@ -15,9 +15,17 @@ import RetentionDetailDocumentForm from "./RetentionDetailDocumentForm";
 import RetentionDetailDocumentList from "./RetentionDetailDocumentList";
 import Add from "@/components/icons/Add";
 import ClientForm from "../../sales/ClientForm";
-import { gql, useLazyQuery, useQuery } from "@apollo/client";
+import { useRouter } from "next/navigation";
+import {
+    DocumentNode,
+    gql,
+    useLazyQuery,
+    useMutation,
+    useQuery,
+} from "@apollo/client";
 import SunatCancel from "@/components/icons/SunatCancel";
 import Save from "@/components/icons/Save";
+import { toast } from "react-toastify";
 
 const limaDate = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
@@ -49,23 +57,23 @@ const SEARCH_CLIENT_BY_PARAMETER = gql`
     }
 `;
 export const CREATE_RETENTION_CONSTANCE = gql`
-    mutation CreateRetentionConstancia(
+    mutation CreateRetentionConstance(
         $serial: String!
         $correlative: Int!
-        $emit_date: Date!
-        $supplier_id: Int!
+        $emitDate: Date!
+        $supplierId: Int!
         $observation: String
-        $retention_type: Int!
-        $related_documents: [RelatedDocumentInput]
+        $retentionType: Int!
+        $relatedDocuments: [RelatedDocumentInput]
     ) {
-        createRetentionConstanceMutation(
+        createRetentionConstance(
             serial: $serial
             correlative: $correlative
-            emit_date: $emit_date
-            supplier_id: $supplier_id
+            emitDate: $emitDate
+            supplierId: $supplierId
             observation: $observation
-            retention_type: $retention_type
-            related_documents: $related_documents
+            retentionType: $retentionType
+            relatedDocuments: $relatedDocuments
         ) {
             message
             error
@@ -80,33 +88,7 @@ const initialStateRetention = {
     supplierName: "",
     supplierDocumentType: "",
     supplierId: 0,
-    relatedDocuments: [
-        {
-            id: 0,
-            temporaryId: 0,
-            documentType: "01",
-            serial: "",
-            correlative: 0,
-            emitDate: today,
-            currencyDateChange: today,
-            currencyType: "PEN",
-            saleExchangeRate: "",
-            totalAmount: 0,
-
-            retentionType: 1,
-            totalRetention: 0,
-            retentionDate: today,
-            quotas: [
-                {
-                    id: 0,
-                    temporaryId: 0,
-                    paymentDate: today,
-                    number: 1,
-                    total: 0,
-                },
-            ] as IQuota[],
-        },
-    ] as IRelatedDocument[],
+    relatedDocuments: [] as IRelatedDocument[],
     retentionType: 1,
     observation: "",
 };
@@ -166,6 +148,7 @@ function NewRetentionPage() {
         initialStateRetentionDetail
     );
     const auth = useAuth();
+    const router = useRouter();
     const handleSupplierSearchChange = (
         event: ChangeEvent<HTMLInputElement>
     ) => {
@@ -216,11 +199,34 @@ function NewRetentionPage() {
     const {
         loading: retentionTypesLoading,
         error: retentionTypesError,
-        data: retentionTypesData,
+        data: rawRetentionTypesData,
     } = useQuery(RETENTION_TYPE_QUERY, {
         context: authContext,
         skip: !auth?.jwtToken,
     });
+
+    // Transform the data with the rate property
+    const retentionTypesData = useMemo(() => {
+        if (!rawRetentionTypesData) return null;
+        return {
+            ...rawRetentionTypesData,
+            allRetentionTypes: rawRetentionTypesData.allRetentionTypes.map(
+                (type: IRetentionType) => ({
+                    ...type,
+                    rate: type.name.match(/\d+/)?.[0] || "0",
+                })
+            ),
+        };
+    }, [rawRetentionTypesData]);
+
+    function useCustomMutation(mutation: DocumentNode) {
+        return useMutation(mutation, {
+            context: authContext,
+            onError: (err) => console.error("Error in unit:", err), // Log the error for debugging
+        });
+    }
+
+    const [createRetention] = useCustomMutation(CREATE_RETENTION_CONSTANCE);
 
     useEffect(() => {
         if (supplierSearch.length > 2) {
@@ -252,7 +258,82 @@ function NewRetentionPage() {
 
         setRetention({ ...retention, [name]: value });
     };
-    const handleSaveRetention = async () => {};
+    const handleSaveRetention = async () => {
+        try {
+            // Validate required fields
+            if (!retention.serial || retention.serial.length !== 4) {
+                toast.warning("La serie debe tener 4 dígitos");
+                return;
+            }
+
+            // if (!retention.correlative || Number(retention.correlative) <= 0) {
+            //     toast.warning("El número debe ser mayor a cero");
+            //     return;
+            // }
+
+            if (!retention.supplierId || retention.supplierId <= 0) {
+                toast.warning("Debe seleccionar un proveedor");
+                return;
+            }
+
+            if (
+                !retention.relatedDocuments ||
+                retention.relatedDocuments.length === 0
+            ) {
+                toast.warning("Debe agregar al menos un documento relacionado");
+                return;
+            }
+            // Format related documents
+            const formattedDocuments = retention.relatedDocuments.map(
+                (doc) => ({
+                    documentType: doc.documentType,
+                    serial: doc.serial,
+                    correlative: Number(doc.correlative || 0),
+                    emitDate: doc.emitDate,
+                    currencyDateChange: doc.currencyDateChange,
+                    currencyType: doc.currencyType,
+                    saleExchangeRate: Number(doc.saleExchangeRate),
+                    totalAmount: Number(doc.totalAmount),
+                    retentionType: Number(doc.retentionType),
+                    totalRetention: Number(doc.totalRetention),
+                    retentionDate: doc.retentionDate,
+                    quotas: doc?.quotas?.map((quota) => ({
+                        paymentDate: quota.paymentDate,
+                        number: Number(quota.number),
+                        total: Number(quota.total),
+                    })),
+                })
+            );
+            const variables = {
+                serial: retention.serial,
+                correlative: Number(retention.correlative),
+                emitDate: retention.emitDate,
+                supplierId: Number(retention.supplierId),
+                observation: retention.observation || "",
+                retentionType: Number(retention.retentionType),
+                relatedDocuments: formattedDocuments,
+            };
+            console.log("variables al guardar", variables);
+            const { data, errors } = await createRetention({
+                variables: variables,
+            });
+            if (errors) {
+                toast.error(errors.toString());
+                return;
+            }
+
+            if (data.createRetentionConstance.error) {
+                toast.error(data.createRetentionConstance.message);
+                return;
+            }
+
+            toast.success(data.createRetentionConstance.message);
+            router.push("/dashboard/retentions");
+        } catch (error) {
+            console.error("Error creating retention:", error);
+            toast.error("Error al crear la retención");
+        }
+    };
     return (
         <>
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
@@ -568,32 +649,32 @@ function NewRetentionPage() {
                                         setRetentionDetail={setRetentionDetail}
                                         modalAddDetail={modalAddDetail}
                                     />
-                                    <div className="flex justify-end">
+                                    <div className="flex justify-between items-center border-t dark:border-gray-700 pt-4">
                                         <button
                                             type="button"
-                                            className="px-5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
+                                            className="px-5 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 flex items-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg"
                                             onClick={(e) => {
                                                 modalAddDetail.show();
-                                                setRetentionDetail(
-                                                    initialStateRetentionDetail
-                                                );
+                                                setRetentionDetail({
+                                                    ...initialStateRetentionDetail,
+                                                    retentionType: Number(
+                                                        retention.retentionType
+                                                    ),
+                                                });
                                             }}
                                         >
                                             <Add /> AGREGAR DOCUMENTO
                                         </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleSaveRetention}
+                                            className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                                        >
+                                            <Save />
+                                            EMITIR COMPROBANTE
+                                        </button>
                                     </div>
                                 </div>
-                            </div>
-                            {/* Botón Continuar con el Pago */}
-                            <div className="flex justify-end py-2">
-                                <button
-                                    type="button"
-                                    onClick={handleSaveRetention}
-                                    className="px-5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
-                                >
-                                    <Save />
-                                    EMITIR
-                                </button>
                             </div>
                         </div>
                     </div>
