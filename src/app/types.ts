@@ -359,6 +359,7 @@ export interface IOperation {
     // type?: string
     subsidiary: ISubsidiary;
     operationdetailSet?: Array<IOperationDetail>;
+    relatedDocuments?: Array<IRelatedDocument>;
     cashflowSet?: Array<ICashFlow>;
 
     discountForItem: string;
@@ -463,10 +464,30 @@ export interface IOperationDetail {
     retentionType?: number;
     detractionType?: number;
 }
+
+export interface IQuota {
+    id?: number;
+    temporaryId?: number;
+    paymentDate?: string;
+    number?: number;
+    total?: number;
+}
+
 export interface IRelatedDocument {
+    temporaryId?: number;
     id?: number;
     index?: number;
     documentType?: string;
     serial?: string;
     correlative?: number;
+    emitDate?: string;
+    currencyDateChange?: string;
+    currencyType?: string;
+    saleExchangeRate?: string;
+    totalAmount?: number;
+
+    retentionType?: number;
+    totalRetention?: number;
+    retentionDate?: string;
+    quotas?: Array<IQuota>;
 }

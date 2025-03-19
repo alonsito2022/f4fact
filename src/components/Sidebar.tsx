@@ -490,6 +490,69 @@ function Sidebar() {
                                     </ul>
                                 </li>
 
+                                <li>
+                                    <button
+                                        type="button"
+                                        className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                        aria-controls="dropdown-retentions"
+                                        data-collapse-toggle="dropdown-retentions"
+                                    >
+                                        <svg
+                                            className="w-6 h-4 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                                                clipRule="evenodd"
+                                            ></path>
+                                        </svg>
+
+                                        <span className="flex-1 ml-3 text-left whitespace-nowrap">
+                                            Comprobante de retencion
+                                        </span>
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clipRule="evenodd"
+                                            ></path>
+                                        </svg>
+                                    </button>
+                                    <ul
+                                        suppressHydrationWarning
+                                        id="dropdown-retentions"
+                                        className="hidden py-2 space-y-2"
+                                    >
+                                        <li>
+                                            <Link
+                                                href="/dashboard/retentions"
+                                                className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                                onClick={handleLinkClick}
+                                            >
+                                                Ver comprobantes de retencion
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href="/dashboard/retentions/new"
+                                                className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                                onClick={handleLinkClick}
+                                            >
+                                                Nuevo comprobante de retencion
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </li>
+
                                 {/* <li>
                                     <a
                                         href="/"
