@@ -56,7 +56,7 @@ const SEARCH_CLIENT_BY_PARAMETER = gql`
         }
     }
 `;
-export const CREATE_RETENTION_CONSTANCE = gql`
+const CREATE_RETENTION_CONSTANCE = gql`
     mutation CreateRetentionConstance(
         $serial: String!
         $correlative: Int!
