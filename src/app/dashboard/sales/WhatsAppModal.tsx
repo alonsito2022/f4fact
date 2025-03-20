@@ -1,7 +1,17 @@
 import Whatsapp from "@/components/icons/Whatsapp";
+import { DocumentNode, gql, useMutation } from "@apollo/client";
 import { Modal, ModalOptions } from "flowbite";
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+
+const SEND_CPE_BY_WHATSAPP = gql`
+    mutation SendCpeByWhatsapp($id: Int!) {
+        sendCpeByWhatsapp(id: $id) {
+            message
+            error
+        }
+    }
+`;
 
 function WhatsAppModal({
     modalWhatsApp,
@@ -9,6 +19,7 @@ function WhatsAppModal({
     cpe,
     setCpe,
     initialStateCpe,
+    authContext,
 }: any) {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [countryCode, setCountryCode] = useState("51");
@@ -30,11 +41,40 @@ function WhatsAppModal({
     const padCorrelative = (correlative: string | number) => {
         return correlative.toString().padStart(6, "0");
     };
+
+    function useCustomMutation(mutation: DocumentNode) {
+        return useMutation(mutation, {
+            context: authContext,
+            onError: (err) => console.error("Error of sent:", err), // Log the error for debugging
+        });
+    }
+
+    const [sendCpe] = useCustomMutation(SEND_CPE_BY_WHATSAPP);
+
     const handleSend = () => {
         if (!phoneNumber) {
             toast.error("Ingrese un número de teléfono válido");
             return;
         }
+
+        const variables = {
+            id: cpe.id,
+        };
+
+        sendCpe({
+            variables,
+            onCompleted: (data) => {
+                if (data.sendCpeByWhatsapp.error) {
+                    toast.error(data.sendCpeByWhatsapp.message);
+                    return;
+                }
+                toast.success(data.sendCpeByWhatsapp.message);
+            },
+            onError: (err) => {
+                console.error("Error sending CPE:", err);
+                toast.error("Error al enviar el CPE");
+            },
+        });
 
         const message = `Estimado cliente,\nSe envía la ${
             cpe.documentTypeDisplay

@@ -8,7 +8,7 @@ import {
     IProduct,
     ITypeAffectation,
 } from "@/app/types";
-import { gql, useLazyQuery } from "@apollo/client";
+import { DocumentNode, gql, useLazyQuery, useMutation } from "@apollo/client";
 
 const PRODUCT_DETAIL_QUERY = gql`
     query ($productId: Int!) {
@@ -22,6 +22,23 @@ const PRODUCT_DETAIL_QUERY = gql`
     }
 `;
 
+const UPDATE_PRODUCT_TARIFF_PRICE = gql`
+    mutation UpdatePrice(
+        $id: ID!
+        $priceWithIgv: Float!
+        $priceWithoutIgv: Float!
+    ) {
+        updatePrice(
+            id: $id
+            priceWithIgv: $priceWithIgv
+            priceWithoutIgv: $priceWithoutIgv
+        ) {
+            message
+            error
+        }
+    }
+`;
+
 function SaleDetailForm({
     modalAddDetail,
     setModalAddDetail,
@@ -31,7 +48,7 @@ function SaleDetailForm({
     setInvoiceDetail,
     invoice,
     setInvoice,
-    jwtToken,
+    auth,
     initialStateProduct,
     initialStateSaleDetail,
     typeAffectationsData,
@@ -41,9 +58,17 @@ function SaleDetailForm({
     const getAuthContext = () => ({
         headers: {
             "Content-Type": "application/json",
-            Authorization: jwtToken ? `JWT ${jwtToken}` : "",
+            Authorization: auth?.jwtToken ? `JWT ${auth?.jwtToken}` : "",
         },
     });
+    function useCustomMutation(mutation: DocumentNode) {
+        return useMutation(mutation, {
+            context: getAuthContext(),
+            onError: (err) => console.error("Error of sent:", err), // Log the error for debugging
+        });
+    }
+
+    const [updateProducTariff] = useCustomMutation(UPDATE_PRODUCT_TARIFF_PRICE);
 
     const [productDetailQuery] = useLazyQuery(PRODUCT_DETAIL_QUERY);
     // Add ref for the close button
@@ -64,7 +89,8 @@ function SaleDetailForm({
     }, [modalAddDetail, setModalAddDetail]);
 
     useEffect(() => {
-        if (Number(product.id) > 0) {
+        if (Number(product.id) > 0 && Number(invoiceDetail.id) === 0) {
+            console.log({ productId: Number(product.id) });
             productDetailQuery({
                 context: getAuthContext(),
                 variables: { productId: Number(product.id) },
@@ -127,16 +153,40 @@ function SaleDetailForm({
                 },
             });
         }
-    }, [
-        product.id,
-        productDetailQuery,
-        invoice.igvType,
-        invoiceDetail.quantity,
-        invoiceDetail.totalDiscount,
-        setInvoiceDetail,
-        typeAffectationsData,
-        product.name,
-    ]);
+    }, [invoiceDetail.id, product.id]);
+
+    // Helper functions
+    const calculateTotals = (
+        quantity: number,
+        unitValue: number,
+        totalDiscount: number,
+        typeAffectationId: number
+    ) => {
+        const totalValue = unitValue * quantity - totalDiscount;
+        const { igvPercentage, totalIgv, totalAmount } = calculateIgvAndTotal(
+            totalValue,
+            typeAffectationId
+        );
+
+        return { totalValue, igvPercentage, totalIgv, totalAmount };
+    };
+
+    const calculateIgvAndTotal = (
+        totalValue: number,
+        typeAffectationId: number
+    ) => {
+        const foundTypeAffectation =
+            typeAffectationsData?.allTypeAffectations?.find(
+                (ta: ITypeAffectation) =>
+                    Number(ta.id) === Number(typeAffectationId)
+            );
+        const code = foundTypeAffectation?.code ?? "10";
+        const igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
+        const totalIgv = totalValue * igvPercentage * 0.01;
+        const totalAmount = totalValue + totalIgv;
+
+        return { igvPercentage, totalIgv, totalAmount };
+    };
 
     const handleInputChangeSaleDetail = async (
         event: ChangeEvent<
@@ -149,123 +199,176 @@ function SaleDetailForm({
             name === "productName" &&
             event.target instanceof HTMLInputElement
         ) {
-            const dataList = event.target.list;
-            if (dataList) {
-                const option = Array.from(dataList.options).find(
-                    (option) => option.value === value
-                );
+            handleProductNameChange(event.target);
+            return;
+        }
 
-                if (option) {
-                    const selectedId = option.getAttribute("data-key");
-                    const selectedValue = option.getAttribute("value");
-                    // console.log("option", option, selectedId, selectedValue)
-                    // setInvoiceDetail({ ...invoiceDetail, productId: Number(selectedId), productName: value });
-                    setProduct({
-                        ...product,
-                        id: Number(selectedId),
-                        name: selectedValue,
-                    });
-                } else {
-                    // setInvoiceDetail({ ...invoiceDetail, [name]: value, productId: 0 });
-                    setProduct({ ...product, id: 0, name: "" });
-                }
-            } else {
-                console.log("sin datalist");
-            }
-        } else if (name === "quantity") {
-            if (invoice?.documentType === "07") {
-                if (Number(value) > Number(invoiceDetail?.quantityAvailable)) {
-                    toast(
-                        "La cantidad no puede ser mayor al máximo permitido.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "warning",
-                        }
-                    );
-                    return;
-                }
-            }
-            const formattedValue = value.replace(/[^0-9]/g, "").slice(0, 6);
-            const numberValue = Number(formattedValue);
-            let totalValue =
-                Number(invoiceDetail.unitValue) * numberValue -
-                Number(invoiceDetail.totalDiscount);
+        if (name === "quantity") {
+            if (!validateQuantity(value)) return;
 
-            let foundTypeAffectation =
+            const quantity = Number(value.replace(/[^0-9]/g, "").slice(0, 6));
+            const { totalValue, totalIgv, totalAmount } = calculateTotals(
+                quantity,
+                Number(invoiceDetail.unitValue),
+                Number(invoiceDetail.totalDiscount),
+                invoiceDetail.typeAffectationId
+            );
+
+            setInvoiceDetail({
+                ...invoiceDetail,
+                quantity: String(quantity),
+                totalValue: totalValue.toFixed(2),
+                totalIgv: totalIgv.toFixed(2),
+                totalAmount: totalAmount.toFixed(2),
+                // Keep original unitPrice
+                // unitPrice: invoiceDetail.unitPrice,
+            });
+            return;
+        }
+
+        if (name === "unitPrice") {
+            const foundTypeAffectation =
                 typeAffectationsData?.allTypeAffectations?.find(
                     (ta: ITypeAffectation) =>
                         Number(ta.id) ===
                         Number(invoiceDetail.typeAffectationId)
                 );
+            const code = foundTypeAffectation?.code ?? "10";
+            const igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
+            const unitValue = Number(value) / (1 + igvPercentage * 0.01);
 
-            let code = foundTypeAffectation ? foundTypeAffectation.code : "10";
-            let igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
-            let totalIgv = totalValue * igvPercentage * 0.01;
-            let totalAmount = totalValue + totalIgv;
+            const { totalValue, totalIgv, totalAmount } = calculateTotals(
+                Number(invoiceDetail.quantity),
+                unitValue,
+                Number(invoiceDetail.totalDiscount),
+                invoiceDetail.typeAffectationId
+            );
+
             setInvoiceDetail({
                 ...invoiceDetail,
-                quantity: formattedValue,
-                totalValue: Number(totalValue).toFixed(2),
-                totalIgv: Number(totalIgv).toFixed(2),
-                totalAmount: Number(totalAmount).toFixed(2),
+                unitPrice: value,
+                unitValue: unitValue.toFixed(2),
+                totalValue: totalValue.toFixed(2),
+                totalIgv: totalIgv.toFixed(2),
+                totalAmount: totalAmount.toFixed(2),
             });
-        } else if (name === "totalDiscount") {
-            let totalValue =
-                Number(invoiceDetail.unitValue) *
-                    Number(invoiceDetail.quantity) -
-                Number(value);
-            let foundTypeAffectation =
+            return;
+        }
+
+        if (name === "unitValue") {
+            const foundTypeAffectation =
                 typeAffectationsData?.allTypeAffectations?.find(
                     (ta: ITypeAffectation) =>
                         Number(ta.id) ===
                         Number(invoiceDetail.typeAffectationId)
                 );
-            let code =
-                foundTypeAffectation !== null
-                    ? foundTypeAffectation.code
-                    : "10";
-            let igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
-            let totalIgv = totalValue * igvPercentage * 0.01;
-            let totalAmount = totalValue + totalIgv;
-            // Limitar a 6 dígitos enteros y 2 decimales (máximo 999999.99)
-            let formattedValue = value.replace(/[^0-9.]/g, "").slice(0, 9);
-            // Asegurar un solo punto decimal y máximo 2 decimales
-            const hasDecimal = formattedValue.indexOf(".") !== -1;
-            if (hasDecimal) {
-                formattedValue = formattedValue.slice(
-                    0,
-                    formattedValue.indexOf(".") + 3
-                );
-            }
+            const code = foundTypeAffectation?.code ?? "10";
+            const igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
+            const unitPrice = Number(value) * (1 + igvPercentage * 0.01);
+
+            const { totalValue, totalIgv, totalAmount } = calculateTotals(
+                Number(invoiceDetail.quantity),
+                Number(value),
+                Number(invoiceDetail.totalDiscount),
+                invoiceDetail.typeAffectationId
+            );
 
             setInvoiceDetail({
                 ...invoiceDetail,
-                totalDiscount: formattedValue,
-                totalValue: Number(totalValue).toFixed(2),
-                totalIgv: Number(totalIgv).toFixed(2),
-                totalAmount: Number(totalAmount).toFixed(2),
+                unitValue: value,
+                unitPrice: unitPrice.toFixed(2),
+                totalValue: totalValue.toFixed(2),
+                totalIgv: totalIgv.toFixed(2),
+                totalAmount: totalAmount.toFixed(2),
             });
-        } else if (name === "typeAffectationId") {
-            let foundTypeAffectation =
-                typeAffectationsData?.allTypeAffectations?.find(
-                    (ta: ITypeAffectation) => Number(ta.id) === Number(value)
+            return;
+        }
+        if (name === "totalDiscount") {
+            const formattedDiscount = formatDiscount(value);
+            const { totalValue, totalIgv, totalAmount } = calculateTotals(
+                Number(invoiceDetail.quantity),
+                Number(invoiceDetail.unitValue),
+                Number(formattedDiscount),
+                invoiceDetail.typeAffectationId
+            );
+
+            setInvoiceDetail({
+                ...invoiceDetail,
+                totalDiscount: formattedDiscount,
+                totalValue: totalValue.toFixed(2),
+                totalIgv: totalIgv.toFixed(2),
+                totalAmount: totalAmount.toFixed(2),
+                // Keep original unitPrice
+                unitPrice: invoiceDetail.unitPrice,
+            });
+            return;
+        }
+
+        if (name === "typeAffectationId") {
+            const { igvPercentage, totalIgv, totalAmount } =
+                calculateIgvAndTotal(
+                    Number(invoiceDetail.totalValue),
+                    Number(value)
                 );
-            let code =
-                foundTypeAffectation !== null
-                    ? foundTypeAffectation.code
-                    : "10";
-            let igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
-            let totalIgv = invoiceDetail.totalValue * igvPercentage * 0.01;
-            let totalAmount = invoiceDetail.totalValue + totalIgv;
+
             setInvoiceDetail({
                 ...invoiceDetail,
                 [name]: value,
                 igvPercentage: igvPercentage,
-                totalIgv: totalIgv,
-                totalAmount: totalAmount,
+                totalIgv: totalIgv.toFixed(2),
+                totalAmount: totalAmount.toFixed(2),
             });
-        } else setInvoiceDetail({ ...invoiceDetail, [name]: value });
+            return;
+        }
+
+        setInvoiceDetail({ ...invoiceDetail, [name]: value });
+    };
+
+    // Validation helpers
+    const validateQuantity = (value: string): boolean => {
+        if (
+            invoice?.documentType === "07" &&
+            Number(value) > Number(invoiceDetail?.quantityAvailable)
+        ) {
+            toast.warning(
+                "La cantidad no puede ser mayor al máximo permitido."
+            );
+            return false;
+        }
+        return true;
+    };
+
+    const formatDiscount = (value: string): string => {
+        let formatted = value.replace(/[^0-9.]/g, "").slice(0, 9);
+        const hasDecimal = formatted.indexOf(".") !== -1;
+        if (hasDecimal) {
+            formatted = formatted.slice(0, formatted.indexOf(".") + 3);
+        }
+        return formatted;
+    };
+
+    const handleProductNameChange = (input: HTMLInputElement) => {
+        const dataList = input.list;
+        if (!dataList) {
+            console.log("sin datalist");
+            return;
+        }
+
+        const option = Array.from(dataList.options).find(
+            (option) => option.value === input.value
+        );
+
+        if (option) {
+            const selectedId = option.getAttribute("data-key");
+            const selectedValue = option.getAttribute("value");
+            setProduct({
+                ...product,
+                id: Number(selectedId),
+                name: selectedValue,
+            });
+        } else {
+            setProduct({ ...product, id: 0, name: "" });
+        }
     };
 
     // Modify the modal close function
@@ -298,6 +401,29 @@ function SaleDetailForm({
             });
             return;
         }
+
+        const variables = {
+            id: Number(invoiceDetail.productTariffId),
+            priceWithIgv: Number(invoiceDetail.unitPrice),
+            priceWithoutIgv: Number(invoiceDetail.unitValue),
+        };
+        console.log(variables);
+        updateProducTariff({
+            variables,
+            // context: getAuthContext(),
+            onCompleted: (data) => {
+                if (data.updatePrice.error) {
+                    toast.error(data.updatePrice.message);
+                    return;
+                }
+                toast.success(data.updatePrice.message);
+            },
+            onError: (err) => {
+                console.error("Error sending tariff:", err);
+                toast.error("Error al enviar tariff");
+            },
+        });
+
         if (Number(invoiceDetail?.temporaryId) > 0) {
             // Combina la eliminación y la edición en una sola operación
             const newSaleDetail = {
@@ -433,6 +559,7 @@ function SaleDetailForm({
                                             }
                                             onFocus={(e) => e.target.select()}
                                             className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
+                                            disabled
                                         />
                                     </div>
 
@@ -455,31 +582,62 @@ function SaleDetailForm({
                                             }
                                             onFocus={(e) => e.target.select()}
                                             className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                            autoComplete="off"
                                             required
                                         />
                                     </div>
-
-                                    <div className="sm:col-span-2">
-                                        <label
-                                            htmlFor="unitValue"
-                                            className="form-label text-gray-900 dark:text-gray-200"
-                                        >
-                                            VALOR Unit. (Sin IGV)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            name="unitValue"
-                                            onWheel={(e) =>
-                                                e.currentTarget.blur()
-                                            }
-                                            value={invoiceDetail.unitValue}
-                                            onChange={
-                                                handleInputChangeSaleDetail
-                                            }
-                                            onFocus={(e) => e.target.select()}
-                                            className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
-                                        />
-                                    </div>
+                                    {auth?.user?.companyIncludeIgv ? (
+                                        <div className="sm:col-span-2">
+                                            <label
+                                                htmlFor="unitPrice"
+                                                className="form-label text-gray-900 dark:text-gray-200"
+                                            >
+                                                Precio VENTA unitario CON IGV
+                                            </label>
+                                            <input
+                                                type="number"
+                                                name="unitPrice"
+                                                onWheel={(e) =>
+                                                    e.currentTarget.blur()
+                                                }
+                                                value={invoiceDetail.unitPrice}
+                                                onChange={
+                                                    handleInputChangeSaleDetail
+                                                }
+                                                onFocus={(e) =>
+                                                    e.target.select()
+                                                }
+                                                autoComplete="off"
+                                                className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                                required
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="sm:col-span-2">
+                                            <label
+                                                htmlFor="unitValue"
+                                                className="form-label text-gray-900 dark:text-gray-200"
+                                            >
+                                                VALOR VENTA unitario SIN IGV
+                                            </label>
+                                            <input
+                                                type="number"
+                                                name="unitValue"
+                                                onWheel={(e) =>
+                                                    e.currentTarget.blur()
+                                                }
+                                                value={invoiceDetail.unitValue}
+                                                onChange={
+                                                    handleInputChangeSaleDetail
+                                                }
+                                                onFocus={(e) =>
+                                                    e.target.select()
+                                                }
+                                                autoComplete="off"
+                                                className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                            />
+                                        </div>
+                                    )}
 
                                     <div className="sm:col-span-2">
                                         <label
@@ -590,6 +748,7 @@ function SaleDetailForm({
                                             }
                                             onFocus={(e) => e.target.select()}
                                             className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
+                                            disabled
                                         />
                                     </div>
 
@@ -612,6 +771,7 @@ function SaleDetailForm({
                                             }
                                             onFocus={(e) => e.target.select()}
                                             className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
+                                            disabled
                                         />
                                     </div>
                                 </div>

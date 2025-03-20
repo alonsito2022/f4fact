@@ -1042,7 +1042,7 @@ function CreditPage() {
                 setInvoiceDetail={setCreditNoteDetail}
                 invoice={creditNote}
                 setInvoice={setCreditNote}
-                jwtToken={auth?.jwtToken}
+                auth={auth}
                 initialStateProduct={initialStateProduct}
                 initialStateSaleDetail={initialStateSaleDetail}
                 typeAffectationsData={typeAffectationsData}

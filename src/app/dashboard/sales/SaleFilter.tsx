@@ -182,7 +182,7 @@ function SaleFilter({
                 <option value={"01"}>FACTURA ELECTRÓNICA</option>
                 <option value={"03"}>BOLETA DE VENTA ELECTRÓNICA</option>
                 <option value={"07"}>NOTA DE CRÉDITO ELECTRÓNICA</option>
-                <option value={"08"}>NOTA DE DÉBITO ELECTRÓNICA</option>
+                {/* <option value={"08"}>NOTA DE DÉBITO ELECTRÓNICA</option> */}
             </select>
             {auth?.user?.isSuperuser ? (
                 <>

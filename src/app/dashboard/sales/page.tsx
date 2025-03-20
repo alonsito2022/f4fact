@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, use, useEffect } from "react";
 import Breadcrumb from "@/components/Breadcrumb";
 import SaleList from "./SaleList";
 import SaleFilter from "./SaleFilter";
@@ -68,7 +68,7 @@ const SALES_QUERY = gql`
                 totalPayed
                 operationStatus
                 operationStatusReadable
-                sendClient
+                sendWhatsapp
 
                 linkXml
                 linkXmlLow
@@ -201,6 +201,7 @@ function SalePage() {
                 cpe={cpe}
                 setCpe={setCpe}
                 initialStateCpe={initialStateCpe}
+                authContext={authContext}
             />
         </>
     );

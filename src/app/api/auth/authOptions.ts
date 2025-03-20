@@ -28,6 +28,13 @@ const TOKEN_AUTH_MUTATION = gql`
                         doc
                         percentageIgv
                         isEnabled
+                        includeIgv
+                        withStock
+                        invoiceF
+                        invoiceB
+                        guide
+                        catalog
+                        app
                     }
                 }
             }
@@ -49,6 +56,14 @@ interface ExtendedUser extends User {
     companyDoc: string;
     companyPercentageIgv: number;
     companyIsEnabled: boolean;
+
+    companyIncludeIgv: boolean;
+    companyWithStock: boolean;
+    companyInvoiceF: boolean;
+    companyInvoiceB: boolean;
+    companyGuide: boolean;
+    companyCatalog: boolean;
+    companyApp: boolean;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -110,6 +125,30 @@ export const authOptions: NextAuthOptions = {
                             companyIsEnabled:
                                 data.tokenAuth.user.subsidiary.company
                                     .isEnabled,
+
+                            companyIncludeIgv:
+                                data.tokenAuth.user.subsidiary.company
+                                    .includeIgv,
+
+                            companyWithStock:
+                                data.tokenAuth.user.subsidiary.company
+                                    .withStock,
+
+                            companyInvoiceF:
+                                data.tokenAuth.user.subsidiary.company.invoiceF,
+
+                            companyInvoiceB:
+                                data.tokenAuth.user.subsidiary.company.invoiceB,
+
+                            companyGuide:
+                                data.tokenAuth.user.subsidiary.company.guide,
+
+                            companyCatalog:
+                                data.tokenAuth.user.subsidiary.company.catalog,
+
+                            companyApp:
+                                data.tokenAuth.user.subsidiary.company.app,
+
                             exp: data.tokenAuth?.payload.exp,
                             iat: data.tokenAuth?.payload.origIat,
                         };
@@ -152,6 +191,17 @@ export const authOptions: NextAuthOptions = {
                 token.companyIsEnabled = (
                     user as ExtendedUser
                 ).companyIsEnabled;
+                token.companyIncludeIgv = (
+                    user as ExtendedUser
+                ).companyIncludeIgv;
+                token.companyWithStock = (
+                    user as ExtendedUser
+                ).companyWithStock;
+                token.companyInvoiceF = (user as ExtendedUser).companyInvoiceF;
+                token.companyInvoiceB = (user as ExtendedUser).companyInvoiceB;
+                token.companyGuide = (user as ExtendedUser).companyGuide;
+                token.companyCatalog = (user as ExtendedUser).companyCatalog;
+                token.companyApp = (user as ExtendedUser).companyApp;
             }
             return token;
         },
@@ -171,6 +221,13 @@ export const authOptions: NextAuthOptions = {
                     companyDoc: token.companyDoc,
                     companyPercentageIgv: token.companyPercentageIgv,
                     companyIsEnabled: token.companyIsEnabled,
+                    companyIncludeIgv: token.companyIncludeIgv,
+                    companyWithStock: token.companyWithStock,
+                    companyInvoiceF: token.companyInvoiceF,
+                    companyInvoiceB: token.companyInvoiceB,
+                    companyGuide: token.companyGuide,
+                    companyCatalog: token.companyCatalog,
+                    companyApp: token.companyApp,
                 },
                 accessToken: token.accessToken,
                 expires: new Date((token.exp as number) * 1000).toISOString(),

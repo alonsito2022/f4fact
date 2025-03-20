@@ -28,6 +28,13 @@ export interface IUser {
     companyDoc?: string;
     companyPercentageIgv?: number;
     companyIsEnabled?: boolean;
+    companyIncludeIgv: boolean;
+    companyWithStock: boolean;
+    companyInvoiceF: boolean;
+    companyInvoiceB: boolean;
+    companyGuide: boolean;
+    companyCatalog: boolean;
+    companyApp: boolean;
 }
 export interface ICompany {
     id?: number;

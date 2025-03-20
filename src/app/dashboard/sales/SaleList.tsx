@@ -286,7 +286,7 @@ function SaleList({
                                             : "NO"}
                                     </td>
                                     <td className="p-2">
-                                        {item.sendClient ? "SI" : "X"}
+                                        {item.sendWhatsapp ? "SI" : "X"}
                                     </td>
                                     <td className="p-2 text-center">
                                         <a

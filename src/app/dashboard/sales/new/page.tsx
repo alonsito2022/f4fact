@@ -322,7 +322,6 @@ function NewSalePage() {
         }),
         [auth?.jwtToken]
     );
-
     useEffect(() => {
         if (auth?.user?.companyPercentageIgv) {
             setSale((prevSale) => ({
@@ -1326,7 +1325,7 @@ function NewSalePage() {
                 setInvoiceDetail={setSaleDetail}
                 invoice={sale}
                 setInvoice={setSale}
-                jwtToken={auth?.jwtToken}
+                auth={auth}
                 initialStateProduct={initialStateProduct}
                 initialStateSaleDetail={initialStateSaleDetail}
                 typeAffectationsData={typeAffectationsData}
