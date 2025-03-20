@@ -1,6 +1,6 @@
 import React from "react";
 
-function CompanyFilter({ searchTerm, setSearchTerm, modal }: any) {
+function CompanyFilter({ searchTerm, setSearchTerm, modal, user }: any) {
     const handleInputSearchChange = (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -95,16 +95,18 @@ function CompanyFilter({ searchTerm, setSearchTerm, modal }: any) {
                     </div>
                 </div>
             </div>
-            <button
-                id="createCompanyButton"
-                type="button"
-                onClick={(e) => {
-                    modal.show();
-                }}
-                className="btn-blue"
-            >
-                Crear Empresa
-            </button>
+            {user?.isSuperuser ? (
+                            <button
+                            id="createCompanyButton"
+                            type="button"
+                            onClick={(e) => {
+                                modal.show();
+                            }}
+                            className="btn-blue"
+                        >
+                            Crear Empresa
+                        </button>
+                        ) : null}            
         </div>
     );
 }

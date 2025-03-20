@@ -23,6 +23,11 @@ const initialState = {
     roleName: "",
     isActive: false,
     avatar: "",
+    subsidiaryId: "",
+    subsidiarySerial: "",
+    subsidiaryName: "",
+    companyId: "",
+    companyName: "",
 };
 const initialStateUserLogged = {
     id: 0,

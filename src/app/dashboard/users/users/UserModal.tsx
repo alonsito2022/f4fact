@@ -167,7 +167,25 @@ function UserModal({modal, setModal, user, setUser, initialState, fetchUsers}:an
                     <label htmlFor="repeatPassword" className="form-label-sm">Confirmar Contraseña</label>
                     <input type="password" name="repeatPassword" id="repeatPassword" value={user.repeatPassword!} onChange={handleInputChange} onFocus={(e) => e.target.select()} className="form-control-sm" autoComplete="off" />
                 </div>
-                </div>                
+                </div>    
+                <div className="grid md:grid-cols-2 md:gap-6">
+                    <div className="relative z-0 w-full mb-3 group">
+                        <label htmlFor="role" className="form-label-sm">Empresa</label>
+                        <select id="role" name="role" onChange={handleInputChange} value={user.companyId?.replace("A_", "")} className="form-control-sm">
+                        {options.map((o,k)=>(
+                                <option key={k} value={o.id}>{o.value}</option>
+                            ))}
+                        </select>
+                     </div>
+                    <div className="relative z-0 w-full mb-3 group">
+                        <label htmlFor="role" className="form-label-sm">Sede/Local</label>
+                        <select id="role" name="role" onChange={handleInputChange} value={user.subsidiaryId?.replace("A_", "")} className="form-control-sm">
+                        {options.map((o,k)=>(
+                                <option key={k} value={o.id}>{o.value}</option>
+                            ))}
+                        </select>
+                     </div>
+                </div>               
                 <div className="grid md:grid-cols-2 md:gap-6">
                     <div className="relative z-0 w-full flex items-center mb-3">
                         <input id="isActive" name="isActive" type="checkbox" checked={user.isActive} onChange={handleCheckboxChange} className="form-check-input"/>

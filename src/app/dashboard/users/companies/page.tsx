@@ -132,14 +132,18 @@ function CompanyPage() {
         }),
         [auth?.jwtToken]
     );
+   
+    useEffect(() => {
+       
+        if (auth?.user) {
+            console.log("usuario:", auth?.jwtToken);
+            fetchCompanies();
+        }
+    }, [auth?.user]);
     async function fetchCompanies() {
-        await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                query: `
-                {
-                    companies {
+          let queryFetch: String = `
+            query{
+                companiesByUser {
                         id
                         typeDoc
                         doc
@@ -162,18 +166,27 @@ function CompanyPage() {
                         productionDate
                         disabledDate
                     }
-                }
-            `,
+            }
+        `;
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
+            },
+            body: JSON.stringify({
+                query: queryFetch,
             }),
         })
             .then((res) => res.json())
             .then((data) => {
-                setCompanies(data.data.companies);
+                console.log("data:", data.data);
+                setCompanies(data.data.companiesByUser);
             });
     }
-    useEffect(() => {
-        fetchCompanies();
-    }, []);
+    // useEffect(() => {
+    //     fetchCompanies();
+    // }, []);
 
     const filteredCompanies = useMemo(() => {
         if (companies) {
@@ -203,6 +216,7 @@ function CompanyPage() {
                         searchTerm={searchTerm}
                         setSearchTerm={setSearchTerm}
                         modal={modal}
+                        user={auth?.user}
                     />
                 </div>
             </div>
