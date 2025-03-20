@@ -98,22 +98,29 @@ function SaleDetailForm({
                 onCompleted: (data) => {
                     const productDetail = data.productDetailByProductId;
                     if (productDetail) {
-                        let totalValue =
-                            Number(productDetail.priceWithoutIgv3) *
-                                Number(invoiceDetail.quantity) -
-                            Number(invoiceDetail.totalDiscount);
                         let foundTypeAffectation =
                             typeAffectationsData?.allTypeAffectations?.find(
                                 (ta: ITypeAffectation) =>
                                     Number(ta.id) ===
                                     Number(productDetail.typeAffectationId)
                             );
+
                         let code =
                             foundTypeAffectation !== null
                                 ? foundTypeAffectation?.code
                                 : "10";
                         let igvPercentage =
                             code === "10" ? Number(invoice.igvType) : 0;
+                        // Calculate priceWithoutIgv instead of modifying productDetail
+                        const calculatedPriceWithoutIgv =
+                            productDetail.priceWithIgv3 /
+                            (1 + igvPercentage * 0.01);
+
+                        let totalValue =
+                            calculatedPriceWithoutIgv *
+                                Number(invoiceDetail.quantity) -
+                            Number(invoiceDetail.totalDiscount);
+
                         let totalIgv = totalValue * igvPercentage * 0.01;
                         let totalAmount = totalValue + totalIgv;
                         setInvoiceDetail({
@@ -124,11 +131,11 @@ function SaleDetailForm({
                             productId: Number(product.id),
                             productName: product.name,
                             unitValue: Number(
-                                productDetail.priceWithoutIgv3
-                            ).toFixed(2),
+                                calculatedPriceWithoutIgv
+                            ).toFixed(6),
                             unitPrice: Number(
                                 productDetail.priceWithIgv3
-                            ).toFixed(2),
+                            ).toFixed(6),
                             igvPercentage: Number(igvPercentage).toFixed(2),
                             totalValue: Number(totalValue).toFixed(2),
                             totalIgv: Number(totalIgv).toFixed(2),
@@ -155,37 +162,24 @@ function SaleDetailForm({
         }
     }, [invoiceDetail.id, product.id]);
 
-    // Helper functions
-    const calculateTotals = (
+    // Add this new helper function
+    const calculateBasedOnIgv = (
         quantity: number,
+        unitPrice: number,
         unitValue: number,
         totalDiscount: number,
-        typeAffectationId: number
+        igvPercentage: number,
+        includeIgv: boolean
     ) => {
-        const totalValue = unitValue * quantity - totalDiscount;
-        const { igvPercentage, totalIgv, totalAmount } = calculateIgvAndTotal(
-            totalValue,
-            typeAffectationId
-        );
+        let totalValue: number;
+        let totalAmount: number;
+        let totalIgv: number;
 
-        return { totalValue, igvPercentage, totalIgv, totalAmount };
-    };
+        totalValue = quantity * unitValue - totalDiscount;
+        totalAmount = totalValue * (1 + igvPercentage * 0.01);
+        totalIgv = totalAmount - totalValue;
 
-    const calculateIgvAndTotal = (
-        totalValue: number,
-        typeAffectationId: number
-    ) => {
-        const foundTypeAffectation =
-            typeAffectationsData?.allTypeAffectations?.find(
-                (ta: ITypeAffectation) =>
-                    Number(ta.id) === Number(typeAffectationId)
-            );
-        const code = foundTypeAffectation?.code ?? "10";
-        const igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
-        const totalIgv = totalValue * igvPercentage * 0.01;
-        const totalAmount = totalValue + totalIgv;
-
-        return { igvPercentage, totalIgv, totalAmount };
+        return { totalValue, totalAmount, totalIgv };
     };
 
     const handleInputChangeSaleDetail = async (
@@ -194,6 +188,7 @@ function SaleDetailForm({
         >
     ) => {
         const { name, value } = event.target;
+        const includeIgv = auth?.user?.companyIncludeIgv;
 
         if (
             name === "productName" &&
@@ -207,11 +202,22 @@ function SaleDetailForm({
             if (!validateQuantity(value)) return;
 
             const quantity = Number(value.replace(/[^0-9]/g, "").slice(0, 6));
-            const { totalValue, totalIgv, totalAmount } = calculateTotals(
+            const foundTypeAffectation =
+                typeAffectationsData?.allTypeAffectations?.find(
+                    (ta: ITypeAffectation) =>
+                        Number(ta.id) ===
+                        Number(invoiceDetail.typeAffectationId)
+                );
+            const code = foundTypeAffectation?.code ?? "10";
+            const igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
+
+            const { totalValue, totalAmount, totalIgv } = calculateBasedOnIgv(
                 quantity,
+                Number(invoiceDetail.unitPrice),
                 Number(invoiceDetail.unitValue),
                 Number(invoiceDetail.totalDiscount),
-                invoiceDetail.typeAffectationId
+                igvPercentage,
+                includeIgv
             );
 
             setInvoiceDetail({
@@ -220,8 +226,6 @@ function SaleDetailForm({
                 totalValue: totalValue.toFixed(2),
                 totalIgv: totalIgv.toFixed(2),
                 totalAmount: totalAmount.toFixed(2),
-                // Keep original unitPrice
-                // unitPrice: invoiceDetail.unitPrice,
             });
             return;
         }
@@ -237,17 +241,19 @@ function SaleDetailForm({
             const igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
             const unitValue = Number(value) / (1 + igvPercentage * 0.01);
 
-            const { totalValue, totalIgv, totalAmount } = calculateTotals(
+            const { totalValue, totalAmount, totalIgv } = calculateBasedOnIgv(
                 Number(invoiceDetail.quantity),
+                Number(value),
                 unitValue,
                 Number(invoiceDetail.totalDiscount),
-                invoiceDetail.typeAffectationId
+                igvPercentage,
+                includeIgv
             );
 
             setInvoiceDetail({
                 ...invoiceDetail,
                 unitPrice: value,
-                unitValue: unitValue.toFixed(2),
+                unitValue: unitValue.toFixed(6),
                 totalValue: totalValue.toFixed(2),
                 totalIgv: totalIgv.toFixed(2),
                 totalAmount: totalAmount.toFixed(2),
@@ -266,17 +272,19 @@ function SaleDetailForm({
             const igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
             const unitPrice = Number(value) * (1 + igvPercentage * 0.01);
 
-            const { totalValue, totalIgv, totalAmount } = calculateTotals(
+            const { totalValue, totalAmount, totalIgv } = calculateBasedOnIgv(
                 Number(invoiceDetail.quantity),
+                unitPrice,
                 Number(value),
                 Number(invoiceDetail.totalDiscount),
-                invoiceDetail.typeAffectationId
+                igvPercentage,
+                includeIgv
             );
 
             setInvoiceDetail({
                 ...invoiceDetail,
                 unitValue: value,
-                unitPrice: unitPrice.toFixed(2),
+                unitPrice: unitPrice.toFixed(6),
                 totalValue: totalValue.toFixed(2),
                 totalIgv: totalIgv.toFixed(2),
                 totalAmount: totalAmount.toFixed(2),
@@ -285,11 +293,22 @@ function SaleDetailForm({
         }
         if (name === "totalDiscount") {
             const formattedDiscount = formatDiscount(value);
-            const { totalValue, totalIgv, totalAmount } = calculateTotals(
+            const foundTypeAffectation =
+                typeAffectationsData?.allTypeAffectations?.find(
+                    (ta: ITypeAffectation) =>
+                        Number(ta.id) ===
+                        Number(invoiceDetail.typeAffectationId)
+                );
+            const code = foundTypeAffectation?.code ?? "10";
+            const igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
+
+            const { totalValue, totalAmount, totalIgv } = calculateBasedOnIgv(
                 Number(invoiceDetail.quantity),
+                Number(invoiceDetail.unitPrice),
                 Number(invoiceDetail.unitValue),
                 Number(formattedDiscount),
-                invoiceDetail.typeAffectationId
+                igvPercentage,
+                includeIgv
             );
 
             setInvoiceDetail({
@@ -298,23 +317,32 @@ function SaleDetailForm({
                 totalValue: totalValue.toFixed(2),
                 totalIgv: totalIgv.toFixed(2),
                 totalAmount: totalAmount.toFixed(2),
-                // Keep original unitPrice
-                unitPrice: invoiceDetail.unitPrice,
             });
             return;
         }
 
         if (name === "typeAffectationId") {
-            const { igvPercentage, totalIgv, totalAmount } =
-                calculateIgvAndTotal(
-                    Number(invoiceDetail.totalValue),
-                    Number(value)
+            const foundTypeAffectation =
+                typeAffectationsData?.allTypeAffectations?.find(
+                    (ta: ITypeAffectation) => Number(ta.id) === Number(value)
                 );
+            const code = foundTypeAffectation?.code ?? "10";
+            const igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
+
+            const { totalValue, totalAmount, totalIgv } = calculateBasedOnIgv(
+                Number(invoiceDetail.quantity),
+                Number(invoiceDetail.unitPrice),
+                Number(invoiceDetail.unitValue),
+                Number(invoiceDetail.totalDiscount),
+                igvPercentage,
+                includeIgv
+            );
 
             setInvoiceDetail({
                 ...invoiceDetail,
-                [name]: value,
+                typeAffectationId: Number(value),
                 igvPercentage: igvPercentage,
+                totalValue: totalValue.toFixed(2),
                 totalIgv: totalIgv.toFixed(2),
                 totalAmount: totalAmount.toFixed(2),
             });
