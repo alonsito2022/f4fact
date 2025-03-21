@@ -9,6 +9,7 @@ import SunatCheck from "@/components/icons/SunatCheck";
 import SunatCancel from "@/components/icons/SunatCancel";
 import Link from "next/link";
 import SalePagination from "./SalePagination";
+import LoadingIcon from "@/components/icons/LoadingIcon";
 
 const CANCEL_INVOICE = gql`
     mutation CancelInvoice($operationId: Int!, $lowDate: Date!) {
@@ -110,6 +111,64 @@ function SaleList({
             fileNameCdr: `R-${item?.subsidiary?.company?.doc}-${item?.documentType}-${item.serial}-${item.correlative}.xml`,
         })
     );
+
+    const getStatusClassName = (status: string) => {
+        const baseClasses = "flex items-center justify-center";
+        if (status === "02") {
+            return `${baseClasses} bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300`;
+        }
+        if (status === "06") {
+            return `${baseClasses} bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap`;
+        }
+        return `${baseClasses}`;
+    };
+
+    const getStatusContent = (status: string, documentType: string) => {
+        if (status === "01") return <LoadingIcon />;
+        if (status === "02") {
+            if (documentType === "01")
+                return (
+                    <>
+                        <SunatCheck /> 0
+                    </>
+                );
+            if (documentType === "03") return <SunatCheck />;
+            return "-";
+        }
+        if (status === "06") return <SunatCancel />;
+        return "";
+    };
+
+    const getPopoverContent = (item: IOperation) => {
+        if (item.operationStatus === "02")
+            return <p>{item.sunatDescription}</p>;
+        if (item.operationStatus === "06") {
+            return (
+                <p>
+                    {item.sunatDescriptionLow ||
+                        "Los documentos no aceptados por la SUNAT se consideran como documentos ANULADOS para efectos tributarios en la mayoría de casos."}
+                </p>
+            );
+        }
+        return <p>Sin información</p>;
+    };
+    const handleWhatsAppClick = (item: IOperation) => {
+        modalWhatsApp.show();
+        setCpe({
+            ...cpe,
+            id: Number(item.id),
+            documentTypeDisplay:
+                item.documentType === "01"
+                    ? "FACTURA"
+                    : item.documentType === "03"
+                    ? "BOLETA"
+                    : "NA",
+            serial: item.serial,
+            correlative: item.correlative,
+            clientName: item.client?.names,
+            clientDoc: item.client?.documentNumber,
+        });
+    };
     return (
         <>
             <div className="w-full overflow-x-auto">
@@ -306,288 +365,249 @@ function SaleList({
                                         </a>
                                     </td>
                                     <td className="p-2 text-center">
-                                        <a
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                const url =
-                                                    item.operationStatus ===
-                                                    "02"
-                                                        ? item.linkXml
-                                                        : item.linkXmlLow;
-                                                handleDownload(
-                                                    url,
-                                                    item?.fileNameXml
-                                                );
-                                            }}
-                                            className="hover:underline"
-                                        >
-                                            <span className="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300 text-nowrap">
-                                                {item.operationStatus === "02"
-                                                    ? "XML"
-                                                    : item.operationStatus ===
-                                                      "06"
-                                                    ? item.linkXmlLow
-                                                        ? "XML"
-                                                        : "SIN XML"
-                                                    : "#"}
-                                            </span>
-                                        </a>
+                                        {(() => {
+                                            const hasXml =
+                                                (item.operationStatus ===
+                                                    "02" &&
+                                                    item.linkXml) ||
+                                                (item.operationStatus ===
+                                                    "06" &&
+                                                    item.linkXmlLow);
+
+                                            if (!hasXml) return null;
+
+                                            const xmlUrl =
+                                                item.operationStatus === "02"
+                                                    ? item.linkXml
+                                                    : item.linkXmlLow;
+
+                                            return (
+                                                <a
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleDownload(
+                                                            xmlUrl,
+                                                            item?.fileNameXml
+                                                        );
+                                                    }}
+                                                    className="hover:underline"
+                                                >
+                                                    <span className="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300 text-nowrap">
+                                                        XML
+                                                    </span>
+                                                </a>
+                                            );
+                                        })()}
                                     </td>
                                     <td className="p-2 text-center">
-                                        <a
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                const url =
+                                        {(() => {
+                                            const hasCdr =
+                                                (item.operationStatus ===
+                                                    "02" &&
+                                                    item.linkCdr) ||
+                                                (item.operationStatus ===
+                                                    "06" &&
+                                                    item.linkCdrLow);
+                                            if (!hasCdr) return null;
+
+                                            const cdrUrl =
+                                                item.operationStatus === "02"
+                                                    ? item.linkCdr
+                                                    : item.linkCdrLow;
+                                            const getCdrStyle = () => {
+                                                if (
                                                     item.operationStatus ===
                                                     "02"
-                                                        ? item.linkCdr
-                                                        : item.linkCdrLow;
-                                                handleDownload(
-                                                    url,
-                                                    item?.fileNameCdr
-                                                );
-                                            }}
-                                            className="hover:underline"
-                                        >
-                                            {item.operationStatus === "02" ? (
-                                                <>
-                                                    {item?.documentType ===
-                                                    "01" ? (
-                                                        <span className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
-                                                            CDR
-                                                        </span>
-                                                    ) : item?.documentType ===
-                                                      "03" ? (
-                                                        <span className="bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-gray-900 dark:text-gray-300">
-                                                            CDR
-                                                        </span>
-                                                    ) : (
-                                                        "-"
-                                                    )}
-                                                </>
-                                            ) : item.operationStatus ===
-                                              "06" ? (
-                                                <span className="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap">
-                                                    {item.linkCdrLow
-                                                        ? "CDR"
-                                                        : "SIN CDR"}
-                                                </span>
-                                            ) : (
-                                                ""
-                                            )}
-                                        </a>
+                                                ) {
+                                                    return item.documentType ===
+                                                        "01"
+                                                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                                        : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+                                                }
+                                                return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+                                            };
+
+                                            return (
+                                                <a
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleDownload(
+                                                            cdrUrl,
+                                                            item?.fileNameCdr
+                                                        );
+                                                    }}
+                                                    className="hover:underline"
+                                                >
+                                                    <span
+                                                        className={`text-xs font-medium me-2 px-2.5 py-0.5 rounded-full text-nowrap ${getCdrStyle()}`}
+                                                    >
+                                                        {item.operationStatus ===
+                                                            "06" &&
+                                                        !item.linkCdrLow
+                                                            ? "SIN CDR"
+                                                            : "CDR"}
+                                                    </span>
+                                                </a>
+                                            );
+                                        })()}
                                     </td>
                                     <td className="p-2 text-center">
                                         <>
                                             <span
-                                                data-popover-target={
-                                                    "popover-status-" + item.id
-                                                }
-                                                className={
-                                                    item.operationStatus ===
-                                                    "02"
-                                                        ? "bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300"
-                                                        : item.operationStatus ===
-                                                          "06"
-                                                        ? "bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap"
-                                                        : ""
-                                                }
+                                                data-popover-target={`popover-status-${item.id}`}
+                                                className={getStatusClassName(
+                                                    item?.operationStatus
+                                                )}
                                             >
-                                                {item.operationStatus ===
-                                                "02" ? (
-                                                    <>
-                                                        {item?.documentType ===
-                                                        "01" ? (
-                                                            <>
-                                                                <SunatCheck /> 0
-                                                            </>
-                                                        ) : item?.documentType ===
-                                                          "03" ? (
-                                                            <>
-                                                                <SunatCheck />
-                                                            </>
-                                                        ) : (
-                                                            "-"
-                                                        )}
-                                                    </>
-                                                ) : item.operationStatus ===
-                                                  "06" ? (
-                                                    <>
-                                                        <SunatCancel />
-                                                    </>
-                                                ) : (
-                                                    ""
+                                                {getStatusContent(
+                                                    item?.operationStatus,
+                                                    String(item?.documentType)
                                                 )}
                                             </span>
                                             <Popover
-                                                id={"popover-status-" + item.id}
+                                                id={`popover-status-${item.id}`}
                                             >
-                                                {item.operationStatus ===
-                                                "02" ? (
-                                                    <p>
-                                                        {item.sunatDescription}
-                                                    </p>
-                                                ) : item.operationStatus ===
-                                                  "06" ? (
-                                                    <p>
-                                                        {item.sunatDescriptionLow
-                                                            ? item.sunatDescriptionLow
-                                                            : "Los documentos no aceptados por la SUNAT se consideran como documentos ANULADOS para efectos tributarios en la mayoría de casos."}
-                                                    </p>
-                                                ) : (
-                                                    <p>Sin información</p>
-                                                )}
+                                                {getPopoverContent(item)}
                                             </Popover>
                                         </>
                                     </td>
                                     <td className="p-2">
-                                        <>
-                                            <span
-                                                data-popover-target={
-                                                    "popover-options-" + item.id
-                                                }
-                                                className={
-                                                    "font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer"
-                                                }
-                                            >
-                                                Opciones
-                                            </span>
-                                            <Popover
-                                                id={
-                                                    "popover-options-" + item.id
-                                                }
-                                            >
-                                                <a
-                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                    href="#"
-                                                    onClick={() => {
-                                                        modalWhatsApp.show();
-                                                        setCpe({
-                                                            ...cpe,
-                                                            id: Number(item.id),
-                                                            documentTypeDisplay:
-                                                                item.documentType ===
-                                                                "01"
-                                                                    ? "FACTURA"
-                                                                    : item.documentType ===
-                                                                      "03"
-                                                                    ? "BOLETA"
-                                                                    : "NA",
-                                                            serial: item.serial,
-                                                            correlative:
-                                                                item.correlative,
-                                                            clientName:
-                                                                item.client
-                                                                    ?.names,
-                                                            clientDoc:
-                                                                item.client
-                                                                    ?.documentNumber,
-                                                        });
-                                                    }}
+                                        {item?.operationStatus === "02" ||
+                                        item?.operationStatus === "06" ? (
+                                            <>
+                                                <span
+                                                    data-popover-target={
+                                                        "popover-options-" +
+                                                        item.id
+                                                    }
+                                                    className={
+                                                        "font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer"
+                                                    }
                                                 >
-                                                    Enviar por WhatsApp
-                                                </a>
-                                                <br />
+                                                    Opciones
+                                                </span>
+                                                <Popover
+                                                    id={
+                                                        "popover-options-" +
+                                                        item.id
+                                                    }
+                                                >
+                                                    <a
+                                                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                        href="#"
+                                                        onClick={() =>
+                                                            handleWhatsAppClick(
+                                                                item
+                                                            )
+                                                        }
+                                                    >
+                                                        Enviar por WhatsApp
+                                                    </a>
+                                                    <br />
 
-                                                {item.operationStatus !==
-                                                    "06" &&
-                                                    item.codeHash && (
-                                                        <>
-                                                            <Link
-                                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                                href={`/dashboard/sales/credit_note/${item.id}`}
-                                                            >
-                                                                Generar NOTA DE
-                                                                CREDITO
-                                                            </Link>
-                                                            <br />
-                                                            <a
-                                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                                target="_blank"
-                                                                href="#"
-                                                            >
-                                                                Generar NOTA DE
-                                                                DÉBITO
-                                                            </a>
-                                                            <br />
-                                                            <a
-                                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                                target="_blank"
-                                                                href="#"
-                                                            >
-                                                                Generar GUIA DE
-                                                                REMISIÓN
-                                                                REMITENTE
-                                                            </a>
-                                                            <br />
-                                                            <a
-                                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                                target="_blank"
-                                                                href="#"
-                                                            >
-                                                                Generar GUIA DE
-                                                                REMISIÓN
-                                                                TRANSPORTISTA
-                                                            </a>
-                                                            <br />
-                                                            <a
-                                                                className="font-medium text-red-600 dark:text-red-500 hover:underline"
-                                                                href="#"
-                                                                onClick={(
-                                                                    e
-                                                                ) => {
-                                                                    e.preventDefault(); // Evita que el enlace cambie de página
-                                                                    const confirmDelete =
-                                                                        window.confirm(
-                                                                            "¿Estás seguro de que deseas anular esta factura? Esta acción no se puede deshacer."
-                                                                        );
+                                                    {item.operationStatus !==
+                                                        "06" &&
+                                                        item.codeHash && (
+                                                            <>
+                                                                <Link
+                                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                                    href={`/dashboard/sales/credit_note/${item.id}`}
+                                                                >
+                                                                    Generar NOTA
+                                                                    DE CREDITO
+                                                                </Link>
+                                                                <br />
+                                                                <a
+                                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                                    target="_blank"
+                                                                    href="#"
+                                                                >
+                                                                    Generar NOTA
+                                                                    DE DÉBITO
+                                                                </a>
+                                                                <br />
+                                                                <a
+                                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                                    target="_blank"
+                                                                    href="#"
+                                                                >
+                                                                    Generar GUIA
+                                                                    DE REMISIÓN
+                                                                    REMITENTE
+                                                                </a>
+                                                                <br />
+                                                                <a
+                                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                                    target="_blank"
+                                                                    href="#"
+                                                                >
+                                                                    Generar GUIA
+                                                                    DE REMISIÓN
+                                                                    TRANSPORTISTA
+                                                                </a>
+                                                                <br />
+                                                                <a
+                                                                    className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                                                                    href="#"
+                                                                    onClick={(
+                                                                        e
+                                                                    ) => {
+                                                                        e.preventDefault(); // Evita que el enlace cambie de página
+                                                                        const confirmDelete =
+                                                                            window.confirm(
+                                                                                "¿Estás seguro de que deseas anular esta factura? Esta acción no se puede deshacer."
+                                                                            );
 
-                                                                    if (
-                                                                        confirmDelete
-                                                                    ) {
-                                                                        handleCancelInvoice(
-                                                                            Number(
-                                                                                item?.id
-                                                                            )
-                                                                        );
-                                                                    }
-                                                                }}
-                                                            >
-                                                                ANULAR o
-                                                                COMUNICAR DE
-                                                                BAJA
-                                                            </a>
-                                                            <br />
-                                                        </>
-                                                    )}
+                                                                        if (
+                                                                            confirmDelete
+                                                                        ) {
+                                                                            handleCancelInvoice(
+                                                                                Number(
+                                                                                    item?.id
+                                                                                )
+                                                                            );
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    ANULAR o
+                                                                    COMUNICAR DE
+                                                                    BAJA
+                                                                </a>
+                                                                <br />
+                                                            </>
+                                                        )}
 
-                                                <a
-                                                    className="font-medium text-green-600 dark:text-green-500 hover:underline"
-                                                    target="_blank"
-                                                    href="https://ww1.sunat.gob.pe/ol-ti-itconsultaunificadalibre/consultaUnificadaLibre/consulta"
-                                                >
-                                                    CONSULTA SUNAT 1
-                                                </a>
-                                                <br />
-                                                <a
-                                                    className="font-medium text-green-600 dark:text-green-500 hover:underline"
-                                                    target="_blank"
-                                                    href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
-                                                >
-                                                    CONSULTA SUNAT 2
-                                                </a>
-                                                <br />
-                                                <a
-                                                    className="font-medium text-green-600 dark:text-green-500 hover:underline"
-                                                    target="_blank"
-                                                    href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
-                                                >
-                                                    Verificar XML en la SUNAT
-                                                </a>
-                                            </Popover>
-                                        </>
+                                                    <a
+                                                        className="font-medium text-green-600 dark:text-green-500 hover:underline"
+                                                        target="_blank"
+                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsultaunificadalibre/consultaUnificadaLibre/consulta"
+                                                    >
+                                                        CONSULTA SUNAT 1
+                                                    </a>
+                                                    <br />
+                                                    <a
+                                                        className="font-medium text-green-600 dark:text-green-500 hover:underline"
+                                                        target="_blank"
+                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
+                                                    >
+                                                        CONSULTA SUNAT 2
+                                                    </a>
+                                                    <br />
+                                                    <a
+                                                        className="font-medium text-green-600 dark:text-green-500 hover:underline"
+                                                        target="_blank"
+                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
+                                                    >
+                                                        Verificar XML en la
+                                                        SUNAT
+                                                    </a>
+                                                </Popover>
+                                            </>
+                                        ) : (
+                                            item?.operationStatusReadable
+                                        )}
                                     </td>
                                 </tr>
                             )
