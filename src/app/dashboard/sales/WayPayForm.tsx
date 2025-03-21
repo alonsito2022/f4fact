@@ -70,6 +70,7 @@ const CREATE_SALE_MUTATION = gql`
         $detractionPaymentMethod: Int
         $totalDetraction: Float
         $detractionPercentage: Float
+        $observation: String
     ) {
         createSale(
             serial: $serial
@@ -126,6 +127,7 @@ const CREATE_SALE_MUTATION = gql`
             detractionPaymentMethod: $detractionPaymentMethod
             totalDetraction: $totalDetraction
             detractionPercentage: $detractionPercentage
+            observation: $observation
         ) {
             message
             error
@@ -348,6 +350,8 @@ function WayPayForm({
                 ),
                 totalDetraction: Number(invoice.totalDetraction),
                 detractionPercentage: Number(invoice.detractionPercentage),
+
+                observation: invoice.observation || "",
             };
             console.log("variables al guardar", variables);
             const { data, errors } = await createSale({

@@ -516,14 +516,14 @@ function CreditPage() {
                                 </div>
                             ) : (
                                 <div className="p-4 md:p-5 space-y-6">
-                                    <div className="grid gap-6 lg:grid-cols-5 sm:grid-cols-1 md:grid-cols-3">
-                                        <fieldset className="sm:col-span-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                    <div className="grid gap-6">
+                                        <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
                                             <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
                                                 Motivo de emisión
                                             </legend>
-                                            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                                            <div className="grid gap-6 lg:grid-cols-4 sm:grid-cols-1">
                                                 {/* Tipo de Nota de Crédito */}
-                                                <div>
+                                                <div className="lg:col-span-4">
                                                     <label
                                                         htmlFor="creditNoteType"
                                                         className="text-sm font-medium text-gray-900 dark:text-gray-200"
@@ -538,7 +538,7 @@ function CreditPage() {
                                                         onChange={
                                                             handleCreditNote
                                                         }
-                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm uppercase"
                                                         required
                                                     >
                                                         {creditNoteTypesData?.allCreditNoteTypes?.map(
@@ -663,12 +663,12 @@ function CreditPage() {
                                                 </div>
                                             </div>
                                         </fieldset>
-                                        <fieldset className="sm:col-span-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                        <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
                                             <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
                                                 Documento que se modifica
                                             </legend>
 
-                                            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                                            <div className="grid gap-6 lg:grid-cols-3 sm:grid-cols-1">
                                                 {/* CPE Tipo documento */}
                                                 <div>
                                                     <label
@@ -760,12 +760,12 @@ function CreditPage() {
                                             </div>
                                         </fieldset>
 
-                                        <fieldset className="sm:col-span-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                        <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
                                             <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
                                                 Información adicional
                                             </legend>
 
-                                            <div>
+                                            <div className="grid gap-6 lg:grid-cols-4 sm:grid-cols-1">
                                                 {/* IGV % */}
                                                 <div>
                                                     <label
@@ -899,7 +899,7 @@ function CreditPage() {
                                                     />
                                                 </div>
                                                 {/* CPE Cliente */}
-                                                <div className="sm:col-span-2">
+                                                <div className="lg:col-span-4">
                                                     <label
                                                         htmlFor="invoiceClientName"
                                                         className="text-sm font-medium text-gray-700 dark:text-gray-300"

@@ -334,17 +334,17 @@ function SaleList({
                                         {Number(item.totalFree).toFixed(2)}
                                     </td>
 
-                                    <td className="p-2">
+                                    <td className="p-2 text-center">
                                         {Number(item.totalPayed) > 0
                                             ? "SI"
                                             : "X"}
                                     </td>
-                                    <td className="p-2">
+                                    <td className="p-2 text-center">
                                         {item.operationStatus === "06"
                                             ? "SI"
                                             : "NO"}
                                     </td>
-                                    <td className="p-2">
+                                    <td className="p-2 text-center">
                                         {item.sendWhatsapp ? "SI" : "X"}
                                     </td>
                                     <td className="p-2 text-center">
@@ -454,6 +454,9 @@ function SaleList({
                                         })()}
                                     </td>
                                     <td className="p-2 text-center">
+                                        {/* {item?.sunatStatus ? () : (
+                                            "X"
+                                        )} */}
                                         <>
                                             <span
                                                 data-popover-target={`popover-status-${item.id}`}
@@ -519,7 +522,7 @@ function SaleList({
                                                                     DE CREDITO
                                                                 </Link>
                                                                 <br />
-                                                                <a
+                                                                {/* <a
                                                                     className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                                                                     target="_blank"
                                                                     href="#"
@@ -527,7 +530,7 @@ function SaleList({
                                                                     Generar NOTA
                                                                     DE DÉBITO
                                                                 </a>
-                                                                <br />
+                                                                <br /> */}
                                                                 <a
                                                                     className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                                                                     target="_blank"
@@ -716,7 +719,7 @@ function SaleList({
                             </td>
                             <td colSpan={9}></td>
                         </tr>
-                        <tr>
+                        {/* <tr>
                             {user?.isSuperuser && (
                                 <td
                                     colSpan={2}
@@ -749,7 +752,7 @@ function SaleList({
                                     : "0.00"}
                             </td>
                             <td colSpan={9}></td>
-                        </tr>
+                        </tr> */}
                     </tfoot>
                 </table>
                 <SalePagination

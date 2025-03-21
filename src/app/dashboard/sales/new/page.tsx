@@ -180,6 +180,7 @@ const initialStateSale = {
     totalPayed: "",
     totalTurned: "",
     creditNoteType: "NA",
+    observation: "",
     // perceptionType: 0,
     // retentionType: 0,
     parentOperationId: 0,
@@ -959,30 +960,38 @@ function NewSalePage() {
                                                     </option>
                                                 </select>
                                             </div>
-                                            {/* Tipo de Cambio */}
-                                            <div>
-                                                <label
-                                                    htmlFor="saleExchangeRate"
-                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                >
-                                                    Tipo de cambio
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="saleExchangeRate"
-                                                    id="saleExchangeRate"
-                                                    maxLength={10}
-                                                    value={
-                                                        sale.saleExchangeRate
-                                                    }
-                                                    onChange={handleSale}
-                                                    onFocus={(e) =>
-                                                        e.target.select()
-                                                    }
-                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                    autoComplete="off"
-                                                />
-                                            </div>
+
+                                            {sale.currencyType !== "PEN" && (
+                                                <>
+                                                    {/* Tipo de Cambio */}
+                                                    <div>
+                                                        <label
+                                                            htmlFor="saleExchangeRate"
+                                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                        >
+                                                            Tipo de cambio
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            name="saleExchangeRate"
+                                                            id="saleExchangeRate"
+                                                            maxLength={10}
+                                                            value={
+                                                                sale.saleExchangeRate
+                                                            }
+                                                            onChange={
+                                                                handleSale
+                                                            }
+                                                            onFocus={(e) =>
+                                                                e.target.select()
+                                                            }
+                                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                            autoComplete="off"
+                                                        />
+                                                    </div>
+                                                </>
+                                            )}
+
                                             {/* Serie */}
                                             <div>
                                                 <label
@@ -1252,6 +1261,29 @@ function NewSalePage() {
                                         detractionPaymentMethodsData
                                     }
                                 />
+                                {/* OBSERVACIONES */}
+                                <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                    <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                        OBSERVACIONES
+                                    </legend>
+                                    <div className="grid  ">
+                                        <div className="md:col-span-2">
+                                            <label className="text-sm text-gray-700 dark:text-gray-200">
+                                                Observaciones
+                                            </label>
+                                            <textarea
+                                                name="observation"
+                                                onFocus={(e) =>
+                                                    e.target.select()
+                                                }
+                                                maxLength={500}
+                                                value={sale.observation}
+                                                onChange={handleSale}
+                                                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                            ></textarea>
+                                        </div>
+                                    </div>
+                                </fieldset>
                                 {/* Botón Continuar con el Pago */}
                                 <div className="flex justify-end py-2">
                                     <button

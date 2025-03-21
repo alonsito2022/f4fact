@@ -141,6 +141,22 @@ function SalePage() {
         onError: (err) => console.error("Error in sales:", err, auth?.jwtToken),
     });
 
+    useEffect(() => {
+        if (auth?.status === "authenticated" && auth?.jwtToken) {
+            salesQuery({
+                variables: {
+                    subsidiaryId: Number(filterObj.subsidiaryId),
+                    clientId: Number(filterObj.clientId),
+                    startDate: filterObj.startDate,
+                    endDate: filterObj.endDate,
+                    documentType: filterObj.documentType,
+                    page: Number(filterObj.page),
+                    pageSize: Number(filterObj.pageSize),
+                },
+            });
+        }
+    }, [auth?.status, auth?.jwtToken, filterObj]);
+
     // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
     if (auth?.status === "loading") {
         return <p className="text-center">Cargando sesión...</p>;
