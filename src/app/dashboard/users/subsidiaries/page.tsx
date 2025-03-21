@@ -10,6 +10,7 @@ import { gql, useLazyQuery, useQuery } from "@apollo/client";
 import { useSession } from "next-auth/react";
 import Breadcrumb from "@/components/Breadcrumb";
 import { useAuth } from "@/components/providers/AuthProvider";
+import DevicesModal from "./DevicesModal";
 const initialState = {
     id: 0,
     serial: "",
@@ -18,6 +19,7 @@ const initialState = {
     phone: "",
     districtId: "",
     companyId: 0,
+    token:""
 };
 
 const SUBSIDIARIES_QUERY = gql`
@@ -47,6 +49,7 @@ const SEARCH_SUBSIDIARIES_QUERY = gql`
             districtName
             companyId
             companyName
+            token
         }
     }
 `;
@@ -63,6 +66,7 @@ const SUBSIDIARIES_QUERY_BY_COMPANY_ID = gql`
             districtId
             districtName
             companyId
+            token
         }
     }
 `;
@@ -70,10 +74,16 @@ const initialStateFilterObj = {
     subsidiaryId: "",
     isSuperuser: false,
 };
+const initialStateDevices = {
+    devices: [],
+    token: ""
+};
 function SubsidiaryPage() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
     const [modal, setModal] = useState<Modal | any>(null);
+    const [modalDevice, setModalDevice] = useState<Modal | any>(null);
     const [subsidiary, setSubsidiary] = useState(initialState);
+    const [subsidiaryDevices, setSubsidiaryDevices] = useState(initialStateDevices);
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [searchField, setSearchField] = useState<"name" | "serial">("name");
     // Obtenemos sesión y token desde el AuthProvider
@@ -218,6 +228,9 @@ function SubsidiaryPage() {
                                     setSubsidiary={setSubsidiary}
                                     filterObj={filterObj}
                                     user={auth?.user}
+                                    modalDevice={modalDevice}
+                                    setModalDevice={setModalDevice}
+                                    setSubsidiaryDevices={setSubsidiaryDevices}
                                 />
                             )}
                         </div>
@@ -232,6 +245,13 @@ function SubsidiaryPage() {
                 initialState={initialState}
                 subsidiariesQuery={subsidiariesQuery}
                 user={auth?.user}
+            />
+            <DevicesModal
+                modalDevice={modalDevice}
+                setModalDevice={setModalDevice}
+                subsidiaryDevices={subsidiaryDevices}
+                setSubsidiaryDevices={setSubsidiaryDevices}
+                initialStateDevices={initialStateDevices}
             />
         </>
     );

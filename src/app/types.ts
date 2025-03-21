@@ -80,6 +80,11 @@ export interface IVehicle {
     company?: ICompany;
     capacity?: number;
 }
+export interface IDevices {
+    id: number;
+    description?: string;
+    subsidiaryId?: number;
+}
 export interface IPerson {
     id?: number;
     index?: number;
@@ -196,6 +201,7 @@ export interface ISubsidiary {
     districtDescription?: string;
     provinceDescription?: string;
     departmentDescription?: string;
+    token?: string;
 }
 
 export interface IWarehouse {
