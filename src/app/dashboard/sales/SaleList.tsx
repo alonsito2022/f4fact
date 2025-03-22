@@ -348,21 +348,26 @@ function SaleList({
                                         {item.sendWhatsapp ? "SI" : "X"}
                                     </td>
                                     <td className="p-2 text-center">
-                                        <a
-                                            href={
-                                                process.env
-                                                    .NEXT_PUBLIC_BASE_API +
-                                                "/operations/print_invoice/" +
-                                                item.id +
-                                                "/"
-                                            }
-                                            className="hover:underline"
-                                            target="_blank"
-                                        >
-                                            <span className="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
-                                                PDF
-                                            </span>
-                                        </a>
+                                        {(item.documentType === "03" ||
+                                            item.documentType === "01" ||
+                                            item.documentType === "07") && (
+                                            <a
+                                                href={`${
+                                                    process.env
+                                                        .NEXT_PUBLIC_BASE_API
+                                                }/operations/${
+                                                    item.documentType === "07"
+                                                        ? "print_credit_note"
+                                                        : "print_invoice"
+                                                }/${item.id}/`}
+                                                className="hover:underline"
+                                                target="_blank"
+                                            >
+                                                <span className="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
+                                                    PDF
+                                                </span>
+                                            </a>
+                                        )}
                                     </td>
                                     <td className="p-2 text-center">
                                         {(() => {

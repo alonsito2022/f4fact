@@ -32,7 +32,7 @@ const initialStateCreditNote = {
     clientId: 0,
     igvType: 18,
     igvPercentage: 18,
-    operationType: "01",
+    operationType: "0101",
     documentType: "07",
     currencyType: "PEN",
     saleExchangeRate: "",
