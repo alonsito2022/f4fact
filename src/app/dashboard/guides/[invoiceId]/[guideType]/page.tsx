@@ -1,31 +1,40 @@
 "use client";
 import {
+    ICreditNoteType,
     IOperationDetail,
+    IOperationType,
     IPerson,
     IRelatedDocument,
     IVehicle,
 } from "@/app/types";
 import Breadcrumb from "@/components/Breadcrumb";
-import Add from "@/components/icons/Add";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { DocumentNode, gql, useLazyQuery, useMutation } from "@apollo/client";
+import {
+    DocumentNode,
+    gql,
+    useLazyQuery,
+    useMutation,
+    useQuery,
+} from "@apollo/client";
+import { useParams, useRouter } from "next/navigation";
 import React, {
     ChangeEvent,
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from "react";
+import { Modal } from "flowbite";
 import Save from "@/components/icons/Save";
-import GuideStopPoint from "./GuideStopPoint";
-import GuideTransportation from "./GuideTransportation";
-import GuideMainDriver from "./GuideMainDriver";
 import { toast } from "react-toastify";
-import GuideReceiver from "./GuideReceiver";
-import GuideTranferData from "./GuideTranferData";
-import GuideHeader from "./GuideHeader";
-import GuideDetailAndDocument from "./GuideDetailAndDocument";
+import GuideHeader from "../../new/GuideHeader";
+import GuideDetailAndDocument from "../../new/GuideDetailAndDocument";
+import GuideMainDriver from "../../new/GuideMainDriver";
+import GuideReceiver from "../../new/GuideReceiver";
+import GuideStopPoint from "../../new/GuideStopPoint";
+import GuideTransportation from "../../new/GuideTransportation";
+import GuideTranferData from "../../new/GuideTranferData";
 
 // Replace the current today constant with this:
 const limaDate = new Date(
@@ -38,73 +47,28 @@ const today =
     "-" +
     String(limaDate.getDate()).padStart(2, "0");
 
-const initialStateGuide = {
-    clientId: 0,
-    documentType: "09",
-    serial: "",
-    correlative: "",
-    emitDate: today,
-    guideModeTransfer: "01",
-    guideReasonTransfer: "01",
-    operationdetailSet: [
-        {
-            index: 0,
-            productName: "",
-            description: "",
-            productId: 0,
-            quantity: 0,
-        },
-    ] as IOperationDetail[],
-    relatedDocuments: [
-        {
-            index: 0,
-            serial: "",
-            documentType: "01",
-            correlative: 0,
-        },
-    ] as IRelatedDocument[],
+const SALE_QUERY_BY_ID = gql`
+    query ($pk: ID!) {
+        getSaleById(pk: $pk) {
+            id
+            documentType
+            serial
+            correlative
+            client {
+                id
+                names
+                documentNumber
+            }
+            operationdetailSet {
+                productId
+                productName
+                quantity
+            }
+        }
+    }
+`;
 
-    transferDate: today,
-    totalWeight: 0,
-    weightMeasurementUnitCode: "KGM",
-    quantityPackages: 0,
-
-    transportationCompanyDocumentType: "6",
-    transportationCompanyDocumentNumber: "",
-    transportationCompanyNames: "",
-    transportationCompanyMtcRegistrationNumber: "",
-
-    mainVehicleLicensePlate: "",
-    othersVehicles: [] as IVehicle[],
-
-    mainDriverDocumentType: "1",
-    mainDriverDocumentNumber: "",
-    mainDriverDriverLicense: "",
-    mainDriverNames: "",
-    othersDrivers: [] as IPerson[],
-
-    receiverDocumentType: "1",
-    receiverDocumentNumber: "",
-    receiverNames: "",
-
-    guideOriginId: 0,
-    guideOriginDistrictId: "",
-    guideOriginDistrictDescription: "",
-    guideOriginAddress: "",
-    guideOriginSerial: "",
-
-    guideArrivalId: 0,
-    guideArrivalDistrictId: "",
-    guideArrivalDistrictDescription: "",
-    guideArrivalAddress: "",
-    guideArrivalSerial: "",
-
-    observation: "",
-
-    clientName: "",
-};
-
-const CREATE_SALE_MUTATION = gql`
+const CREATE_GUIDE_MUTATION = gql`
     mutation CreateSale(
         $clientId: Int!
         $documentType: String!
@@ -147,6 +111,7 @@ const CREATE_SALE_MUTATION = gql`
         $guideArrivalAddress: String!
         $guideArrivalSerial: String!
         $observation: String!
+        $parentOperationId: Int
     ) {
         createSale(
             clientId: $clientId
@@ -190,6 +155,7 @@ const CREATE_SALE_MUTATION = gql`
             guideArrivalAddress: $guideArrivalAddress
             guideArrivalSerial: $guideArrivalSerial
             observation: $observation
+            parentOperationId: $parentOperationId
         ) {
             message
             error
@@ -197,11 +163,82 @@ const CREATE_SALE_MUTATION = gql`
     }
 `;
 
-function NewGuidePage() {
+const initialStateGuide = {
+    clientId: 0,
+    documentType: "09",
+    serial: "",
+    correlative: "",
+    emitDate: today,
+    guideModeTransfer: "01",
+    guideReasonTransfer: "01",
+    operationdetailSet: [
+        {
+            index: 0,
+            productName: "",
+            description: "",
+            productId: 0,
+            quantity: 0,
+        },
+    ] as IOperationDetail[],
+    relatedDocuments: [] as IRelatedDocument[],
+
+    transferDate: today,
+    totalWeight: 0,
+    weightMeasurementUnitCode: "KGM",
+    quantityPackages: 0,
+
+    transportationCompanyDocumentType: "6",
+    transportationCompanyDocumentNumber: "",
+    transportationCompanyNames: "",
+    transportationCompanyMtcRegistrationNumber: "",
+
+    mainVehicleLicensePlate: "",
+    othersVehicles: [] as IVehicle[],
+
+    mainDriverDocumentType: "1",
+    mainDriverDocumentNumber: "",
+    mainDriverDriverLicense: "",
+    mainDriverNames: "",
+    othersDrivers: [] as IPerson[],
+
+    receiverDocumentType: "1",
+    receiverDocumentNumber: "",
+    receiverNames: "",
+
+    guideOriginId: 0,
+    guideOriginDistrictId: "",
+    guideOriginDistrictDescription: "",
+    guideOriginAddress: "",
+    guideOriginSerial: "",
+
+    guideArrivalId: 0,
+    guideArrivalDistrictId: "",
+    guideArrivalDistrictDescription: "",
+    guideArrivalAddress: "",
+    guideArrivalSerial: "",
+
+    observation: "",
+
+    clientName: "",
+
+    parentOperationId: 0,
+};
+function NewGuidePageWithInvoice() {
+    const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
+    const params = useParams();
+    const invoiceId = params.invoiceId;
+    const guideType = params.guideType;
     const [guide, setGuide] = useState(initialStateGuide);
+    const [initialClientData, setInitialClientData] = useState({
+        id: 0,
+        names: "",
+        documentNumber: "",
+    });
     const router = useRouter();
+    const hasQueried = useRef(false);
+
     const auth = useAuth();
 
     const authContext = useMemo(
@@ -213,6 +250,66 @@ function NewGuidePage() {
         }),
         [auth?.jwtToken]
     );
+    const [
+        saleQuery,
+        {
+            loading: filteredSaleLoading,
+            error: filteredSaleError,
+            data: filteredSaleData,
+        },
+    ] = useLazyQuery(SALE_QUERY_BY_ID, {
+        context: authContext,
+        fetchPolicy: "network-only",
+        onCompleted: (data) => {
+            const dataSale = data.getSaleById;
+            setGuide({
+                ...guide,
+                relatedDocuments: [
+                    ...guide.relatedDocuments,
+                    {
+                        index: guide.relatedDocuments.length,
+                        serial: dataSale?.serial,
+                        documentType: dataSale.documentType.replace("A_", ""),
+                        correlative: Number(dataSale?.correlative),
+                    },
+                ],
+                parentOperationId: dataSale.id,
+                clientId: dataSale.client.id,
+                clientName: dataSale.client.names,
+                documentType: String(guideType),
+                operationdetailSet: dataSale.operationdetailSet.map(
+                    (detail: any, index: number) => ({
+                        index,
+                        productId: detail.productId,
+                        productName: detail.productName,
+                        quantity: detail.quantity,
+                        description: "",
+                    })
+                ),
+            });
+            setInitialClientData({
+                id: dataSale.client.id,
+                names: dataSale.client.names,
+                documentNumber: dataSale.client.documentNumber,
+            });
+            setIsLoading(false);
+        },
+        onError: (err) => {
+            console.error("Error in sale:", err, auth?.jwtToken);
+            setIsLoading(false);
+        },
+    });
+
+    useEffect(() => {
+        if (invoiceId && !hasQueried.current) {
+            saleQuery({
+                variables: {
+                    pk: Number(invoiceId),
+                },
+            });
+            hasQueried.current = true;
+        }
+    }, [invoiceId]);
 
     useEffect(() => {
         if (auth?.user?.subsidiarySerial) {
@@ -241,6 +338,7 @@ function NewGuidePage() {
             // if(guide?.documentType)
         }
     }, [auth?.user?.subsidiarySerial, guide.documentType]);
+
     const handleGuide = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
@@ -282,7 +380,7 @@ function NewGuidePage() {
         });
     }
 
-    const [createSale] = useCustomMutation(CREATE_SALE_MUTATION);
+    const [createSale] = useCustomMutation(CREATE_GUIDE_MUTATION);
 
     const saveGuide = useCallback(async () => {
         if (isSaving) return; // Prevent multiple submissions
@@ -752,7 +850,9 @@ function NewGuidePage() {
                 guideArrivalAddress: guide.guideArrivalAddress,
                 guideArrivalSerial: guide.guideArrivalSerial,
                 observation: guide.observation,
+                parentOperationId: Number(guide.parentOperationId),
             };
+
             const { data, errors } = await createSale({
                 variables: variables,
             });
@@ -788,133 +888,146 @@ function NewGuidePage() {
     }, [createSale, guide, setGuide, initialStateGuide, isSaving]);
     return (
         <>
-            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
-                <div className="w-full mb-1">
-                    <Breadcrumb
-                        section={"Guías de Remisión"}
-                        article={"Nueva Guía"}
-                    />
+            {isLoading ? (
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
                 </div>
-            </div>
-            <div className="flex flex-col space-y-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-                <div className="overflow-x-auto">
-                    <div className="inline-block min-w-full align-middle">
-                        <div className="overflow-hidden shadow-lg rounded-lg">
-                            <div className="p-4 md:p-5 space-y-6">
-                                {/* Cabecera de guia */}
-                                <GuideHeader
-                                    guide={guide}
-                                    setGuide={setGuide}
-                                    auth={auth}
-                                    authContext={authContext}
-                                    handleGuide={handleGuide}
-                                />
-                                {/* Items and  Documentos Relacionados */}
-                                <GuideDetailAndDocument
-                                    guide={guide}
-                                    setGuide={setGuide}
-                                    auth={auth}
-                                    authContext={authContext}
-                                />
+            ) : (
+                <>
+                    <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
+                        <div className="w-full mb-1">
+                            <Breadcrumb
+                                section={"Guías de Remisión"}
+                                article={"Nueva Guía de Remisión"}
+                            />
+                        </div>
+                    </div>
 
-                                {/* DATOS DEL TRASLADO */}
-                                <GuideTranferData
-                                    guide={guide}
-                                    handleGuide={handleGuide}
-                                />
-                                {/* DATOS DEL TRANSPORTISTA */}
-                                <GuideTransportation
-                                    guide={guide}
-                                    setGuide={setGuide}
-                                    authContext={authContext}
-                                    handleGuide={handleGuide}
-                                />
-                                {/* DATOS DEL CONDUCTOR */}
-                                {guide?.guideModeTransfer === "02" && (
-                                    <>
-                                        <GuideMainDriver
+                    <div className="flex flex-col space-y-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                        <div className="overflow-x-auto">
+                            <div className="inline-block min-w-full align-middle">
+                                <div className="overflow-hidden shadow-lg rounded-lg">
+                                    <div className="p-4 md:p-5 space-y-6">
+                                        {/* Cabecera de guia */}
+                                        <GuideHeader
                                             guide={guide}
                                             setGuide={setGuide}
+                                            auth={auth}
+                                            authContext={authContext}
                                             handleGuide={handleGuide}
+                                            initialClientData={
+                                                initialClientData
+                                            }
+                                        />
+                                        {/* Items and  Documentos Relacionados */}
+                                        <GuideDetailAndDocument
+                                            guide={guide}
+                                            setGuide={setGuide}
                                             auth={auth}
                                             authContext={authContext}
                                         />
-                                    </>
-                                )}
-                                {/* DATOS DEL DESTINATARIO */}
-                                {guide?.documentType === "31" && (
-                                    <>
-                                        <GuideReceiver
+                                        {/* DATOS DEL TRASLADO */}
+                                        <GuideTranferData
+                                            guide={guide}
+                                            handleGuide={handleGuide}
+                                        />
+                                        {/* DATOS DEL TRANSPORTISTA */}
+                                        <GuideTransportation
                                             guide={guide}
                                             setGuide={setGuide}
-                                            handleGuide={handleGuide}
                                             authContext={authContext}
-                                            auth={auth}
+                                            handleGuide={handleGuide}
                                         />
-                                    </>
-                                )}
-                                <GuideStopPoint
-                                    guide={guide}
-                                    setGuide={setGuide}
-                                    authContext={authContext}
-                                    handleGuide={handleGuide}
-                                />
-                                {/* OBSERVACIONES */}
-                                <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                                    <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                        OBSERVACIONES
-                                    </legend>
-                                    <div className="grid  ">
-                                        <div className="md:col-span-2">
-                                            <label className="text-sm text-gray-700 dark:text-gray-200">
-                                                Observaciones
-                                            </label>
-                                            <textarea
-                                                name="observation"
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                maxLength={500}
-                                                value={guide.observation}
-                                                onChange={handleGuide}
-                                                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                            ></textarea>
+                                        {/* DATOS DEL CONDUCTOR */}
+                                        {guide?.guideModeTransfer === "02" && (
+                                            <>
+                                                <GuideMainDriver
+                                                    guide={guide}
+                                                    setGuide={setGuide}
+                                                    handleGuide={handleGuide}
+                                                    auth={auth}
+                                                    authContext={authContext}
+                                                />
+                                            </>
+                                        )}
+                                        {/* DATOS DEL DESTINATARIO */}
+                                        {guide?.documentType === "31" && (
+                                            <>
+                                                <GuideReceiver
+                                                    guide={guide}
+                                                    setGuide={setGuide}
+                                                    handleGuide={handleGuide}
+                                                    authContext={authContext}
+                                                    auth={auth}
+                                                />
+                                            </>
+                                        )}
+                                        <GuideStopPoint
+                                            guide={guide}
+                                            setGuide={setGuide}
+                                            authContext={authContext}
+                                            handleGuide={handleGuide}
+                                        />
+                                        {/* OBSERVACIONES */}
+                                        <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                            <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                                OBSERVACIONES
+                                            </legend>
+                                            <div className="grid  ">
+                                                <div className="md:col-span-2">
+                                                    <label className="text-sm text-gray-700 dark:text-gray-200">
+                                                        Observaciones
+                                                    </label>
+                                                    <textarea
+                                                        name="observation"
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        maxLength={500}
+                                                        value={
+                                                            guide.observation
+                                                        }
+                                                        onChange={handleGuide}
+                                                        className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                                    ></textarea>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        {/* Botón Continuar con el Pago */}
+                                        <div className="relative">
+                                            {/* Contenido principal */}
+                                            <div className="min-h-screen">
+                                                {/* Aquí va tu contenido */}
+                                            </div>
+
+                                            {/* Botón flotante */}
+                                            <div className="fixed bottom-4 right-4">
+                                                <button
+                                                    type="button"
+                                                    className="btn-blue px-5 py-2 inline-flex items-center gap-2 shadow-lg rounded-lg"
+                                                    onClick={saveGuide}
+                                                    disabled={isSaving}
+                                                >
+                                                    {isSaving ? (
+                                                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                                                    ) : (
+                                                        <Save />
+                                                    )}
+                                                    {isSaving
+                                                        ? "GUARDANDO..."
+                                                        : "GENERAR GUIA"}
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                </fieldset>
-                                {/* Botón Continuar con el Pago */}
-                                <div className="relative">
-                                    {/* Contenido principal */}
-                                    <div className="min-h-screen">
-                                        {/* Aquí va tu contenido */}
-                                    </div>
-
-                                    {/* Botón flotante */}
-                                    <div className="fixed bottom-4 right-4">
-                                        <button
-                                            type="button"
-                                            className="btn-blue px-5 py-2 inline-flex items-center gap-2 shadow-lg rounded-lg"
-                                            onClick={saveGuide}
-                                            disabled={isSaving}
-                                        >
-                                            {isSaving ? (
-                                                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                                            ) : (
-                                                <Save />
-                                            )}
-                                            {isSaving
-                                                ? "GUARDANDO..."
-                                                : "GENERAR GUIA"}
-                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </>
+            )}
         </>
     );
 }
 
-export default NewGuidePage;
+export default NewGuidePageWithInvoice;

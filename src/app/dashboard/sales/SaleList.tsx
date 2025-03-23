@@ -280,6 +280,7 @@ function SaleList({
                                 "XML",
                                 "CDR",
                                 "Estado SUNAT",
+                                "Notas de Credito referenciadas",
                                 "",
                             ].map((header, index) => (
                                 <th
@@ -482,6 +483,9 @@ function SaleList({
                                         </>
                                     </td>
                                     <td className="p-2">
+                                        {item?.creditNoteReferences}
+                                    </td>
+                                    <td className="p-2">
                                         {item?.operationStatus === "02" ||
                                         item?.operationStatus === "06" ? (
                                             <>
@@ -538,8 +542,7 @@ function SaleList({
                                                                 <br /> */}
                                                                 <a
                                                                     className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                                    target="_blank"
-                                                                    href="#"
+                                                                    href={`/dashboard/guides/${item.id}/09`}
                                                                 >
                                                                     Generar GUIA
                                                                     DE REMISIÓN
@@ -548,8 +551,7 @@ function SaleList({
                                                                 <br />
                                                                 <a
                                                                     className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                                    target="_blank"
-                                                                    href="#"
+                                                                    href={`/dashboard/guides/${item.id}/31`}
                                                                 >
                                                                     Generar GUIA
                                                                     DE REMISIÓN
@@ -654,7 +656,7 @@ function SaleList({
                                       ).toFixed(2)
                                     : "0.00"}
                             </td>
-                            <td colSpan={9}></td>
+                            <td colSpan={10}></td>
                         </tr>
                         <tr>
                             {user?.isSuperuser && (
@@ -688,7 +690,7 @@ function SaleList({
                                       ).toFixed(2)
                                     : "0.00"}
                             </td>
-                            <td colSpan={9}></td>
+                            <td colSpan={10}></td>
                         </tr>
                         <tr>
                             {user?.isSuperuser && (
@@ -722,7 +724,7 @@ function SaleList({
                                       ).toFixed(2)
                                     : "0.00"}
                             </td>
-                            <td colSpan={9}></td>
+                            <td colSpan={10}></td>
                         </tr>
                         {/* <tr>
                             {user?.isSuperuser && (
@@ -756,7 +758,7 @@ function SaleList({
                                       ).toFixed(2)
                                     : "0.00"}
                             </td>
-                            <td colSpan={9}></td>
+                            <td colSpan={10}></td>
                         </tr> */}
                     </tfoot>
                 </table>

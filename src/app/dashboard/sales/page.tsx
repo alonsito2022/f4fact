@@ -89,6 +89,7 @@ const SALES_QUERY = gql`
                         doc
                     }
                 }
+                creditNoteReferences
             }
             totalInvoices
             totalSalesTickets

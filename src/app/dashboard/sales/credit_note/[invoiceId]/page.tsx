@@ -284,6 +284,9 @@ const PRODUCTS_QUERY = gql`
     }
 `;
 function CreditPage() {
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const [isLoading, setIsLoading] = useState(true);
     const params = useParams();
     const { invoiceId } = params;
     const [creditNote, setCreditNote] = useState(initialStateCreditNote);
@@ -365,7 +368,6 @@ function CreditPage() {
         onCompleted: (data) => {
             const dataSale = data.getSaleById;
             const igv = Number(dataSale?.igvPercentage) / 100;
-            console.log(igv);
             setSale(dataSale);
             const formattedOperationdetailSet = dataSale.operationdetailSet
                 .filter(
@@ -436,8 +438,12 @@ function CreditPage() {
                 ).toFixed(2),
                 totalToPay: Number(dataSale?.totalToPay).toFixed(2),
             }));
+            setIsLoading(false);
         },
-        onError: (err) => console.error("Error in sale:", err, auth?.jwtToken),
+        onError: (err) => {
+            console.error("Error in sale:", err, auth?.jwtToken);
+            setIsLoading(false);
+        },
     });
 
     useEffect(() => {
@@ -493,405 +499,99 @@ function CreditPage() {
 
     return (
         <>
-            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
-                <div className="w-full mb-1">
-                    <Breadcrumb
-                        section={"Ventas"}
-                        article={"Generar Nota de Crédito"}
-                    />
+            {isLoading ? (
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
                 </div>
-            </div>
+            ) : (
+                <>
+                    <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
+                        <div className="w-full mb-1">
+                            <Breadcrumb
+                                section={"Ventas"}
+                                article={"Generar Nota de Crédito"}
+                            />
+                        </div>
+                    </div>
 
-            <div className="flex flex-col space-y-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-                <div className="overflow-x-auto">
-                    <div className="inline-block min-w-full align-middle">
-                        <div className="overflow-hidden shadow-lg rounded-lg">
-                            {filteredSaleLoading ? (
-                                <div className="p-4 text-center">
-                                    <span className="loader"></span>{" "}
-                                    {/* Puedes usar un spinner o cualquier otro indicador de carga */}
-                                    Cargando venta...
-                                </div>
-                            ) : filteredSaleError ? (
-                                <div className="p-4 text-red-500 text-center">
-                                    {filteredSaleError.message}
-                                </div>
-                            ) : (
-                                <div className="p-4 md:p-5 space-y-6">
-                                    <div className="grid gap-6">
-                                        <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                                            <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                                Motivo de emisión
-                                            </legend>
-                                            <div className="grid gap-6 lg:grid-cols-4 sm:grid-cols-1">
-                                                {/* Tipo de Nota de Crédito */}
-                                                <div className="lg:col-span-4">
-                                                    <label
-                                                        htmlFor="creditNoteType"
-                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
-                                                    >
-                                                        Tipo de Nota de Crédito
-                                                    </label>
-                                                    <select
-                                                        value={
-                                                            creditNote.creditNoteType
-                                                        }
-                                                        name="creditNoteType"
-                                                        onChange={
-                                                            handleCreditNote
-                                                        }
-                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm uppercase"
-                                                        required
-                                                    >
-                                                        {creditNoteTypesData?.allCreditNoteTypes?.map(
-                                                            (
-                                                                o: ICreditNoteType,
-                                                                k: number
-                                                            ) => (
-                                                                <option
-                                                                    key={k}
-                                                                    value={
-                                                                        o.code
-                                                                    }
-                                                                >
-                                                                    {o.name}
-                                                                </option>
-                                                            )
-                                                        )}
-                                                    </select>
-                                                </div>
+                    <div className="flex flex-col space-y-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                        <div className="overflow-x-auto">
+                            <div className="inline-block min-w-full align-middle">
+                                <div className="overflow-hidden shadow-lg rounded-lg">
+                                    {filteredSaleLoading ? (
+                                        <div className="p-4 text-center">
+                                            <span className="loader"></span>{" "}
+                                            {/* Puedes usar un spinner o cualquier otro indicador de carga */}
+                                            Cargando venta...
+                                        </div>
+                                    ) : filteredSaleError ? (
+                                        <div className="p-4 text-red-500 text-center">
+                                            {filteredSaleError.message}
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 md:p-5 space-y-6">
+                                            <div className="grid gap-6">
+                                                <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                                    <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                                        Motivo de emisión
+                                                    </legend>
+                                                    <div className="grid gap-6 lg:grid-cols-4 sm:grid-cols-1">
+                                                        {/* Tipo de Nota de Crédito */}
+                                                        <div className="lg:col-span-4">
+                                                            <label
+                                                                htmlFor="creditNoteType"
+                                                                className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                                                            >
+                                                                Tipo de Nota de
+                                                                Crédito
+                                                            </label>
+                                                            <select
+                                                                value={
+                                                                    creditNote.creditNoteType
+                                                                }
+                                                                name="creditNoteType"
+                                                                onChange={
+                                                                    handleCreditNote
+                                                                }
+                                                                className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm uppercase"
+                                                                required
+                                                            >
+                                                                {creditNoteTypesData?.allCreditNoteTypes?.map(
+                                                                    (
+                                                                        o: ICreditNoteType,
+                                                                        k: number
+                                                                    ) => (
+                                                                        <option
+                                                                            key={
+                                                                                k
+                                                                            }
+                                                                            value={
+                                                                                o.code
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                o.name
+                                                                            }
+                                                                        </option>
+                                                                    )
+                                                                )}
+                                                            </select>
+                                                        </div>
 
-                                                {/* Fecha emisión */}
-                                                <div>
-                                                    <label
-                                                        htmlFor="emitDate"
-                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
-                                                    >
-                                                        Fecha emisión
-                                                    </label>
-                                                    <input
-                                                        type="date"
-                                                        name="emitDate"
-                                                        id="emitDate"
-                                                        value={
-                                                            creditNote.emitDate
-                                                        }
-                                                        onChange={
-                                                            handleCreditNote
-                                                        }
-                                                        onFocus={(e) =>
-                                                            e.target.select()
-                                                        }
-                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        required
-                                                    />
-                                                </div>
-                                                {/* Fecha de Venc. */}
-                                                <div>
-                                                    <label
-                                                        htmlFor="dueDate"
-                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
-                                                    >
-                                                        Fecha de Venc.
-                                                    </label>
-                                                    <input
-                                                        type="date"
-                                                        name="dueDate"
-                                                        id="dueDate"
-                                                        value={
-                                                            creditNote.dueDate
-                                                        }
-                                                        onChange={
-                                                            handleCreditNote
-                                                        }
-                                                        onFocus={(e) =>
-                                                            e.target.select()
-                                                        }
-                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        required
-                                                    />
-                                                </div>
-                                                {/* Serie */}
-                                                <div>
-                                                    <label
-                                                        htmlFor="serial"
-                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
-                                                    >
-                                                        Serie
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        name="serial"
-                                                        id="serial"
-                                                        maxLength={4}
-                                                        value={
-                                                            creditNote.serial
-                                                        }
-                                                        onChange={
-                                                            handleCreditNote
-                                                        }
-                                                        onFocus={(e) =>
-                                                            e.target.select()
-                                                        }
-                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        autoComplete="off"
-                                                    />
-                                                </div>
-                                                {/* Numero */}
-                                                <div>
-                                                    <label
-                                                        htmlFor="correlative"
-                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
-                                                    >
-                                                        Numero
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        name="correlative"
-                                                        id="correlative"
-                                                        maxLength={10}
-                                                        value={
-                                                            creditNote.correlative
-                                                        }
-                                                        onChange={
-                                                            handleCreditNote
-                                                        }
-                                                        onFocus={(e) =>
-                                                            e.target.select()
-                                                        }
-                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        autoComplete="off"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </fieldset>
-                                        <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                                            <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                                Documento que se modifica
-                                            </legend>
-
-                                            <div className="grid gap-6 lg:grid-cols-3 sm:grid-cols-1">
-                                                {/* CPE Tipo documento */}
-                                                <div>
-                                                    <label
-                                                        htmlFor="invoiceDocumentType"
-                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
-                                                    >
-                                                        Tipo documento
-                                                    </label>
-                                                    <select
-                                                        value={sale?.documentType.replace(
-                                                            "A_",
-                                                            ""
-                                                        )}
-                                                        onChange={handleSale}
-                                                        id="invoiceDocumentType"
-                                                        name="invoiceDocumentType"
-                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        disabled
-                                                    >
-                                                        <option value="07">
-                                                            NOTA DE CRÉDITO
-                                                            ELECTRÓNICA
-                                                        </option>
-                                                        <option value="08">
-                                                            NOTA DE DÉBITO
-                                                            ELECTRÓNICA
-                                                        </option>
-                                                        <option value="09">
-                                                            GUÍA DE REMISIÓN
-                                                            REMITENTE
-                                                        </option>
-                                                        <option value="03">
-                                                            BOLETA DE VENTA
-                                                            ELECTRÓNICA
-                                                        </option>
-                                                        <option value="01">
-                                                            FACTURA ELECTRÓNICA
-                                                        </option>
-                                                    </select>
-                                                </div>
-
-                                                {/* CPE Serie */}
-                                                <div>
-                                                    <label
-                                                        htmlFor="invoiceSerial"
-                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
-                                                    >
-                                                        Serie
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        name="invoiceSerial"
-                                                        id="invoiceSerial"
-                                                        maxLength={4}
-                                                        value={sale.serial}
-                                                        onChange={handleSale}
-                                                        onFocus={(e) =>
-                                                            e.target.select()
-                                                        }
-                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        autoComplete="off"
-                                                        disabled
-                                                    />
-                                                </div>
-
-                                                {/* CPE Numero */}
-                                                <div>
-                                                    <label
-                                                        htmlFor="invoiceCorrelative"
-                                                        className="text-sm font-medium text-gray-900 dark:text-gray-200"
-                                                    >
-                                                        Número
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        name="invoiceCorrelative"
-                                                        id="invoiceCorrelative"
-                                                        maxLength={10}
-                                                        value={sale.correlative}
-                                                        onChange={handleSale}
-                                                        onFocus={(e) =>
-                                                            e.target.select()
-                                                        }
-                                                        className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        autoComplete="off"
-                                                        disabled
-                                                    />
-                                                </div>
-                                            </div>
-                                        </fieldset>
-
-                                        <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                                            <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                                Información adicional
-                                            </legend>
-
-                                            <div className="grid gap-6 lg:grid-cols-4 sm:grid-cols-1">
-                                                {/* IGV % */}
-                                                <div>
-                                                    <label
-                                                        htmlFor="igvType"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                    >
-                                                        IGV %{" "}
-                                                    </label>
-                                                    <select
-                                                        value={
-                                                            creditNote.igvType
-                                                        }
-                                                        name="igvType"
-                                                        onChange={
-                                                            handleCreditNote
-                                                        }
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        required
-                                                    >
-                                                        <option value={4}>
-                                                            4% (IVAP)
-                                                        </option>
-                                                        <option value={18}>
-                                                            18%
-                                                        </option>
-                                                        <option value={10}>
-                                                            10% (Ley 31556)
-                                                        </option>
-                                                    </select>
-                                                </div>
-                                                {/* Tipo de Operacion */}
-                                                <div>
-                                                    <label
-                                                        htmlFor="operationType"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                    >
-                                                        Tipo de Operacion
-                                                    </label>
-                                                    <select
-                                                        value={
-                                                            creditNote.operationType
-                                                        }
-                                                        name="operationType"
-                                                        onChange={
-                                                            handleCreditNote
-                                                        }
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        required
-                                                    >
-                                                        {operationTypesData?.allOperationTypes?.map(
-                                                            (
-                                                                o: IOperationType,
-                                                                k: number
-                                                            ) => (
-                                                                <option
-                                                                    key={k}
-                                                                    value={
-                                                                        o.code
-                                                                    }
-                                                                >
-                                                                    {o.name}
-                                                                </option>
-                                                            )
-                                                        )}
-                                                    </select>
-                                                </div>
-                                                {/* Moneda */}
-                                                <div>
-                                                    <label
-                                                        htmlFor="currencyType"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                    >
-                                                        Moneda
-                                                    </label>
-                                                    <select
-                                                        value={
-                                                            creditNote.currencyType
-                                                        }
-                                                        name="currencyType"
-                                                        onChange={
-                                                            handleCreditNote
-                                                        }
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                    >
-                                                        <option
-                                                            value={0}
-                                                            disabled
-                                                        >
-                                                            Moneda
-                                                        </option>
-                                                        <option value={"PEN"}>
-                                                            S/ PEN - SOLES
-                                                        </option>
-                                                        <option value={"USD"}>
-                                                            US$ USD - DÓLARES
-                                                            AMERICANOS
-                                                        </option>
-                                                        <option value={"EUR"}>
-                                                            € EUR - EUROS
-                                                        </option>
-                                                        <option value={"GBP"}>
-                                                            £ GBP - LIBRA
-                                                            ESTERLINA
-                                                        </option>
-                                                    </select>
-                                                </div>
-                                                {creditNote.currencyType !==
-                                                    "PEN" && (
-                                                    <>
-                                                        {/* Tipo de Cambio */}
+                                                        {/* Fecha emisión */}
                                                         <div>
                                                             <label
-                                                                htmlFor="saleExchangeRate"
-                                                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                                htmlFor="emitDate"
+                                                                className="text-sm font-medium text-gray-900 dark:text-gray-200"
                                                             >
-                                                                Tipo de cambio
+                                                                Fecha emisión
                                                             </label>
                                                             <input
-                                                                type="text"
-                                                                name="saleExchangeRate"
-                                                                id="saleExchangeRate"
-                                                                maxLength={10}
+                                                                type="date"
+                                                                name="emitDate"
+                                                                id="emitDate"
                                                                 value={
-                                                                    creditNote.saleExchangeRate
+                                                                    creditNote.emitDate
                                                                 }
                                                                 onChange={
                                                                     handleCreditNote
@@ -899,201 +599,602 @@ function CreditPage() {
                                                                 onFocus={(e) =>
                                                                     e.target.select()
                                                                 }
-                                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                required
+                                                            />
+                                                        </div>
+                                                        {/* Fecha de Venc. */}
+                                                        <div>
+                                                            <label
+                                                                htmlFor="dueDate"
+                                                                className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                                                            >
+                                                                Fecha de Venc.
+                                                            </label>
+                                                            <input
+                                                                type="date"
+                                                                name="dueDate"
+                                                                id="dueDate"
+                                                                value={
+                                                                    creditNote.dueDate
+                                                                }
+                                                                onChange={
+                                                                    handleCreditNote
+                                                                }
+                                                                onFocus={(e) =>
+                                                                    e.target.select()
+                                                                }
+                                                                className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                required
+                                                            />
+                                                        </div>
+                                                        {/* Serie */}
+                                                        <div>
+                                                            <label
+                                                                htmlFor="serial"
+                                                                className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                                                            >
+                                                                Serie
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                name="serial"
+                                                                id="serial"
+                                                                maxLength={4}
+                                                                value={
+                                                                    creditNote.serial
+                                                                }
+                                                                onChange={
+                                                                    handleCreditNote
+                                                                }
+                                                                onFocus={(e) =>
+                                                                    e.target.select()
+                                                                }
+                                                                className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                                 autoComplete="off"
                                                             />
                                                         </div>
-                                                    </>
-                                                )}
+                                                        {/* Numero */}
+                                                        <div>
+                                                            <label
+                                                                htmlFor="correlative"
+                                                                className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                                                            >
+                                                                Numero
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                name="correlative"
+                                                                id="correlative"
+                                                                maxLength={10}
+                                                                value={
+                                                                    creditNote.correlative
+                                                                }
+                                                                onChange={
+                                                                    handleCreditNote
+                                                                }
+                                                                onFocus={(e) =>
+                                                                    e.target.select()
+                                                                }
+                                                                className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                autoComplete="off"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
+                                                <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                                    <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                                        Documento que se
+                                                        modifica
+                                                    </legend>
 
-                                                {/* CPE Cliente */}
-                                                <div className="lg:col-span-4">
-                                                    <label
-                                                        htmlFor="invoiceClientName"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                    >
-                                                        Cliente
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        id="invoiceClientName"
-                                                        value={
-                                                            sale?.client?.names
-                                                        }
-                                                        onChange={handleSale}
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        disabled
-                                                    />
-                                                </div>
+                                                    <div className="grid gap-6 lg:grid-cols-3 sm:grid-cols-1">
+                                                        {/* CPE Tipo documento */}
+                                                        <div>
+                                                            <label
+                                                                htmlFor="invoiceDocumentType"
+                                                                className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                                                            >
+                                                                Tipo documento
+                                                            </label>
+                                                            <select
+                                                                value={sale?.documentType.replace(
+                                                                    "A_",
+                                                                    ""
+                                                                )}
+                                                                onChange={
+                                                                    handleSale
+                                                                }
+                                                                id="invoiceDocumentType"
+                                                                name="invoiceDocumentType"
+                                                                className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                disabled
+                                                            >
+                                                                <option value="07">
+                                                                    NOTA DE
+                                                                    CRÉDITO
+                                                                    ELECTRÓNICA
+                                                                </option>
+                                                                <option value="08">
+                                                                    NOTA DE
+                                                                    DÉBITO
+                                                                    ELECTRÓNICA
+                                                                </option>
+                                                                <option value="09">
+                                                                    GUÍA DE
+                                                                    REMISIÓN
+                                                                    REMITENTE
+                                                                </option>
+                                                                <option value="03">
+                                                                    BOLETA DE
+                                                                    VENTA
+                                                                    ELECTRÓNICA
+                                                                </option>
+                                                                <option value="01">
+                                                                    FACTURA
+                                                                    ELECTRÓNICA
+                                                                </option>
+                                                            </select>
+                                                        </div>
+
+                                                        {/* CPE Serie */}
+                                                        <div>
+                                                            <label
+                                                                htmlFor="invoiceSerial"
+                                                                className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                                                            >
+                                                                Serie
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                name="invoiceSerial"
+                                                                id="invoiceSerial"
+                                                                maxLength={4}
+                                                                value={
+                                                                    sale.serial
+                                                                }
+                                                                onChange={
+                                                                    handleSale
+                                                                }
+                                                                onFocus={(e) =>
+                                                                    e.target.select()
+                                                                }
+                                                                className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                autoComplete="off"
+                                                                disabled
+                                                            />
+                                                        </div>
+
+                                                        {/* CPE Numero */}
+                                                        <div>
+                                                            <label
+                                                                htmlFor="invoiceCorrelative"
+                                                                className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                                                            >
+                                                                Número
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                name="invoiceCorrelative"
+                                                                id="invoiceCorrelative"
+                                                                maxLength={10}
+                                                                value={
+                                                                    sale.correlative
+                                                                }
+                                                                onChange={
+                                                                    handleSale
+                                                                }
+                                                                onFocus={(e) =>
+                                                                    e.target.select()
+                                                                }
+                                                                className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                autoComplete="off"
+                                                                disabled
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
+
+                                                <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                                    <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                                        Información adicional
+                                                    </legend>
+
+                                                    <div className="grid gap-6 lg:grid-cols-4 sm:grid-cols-1">
+                                                        {/* IGV % */}
+                                                        <div>
+                                                            <label
+                                                                htmlFor="igvType"
+                                                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                            >
+                                                                IGV %{" "}
+                                                            </label>
+                                                            <select
+                                                                value={
+                                                                    creditNote.igvType
+                                                                }
+                                                                name="igvType"
+                                                                onChange={
+                                                                    handleCreditNote
+                                                                }
+                                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                required
+                                                            >
+                                                                <option
+                                                                    value={4}
+                                                                >
+                                                                    4% (IVAP)
+                                                                </option>
+                                                                <option
+                                                                    value={18}
+                                                                >
+                                                                    18%
+                                                                </option>
+                                                                <option
+                                                                    value={10}
+                                                                >
+                                                                    10% (Ley
+                                                                    31556)
+                                                                </option>
+                                                            </select>
+                                                        </div>
+                                                        {/* Tipo de Operacion */}
+                                                        <div>
+                                                            <label
+                                                                htmlFor="operationType"
+                                                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                            >
+                                                                Tipo de
+                                                                Operacion
+                                                            </label>
+                                                            <select
+                                                                value={
+                                                                    creditNote.operationType
+                                                                }
+                                                                name="operationType"
+                                                                onChange={
+                                                                    handleCreditNote
+                                                                }
+                                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                required
+                                                            >
+                                                                {operationTypesData?.allOperationTypes?.map(
+                                                                    (
+                                                                        o: IOperationType,
+                                                                        k: number
+                                                                    ) => (
+                                                                        <option
+                                                                            key={
+                                                                                k
+                                                                            }
+                                                                            value={
+                                                                                o.code
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                o.name
+                                                                            }
+                                                                        </option>
+                                                                    )
+                                                                )}
+                                                            </select>
+                                                        </div>
+                                                        {/* Moneda */}
+                                                        <div>
+                                                            <label
+                                                                htmlFor="currencyType"
+                                                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                            >
+                                                                Moneda
+                                                            </label>
+                                                            <select
+                                                                value={
+                                                                    creditNote.currencyType
+                                                                }
+                                                                name="currencyType"
+                                                                onChange={
+                                                                    handleCreditNote
+                                                                }
+                                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                            >
+                                                                <option
+                                                                    value={0}
+                                                                    disabled
+                                                                >
+                                                                    Moneda
+                                                                </option>
+                                                                <option
+                                                                    value={
+                                                                        "PEN"
+                                                                    }
+                                                                >
+                                                                    S/ PEN -
+                                                                    SOLES
+                                                                </option>
+                                                                <option
+                                                                    value={
+                                                                        "USD"
+                                                                    }
+                                                                >
+                                                                    US$ USD -
+                                                                    DÓLARES
+                                                                    AMERICANOS
+                                                                </option>
+                                                                <option
+                                                                    value={
+                                                                        "EUR"
+                                                                    }
+                                                                >
+                                                                    € EUR -
+                                                                    EUROS
+                                                                </option>
+                                                                <option
+                                                                    value={
+                                                                        "GBP"
+                                                                    }
+                                                                >
+                                                                    £ GBP -
+                                                                    LIBRA
+                                                                    ESTERLINA
+                                                                </option>
+                                                            </select>
+                                                        </div>
+                                                        {creditNote.currencyType !==
+                                                            "PEN" && (
+                                                            <>
+                                                                {/* Tipo de Cambio */}
+                                                                <div>
+                                                                    <label
+                                                                        htmlFor="saleExchangeRate"
+                                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                                    >
+                                                                        Tipo de
+                                                                        cambio
+                                                                    </label>
+                                                                    <input
+                                                                        type="text"
+                                                                        name="saleExchangeRate"
+                                                                        id="saleExchangeRate"
+                                                                        maxLength={
+                                                                            10
+                                                                        }
+                                                                        value={
+                                                                            creditNote.saleExchangeRate
+                                                                        }
+                                                                        onChange={
+                                                                            handleCreditNote
+                                                                        }
+                                                                        onFocus={(
+                                                                            e
+                                                                        ) =>
+                                                                            e.target.select()
+                                                                        }
+                                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                        autoComplete="off"
+                                                                    />
+                                                                </div>
+                                                            </>
+                                                        )}
+
+                                                        {/* CPE Cliente */}
+                                                        <div className="lg:col-span-4">
+                                                            <label
+                                                                htmlFor="invoiceClientName"
+                                                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                            >
+                                                                Cliente
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                id="invoiceClientName"
+                                                                value={
+                                                                    sale?.client
+                                                                        ?.names
+                                                                }
+                                                                onChange={
+                                                                    handleSale
+                                                                }
+                                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                disabled
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
                                             </div>
-                                        </fieldset>
-                                    </div>
-                                    <SaleDetailList
-                                        invoice={creditNote}
-                                        setInvoice={setCreditNote}
-                                        product={product}
-                                        setProduct={setProduct}
-                                        setInvoiceDetail={setCreditNoteDetail}
-                                        modalAddDetail={modalAddDetail}
-                                    />
-                                    <SaleTotalList invoice={creditNote} />
-                                    {/* OBSERVACIONES */}
-                                    <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                                        <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                            OBSERVACIONES
-                                        </legend>
-                                        <div className="grid  ">
-                                            <div className="md:col-span-2">
-                                                <label className="text-sm text-gray-700 dark:text-gray-200">
-                                                    Observaciones
-                                                </label>
-                                                <textarea
-                                                    name="observation"
-                                                    onFocus={(e) =>
-                                                        e.target.select()
+                                            <SaleDetailList
+                                                invoice={creditNote}
+                                                setInvoice={setCreditNote}
+                                                product={product}
+                                                setProduct={setProduct}
+                                                setInvoiceDetail={
+                                                    setCreditNoteDetail
+                                                }
+                                                modalAddDetail={modalAddDetail}
+                                            />
+                                            <SaleTotalList
+                                                invoice={creditNote}
+                                            />
+                                            {/* OBSERVACIONES */}
+                                            <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                                                <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                                    OBSERVACIONES
+                                                </legend>
+                                                <div className="grid  ">
+                                                    <div className="md:col-span-2">
+                                                        <label className="text-sm text-gray-700 dark:text-gray-200">
+                                                            Observaciones
+                                                        </label>
+                                                        <textarea
+                                                            name="observation"
+                                                            onFocus={(e) =>
+                                                                e.target.select()
+                                                            }
+                                                            maxLength={500}
+                                                            value={
+                                                                creditNote.observation
+                                                            }
+                                                            onChange={
+                                                                handleCreditNote
+                                                            }
+                                                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                                        ></textarea>
+                                                    </div>
+                                                </div>
+                                            </fieldset>
+                                            {/* Botón Continuar con el Pago */}
+                                            <div className="flex justify-end py-2">
+                                                <button
+                                                    type="button"
+                                                    className={`btn-blue px-5 py-2 inline-flex items-center gap-2 ${
+                                                        creditNote
+                                                            ?.operationdetailSet
+                                                            ?.length === 0 ||
+                                                        isProcessing
+                                                            ? "cursor-not-allowed opacity-60"
+                                                            : ""
+                                                    }`}
+                                                    onClick={async () => {
+                                                        if (isProcessing)
+                                                            return;
+                                                        setIsProcessing(true);
+                                                        try {
+                                                            if (
+                                                                creditNote.creditNoteType ===
+                                                                "NA"
+                                                            ) {
+                                                                toast(
+                                                                    "Por favor ingrese un motivo de nota de credito.",
+                                                                    {
+                                                                        hideProgressBar:
+                                                                            true,
+                                                                        autoClose: 2000,
+                                                                        type: "warning",
+                                                                    }
+                                                                );
+                                                                return;
+                                                            }
+                                                            if (
+                                                                creditNote.clientId &&
+                                                                Number(
+                                                                    creditNote.clientId
+                                                                ) === 0
+                                                            ) {
+                                                                toast(
+                                                                    "Por favor ingrese un cliente.",
+                                                                    {
+                                                                        hideProgressBar:
+                                                                            true,
+                                                                        autoClose: 2000,
+                                                                        type: "warning",
+                                                                    }
+                                                                );
+                                                                return;
+                                                            }
+                                                            if (
+                                                                creditNote
+                                                                    .operationdetailSet
+                                                                    .length ===
+                                                                0
+                                                            ) {
+                                                                toast(
+                                                                    "Por favor ingrese al menos un item.",
+                                                                    {
+                                                                        hideProgressBar:
+                                                                            true,
+                                                                        autoClose: 2000,
+                                                                        type: "warning",
+                                                                    }
+                                                                );
+                                                                return;
+                                                            }
+                                                            if (
+                                                                !creditNote.serial
+                                                            ) {
+                                                                toast(
+                                                                    "Por favor ingrese la serie.",
+                                                                    {
+                                                                        hideProgressBar:
+                                                                            true,
+                                                                        autoClose: 2000,
+                                                                        type: "warning",
+                                                                    }
+                                                                );
+                                                                return;
+                                                            }
+
+                                                            modalWayPay.show();
+                                                            setCreditNote({
+                                                                ...creditNote,
+                                                                totalPayed: "",
+                                                                cashflowSet: [],
+                                                            });
+                                                            setCashFlow({
+                                                                ...cashFlow,
+                                                                total: Number(
+                                                                    creditNote.totalToPay
+                                                                ),
+                                                            });
+                                                        } finally {
+                                                            setIsProcessing(
+                                                                false
+                                                            );
+                                                        }
+                                                    }}
+                                                    disabled={
+                                                        creditNote
+                                                            ?.operationdetailSet
+                                                            ?.length === 0 ||
+                                                        isProcessing
                                                     }
-                                                    maxLength={500}
-                                                    value={
-                                                        creditNote.observation
-                                                    }
-                                                    onChange={handleSale}
-                                                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                                ></textarea>
+                                                >
+                                                    {isProcessing ? (
+                                                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                                                    ) : (
+                                                        <Save />
+                                                    )}
+                                                    {isProcessing
+                                                        ? "PROCESANDO..."
+                                                        : "CONTINUAR CON EL PAGO"}
+                                                </button>
                                             </div>
                                         </div>
-                                    </fieldset>
-                                    {/* Botón Continuar con el Pago */}
-                                    <div className="flex justify-end py-2">
-                                        <button
-                                            type="button"
-                                            className={`btn-blue px-5 py-2 inline-flex items-center gap-2 ${
-                                                creditNote?.operationdetailSet
-                                                    ?.length === 0
-                                                    ? "cursor-not-allowed"
-                                                    : ""
-                                            }`}
-                                            onClick={async () => {
-                                                // console.log(
-                                                //     "creditNote antes de pagar",
-                                                //     creditNote
-                                                // );
-                                                if (
-                                                    creditNote.creditNoteType ===
-                                                    "NA"
-                                                ) {
-                                                    toast(
-                                                        "Por favor ingrese un motivo de nota de credito.",
-                                                        {
-                                                            hideProgressBar:
-                                                                true,
-                                                            autoClose: 2000,
-                                                            type: "warning",
-                                                        }
-                                                    );
-                                                    return;
-                                                }
-                                                if (
-                                                    creditNote.clientId &&
-                                                    Number(
-                                                        creditNote.clientId
-                                                    ) === 0
-                                                ) {
-                                                    toast(
-                                                        "Por favor ingrese un cliente.",
-                                                        {
-                                                            hideProgressBar:
-                                                                true,
-                                                            autoClose: 2000,
-                                                            type: "warning",
-                                                        }
-                                                    );
-                                                    return;
-                                                }
-                                                if (
-                                                    creditNote
-                                                        .operationdetailSet
-                                                        .length === 0
-                                                ) {
-                                                    toast(
-                                                        "Por favor ingrese al menos un item.",
-                                                        {
-                                                            hideProgressBar:
-                                                                true,
-                                                            autoClose: 2000,
-                                                            type: "warning",
-                                                        }
-                                                    );
-                                                    return;
-                                                }
-                                                if (!creditNote.serial) {
-                                                    toast(
-                                                        "Por favor ingrese la serie.",
-                                                        {
-                                                            hideProgressBar:
-                                                                true,
-                                                            autoClose: 2000,
-                                                            type: "warning",
-                                                        }
-                                                    );
-                                                    return;
-                                                }
-
-                                                modalWayPay.show();
-                                                setCreditNote({
-                                                    ...creditNote,
-                                                    totalPayed: "",
-                                                    cashflowSet: [],
-                                                });
-                                                setCashFlow({
-                                                    ...cashFlow,
-                                                    total: Number(
-                                                        creditNote.totalToPay
-                                                    ),
-                                                });
-                                            }}
-                                            disabled={
-                                                creditNote?.operationdetailSet
-                                                    ?.length === 0
-                                            }
-                                        >
-                                            <Save />
-                                            CONTINUAR CON EL PAGO
-                                        </button>
-                                    </div>
+                                    )}
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <SaleDetailForm
-                modalAddDetail={modalAddDetail}
-                setModalAddDetail={setModalAddDetail}
-                product={product}
-                setProduct={setProduct}
-                invoiceDetail={CreditNoteDetail}
-                setInvoiceDetail={setCreditNoteDetail}
-                invoice={creditNote}
-                setInvoice={setCreditNote}
-                auth={auth}
-                initialStateProduct={initialStateProduct}
-                initialStateSaleDetail={initialStateSaleDetail}
-                typeAffectationsData={typeAffectationsData}
-                productsData={productsData}
-            />
-            <WayPayForm
-                modalWayPay={modalWayPay}
-                setModalWayPay={setModalWayPay}
-                cashFlow={cashFlow}
-                setCashFlow={setCashFlow}
-                initialStateCashFlow={initialStateCashFlow}
-                initialStateSale={initialStateSale}
-                invoice={creditNote}
-                setInvoice={setCreditNote}
-                jwtToken={auth?.jwtToken}
-                authContext={authContext}
-                wayPaysData={wayPaysData}
-            />
+                    <SaleDetailForm
+                        modalAddDetail={modalAddDetail}
+                        setModalAddDetail={setModalAddDetail}
+                        product={product}
+                        setProduct={setProduct}
+                        invoiceDetail={CreditNoteDetail}
+                        setInvoiceDetail={setCreditNoteDetail}
+                        invoice={creditNote}
+                        setInvoice={setCreditNote}
+                        auth={auth}
+                        initialStateProduct={initialStateProduct}
+                        initialStateSaleDetail={initialStateSaleDetail}
+                        typeAffectationsData={typeAffectationsData}
+                        productsData={productsData}
+                    />
+                    <WayPayForm
+                        modalWayPay={modalWayPay}
+                        setModalWayPay={setModalWayPay}
+                        cashFlow={cashFlow}
+                        setCashFlow={setCashFlow}
+                        initialStateCashFlow={initialStateCashFlow}
+                        initialStateSale={initialStateSale}
+                        invoice={creditNote}
+                        setInvoice={setCreditNote}
+                        jwtToken={auth?.jwtToken}
+                        authContext={authContext}
+                        wayPaysData={wayPaysData}
+                        isProcessing={isProcessing}
+                        setIsProcessing={setIsProcessing}
+                    />
+                </>
+            )}
         </>
     );
 }

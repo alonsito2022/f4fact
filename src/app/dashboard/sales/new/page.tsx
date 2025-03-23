@@ -297,6 +297,8 @@ const initialStateCashFlow = {
     description: "",
 };
 function NewSalePage() {
+    const [isProcessing, setIsProcessing] = useState(false);
+
     const [sale, setSale] = useState(initialStateSale);
     const [saleDetail, setSaleDetail] = useState(initialStateSaleDetail);
     const [person, setPerson] = useState(initialStatePerson);
@@ -520,6 +522,7 @@ function NewSalePage() {
         } else setProduct({ ...product, [name]: value });
     };
     const validateBeforePayment = () => {
+        if (isProcessing) return false;
         if (Number(sale.clientId) === 0) {
             toast("Por favor ingrese un cliente.", {
                 hideProgressBar: true,
@@ -1375,6 +1378,8 @@ function NewSalePage() {
                 jwtToken={auth?.jwtToken}
                 authContext={authContext}
                 wayPaysData={wayPaysData}
+                isProcessing={isProcessing}
+                setIsProcessing={setIsProcessing}
             />
         </>
     );

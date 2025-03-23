@@ -158,6 +158,8 @@ function WayPayForm({
     jwtToken,
     authContext,
     wayPaysData,
+    isProcessing,
+    setIsProcessing,
 }: any) {
     // Add ref for the close button
     const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -253,7 +255,9 @@ function WayPayForm({
     // const [createPurchase] = useMutation(CREATE_PURCHASE_MUTATION);
 
     const handleSaveSale = useCallback(async () => {
+        if (isProcessing) return;
         try {
+            setIsProcessing(true);
             const variables = {
                 serial: invoice.serial,
                 correlative: parseInt(
@@ -353,7 +357,6 @@ function WayPayForm({
 
                 observation: invoice.observation || "",
             };
-            console.log("variables al guardar", variables);
             const { data, errors } = await createSale({
                 variables: variables,
             });
@@ -385,8 +388,23 @@ function WayPayForm({
             }
         } catch (error) {
             console.error("Error creating invoice:", error);
+            toast("Error al guardar la venta", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "error",
+            });
+        } finally {
+            setIsProcessing(false);
         }
-    }, [createSale, invoice, setInvoice, initialStateSale, modalWayPay]);
+    }, [
+        createSale,
+        invoice,
+        setInvoice,
+        initialStateSale,
+        modalWayPay,
+        isProcessing,
+        setIsProcessing,
+    ]);
 
     useEffect(() => {
         calculateTotalPayed();
@@ -646,10 +664,15 @@ function WayPayForm({
                         <button
                             type="button"
                             onClick={handleSaveSale}
-                            className="px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 inline-flex items-center gap-2 transition-all duration-200 transform hover:scale-105"
+                            disabled={isProcessing}
+                            className="px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 inline-flex items-center gap-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Save />
-                            Finalizar Venta
+                            {isProcessing ? (
+                                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                            ) : (
+                                <Save />
+                            )}
+                            {isProcessing ? "Guardando..." : "Finalizar Venta"}
                         </button>
                     </div>
                 </div>

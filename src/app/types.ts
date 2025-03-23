@@ -406,6 +406,8 @@ export interface IOperation {
     sunatDescription: string;
     sunatDescriptionLow: string;
 
+    creditNoteReferences: string;
+
     // id: 0,
     // serial: "0",
     // correlative: "0",

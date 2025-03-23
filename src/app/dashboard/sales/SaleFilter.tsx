@@ -171,18 +171,17 @@ function SaleFilter({
         }
     }, [auth?.user?.subsidiaryId, subsidiariesData?.subsidiaries]);
     return (
-        <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 items-start  rounded-lg shadow-sm">
             <select
                 value={filterObj.documentType}
                 name="documentType"
                 onChange={handleInputChange}
-                className="filter-form-control w-full justify-self-start"
+                className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
             >
-                <option value={"NA"}>Filtrar por tipo de Doc.</option>
-                <option value={"01"}>FACTURA ELECTRÓNICA</option>
-                <option value={"03"}>BOLETA DE VENTA ELECTRÓNICA</option>
-                <option value={"07"}>NOTA DE CRÉDITO ELECTRÓNICA</option>
-                {/* <option value={"08"}>NOTA DE DÉBITO ELECTRÓNICA</option> */}
+                <option value={"NA"}>📄 Filtrar por tipo de Doc.</option>
+                <option value={"01"}>🧾 FACTURA ELECTRÓNICA</option>
+                <option value={"03"}>🧾 BOLETA DE VENTA ELECTRÓNICA</option>
+                <option value={"07"}>📝 NOTA DE CRÉDITO ELECTRÓNICA</option>
             </select>
             {auth?.user?.isSuperuser ? (
                 <>
@@ -194,9 +193,9 @@ function SaleFilter({
                         onFocus={(e) => e.target.select()}
                         autoComplete="off"
                         disabled={subsidiariesLoading}
-                        className="filter-form-control w-full justify-self-start"
+                        className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                         list="subsidiaryList"
-                        placeholder="Buscar por sede"
+                        placeholder="🏢 Buscar por sede"
                     />
                     <datalist id="subsidiaryList">
                         {subsidiariesData?.subsidiaries?.map(
@@ -211,28 +210,25 @@ function SaleFilter({
                     </datalist>
                 </>
             ) : null}
-
             <input
                 type="date"
                 name="startDate"
                 onChange={handleInputChange}
                 value={filterObj.startDate}
-                className="filter-form-control w-full justify-self-start"
+                className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
             />
-
             <input
                 type="date"
                 name="endDate"
                 onChange={handleInputChange}
                 value={filterObj.endDate}
-                className="filter-form-control w-full justify-self-start"
+                className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
             />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 col-span-full lg:col-span-2 xl:col-span-5 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 col-span-full">
                 <button
                     id="btn-search"
                     type="button"
-                    className="btn-blue px-5 py-3 flex items-center justify-center gap-2 w-full"
+                    className="btn-blue px-5 py-3 flex items-center justify-center gap-2 w-full rounded-lg hover:opacity-90 transition-all duration-200 shadow-sm"
                     onClick={handleClickButton}
                     disabled={filteredSaleLoading}
                 >
@@ -244,11 +240,19 @@ function SaleFilter({
                     target="_blank"
                     title="Descargar EXCEL"
                     download
-                    className="btn-green px-5 py-3 flex items-center justify-center gap-2 w-full m-0"
+                    className="btn-green px-5 py-3 flex items-center justify-center gap-2 w-full m-0 rounded-lg hover:opacity-90 transition-all duration-200 shadow-sm"
                 >
                     <Excel />
-                    Descarga para excel
+                    Exportar a Excel
                 </a>
+                <button
+                    type="button"
+                    className="btn-blue px-5 py-3 flex items-center justify-center gap-2 w-full rounded-lg hover:opacity-90 transition-all duration-200 shadow-sm"
+                    onClick={() => router.push("/dashboard/sales/new")}
+                >
+                    <Add />
+                    Nueva venta
+                </button>
             </div>
         </div>
     );

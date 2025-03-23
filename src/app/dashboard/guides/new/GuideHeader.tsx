@@ -29,7 +29,14 @@ const GUIDE_MODE_QUERY = gql`
         }
     }
 `;
-function GuideHeader({ guide, setGuide, handleGuide, auth, authContext }: any) {
+function GuideHeader({
+    guide,
+    setGuide,
+    handleGuide,
+    auth,
+    authContext,
+    initialClientData,
+}: any) {
     const [clientSearch, setClientSearch] = useState("");
     const [
         searchClientQuery,
@@ -63,11 +70,12 @@ function GuideHeader({ guide, setGuide, handleGuide, auth, authContext }: any) {
     });
 
     const handleClientSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+        console.log("handleClientSearchChange value", event.target.value);
         setClientSearch(event.target.value);
     };
     const handleClientSelect = (event: ChangeEvent<HTMLInputElement>) => {
         const selectedOption = event.target.value;
-
+        console.log("handleClientSelect selectedOption", selectedOption);
         const selectedData = searchClientData?.searchClientByParameter?.find(
             (person: IPerson) =>
                 `${person.documentNumber} ${person.names}` === selectedOption
@@ -81,6 +89,25 @@ function GuideHeader({ guide, setGuide, handleGuide, auth, authContext }: any) {
             });
         }
     };
+
+    // Add this useEffect to handle initialClientData
+    useEffect(() => {
+        if (
+            initialClientData &&
+            initialClientData.id !== 0 &&
+            initialClientData.documentNumber &&
+            initialClientData.names
+        ) {
+            const clientSearchValue = `${initialClientData.documentNumber} ${initialClientData.names}`;
+            setClientSearch(clientSearchValue);
+            setGuide({
+                ...guide,
+                clientId: initialClientData.id,
+                clientName: initialClientData.names,
+            });
+        }
+    }, [initialClientData]);
+
     useEffect(() => {
         if (clientSearch.length > 2) {
             const queryVariables: { search: string; documentType?: string } = {
@@ -121,7 +148,7 @@ function GuideHeader({ guide, setGuide, handleGuide, auth, authContext }: any) {
                     }
                 },
             });
-        } else {
+        } else if (!initialClientData) {
             setClientSearch("");
             setGuide({
                 ...guide,
@@ -148,15 +175,11 @@ function GuideHeader({ guide, setGuide, handleGuide, auth, authContext }: any) {
                 <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-5 ">
                     {/* CPE Cliente */}
                     <div className="md:col-span-1 lg:col-span-2">
-                        <label
-                            htmlFor="invoiceClientName"
-                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                        >
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                             Cliente
                         </label>
                         <input
                             type="search"
-                            id="invoiceClientName"
                             maxLength={100}
                             onFocus={(e) => e.target.select()}
                             value={clientSearch}
