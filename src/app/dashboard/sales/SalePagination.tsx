@@ -5,6 +5,8 @@ function SalePagination({
     setFilterObj,
     salesQuery,
     filteredSalesData,
+    guidesQuery,
+    guidesData,
 }: any) {
     return (
         <div className="flex items-center justify-center gap-2 my-4">
@@ -12,21 +14,26 @@ function SalePagination({
                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                 disabled={filterObj.page === 1}
                 onClick={() => {
+                    const prevPage = filterObj.page - 1;
                     setFilterObj({
                         ...filterObj,
-                        page: filterObj.page - 1,
+                        page: prevPage,
                     });
-                    salesQuery({
-                        variables: {
-                            subsidiaryId: Number(filterObj?.subsidiaryId),
-                            clientId: Number(filterObj.clientId),
-                            startDate: filterObj.startDate,
-                            endDate: filterObj.endDate,
-                            documentType: filterObj.documentType,
-                            page: filterObj.page - 1,
-                            pageSize: Number(filterObj.pageSize),
-                        },
-                    });
+                    const variables = {
+                        subsidiaryId: Number(filterObj?.subsidiaryId),
+                        clientId: Number(filterObj.clientId),
+                        startDate: filterObj.startDate,
+                        endDate: filterObj.endDate,
+                        documentType: filterObj.documentType,
+                        page: prevPage - 1,
+                        pageSize: Number(filterObj.pageSize),
+                    };
+                    const queryToUse = salesQuery || guidesQuery;
+                    if (queryToUse) {
+                        queryToUse({
+                            variables: variables,
+                        });
+                    }
                 }}
             >
                 <svg
@@ -51,32 +58,44 @@ function SalePagination({
                 Página <span className="font-bold mx-2">{filterObj.page}</span>{" "}
                 de{" "}
                 <span className="font-bold mx-2">
-                    {filteredSalesData?.allSales?.totalNumberOfPages}
+                    {filteredSalesData
+                        ? filteredSalesData?.allSales?.totalNumberOfPages
+                        : guidesData?.allGuides?.totalNumberOfPages}
                 </span>
             </span>
 
             <button
                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                 onClick={() => {
+                    const nextPage = filterObj.page + 1;
                     setFilterObj({
                         ...filterObj,
-                        page: filterObj.page + 1,
+                        page: nextPage,
                     });
-                    salesQuery({
-                        variables: {
-                            subsidiaryId: Number(filterObj.subsidiaryId),
-                            clientId: Number(filterObj.clientId),
-                            startDate: filterObj.startDate,
-                            endDate: filterObj.endDate,
-                            documentType: filterObj.documentType,
-                            page: filterObj.page + 1,
-                            pageSize: Number(filterObj.pageSize),
-                        },
-                    });
+                    const variables = {
+                        subsidiaryId: Number(filterObj?.subsidiaryId),
+                        clientId: Number(filterObj.clientId),
+                        startDate: filterObj.startDate,
+                        endDate: filterObj.endDate,
+                        documentType: filterObj.documentType,
+                        page: nextPage - 1, // Fixed: Using nextPage instead of filterObj.page
+                        pageSize: Number(filterObj.pageSize),
+                    };
+
+                    const queryToUse = salesQuery || guidesQuery;
+                    if (queryToUse) {
+                        queryToUse({
+                            variables: variables,
+                        });
+                    }
                 }}
                 disabled={
+                    (!filteredSalesData?.allSales?.totalNumberOfPages &&
+                        !guidesData?.allGuides?.totalNumberOfPages) ||
                     filterObj.page ===
-                    filteredSalesData?.allSales?.totalNumberOfPages
+                        (filteredSalesData
+                            ? filteredSalesData?.allSales?.totalNumberOfPages
+                            : guidesData?.allGuides?.totalNumberOfPages)
                 }
             >
                 Siguiente

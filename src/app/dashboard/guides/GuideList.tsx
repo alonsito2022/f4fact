@@ -5,6 +5,7 @@ import Popover from "@/components/Popover";
 import Link from "next/link";
 import React from "react";
 import { toast } from "react-toastify";
+import SalePagination from "../sales/SalePagination";
 
 function GuideList({
     setFilterObj,
@@ -124,6 +125,12 @@ function GuideList({
                             className="form-control-sm w-16 text-center"
                         />
                     </div>
+                    <SalePagination
+                        filterObj={filterObj}
+                        setFilterObj={setFilterObj}
+                        guidesQuery={guidesQuery}
+                        guidesData={guidesData}
+                    />
                 </div>
 
                 <table className="w-full border-collapse border border-gray-200 dark:border-gray-600">
@@ -425,60 +432,12 @@ function GuideList({
                         )}
                     </tbody>
                 </table>
-                <div className="flex flex-row items-center my-4 gap-4 pl-3">
-                    <button
-                        className="btn-blue-xs"
-                        disabled={filterObj.page === 1}
-                        onClick={() => {
-                            setFilterObj({
-                                ...filterObj,
-                                page: filterObj.page - 1,
-                            });
-                            // Llama a salesQuery con los nuevos parámetros
-                            guidesQuery({
-                                variables: {
-                                    subsidiaryId: Number(user?.subsidiaryId),
-                                    startDate: filterObj.startDate,
-                                    endDate: filterObj.endDate,
-                                    documentType: filterObj.documentType,
-                                    page: filterObj.page - 1,
-                                    pageSize: Number(filterObj.pageSize),
-                                },
-                            });
-                        }}
-                    >
-                        Prev
-                    </button>
-                    <span className="text-sm">Página {filterObj.page}</span>
-                    <button
-                        className="btn-blue-xs"
-                        onClick={() => {
-                            setFilterObj({
-                                ...filterObj,
-                                page: filterObj.page + 1,
-                            });
-                            guidesQuery({
-                                variables: {
-                                    subsidiaryId: Number(user?.subsidiaryId),
-                                    startDate: filterObj.startDate,
-                                    endDate: filterObj.endDate,
-                                    documentType: filterObj.documentType,
-                                    page: filterObj.page + 1,
-                                    pageSize: Number(filterObj.pageSize),
-                                },
-                            });
-                        }}
-                        style={{
-                            display:
-                                filterObj.page ===
-                                guidesData?.allGuides?.totalNumberOfPages
-                                    ? "none"
-                                    : "inline-block",
-                        }}
-                    >
-                        Next
-                    </button>
-                </div>
+                <SalePagination
+                    filterObj={filterObj}
+                    setFilterObj={setFilterObj}
+                    guidesQuery={guidesQuery}
+                    guidesData={guidesData}
+                />
             </div>
         </>
     );
