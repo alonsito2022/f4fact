@@ -262,6 +262,7 @@ function NewGuidePageWithInvoice() {
         fetchPolicy: "network-only",
         onCompleted: (data) => {
             const dataSale = data.getSaleById;
+            // console.log(dataSale.client);
             setGuide({
                 ...guide,
                 relatedDocuments: [
@@ -393,6 +394,7 @@ function NewGuidePageWithInvoice() {
                     autoClose: 2000,
                     type: "error",
                 });
+                console.log("clientId", guide);
                 return false;
             }
             if (guide.serial.length !== 4) {

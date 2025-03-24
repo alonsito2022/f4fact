@@ -159,7 +159,7 @@ function GuideHeader({
     }, [guide?.guideReasonTransfer, guide?.guideModeTransfer]);
 
     useEffect(() => {
-        if (guide?.documentType === "31") {
+        if (guide?.documentType === "31" && !initialClientData) {
             setGuide({
                 ...guide,
                 guideModeTransfer: "02",
