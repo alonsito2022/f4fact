@@ -53,7 +53,7 @@ function DevicesModal({modalDevice, setModalDevice, subsidiaryDevices,setSubsidi
     };
   return (
     <div>
-    <div id="device-modal" tabIndex={-1} aria-hidden="true" className="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div id="device-modal" tabIndex={-1} aria-hidden={modalDevice?.isHidden ? "true" : "false"} className="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div className="relative p-4 w-full max-w-lg max-h-full">
             <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
                 <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
@@ -79,7 +79,7 @@ function DevicesModal({modalDevice, setModalDevice, subsidiaryDevices,setSubsidi
                         <ul className="list-disc pl-5 space-y-2">
                             {subsidiaryDevices.devices.map((device: any) => (
                                 <li key={device.id} className="flex justify-between items-center text-gray-900 dark:text-white">
-                                    {device.description}
+                                    {device.mobileDescription}{device.id}
                                     <button onClick={() => handleUnlinkDevice(device.id)} className="ml-4 px-2 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600">
                                       Desvincular
                                     </button>

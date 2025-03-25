@@ -60,7 +60,7 @@ function SubsidiaryList({
                     {
                         devicesBySubsidiaryId(pk: ${pk}) {
                             id
-                            description
+                            mobileDescription
                             subsidiaryId
                         }
                     }

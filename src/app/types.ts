@@ -35,6 +35,7 @@ export interface IUser {
     companyGuide: boolean;
     companyCatalog: boolean;
     companyApp: boolean;
+    mobileDescription: string;
 }
 export interface ICompany {
     id?: number;
@@ -79,11 +80,6 @@ export interface IVehicle {
     licensePlate?: string;
     company?: ICompany;
     capacity?: number;
-}
-export interface IDevices {
-    id: number;
-    description?: string;
-    subsidiaryId?: number;
 }
 export interface IPerson {
     id?: number;
