@@ -183,7 +183,7 @@ function GuideFilter({
                     Filtrar
                 </button>
                 <a
-                    href={`${hostname}/operations/export_sales_to_excel/${filterObj.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/`}
+                    href={`${hostname}/operations/export_guides_to_excel/${filterObj.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/`}
                     target="_blank"
                     title="Descargar EXCEL"
                     download

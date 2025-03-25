@@ -6,6 +6,7 @@ import Link from "next/link";
 import React from "react";
 import { toast } from "react-toastify";
 import SalePagination from "../sales/SalePagination";
+import LoadingIcon from "@/components/icons/LoadingIcon";
 
 function GuideList({
     setFilterObj,
@@ -51,6 +52,63 @@ function GuideList({
             fileNameCdr: `R-${item?.subsidiary?.company?.doc}-${item?.documentType}-${item.serial}-${item.correlative}.xml`,
         })
     );
+    const getStatusClassName = (status: string) => {
+        const baseClasses = "flex items-center justify-center";
+        if (status === "02") {
+            return `${baseClasses} bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300`;
+        }
+        if (status === "06") {
+            return `${baseClasses} bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap`;
+        }
+        return `${baseClasses}`;
+    };
+
+    const getStatusContent = (status: string, documentType: string) => {
+        if (status === "01") return <LoadingIcon />;
+        if (status === "02") {
+            if (documentType === "09")
+                return (
+                    <>
+                        <SunatCheck /> 0
+                    </>
+                );
+            if (documentType === "31") return <SunatCheck />;
+            return "-";
+        }
+        if (status === "06") return <SunatCancel />;
+        return "";
+    };
+
+    const getPopoverContent = (item: IOperation) => {
+        if (item.operationStatus === "02")
+            return <p>{item.sunatDescription}</p>;
+        if (item.operationStatus === "06") {
+            return (
+                <p>
+                    {item.sunatDescriptionLow ||
+                        "Los documentos no aceptados por la SUNAT se consideran como documentos ANULADOS para efectos tributarios en la mayoría de casos."}
+                </p>
+            );
+        }
+        return <p>Sin información</p>;
+    };
+    const handleWhatsAppClick = (item: IOperation) => {
+        modalWhatsApp.show();
+        setCpe({
+            ...cpe,
+            id: Number(item.id),
+            documentTypeDisplay:
+                item.documentType === "09"
+                    ? "GUIA DE REMISION REMITENTE"
+                    : item.documentType === "31"
+                    ? "GUÍA DE REMISIÓN TRANSPORTISTA"
+                    : "NA",
+            serial: item.serial,
+            correlative: item.correlative,
+            clientName: item.client?.names,
+            clientDoc: item.client?.documentNumber,
+        });
+    };
     return (
         <>
             <div className="w-full overflow-x-auto">
@@ -195,237 +253,193 @@ function GuideList({
                                         {item.subsidiary?.companyName}
                                     </td>
 
-                                    <td className="p-2">
+                                    <td className="p-2 text-center">
                                         {item.sendWhatsapp ? "SI" : "X"}
                                     </td>
                                     <td className="p-2 text-center">
-                                        <a
-                                            href={
-                                                process.env
-                                                    .NEXT_PUBLIC_BASE_API +
-                                                "/operations/print_guide/" +
-                                                item.id +
-                                                "/"
-                                            }
-                                            className="hover:underline"
-                                            target="_blank"
-                                        >
-                                            <span className="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
-                                                PDF
-                                            </span>
-                                        </a>
-                                    </td>
-                                    <td className="p-2 text-center">
-                                        <a
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                const url =
-                                                    item.operationStatus ===
-                                                    "02"
-                                                        ? item.linkXml
-                                                        : item.linkXmlLow;
-                                                handleDownload(
-                                                    url,
-                                                    item?.fileNameXml
-                                                );
-                                            }}
-                                            className="hover:underline"
-                                        >
-                                            <span className="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300 text-nowrap">
-                                                {item.operationStatus === "02"
-                                                    ? "XML"
-                                                    : item.operationStatus ===
-                                                      "06"
-                                                    ? item.linkXmlLow
-                                                        ? "XML"
-                                                        : "SIN XML"
-                                                    : "#"}
-                                            </span>
-                                        </a>
-                                    </td>
-                                    <td className="p-2 text-center">
-                                        <a
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                const url =
-                                                    item.operationStatus ===
-                                                    "02"
-                                                        ? item.linkCdr
-                                                        : item.linkCdrLow;
-                                                handleDownload(
-                                                    url,
-                                                    item?.fileNameCdr
-                                                );
-                                            }}
-                                            className="hover:underline"
-                                        >
-                                            {item.operationStatus === "02" ? (
-                                                <>
-                                                    {item?.documentType ===
-                                                    "01" ? (
-                                                        <span className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
-                                                            CDR
-                                                        </span>
-                                                    ) : item?.documentType ===
-                                                      "03" ? (
-                                                        <span className="bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-gray-900 dark:text-gray-300">
-                                                            CDR
-                                                        </span>
-                                                    ) : (
-                                                        "-"
-                                                    )}
-                                                </>
-                                            ) : item.operationStatus ===
-                                              "06" ? (
-                                                <span className="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap">
-                                                    {item.linkCdrLow
-                                                        ? "CDR"
-                                                        : "SIN CDR"}
+                                        {(item.documentType === "09" ||
+                                            item.documentType === "31") && (
+                                            <a
+                                                href={
+                                                    process.env
+                                                        .NEXT_PUBLIC_BASE_API +
+                                                    "/operations/print_guide/" +
+                                                    item.id +
+                                                    "/"
+                                                }
+                                                className="hover:underline"
+                                                target="_blank"
+                                            >
+                                                <span className="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
+                                                    PDF
                                                 </span>
-                                            ) : (
-                                                ""
-                                            )}
-                                        </a>
+                                            </a>
+                                        )}
+                                    </td>
+                                    <td className="p-2 text-center">
+                                        {(() => {
+                                            const hasXml =
+                                                item.operationStatus === "02" &&
+                                                item.linkXml;
+
+                                            if (!hasXml) return null;
+
+                                            const xmlUrl =
+                                                item.operationStatus === "02"
+                                                    ? item.linkXml
+                                                    : item.linkXmlLow;
+
+                                            return (
+                                                <a
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleDownload(
+                                                            xmlUrl,
+                                                            item?.fileNameXml
+                                                        );
+                                                    }}
+                                                    className="hover:underline"
+                                                >
+                                                    <span className="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300 text-nowrap">
+                                                        XML
+                                                    </span>
+                                                </a>
+                                            );
+                                        })()}
+                                    </td>
+                                    <td className="p-2 text-center">
+                                        {(() => {
+                                            const hasCdr =
+                                                item.operationStatus === "02" &&
+                                                item.linkCdr;
+                                            if (!hasCdr) return null;
+
+                                            const cdrUrl =
+                                                item.operationStatus === "02"
+                                                    ? item.linkCdr
+                                                    : item.linkCdrLow;
+                                            const getCdrStyle = () => {
+                                                if (
+                                                    item.operationStatus ===
+                                                    "02"
+                                                ) {
+                                                    return item.documentType ===
+                                                        "09"
+                                                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                                        : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+                                                }
+                                                return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+                                            };
+
+                                            return (
+                                                <a
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleDownload(
+                                                            cdrUrl,
+                                                            item?.fileNameCdr
+                                                        );
+                                                    }}
+                                                    className="hover:underline"
+                                                >
+                                                    <span
+                                                        className={`text-xs font-medium me-2 px-2.5 py-0.5 rounded-full text-nowrap ${getCdrStyle()}`}
+                                                    >
+                                                        {item.operationStatus ===
+                                                            "06" &&
+                                                        !item.linkCdrLow
+                                                            ? "SIN CDR"
+                                                            : "CDR"}
+                                                    </span>
+                                                </a>
+                                            );
+                                        })()}
                                     </td>
                                     <td className="p-2 text-center">
                                         <>
                                             <span
-                                                data-popover-target={
-                                                    "popover-status-" + item.id
-                                                }
-                                                className={
-                                                    item.operationStatus ===
-                                                    "02"
-                                                        ? "bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300"
-                                                        : item.operationStatus ===
-                                                          "06"
-                                                        ? "bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap"
-                                                        : ""
-                                                }
+                                                data-popover-target={`popover-status-${item.id}`}
+                                                className={getStatusClassName(
+                                                    item?.operationStatus
+                                                )}
                                             >
-                                                {item.operationStatus ===
-                                                "02" ? (
-                                                    <>
-                                                        {item?.documentType ===
-                                                        "01" ? (
-                                                            <>
-                                                                <SunatCheck /> 0
-                                                            </>
-                                                        ) : item?.documentType ===
-                                                          "03" ? (
-                                                            <>
-                                                                <SunatCheck />
-                                                            </>
-                                                        ) : (
-                                                            "-"
-                                                        )}
-                                                    </>
-                                                ) : item.operationStatus ===
-                                                  "06" ? (
-                                                    <>
-                                                        <SunatCancel />
-                                                    </>
-                                                ) : (
-                                                    ""
+                                                {getStatusContent(
+                                                    item?.operationStatus,
+                                                    String(item?.documentType)
                                                 )}
                                             </span>
                                             <Popover
-                                                id={"popover-status-" + item.id}
+                                                id={`popover-status-${item.id}`}
                                             >
-                                                {item.operationStatus ===
-                                                "02" ? (
-                                                    <p>
-                                                        {item.sunatDescription}
-                                                    </p>
-                                                ) : item.operationStatus ===
-                                                  "06" ? (
-                                                    <p>
-                                                        {item.sunatDescriptionLow
-                                                            ? item.sunatDescriptionLow
-                                                            : "Los documentos no aceptados por la SUNAT se consideran como documentos ANULADOS para efectos tributarios en la mayoría de casos."}
-                                                    </p>
-                                                ) : (
-                                                    <p>Sin información</p>
-                                                )}
+                                                {getPopoverContent(item)}
                                             </Popover>
                                         </>
                                     </td>
                                     <td className="p-2">
-                                        <>
-                                            <span
-                                                data-popover-target={
-                                                    "popover-options-" + item.id
-                                                }
-                                                className={
-                                                    "font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer"
-                                                }
-                                            >
-                                                Opciones
-                                            </span>
-                                            <Popover
-                                                id={
-                                                    "popover-options-" + item.id
-                                                }
-                                            >
-                                                <a
-                                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                                    href="#"
-                                                    onClick={() => {
-                                                        modalWhatsApp.show();
-                                                        setCpe({
-                                                            ...cpe,
-                                                            id: Number(item.id),
-                                                            documentTypeDisplay:
-                                                                item.documentType ===
-                                                                "01"
-                                                                    ? "FACTURA"
-                                                                    : item.documentType ===
-                                                                      "03"
-                                                                    ? "BOLETA"
-                                                                    : "NA",
-                                                            serial: item.serial,
-                                                            correlative:
-                                                                item.correlative,
-                                                            clientName:
-                                                                item.client
-                                                                    ?.names,
-                                                            clientDoc:
-                                                                item.client
-                                                                    ?.documentNumber,
-                                                        });
-                                                    }}
+                                        {item?.operationStatus === "02" ||
+                                        item?.operationStatus === "06" ? (
+                                            <>
+                                                <span
+                                                    data-popover-target={
+                                                        "popover-options-" +
+                                                        item.id
+                                                    }
+                                                    className={
+                                                        "font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer"
+                                                    }
                                                 >
-                                                    Enviar por WhatsApp
-                                                </a>
-                                                <br />
+                                                    Opciones
+                                                </span>
+                                                <Popover
+                                                    id={
+                                                        "popover-options-" +
+                                                        item.id
+                                                    }
+                                                >
+                                                    <a
+                                                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                        href="#"
+                                                        onClick={() =>
+                                                            handleWhatsAppClick(
+                                                                item
+                                                            )
+                                                        }
+                                                    >
+                                                        Enviar por WhatsApp
+                                                    </a>
+                                                    <br />
 
-                                                <a
-                                                    className="font-medium text-green-600 dark:text-green-500 hover:underline"
-                                                    target="_blank"
-                                                    href="https://ww1.sunat.gob.pe/ol-ti-itconsultaunificadalibre/consultaUnificadaLibre/consulta"
-                                                >
-                                                    CONSULTA SUNAT 1
-                                                </a>
-                                                <br />
-                                                <a
-                                                    className="font-medium text-green-600 dark:text-green-500 hover:underline"
-                                                    target="_blank"
-                                                    href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
-                                                >
-                                                    CONSULTA SUNAT 2
-                                                </a>
-                                                <br />
-                                                <a
-                                                    className="font-medium text-green-600 dark:text-green-500 hover:underline"
-                                                    target="_blank"
-                                                    href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
-                                                >
-                                                    Verificar XML en la SUNAT
-                                                </a>
-                                            </Popover>
-                                        </>
+                                                    <a
+                                                        className="font-medium text-green-600 dark:text-green-500 hover:underline"
+                                                        target="_blank"
+                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsultaunificadalibre/consultaUnificadaLibre/consulta"
+                                                    >
+                                                        CONSULTA SUNAT 1
+                                                    </a>
+                                                    <br />
+                                                    <a
+                                                        className="font-medium text-green-600 dark:text-green-500 hover:underline"
+                                                        target="_blank"
+                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
+                                                    >
+                                                        CONSULTA SUNAT 2
+                                                    </a>
+                                                    <br />
+                                                    <a
+                                                        className="font-medium text-green-600 dark:text-green-500 hover:underline"
+                                                        target="_blank"
+                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
+                                                    >
+                                                        Verificar XML en la
+                                                        SUNAT
+                                                    </a>
+                                                </Popover>
+                                            </>
+                                        ) : (
+                                            item?.operationStatusReadable
+                                        )}
                                     </td>
                                 </tr>
                             )

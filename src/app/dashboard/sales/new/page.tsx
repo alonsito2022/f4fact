@@ -278,6 +278,8 @@ const initialStateProduct = {
     maximumUnitId: 0,
     maximumFactor: "1",
     minimumFactor: "1",
+
+    onSaveSuccess(): void {},
 };
 const initialStateProductFilterObj = {
     criteria: "name",
@@ -1220,7 +1222,16 @@ function NewSalePage() {
                                             className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
                                             onClick={(e) => {
                                                 modalProduct.show();
-                                                setProduct(initialStateProduct);
+                                                setProduct({
+                                                    ...initialStateProduct,
+                                                    onSaveSuccess: () => {
+                                                        modalProduct.hide();
+                                                        modalAddDetail.show();
+                                                        setSaleDetail(
+                                                            initialStateSaleDetail
+                                                        );
+                                                    },
+                                                });
                                             }}
                                         >
                                             <Add />

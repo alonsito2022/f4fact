@@ -149,6 +149,11 @@ function ProductForm({
     } = useQuery(UNIT_QUERY, {
         onError(error) {
             console.error("Units query error:", error);
+            toast("Error al cargar unidades", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "error",
+            });
         },
         context: authContext,
         skip: !auth?.jwtToken,
@@ -203,22 +208,21 @@ function ProductForm({
     }: ChangeEvent<
         HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >) => {
-        const formattedValue = value.replace(/[^0-9]/g, "").slice(0, 6);
+        const formattedValue = value.replace(/[^\d.]/g, "");
         const numberValue = parseFloat(formattedValue);
 
         if (
             formattedValue === "" ||
             (numberValue >= 1 && numberValue <= 999999)
         ) {
-            // Si está dentro del rango, asigna el valor normal
             setProduct({ ...product, [name]: numberValue || 1 });
         } else {
-            // Si está fuera de rango, asigna el valor por defecto (1)
             setProduct({ ...product, [name]: 1 });
-            // Mostrar un mensaje de error al usuario (opcional)
-            console.error(
-                "El valor debe estar entre 1 y 999999.99. Se ha establecido el valor mínimo en 1."
-            );
+            toast("El valor debe estar entre 1 y 999999", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
         }
     };
 
@@ -351,8 +355,22 @@ function ProductForm({
                             autoClose: 2000,
                             type: "success",
                         });
-                        setProduct(initialStateProduct);
-                        modalProduct.hide();
+                        // Call the success callback if it exists
+                        if (product.onSaveSuccess) {
+                            const newProduct =
+                                response.data.createProduct.product;
+                            setProduct({
+                                ...initialStateProduct,
+                                id: newProduct.id,
+                                name: newProduct.name,
+                                minimumUnitName: newProduct.minimumUnitName,
+                                maximumFactor: newProduct.maximumFactor,
+                            });
+                            product.onSaveSuccess();
+                        } else {
+                            setProduct(initialStateProduct);
+                            modalProduct.hide();
+                        }
                     } else if (response.errors) {
                         console.error("GraphQL Errors:", response.errors);
                         toast(

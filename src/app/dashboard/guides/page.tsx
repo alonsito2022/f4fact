@@ -1,6 +1,6 @@
 "use client";
 import Breadcrumb from "@/components/Breadcrumb";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import GuideList from "./GuideList";
 import GuideFilter from "./GuideFilter";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -101,6 +101,21 @@ function GuidePage() {
         onCompleted: () => initFlowbite(),
         onError: (err) => console.error("Error in guides:", err),
     });
+
+    useEffect(() => {
+        if (auth?.status === "authenticated" && auth?.jwtToken) {
+            guidesQuery({
+                variables: {
+                    subsidiaryId: Number(filterObj.subsidiaryId),
+                    startDate: filterObj.startDate,
+                    endDate: filterObj.endDate,
+                    documentType: filterObj.documentType,
+                    page: Number(filterObj.page),
+                    pageSize: Number(filterObj.pageSize),
+                },
+            });
+        }
+    }, [auth?.status, auth?.jwtToken]);
 
     if (auth?.status === "loading") {
         return <p className="text-center">Cargando sesión...</p>;

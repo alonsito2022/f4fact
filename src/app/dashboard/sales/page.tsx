@@ -156,7 +156,7 @@ function SalePage() {
                 },
             });
         }
-    }, [auth?.status, auth?.jwtToken, filterObj]);
+    }, [auth?.status, auth?.jwtToken]);
 
     // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
     if (auth?.status === "loading") {

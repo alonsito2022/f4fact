@@ -92,9 +92,6 @@ function SaleTotalList({
         invoice?.totalDetraction,
     ]);
 
-    useEffect(() => {
-        console.log("invoice", invoice);
-    }, [invoice]);
     return (
         <>
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
