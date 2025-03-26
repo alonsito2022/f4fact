@@ -15,6 +15,7 @@ import {
     IOperationType,
     IPerson,
     IProduct,
+    ISerialAssigned,
     IUser,
 } from "@/app/types";
 import Search from "@/components/icons/Search";
@@ -49,6 +50,15 @@ const SEARCH_CLIENT_BY_PARAMETER = gql`
             documentType
             documentNumber
             names
+        }
+    }
+`;
+const SERIALS_QUERY = gql`
+    query ($subsidiaryId: Int) {
+        allSerials(subsidiaryId: $subsidiaryId) {
+            documentType
+            documentTypeReadable
+            serial
         }
     }
 `;
@@ -336,39 +346,39 @@ function NewSalePage() {
         }
     }, [auth?.user?.companyPercentageIgv]);
 
-    useEffect(() => {
-        const subsidiarySerial = auth?.user?.subsidiarySerial;
-        if (subsidiarySerial) {
-            const lastTwoDigits = subsidiarySerial.slice(-2);
-            let prefix = "";
+    // useEffect(() => {
+    //     const subsidiarySerial = auth?.user?.subsidiarySerial;
+    //     if (subsidiarySerial) {
+    //         const lastTwoDigits = subsidiarySerial.slice(-2);
+    //         let prefix = "";
 
-            switch (sale.documentType) {
-                case "01":
-                    prefix = "F0";
-                    break;
-                case "03":
-                    prefix = "B0";
-                    break;
-                case "07":
-                    prefix = "NC";
-                    break;
-                case "08":
-                    prefix = "ND";
-                    break;
-                case "09":
-                    prefix = "GT";
-                    break;
-                default:
-                    prefix = "";
-            }
+    //         switch (sale.documentType) {
+    //             case "01":
+    //                 prefix = "F0";
+    //                 break;
+    //             case "03":
+    //                 prefix = "B0";
+    //                 break;
+    //             case "07":
+    //                 prefix = "NC";
+    //                 break;
+    //             case "08":
+    //                 prefix = "ND";
+    //                 break;
+    //             case "09":
+    //                 prefix = "GT";
+    //                 break;
+    //             default:
+    //                 prefix = "";
+    //         }
 
-            const customSerial = `${prefix}${lastTwoDigits}`;
-            setSale((prevSale) => ({
-                ...prevSale,
-                serial: customSerial,
-            }));
-        }
-    }, [auth?.user?.subsidiarySerial, sale.documentType]);
+    //         const customSerial = `${prefix}${lastTwoDigits}`;
+    //         setSale((prevSale) => ({
+    //             ...prevSale,
+    //             serial: customSerial,
+    //         }));
+    //     }
+    // }, [auth?.user?.subsidiarySerial, sale.documentType]);
 
     const getVariables = () => ({
         subsidiaryId: Number(auth?.user?.subsidiaryId),
@@ -387,6 +397,7 @@ function NewSalePage() {
         fetchPolicy: "network-only",
         onError: (err) => console.error("Error in Search Client:", err),
     });
+
     const {
         loading: productsLoading,
         error: productsError,
@@ -396,6 +407,18 @@ function NewSalePage() {
         variables: getVariables(),
         fetchPolicy: "network-only",
         onError: (err) => console.error("Error in products:", err),
+        skip: !auth?.jwtToken,
+    });
+
+    const {
+        loading: serialsAssignedLoading,
+        error: serialsAssignedError,
+        data: serialsAssignedData,
+    } = useQuery(SERIALS_QUERY, {
+        context: authContext,
+        variables: {
+            subsidiaryId: Number(auth?.user?.subsidiaryId),
+        },
         skip: !auth?.jwtToken,
     });
 
@@ -456,6 +479,26 @@ function NewSalePage() {
         context: authContext,
         skip: !auth?.jwtToken,
     });
+    useEffect(() => {
+        if (serialsAssignedData?.allSerials?.length > 0) {
+            const filteredSeries = serialsAssignedData.allSerials.filter(
+                (s: ISerialAssigned) =>
+                    s.documentType === `A_${sale.documentType}`
+            );
+
+            if (filteredSeries.length > 0) {
+                setSale((prev) => ({
+                    ...prev,
+                    serial: filteredSeries[0].serial,
+                }));
+            } else {
+                setSale((prev) => ({
+                    ...prev,
+                    serial: "",
+                }));
+            }
+        }
+    }, [serialsAssignedData, sale.documentType]);
     const handleSale = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
@@ -525,6 +568,16 @@ function NewSalePage() {
     };
     const validateBeforePayment = () => {
         if (isProcessing) return false;
+        // Validate DNI customers can't create invoices
+        if (sale.documentType === "01" && sale.clientDocumentType === "1") {
+            toast("No se puede emitir facturas a clientes con DNI", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            return false;
+        }
+
         if (Number(sale.clientId) === 0) {
             toast("Por favor ingrese un cliente.", {
                 hideProgressBar: true,
@@ -849,18 +902,18 @@ function NewSalePage() {
                                                         BOLETA DE VENTA
                                                         ELECTRÓNICA
                                                     </option>
-                                                    <option value={"07"}>
+                                                    {/* <option value={"07"}>
                                                         NOTA DE CRÉDITO
                                                         ELECTRÓNICA
-                                                    </option>
+                                                    </option> */}
                                                     {/* <option value={"08"}>
                                                         NOTA DE DÉBITO
                                                         ELECTRÓNICA
                                                     </option> */}
-                                                    <option value={"09"}>
+                                                    {/* <option value={"09"}>
                                                         GUIA DE REMISIÓN
                                                         REMITENTE
-                                                    </option>
+                                                    </option> */}
                                                 </select>
                                             </div>
                                             {/* Tipo operacion */}
@@ -1005,19 +1058,58 @@ function NewSalePage() {
                                                 >
                                                     Serie
                                                 </label>
-                                                <input
-                                                    type="text"
+                                                <select
                                                     name="serial"
                                                     id="serial"
-                                                    maxLength={4}
                                                     value={sale.serial}
                                                     onChange={handleSale}
-                                                    onFocus={(e) =>
-                                                        e.target.select()
-                                                    }
                                                     className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                    autoComplete="off"
-                                                />
+                                                    required
+                                                >
+                                                    {/* <option value="">
+                                                        Seleccione una serie
+                                                    </option> */}
+                                                    {serialsAssignedData?.allSerials
+                                                        ?.filter(
+                                                            (
+                                                                s: ISerialAssigned
+                                                            ) =>
+                                                                s.documentType ===
+                                                                `A_${sale.documentType}`
+                                                        )
+                                                        .map(
+                                                            (
+                                                                s: ISerialAssigned
+                                                            ) => (
+                                                                <option
+                                                                    key={
+                                                                        s.serial
+                                                                    }
+                                                                    value={
+                                                                        s.serial
+                                                                    }
+                                                                >
+                                                                    {s.serial}
+                                                                </option>
+                                                            )
+                                                        ) || (
+                                                        <option value="">
+                                                            No hay series
+                                                            disponibles
+                                                        </option>
+                                                    )}
+                                                </select>
+                                                {serialsAssignedData?.allSerials?.filter(
+                                                    (s: ISerialAssigned) =>
+                                                        s.documentType ===
+                                                        `A_${sale.documentType}`
+                                                ).length === 0 && (
+                                                    <p className="mt-1 text-sm text-red-600 dark:text-red-500">
+                                                        No hay series asignadas
+                                                        para este tipo de
+                                                        documento
+                                                    </p>
+                                                )}
                                             </div>
                                             {/* Numero */}
                                             <div>

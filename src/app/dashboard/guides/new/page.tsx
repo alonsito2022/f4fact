@@ -214,33 +214,33 @@ function NewGuidePage() {
         [auth?.jwtToken]
     );
 
-    useEffect(() => {
-        if (auth?.user?.subsidiarySerial) {
-            const subsidiarySerial = auth?.user?.subsidiarySerial;
-            if (subsidiarySerial) {
-                const lastTwoDigits = subsidiarySerial.slice(-2);
-                let prefix = "";
+    // useEffect(() => {
+    //     if (auth?.user?.subsidiarySerial) {
+    //         const subsidiarySerial = auth?.user?.subsidiarySerial;
+    //         if (subsidiarySerial) {
+    //             const lastTwoDigits = subsidiarySerial.slice(-2);
+    //             let prefix = "";
 
-                switch (guide.documentType) {
-                    case "09":
-                        prefix = "TP";
-                        break;
-                    case "31":
-                        prefix = "VP";
-                        break;
-                    default:
-                        prefix = "";
-                }
+    //             switch (guide.documentType) {
+    //                 case "09":
+    //                     prefix = "TP";
+    //                     break;
+    //                 case "31":
+    //                     prefix = "VP";
+    //                     break;
+    //                 default:
+    //                     prefix = "";
+    //             }
 
-                const customSerial = `${prefix}${lastTwoDigits}`;
-                setGuide((prevSale) => ({
-                    ...prevSale,
-                    serial: customSerial,
-                }));
-            }
-            // if(guide?.documentType)
-        }
-    }, [auth?.user?.subsidiarySerial, guide.documentType]);
+    //             const customSerial = `${prefix}${lastTwoDigits}`;
+    //             setGuide((prevSale) => ({
+    //                 ...prevSale,
+    //                 serial: customSerial,
+    //             }));
+    //         }
+    //         // if(guide?.documentType)
+    //     }
+    // }, [auth?.user?.subsidiarySerial, guide.documentType]);
     const handleGuide = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement

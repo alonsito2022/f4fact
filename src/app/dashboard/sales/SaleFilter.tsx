@@ -224,17 +224,17 @@ function SaleFilter({
                 value={filterObj.endDate}
                 className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
             />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 col-span-full">
-                <button
-                    id="btn-search"
-                    type="button"
-                    className="btn-blue px-5 py-3 flex items-center justify-center gap-2 w-full rounded-lg hover:opacity-90 transition-all duration-200 shadow-sm"
-                    onClick={handleClickButton}
-                    disabled={filteredSaleLoading}
-                >
-                    <Filter />
-                    Filtrar
-                </button>
+            <button
+                id="btn-search"
+                type="button"
+                className="btn-blue px-5 py-3 flex items-center justify-center gap-2 w-full rounded-lg hover:opacity-90 transition-all duration-200 shadow-sm"
+                onClick={handleClickButton}
+                disabled={filteredSaleLoading}
+            >
+                <Filter />
+                Filtrar
+            </button>
+            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4 col-span-full">
                 <a
                     href={`${hostname}/operations/export_sales_to_excel/${filterObj.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/`}
                     target="_blank"

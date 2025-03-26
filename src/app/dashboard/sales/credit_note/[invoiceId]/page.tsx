@@ -1,5 +1,10 @@
 "use client";
-import { ICreditNoteType, IOperationDetail, IOperationType } from "@/app/types";
+import {
+    ICreditNoteType,
+    IOperationDetail,
+    IOperationType,
+    ISerialAssigned,
+} from "@/app/types";
 import Breadcrumb from "@/components/Breadcrumb";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { gql, useLazyQuery, useQuery } from "@apollo/client";
@@ -259,6 +264,15 @@ const TYPE_AFFECTATION_QUERY = gql`
         }
     }
 `;
+const SERIALS_QUERY = gql`
+    query ($subsidiaryId: Int) {
+        allSerials(subsidiaryId: $subsidiaryId) {
+            documentType
+            documentTypeReadable
+            serial
+        }
+    }
+`;
 const PRODUCTS_QUERY = gql`
     query ($subsidiaryId: Int!) {
         allProducts(subsidiaryId: $subsidiaryId) {
@@ -341,6 +355,17 @@ function CreditPage() {
         data: typeAffectationsData,
     } = useQuery(TYPE_AFFECTATION_QUERY, {
         context: authContext,
+        skip: !auth?.jwtToken,
+    });
+    const {
+        loading: serialsAssignedLoading,
+        error: serialsAssignedError,
+        data: serialsAssignedData,
+    } = useQuery(SERIALS_QUERY, {
+        context: authContext,
+        variables: {
+            subsidiaryId: Number(auth?.user?.subsidiaryId),
+        },
         skip: !auth?.jwtToken,
     });
     const getVariables = () => ({
@@ -445,7 +470,26 @@ function CreditPage() {
             setIsLoading(false);
         },
     });
+    useEffect(() => {
+        if (serialsAssignedData?.allSerials?.length > 0) {
+            const filteredSeries = serialsAssignedData.allSerials.filter(
+                (s: ISerialAssigned) =>
+                    s.documentType === `A_${creditNote.documentType}`
+            );
 
+            if (filteredSeries.length > 0) {
+                setCreditNote((prev: any) => ({
+                    ...prev,
+                    serial: filteredSeries[0].serial,
+                }));
+            } else {
+                setCreditNote((prev: any) => ({
+                    ...prev,
+                    serial: "",
+                }));
+            }
+        }
+    }, [serialsAssignedData, creditNote.documentType]);
     useEffect(() => {
         if (invoiceId) {
             // Aquí puedes manejar el parámetro invoiceId
@@ -457,28 +501,28 @@ function CreditPage() {
         }
     }, [invoiceId]);
 
-    useEffect(() => {
-        const subsidiarySerial = auth?.user?.subsidiarySerial;
-        if (subsidiarySerial && sale.documentType) {
-            const lastTwoDigits = subsidiarySerial.slice(-2);
-            let prefix = "";
-            switch (sale.documentType.replace("A_", "")) {
-                case "01":
-                    prefix = "FN";
-                    break;
-                case "03":
-                    prefix = "BN";
-                    break;
-                default:
-                    prefix = "";
-            }
-            const customSerial = `${prefix}${lastTwoDigits}`;
-            setCreditNote((prevSale) => ({
-                ...prevSale,
-                serial: customSerial,
-            }));
-        }
-    }, [auth?.user?.subsidiarySerial, sale.documentType]);
+    // useEffect(() => {
+    //     const subsidiarySerial = auth?.user?.subsidiarySerial;
+    //     if (subsidiarySerial && sale.documentType) {
+    //         const lastTwoDigits = subsidiarySerial.slice(-2);
+    //         let prefix = "";
+    //         switch (sale.documentType.replace("A_", "")) {
+    //             case "01":
+    //                 prefix = "FN";
+    //                 break;
+    //             case "03":
+    //                 prefix = "BN";
+    //                 break;
+    //             default:
+    //                 prefix = "";
+    //         }
+    //         const customSerial = `${prefix}${lastTwoDigits}`;
+    //         setCreditNote((prevSale) => ({
+    //             ...prevSale,
+    //             serial: customSerial,
+    //         }));
+    //     }
+    // }, [auth?.user?.subsidiarySerial, sale.documentType]);
 
     const handleCreditNote = (
         event: ChangeEvent<
@@ -632,27 +676,71 @@ function CreditPage() {
                                                         <div>
                                                             <label
                                                                 htmlFor="serial"
-                                                                className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                                                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
                                                             >
                                                                 Serie
                                                             </label>
-                                                            <input
-                                                                type="text"
+                                                            <select
                                                                 name="serial"
                                                                 id="serial"
-                                                                maxLength={4}
                                                                 value={
                                                                     creditNote.serial
                                                                 }
                                                                 onChange={
                                                                     handleCreditNote
                                                                 }
-                                                                onFocus={(e) =>
-                                                                    e.target.select()
-                                                                }
-                                                                className="mt-1 w-full px-3 py-2 border rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                                autoComplete="off"
-                                                            />
+                                                                className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                                required
+                                                            >
+                                                                {serialsAssignedData?.allSerials
+                                                                    ?.filter(
+                                                                        (
+                                                                            s: ISerialAssigned
+                                                                        ) =>
+                                                                            s.documentType ===
+                                                                            `A_${creditNote.documentType}`
+                                                                    )
+                                                                    .map(
+                                                                        (
+                                                                            s: ISerialAssigned
+                                                                        ) => (
+                                                                            <option
+                                                                                key={
+                                                                                    s.serial
+                                                                                }
+                                                                                value={
+                                                                                    s.serial
+                                                                                }
+                                                                            >
+                                                                                {
+                                                                                    s.serial
+                                                                                }
+                                                                            </option>
+                                                                        )
+                                                                    ) || (
+                                                                    <option value="">
+                                                                        No hay
+                                                                        series
+                                                                        disponibles
+                                                                    </option>
+                                                                )}
+                                                            </select>
+                                                            {serialsAssignedData?.allSerials?.filter(
+                                                                (
+                                                                    s: ISerialAssigned
+                                                                ) =>
+                                                                    s.documentType ===
+                                                                    `A_${creditNote.documentType}`
+                                                            ).length === 0 && (
+                                                                <p className="mt-1 text-sm text-red-600 dark:text-red-500">
+                                                                    No hay
+                                                                    series
+                                                                    asignadas
+                                                                    para este
+                                                                    tipo de
+                                                                    documento
+                                                                </p>
+                                                            )}
                                                         </div>
                                                         {/* Numero */}
                                                         <div>
@@ -1108,10 +1196,14 @@ function CreditPage() {
                                                                 return;
                                                             }
                                                             if (
-                                                                !creditNote.serial
+                                                                !creditNote.serial ||
+                                                                creditNote
+                                                                    .serial
+                                                                    .length !==
+                                                                    4
                                                             ) {
                                                                 toast(
-                                                                    "Por favor ingrese la serie.",
+                                                                    "La serie debe contener exactamente 4 caracteres.",
                                                                     {
                                                                         hideProgressBar:
                                                                             true,

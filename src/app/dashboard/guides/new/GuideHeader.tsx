@@ -1,4 +1,9 @@
-import { IGuideModeType, IGuideReasonType, IPerson } from "@/app/types";
+import {
+    IGuideModeType,
+    IGuideReasonType,
+    IPerson,
+    ISerialAssigned,
+} from "@/app/types";
 import { gql, useLazyQuery, useQuery } from "@apollo/client";
 import React, { ChangeEvent, useEffect, useState } from "react";
 
@@ -20,7 +25,15 @@ const GUIDE_REASON_QUERY = gql`
         }
     }
 `;
-
+const SERIALS_QUERY = gql`
+    query ($subsidiaryId: Int) {
+        allSerials(subsidiaryId: $subsidiaryId) {
+            documentType
+            documentTypeReadable
+            serial
+        }
+    }
+`;
 const GUIDE_MODE_QUERY = gql`
     query {
         allGuideModes {
@@ -69,6 +82,37 @@ function GuideHeader({
         skip: !auth?.jwtToken,
     });
 
+    const {
+        loading: serialsAssignedLoading,
+        error: serialsAssignedError,
+        data: serialsAssignedData,
+    } = useQuery(SERIALS_QUERY, {
+        context: authContext,
+        variables: {
+            subsidiaryId: Number(auth?.user?.subsidiaryId),
+        },
+        skip: !auth?.jwtToken,
+    });
+    useEffect(() => {
+        if (serialsAssignedData?.allSerials?.length > 0) {
+            const filteredSeries = serialsAssignedData.allSerials.filter(
+                (s: ISerialAssigned) =>
+                    s.documentType === `A_${guide.documentType}`
+            );
+
+            if (filteredSeries.length > 0) {
+                setGuide((prev: any) => ({
+                    ...prev,
+                    serial: filteredSeries[0].serial,
+                }));
+            } else {
+                setGuide((prev: any) => ({
+                    ...prev,
+                    serial: "",
+                }));
+            }
+        }
+    }, [serialsAssignedData, guide.documentType]);
     const handleClientSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
         console.log("handleClientSearchChange value", event.target.value);
         setClientSearch(event.target.value);
@@ -228,21 +272,43 @@ function GuideHeader({
                     <div>
                         <label
                             htmlFor="serial"
-                            className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
                         >
                             Serie
                         </label>
-                        <input
-                            type="text"
+                        <select
                             name="serial"
                             id="serial"
-                            maxLength={4}
                             value={guide.serial}
                             onChange={handleGuide}
-                            onFocus={(e) => e.target.select()}
-                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                            autoComplete="off"
-                        />
+                            className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            required
+                        >
+                            {serialsAssignedData?.allSerials
+                                ?.filter(
+                                    (s: ISerialAssigned) =>
+                                        s.documentType ===
+                                        `A_${guide.documentType}`
+                                )
+                                .map((s: ISerialAssigned) => (
+                                    <option key={s.serial} value={s.serial}>
+                                        {s.serial}
+                                    </option>
+                                )) || (
+                                <option value="">
+                                    No hay series disponibles
+                                </option>
+                            )}
+                        </select>
+                        {serialsAssignedData?.allSerials?.filter(
+                            (s: ISerialAssigned) =>
+                                s.documentType === `A_${guide.documentType}`
+                        ).length === 0 && (
+                            <p className="mt-1 text-sm text-red-600 dark:text-red-500">
+                                No hay series asignadas para este tipo de
+                                documento
+                            </p>
+                        )}
                     </div>
                     {/* Numero */}
                     <div>

@@ -256,6 +256,15 @@ function WayPayForm({
 
     const handleSaveSale = useCallback(async () => {
         if (isProcessing) return;
+        // Add serial validation
+        if (!invoice.serial) {
+            toast("Debe seleccionar una serie", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "error",
+            });
+            return;
+        }
         try {
             setIsProcessing(true);
             const variables = {
