@@ -31,6 +31,7 @@ const SERIALS_QUERY = gql`
             documentType
             documentTypeReadable
             serial
+            isGeneratedViaApi
         }
     }
 `;
@@ -97,7 +98,8 @@ function GuideHeader({
         if (serialsAssignedData?.allSerials?.length > 0) {
             const filteredSeries = serialsAssignedData.allSerials.filter(
                 (s: ISerialAssigned) =>
-                    s.documentType === `A_${guide.documentType}`
+                    s.documentType === `A_${guide.documentType}` &&
+                    !s.isGeneratedViaApi
             );
 
             if (filteredSeries.length > 0) {
@@ -288,7 +290,8 @@ function GuideHeader({
                                 ?.filter(
                                     (s: ISerialAssigned) =>
                                         s.documentType ===
-                                        `A_${guide.documentType}`
+                                            `A_${guide.documentType}` &&
+                                        !s.isGeneratedViaApi
                                 )
                                 .map((s: ISerialAssigned) => (
                                     <option key={s.serial} value={s.serial}>
@@ -302,7 +305,8 @@ function GuideHeader({
                         </select>
                         {serialsAssignedData?.allSerials?.filter(
                             (s: ISerialAssigned) =>
-                                s.documentType === `A_${guide.documentType}`
+                                s.documentType === `A_${guide.documentType}` &&
+                                !s.isGeneratedViaApi
                         ).length === 0 && (
                             <p className="mt-1 text-sm text-red-600 dark:text-red-500">
                                 No hay series asignadas para este tipo de

@@ -69,6 +69,10 @@ function SerialAssignedTable({
                             <th scope="col" className="px-6 py-3">
                                 Serie
                             </th>
+                            <th scope="col" className="px-6 py-3">
+                                Origen
+                            </th>
+                            <th scope="col" className="px-6 py-3"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -77,7 +81,7 @@ function SerialAssignedTable({
                                 <td className="px-6 py-4">Nuevo</td>
                                 <td className="px-6 py-4">
                                     <select
-                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 uppercase"
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 uppercase"
                                         value={newDocumentType}
                                         onChange={(e) =>
                                             setNewDocumentType(e.target.value)
@@ -123,9 +127,18 @@ function SerialAssignedTable({
                                                 }
                                             }}
                                             maxLength={4}
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600"
                                             placeholder="Serie"
                                         />
+                                    </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                                        WEB
+                                    </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center space-x-2">
                                         <button
                                             onClick={handleCreate}
                                             className="text-green-600 hover:text-green-800"
@@ -154,7 +167,8 @@ function SerialAssignedTable({
                                     >
                                         <td className="px-6 py-4">{o.id}</td>
                                         <td className="px-6 py-4">
-                                            {editingSerial === o.id ? (
+                                            {editingSerial === o.id &&
+                                            !o.isGeneratedViaApi ? (
                                                 <select
                                                     className="bg-gray-50 border border-gray-300 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 uppercase"
                                                     defaultValue={
@@ -231,7 +245,8 @@ function SerialAssignedTable({
                                             )}
                                         </td>
                                         <td className="px-6 py-4 font-medium">
-                                            {editingSerial === o.id ? (
+                                            {editingSerial === o.id &&
+                                            !o.isGeneratedViaApi ? (
                                                 <div className="flex items-center space-x-2">
                                                     <input
                                                         type="text"
@@ -254,6 +269,38 @@ function SerialAssignedTable({
                                                             }
                                                         }}
                                                     />
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-between">
+                                                    <span
+                                                        onClick={() =>
+                                                            setEditingSerial(
+                                                                o.id
+                                                            )
+                                                        }
+                                                    >
+                                                        {o.serial}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span
+                                                className={`px-2 py-1 rounded-full text-xs ${
+                                                    o.isGeneratedViaApi
+                                                        ? "bg-blue-100 text-blue-800"
+                                                        : "bg-green-100 text-green-800"
+                                                }`}
+                                            >
+                                                {o.isGeneratedViaApi
+                                                    ? "API"
+                                                    : "WEB"}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {editingSerial === o.id &&
+                                            !o.isGeneratedViaApi ? (
+                                                <div className="flex items-center space-x-2">
                                                     <button
                                                         onClick={() =>
                                                             setEditingSerial(
@@ -268,32 +315,25 @@ function SerialAssignedTable({
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center justify-between">
-                                                    <span
-                                                        onClick={() =>
-                                                            setEditingSerial(
-                                                                o.id
-                                                            )
-                                                        }
-                                                    >
-                                                        {o.serial}
-                                                    </span>
-                                                    <button
-                                                        onClick={() => {
-                                                            if (
-                                                                window.confirm(
-                                                                    "¿Está seguro de eliminar esta serie?"
-                                                                )
-                                                            ) {
-                                                                onDeleteSerial(
-                                                                    o.id!
-                                                                );
-                                                            }
-                                                        }}
-                                                        type="button"
-                                                        className="ml-2 text-red-600 hover:text-red-800"
-                                                    >
-                                                        ✕
-                                                    </button>
+                                                    {!o.isGeneratedViaApi && (
+                                                        <button
+                                                            onClick={() => {
+                                                                if (
+                                                                    window.confirm(
+                                                                        "¿Está seguro de eliminar esta serie?"
+                                                                    )
+                                                                ) {
+                                                                    onDeleteSerial(
+                                                                        o.id!
+                                                                    );
+                                                                }
+                                                            }}
+                                                            type="button"
+                                                            className="ml-2 text-red-600 hover:text-red-800"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    )}
                                                 </div>
                                             )}
                                         </td>

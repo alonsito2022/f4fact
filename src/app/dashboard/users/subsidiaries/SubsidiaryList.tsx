@@ -37,6 +37,7 @@ function SubsidiaryList({
                                 id
                                 documentType
                                 serial
+                                isGeneratedViaApi
                             }
                             pdfFormatForInvoices
                             pdfFormatForReceiptInvoices

@@ -59,6 +59,7 @@ const SERIALS_QUERY = gql`
             documentType
             documentTypeReadable
             serial
+            isGeneratedViaApi
         }
     }
 `;
@@ -483,7 +484,8 @@ function NewSalePage() {
         if (serialsAssignedData?.allSerials?.length > 0) {
             const filteredSeries = serialsAssignedData.allSerials.filter(
                 (s: ISerialAssigned) =>
-                    s.documentType === `A_${sale.documentType}`
+                    s.documentType === `A_${sale.documentType}` &&
+                    !s.isGeneratedViaApi
             );
 
             if (filteredSeries.length > 0) {
@@ -1075,7 +1077,8 @@ function NewSalePage() {
                                                                 s: ISerialAssigned
                                                             ) =>
                                                                 s.documentType ===
-                                                                `A_${sale.documentType}`
+                                                                    `A_${sale.documentType}` &&
+                                                                !s.isGeneratedViaApi
                                                         )
                                                         .map(
                                                             (
@@ -1102,7 +1105,8 @@ function NewSalePage() {
                                                 {serialsAssignedData?.allSerials?.filter(
                                                     (s: ISerialAssigned) =>
                                                         s.documentType ===
-                                                        `A_${sale.documentType}`
+                                                            `A_${sale.documentType}` &&
+                                                        !s.isGeneratedViaApi
                                                 ).length === 0 && (
                                                     <p className="mt-1 text-sm text-red-600 dark:text-red-500">
                                                         No hay series asignadas

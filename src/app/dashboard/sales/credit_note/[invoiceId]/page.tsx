@@ -270,6 +270,7 @@ const SERIALS_QUERY = gql`
             documentType
             documentTypeReadable
             serial
+            isGeneratedViaApi
         }
     }
 `;
@@ -474,7 +475,8 @@ function CreditPage() {
         if (serialsAssignedData?.allSerials?.length > 0) {
             const filteredSeries = serialsAssignedData.allSerials.filter(
                 (s: ISerialAssigned) =>
-                    s.documentType === `A_${creditNote.documentType}`
+                    s.documentType === `A_${creditNote.documentType}` &&
+                    !s.isGeneratedViaApi
             );
 
             if (filteredSeries.length > 0) {
@@ -698,7 +700,8 @@ function CreditPage() {
                                                                             s: ISerialAssigned
                                                                         ) =>
                                                                             s.documentType ===
-                                                                            `A_${creditNote.documentType}`
+                                                                                `A_${creditNote.documentType}` &&
+                                                                            !s.isGeneratedViaApi
                                                                     )
                                                                     .map(
                                                                         (
@@ -730,7 +733,8 @@ function CreditPage() {
                                                                     s: ISerialAssigned
                                                                 ) =>
                                                                     s.documentType ===
-                                                                    `A_${creditNote.documentType}`
+                                                                        `A_${creditNote.documentType}` &&
+                                                                    !s.isGeneratedViaApi
                                                             ).length === 0 && (
                                                                 <p className="mt-1 text-sm text-red-600 dark:text-red-500">
                                                                     No hay

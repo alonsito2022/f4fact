@@ -187,6 +187,7 @@ export interface ISerialAssigned {
     id: number;
     documentType: string;
     serial: string;
+    isGeneratedViaApi: boolean;
 }
 
 export interface ISubsidiary {
