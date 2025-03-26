@@ -1,6 +1,6 @@
 "use client";
 import { ChangeEvent, FormEvent, useState, useEffect, useMemo } from "react";
-import { ISubsidiary, IUser } from "@/app/types";
+import { ISerialAssigned, ISubsidiary, IUser } from "@/app/types";
 import { toast } from "react-toastify";
 import { it } from "node:test";
 import SubsidiaryList from "./SubsidiaryList";
@@ -19,7 +19,11 @@ const initialState = {
     phone: "",
     districtId: "",
     companyId: 0,
-    token:""
+    token: "",
+    serialassignedSet: [] as ISerialAssigned[],
+    pdfFormatForInvoices: 1,
+    pdfFormatForReceiptInvoices: 1,
+    pdfFormatForGuides: 1,
 };
 
 const SUBSIDIARIES_QUERY = gql`
@@ -54,9 +58,7 @@ const SEARCH_SUBSIDIARIES_QUERY = gql`
     }
 `;
 const SUBSIDIARIES_QUERY_BY_COMPANY_ID = gql`
-    query (
-        $companyId: ID!
-    ) {
+    query ($companyId: ID!) {
         subsidiariesByCompanyId(companyId: $companyId) {
             id
             serial
@@ -67,6 +69,9 @@ const SUBSIDIARIES_QUERY_BY_COMPANY_ID = gql`
             districtName
             companyId
             token
+            pdfFormatForInvoices
+            pdfFormatForReceiptInvoices
+            pdfFormatForGuides
         }
     }
 `;
@@ -76,19 +81,20 @@ const initialStateFilterObj = {
 };
 const initialStateDevices = {
     devices: [],
-    token: ""
+    token: "",
 };
 function SubsidiaryPage() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
     const [modal, setModal] = useState<Modal | any>(null);
     const [modalDevice, setModalDevice] = useState<Modal | any>(null);
     const [subsidiary, setSubsidiary] = useState(initialState);
-    const [subsidiaryDevices, setSubsidiaryDevices] = useState(initialStateDevices);
+    const [subsidiaryDevices, setSubsidiaryDevices] =
+        useState(initialStateDevices);
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [searchField, setSearchField] = useState<"name" | "serial">("name");
     // Obtenemos sesión y token desde el AuthProvider
     const auth = useAuth();
-  
+
     // Memorizamos el contexto de autorización para evitar recreaciones innecesarias
     const authContext = useMemo(
         () => ({
@@ -127,11 +133,13 @@ function SubsidiaryPage() {
     });
 
     useEffect(() => {
-        if(auth?.user?.companyId){
-            subsidiariesQuery({variables: {companyId: Number(auth?.user?.companyId),}});
-        }        
+        if (auth?.user?.companyId) {
+            subsidiariesQuery({
+                variables: { companyId: Number(auth?.user?.companyId) },
+            });
+        }
     }, [auth?.user]);
-   
+
     const filteredSubsidiaries = useMemo(() => {
         if (subsidiariesData) {
             let newdata = subsidiariesData.subsidiariesByCompanyId?.filter(
@@ -154,14 +162,14 @@ function SubsidiaryPage() {
     ) => {
         setSearchTerm(event.target.value);
     };
-     // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
+    // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
     if (auth?.status === "loading") {
-    return <p className="text-center">Cargando sesión...</p>;
-   }
-   // Si la sesión no está autenticada, muestra un mensaje de error o redirige
-   if (auth?.status === "unauthenticated") {
-      return <p className="text-center text-red-500">No autorizado</p>;
-   }
+        return <p className="text-center">Cargando sesión...</p>;
+    }
+    // Si la sesión no está autenticada, muestra un mensaje de error o redirige
+    if (auth?.status === "unauthenticated") {
+        return <p className="text-center text-red-500">No autorizado</p>;
+    }
     return (
         <>
             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">

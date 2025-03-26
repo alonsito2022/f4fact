@@ -38,7 +38,7 @@ function SaleTotalList({
             let totalToPay = Number(invoice?.totalAmount) + totalPerception;
             setSale((prevSale: IOperation) => ({
                 ...prevSale,
-                perceptionPercentage: perceptionPercentage.toFixed(3),
+                perceptionPercentage: (perceptionPercentage * 100).toFixed(3),
                 totalPerception: totalPerception.toFixed(2),
                 totalToPay: totalToPay.toFixed(2),
             }));
@@ -61,7 +61,7 @@ function SaleTotalList({
                 Number(invoice?.totalAmount) * retentionPercentage;
             setSale((prevSale: IOperation) => ({
                 ...prevSale,
-                retentionPercentage: retentionPercentage.toFixed(3),
+                retentionPercentage: (retentionPercentage * 100).toFixed(3),
                 totalRetention: totalRetention.toFixed(2),
             }));
         }

@@ -183,6 +183,12 @@ export interface IDistrict {
     description: string;
 }
 
+export interface ISerialAssigned {
+    id: number;
+    documentType: string;
+    serial: string;
+}
+
 export interface ISubsidiary {
     id?: number;
     serial?: string;
@@ -198,6 +204,10 @@ export interface ISubsidiary {
     provinceDescription?: string;
     departmentDescription?: string;
     token?: string;
+
+    pdfFormatForInvoices?: string;
+    pdfFormatForReceiptInvoices?: string;
+    pdfFormatForGuides?: string;
 }
 
 export interface IWarehouse {

@@ -24,6 +24,8 @@ function UserList({ users, modal, setModal, user, setUser, userLogged }: any) {
                             isActive
                             avatar
                             avatarUrl
+                            subsidiaryId
+                            companyId
                         }
                     }
                 `;
