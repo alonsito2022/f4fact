@@ -143,10 +143,14 @@ function SalePage() {
     });
 
     useEffect(() => {
+        console.log("isSuperuser", auth?.user?.isSuperuser);
         if (auth?.status === "authenticated" && auth?.jwtToken) {
             salesQuery({
                 variables: {
-                    subsidiaryId: Number(filterObj.subsidiaryId),
+                    // subsidiaryId: Number(filterObj.subsidiaryId),
+                    subsidiaryId: auth?.user?.isSuperuser
+                        ? Number(filterObj.subsidiaryId)
+                        : Number(auth?.user?.subsidiaryId),
                     clientId: Number(filterObj.clientId),
                     startDate: filterObj.startDate,
                     endDate: filterObj.endDate,
@@ -157,6 +161,17 @@ function SalePage() {
             });
         }
     }, [auth?.status, auth?.jwtToken]);
+
+    // useEffect(() => {
+    //     if (auth?.status === "authenticated" && auth?.jwtToken)
+    //         setFilterObj({
+    //             ...filterObj,
+    //             subsidiaryId:
+    //                 auth?.user?.isSuperuser === true
+    //                     ? "0"
+    //                     : String(auth?.user?.subsidiary?.id),
+    //         });
+    // }, [auth?.status, auth?.jwtToken]);
 
     // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
     if (auth?.status === "loading") {
