@@ -130,9 +130,13 @@ function UserModal({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [createUser] = useMutation(CREATE_USER);
     const [updateUser] = useMutation(UPDATE_USER);
-    const { data: companiesData } = useQuery(COMPANIES_QUERY); // Add this line
+    const { data: companiesData } = useQuery(COMPANIES_QUERY, {
+        fetchPolicy: "network-only",
+    }); // Add this line
 
-    const { data: subsidiariesData } = useQuery(SUBSIDIARIES_QUERY);
+    const { data: subsidiariesData } = useQuery(SUBSIDIARIES_QUERY, {
+        fetchPolicy: "network-only",
+    });
 
     const handleFileReset = () => {
         if (fileInputRef.current) {

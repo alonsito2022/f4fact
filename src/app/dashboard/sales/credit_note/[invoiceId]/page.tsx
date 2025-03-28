@@ -364,6 +364,7 @@ function CreditPage() {
         data: serialsAssignedData,
     } = useQuery(SERIALS_QUERY, {
         context: authContext,
+        fetchPolicy: "network-only",
         variables: {
             subsidiaryId: Number(auth?.user?.subsidiaryId),
         },
