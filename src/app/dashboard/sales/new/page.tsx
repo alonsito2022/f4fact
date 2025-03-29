@@ -1416,7 +1416,7 @@ function NewSalePage() {
                                                 setCashFlow({
                                                     ...cashFlow,
                                                     total: Number(
-                                                        sale.totalToPay
+                                                        sale.totalAmount
                                                     ),
                                                 });
                                             }
