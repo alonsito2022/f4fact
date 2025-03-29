@@ -220,6 +220,75 @@ function GuideHeader({
         <>
             <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
                 <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-5 ">
+                    {/* CPE Tipo documento */}
+                    <div>
+                        <label
+                            htmlFor="invoiceDocumentType"
+                            className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                        >
+                            Tipo documento
+                        </label>
+                        <select
+                            value={guide?.documentType}
+                            onChange={handleGuide}
+                            id="invoiceDocumentType"
+                            name="documentType"
+                            className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="09">
+                                GUIA DE REMISIÓN REMITENTE ELECTRÓNICA
+                            </option>
+                            <option value="31">
+                                GUÍA DE REMISIÓN TRANSPORTISTA
+                            </option>
+                        </select>
+                    </div>
+                    {guide?.documentType === "09" && (
+                        <>
+                            {/* Tipo de transporte */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
+                                    Tipo de transporte
+                                </label>
+                                <select
+                                    name="guideModeTransfer"
+                                    onChange={handleGuide}
+                                    value={guide.guideModeTransfer}
+                                    className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                >
+                                    {guideModesData?.allGuideModes?.map(
+                                        (o: IGuideModeType, k: number) => (
+                                            <option key={k} value={o.code}>
+                                                {o.name}
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                            </div>
+                            {/* Motivo de traslado */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
+                                    Motivo de traslado
+                                </label>
+                                <select
+                                    name="guideReasonTransfer"
+                                    onChange={handleGuide}
+                                    value={guide.guideReasonTransfer}
+                                    className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                >
+                                    {guideReasonsData?.allGuideReasons?.map(
+                                        (o: IGuideReasonType, k: number) => (
+                                            <option key={k} value={o.code}>
+                                                {o.name}
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                            </div>
+                        </>
+                    )}
                     {/* CPE Cliente */}
                     <div className="md:col-span-1 lg:col-span-2">
                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -248,29 +317,7 @@ function GuideHeader({
                             )}
                         </datalist>
                     </div>
-                    {/* CPE Tipo documento */}
-                    <div>
-                        <label
-                            htmlFor="invoiceDocumentType"
-                            className="text-sm font-medium text-gray-900 dark:text-gray-200"
-                        >
-                            Tipo documento
-                        </label>
-                        <select
-                            value={guide?.documentType}
-                            onChange={handleGuide}
-                            id="invoiceDocumentType"
-                            name="documentType"
-                            className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        >
-                            <option value="09">
-                                GUIA DE REMISIÓN REMITENTE ELECTRÓNICA
-                            </option>
-                            <option value="31">
-                                GUÍA DE REMISIÓN TRANSPORTISTA
-                            </option>
-                        </select>
-                    </div>
+
                     {/* Serie */}
                     <div>
                         <label
@@ -354,52 +401,6 @@ function GuideHeader({
                             required
                         />
                     </div>
-                    {guide?.documentType === "09" && (
-                        <>
-                            {/* Tipo de transporte */}
-                            <div>
-                                <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
-                                    Tipo de transporte
-                                </label>
-                                <select
-                                    name="guideModeTransfer"
-                                    onChange={handleGuide}
-                                    value={guide.guideModeTransfer}
-                                    className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    required
-                                >
-                                    {guideModesData?.allGuideModes?.map(
-                                        (o: IGuideModeType, k: number) => (
-                                            <option key={k} value={o.code}>
-                                                {o.name}
-                                            </option>
-                                        )
-                                    )}
-                                </select>
-                            </div>
-                            {/* Motivo de traslado */}
-                            <div>
-                                <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
-                                    Motivo de traslado
-                                </label>
-                                <select
-                                    name="guideReasonTransfer"
-                                    onChange={handleGuide}
-                                    value={guide.guideReasonTransfer}
-                                    className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    required
-                                >
-                                    {guideReasonsData?.allGuideReasons?.map(
-                                        (o: IGuideReasonType, k: number) => (
-                                            <option key={k} value={o.code}>
-                                                {o.name}
-                                            </option>
-                                        )
-                                    )}
-                                </select>
-                            </div>
-                        </>
-                    )}
                 </div>
             </fieldset>
         </>

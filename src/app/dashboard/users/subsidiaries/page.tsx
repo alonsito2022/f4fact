@@ -68,6 +68,7 @@ const SUBSIDIARIES_QUERY_BY_COMPANY_ID = gql`
             districtId
             districtName
             companyId
+            companyName
             token
             pdfFormatForInvoices
             pdfFormatForReceiptInvoices
