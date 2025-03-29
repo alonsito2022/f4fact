@@ -106,7 +106,9 @@ function GuidePage() {
         if (auth?.status === "authenticated" && auth?.jwtToken) {
             guidesQuery({
                 variables: {
-                    subsidiaryId: Number(filterObj.subsidiaryId),
+                    subsidiaryId: auth?.user?.isSuperuser
+                        ? Number(filterObj.subsidiaryId)
+                        : Number(auth?.user?.subsidiaryId),
                     startDate: filterObj.startDate,
                     endDate: filterObj.endDate,
                     documentType: filterObj.documentType,
