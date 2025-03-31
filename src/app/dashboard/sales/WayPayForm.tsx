@@ -427,7 +427,7 @@ function WayPayForm({
             0
         );
 
-        const totalTurned = totalPayed - Number(invoice?.totalToPay);
+        const totalTurned = totalPayed - Number(invoice?.totalAmount);
 
         setInvoice((prevEntry: any) => ({
             ...prevEntry,
