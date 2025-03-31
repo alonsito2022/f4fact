@@ -8,6 +8,8 @@ import { gql, useQuery } from "@apollo/client";
 import { ISubsidiary, ISupplier } from "@/app/types";
 // import { initFlowbite } from "flowbite";
 import Excel from "@/components/icons/Excel";
+import ExcelModal from "./ExcelModal";
+import { Modal } from "flowbite";
 
 const SUPPLIERS_QUERY = gql`
     query {
@@ -42,13 +44,8 @@ function SaleFilter({
     auth,
 }: any) {
     const router = useRouter();
-    const [hostname, setHostname] = useState("");
+    const [modalExcel, setModalExcel] = useState<Modal | null>(null);
 
-    useEffect(() => {
-        if (hostname == "") {
-            setHostname(`${process.env.NEXT_PUBLIC_BASE_API}`);
-        }
-    }, [hostname]);
     const handleClickButton = async () => {
         // Reinicializa la página a 1
         setFilterObj({
@@ -171,71 +168,72 @@ function SaleFilter({
         }
     }, [auth?.user?.subsidiaryId, subsidiariesData?.subsidiaries]);
     return (
-        <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 items-start  rounded-lg shadow-sm">
-            <select
-                value={filterObj.documentType}
-                name="documentType"
-                onChange={handleInputChange}
-                className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-            >
-                <option value={"NA"}>📄 Filtrar por tipo de Doc.</option>
-                <option value={"01"}>🧾 FACTURA ELECTRÓNICA</option>
-                <option value={"03"}>🧾 BOLETA DE VENTA ELECTRÓNICA</option>
-                <option value={"07"}>📝 NOTA DE CRÉDITO ELECTRÓNICA</option>
-            </select>
-            {auth?.user?.isSuperuser ? (
-                <>
-                    <input
-                        type="search"
-                        name="subsidiaryName"
-                        onChange={handleInputChange}
-                        value={filterObj.subsidiaryName}
-                        onFocus={(e) => e.target.select()}
-                        autoComplete="off"
-                        disabled={subsidiariesLoading}
-                        className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        list="subsidiaryList"
-                        placeholder="🏢 Buscar por sede"
-                    />
-                    <datalist id="subsidiaryList">
-                        {subsidiariesData?.subsidiaries?.map(
-                            (n: ISubsidiary, index: number) => (
-                                <option
-                                    key={index}
-                                    data-key={n.id}
-                                    value={`${n.company?.businessName} ${n.serial}`}
-                                />
-                            )
-                        )}
-                    </datalist>
-                </>
-            ) : null}
-            <input
-                type="date"
-                name="startDate"
-                onChange={handleInputChange}
-                value={filterObj.startDate}
-                className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <input
-                type="date"
-                name="endDate"
-                onChange={handleInputChange}
-                value={filterObj.endDate}
-                className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <button
-                id="btn-search"
-                type="button"
-                className="btn-blue px-5 py-3 flex items-center justify-center gap-2 w-full rounded-lg hover:opacity-90 transition-all duration-200 shadow-sm"
-                onClick={handleClickButton}
-                disabled={filteredSaleLoading}
-            >
-                <Filter />
-                Filtrar
-            </button>
-            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4 col-span-full">
-                <a
+        <>
+            <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 items-start  rounded-lg shadow-sm">
+                <select
+                    value={filterObj.documentType}
+                    name="documentType"
+                    onChange={handleInputChange}
+                    className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                >
+                    <option value={"NA"}>📄 Filtrar por tipo de Doc.</option>
+                    <option value={"01"}>🧾 FACTURA ELECTRÓNICA</option>
+                    <option value={"03"}>🧾 BOLETA DE VENTA ELECTRÓNICA</option>
+                    <option value={"07"}>📝 NOTA DE CRÉDITO ELECTRÓNICA</option>
+                </select>
+                {auth?.user?.isSuperuser ? (
+                    <>
+                        <input
+                            type="search"
+                            name="subsidiaryName"
+                            onChange={handleInputChange}
+                            value={filterObj.subsidiaryName}
+                            onFocus={(e) => e.target.select()}
+                            autoComplete="off"
+                            disabled={subsidiariesLoading}
+                            className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                            list="subsidiaryList"
+                            placeholder="🏢 Buscar por sede"
+                        />
+                        <datalist id="subsidiaryList">
+                            {subsidiariesData?.subsidiaries?.map(
+                                (n: ISubsidiary, index: number) => (
+                                    <option
+                                        key={index}
+                                        data-key={n.id}
+                                        value={`${n.company?.businessName} ${n.serial}`}
+                                    />
+                                )
+                            )}
+                        </datalist>
+                    </>
+                ) : null}
+                <input
+                    type="date"
+                    name="startDate"
+                    onChange={handleInputChange}
+                    value={filterObj.startDate}
+                    className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <input
+                    type="date"
+                    name="endDate"
+                    onChange={handleInputChange}
+                    value={filterObj.endDate}
+                    className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <button
+                    id="btn-search"
+                    type="button"
+                    className="btn-blue px-5 py-3 flex items-center justify-center gap-2 w-full rounded-lg hover:opacity-90 transition-all duration-200 shadow-sm"
+                    onClick={handleClickButton}
+                    disabled={filteredSaleLoading}
+                >
+                    <Filter />
+                    Filtrar
+                </button>
+                <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4 col-span-full">
+                    {/* <a
                     href={`${hostname}/operations/export_sales_to_excel/${filterObj.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/`}
                     target="_blank"
                     title="Descargar EXCEL"
@@ -244,17 +242,33 @@ function SaleFilter({
                 >
                     <Excel />
                     Exportar a Excel
-                </a>
-                <button
-                    type="button"
-                    className="btn-blue px-5 py-3 flex items-center justify-center gap-2 w-full rounded-lg hover:opacity-90 transition-all duration-200 shadow-sm"
-                    onClick={() => router.push("/dashboard/sales/new")}
-                >
-                    <Add />
-                    Nueva venta
-                </button>
+                </a> */}
+                    <button
+                        type="button"
+                        onClick={() => modalExcel?.show()}
+                        className="btn-green px-5 py-3 flex items-center justify-center gap-2 w-full m-0 rounded-lg hover:opacity-90 transition-all duration-200 shadow-sm"
+                    >
+                        <Excel />
+                        Exportar a Excel
+                    </button>
+
+                    <button
+                        type="button"
+                        className="btn-blue px-5 py-3 flex items-center justify-center gap-2 w-full rounded-lg hover:opacity-90 transition-all duration-200 shadow-sm"
+                        onClick={() => router.push("/dashboard/sales/new")}
+                    >
+                        <Add />
+                        Nueva venta
+                    </button>
+                </div>
             </div>
-        </div>
+            <ExcelModal
+                modalExcel={modalExcel}
+                setModalExcel={setModalExcel}
+                setFilterObj={setFilterObj}
+                filterObj={filterObj}
+            />
+        </>
     );
 }
 

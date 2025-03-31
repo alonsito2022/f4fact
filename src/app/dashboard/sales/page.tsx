@@ -29,6 +29,7 @@ const initialStateFilterObj = {
     page: 1,
     pageSize: 50,
     isSuperuser: false,
+    reportType: "",
 };
 const SALES_QUERY = gql`
     query (
