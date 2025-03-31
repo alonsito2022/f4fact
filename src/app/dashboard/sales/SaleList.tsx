@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { IOperation, IProduct } from "@/app/types";
 import Close from "@/components/icons/Close";
 import Popover from "@/components/Popover";
@@ -10,6 +10,8 @@ import SunatCancel from "@/components/icons/SunatCancel";
 import Link from "next/link";
 import SalePagination from "./SalePagination";
 import LoadingIcon from "@/components/icons/LoadingIcon";
+import { Modal } from "flowbite";
+import PdfPreviewModal from "./PdfPreviewModal";
 
 const CANCEL_INVOICE = gql`
     mutation CancelInvoice($operationId: Int!, $lowDate: Date!) {
@@ -30,6 +32,8 @@ function SaleList({
     salesQuery,
     user,
 }: any) {
+    const [pdfModal, setPdfModal] = useState<Modal | null>(null);
+    const [pdfUrl, setPdfUrl] = useState<string>("");
     const handleDownload = (url: string, filename: string) => {
         if (!url || !filename) {
             toast.error("URL o nombre de archivo no válido");
@@ -353,21 +357,44 @@ function SaleList({
                                             item.documentType === "01" ||
                                             item.documentType === "07") && (
                                             <a
-                                                href={`${
-                                                    process.env
-                                                        .NEXT_PUBLIC_BASE_API
-                                                }/operations/${
-                                                    item.documentType === "07"
-                                                        ? "print_credit_note"
-                                                        : "print_invoice"
-                                                }/${item.id}/`}
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setPdfUrl(
+                                                        `${
+                                                            process.env
+                                                                .NEXT_PUBLIC_BASE_API
+                                                        }/operations/${
+                                                            item.documentType ===
+                                                            "07"
+                                                                ? "print_credit_note"
+                                                                : "print_invoice"
+                                                        }/${item.id}/`
+                                                    );
+                                                    pdfModal?.show();
+                                                }}
                                                 className="hover:underline"
-                                                target="_blank"
                                             >
                                                 <span className="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
                                                     PDF
                                                 </span>
                                             </a>
+                                            // <a
+                                            //     href={`${
+                                            //         process.env
+                                            //             .NEXT_PUBLIC_BASE_API
+                                            //     }/operations/${
+                                            //         item.documentType === "07"
+                                            //             ? "print_credit_note"
+                                            //             : "print_invoice"
+                                            //     }/${item.id}/`}
+                                            //     className="hover:underline"
+                                            //     target="_blank"
+                                            // >
+                                            //     <span className="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
+                                            //         PDF
+                                            //     </span>
+                                            // </a>
                                         )}
                                     </td>
                                     <td className="p-2 text-center">
@@ -769,6 +796,12 @@ function SaleList({
                     filteredSalesData={filteredSalesData}
                 />
             </div>
+            <PdfPreviewModal
+                pdfModal={pdfModal}
+                setPdfModal={setPdfModal}
+                pdfUrl={pdfUrl}
+                setPdfUrl={setPdfUrl}
+            />
         </>
     );
 }
