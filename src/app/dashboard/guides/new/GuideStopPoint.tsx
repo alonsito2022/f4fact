@@ -153,7 +153,7 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                             onFocus={(e) => e.target.select()}
                             value={guide.guideOriginAddress}
                             onChange={handleGuide}
-                            autoComplete="off"
+                            // autoComplete="off"
                             className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                         />
                     </div>
@@ -222,7 +222,7 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                             onFocus={(e) => e.target.select()}
                             value={guide.guideArrivalAddress}
                             onChange={handleGuide}
-                            autoComplete="off"
+                            // autoComplete="off"
                             className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                         />
                     </div>

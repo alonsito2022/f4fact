@@ -41,7 +41,7 @@ const GuideVehicleItem: React.FC<GuideVehicleItemProps> = ({
                     onFocus={(e) => e.target.select()}
                     value={item.licensePlate}
                     onChange={handleChange}
-                    autoComplete="off"
+                    // autoComplete="off"
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 />
             </div>

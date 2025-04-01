@@ -147,7 +147,7 @@ const GuideDriverItem: React.FC<GuideDriverItemProps> = ({
                         }
                     }}
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    autoComplete="off"
+                    // autoComplete="off"
                 />
             </div>
             {/* Nombres y Apellidos del conductor */}
@@ -163,7 +163,7 @@ const GuideDriverItem: React.FC<GuideDriverItemProps> = ({
                     onChange={handleChange}
                     onFocus={(e) => e.target.select()}
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    autoComplete="off"
+                    // autoComplete="off"
                 />
             </div>
             {/* Licencia de conducir */}
@@ -179,7 +179,7 @@ const GuideDriverItem: React.FC<GuideDriverItemProps> = ({
                     onChange={handleChange}
                     onFocus={(e) => e.target.select()}
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    autoComplete="off"
+                    // autoComplete="off"
                 />
             </div>
 
