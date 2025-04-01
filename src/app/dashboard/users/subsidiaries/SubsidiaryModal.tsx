@@ -237,15 +237,20 @@ function SubsidiaryModal({
             });
             return;
         }
+        const pdfFormatForInvoices = subsidiary.pdfFormatForInvoices || 1;
+        const pdfFormatForReceiptInvoices =
+            subsidiary.pdfFormatForReceiptInvoices || 1;
+        const pdfFormatForGuides = subsidiary.pdfFormatForGuides || 1;
+
         let queryFetch: String = "";
         if (Number(subsidiary.id) !== 0) {
             queryFetch = `
                 mutation{
                     updateSubsidiary(
                         id:${subsidiary.id}, serial: "${subsidiary.serial}", name: "${subsidiary.name}", address: "${subsidiary.address}", phone: "${subsidiary.phone}", districtId: "${subsidiary.districtId}", companyId: ${subsidiary.companyId},
-                        pdfFormatForInvoices: ${subsidiary.pdfFormatForInvoices},
-                        pdfFormatForReceiptInvoices: ${subsidiary.pdfFormatForReceiptInvoices},
-                        pdfFormatForGuides: ${subsidiary.pdfFormatForGuides}
+                        pdfFormatForInvoices: ${pdfFormatForInvoices},
+                        pdfFormatForReceiptInvoices: ${pdfFormatForReceiptInvoices},
+                        pdfFormatForGuides: ${pdfFormatForGuides}
                     ){
                         message
                     }
@@ -276,9 +281,9 @@ function SubsidiaryModal({
                 mutation{
                     createSubsidiary(
                         serial: "${subsidiary.serial}", name: "${subsidiary.name}", address: "${subsidiary.address}", phone: "${subsidiary.phone}", districtId: "${subsidiary.districtId}", companyId: ${subsidiary.companyId},
-                        pdfFormatForInvoices: ${subsidiary.pdfFormatForInvoices},
-                        pdfFormatForReceiptInvoices: ${subsidiary.pdfFormatForReceiptInvoices},
-                        pdfFormatForGuides: ${subsidiary.pdfFormatForGuides}
+                        pdfFormatForInvoices: ${pdfFormatForInvoices},
+                        pdfFormatForReceiptInvoices: ${pdfFormatForReceiptInvoices},
+                        pdfFormatForGuides: ${pdfFormatForGuides}
                     ){
                         message
                     }
