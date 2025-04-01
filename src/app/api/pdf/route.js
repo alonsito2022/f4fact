@@ -36,11 +36,22 @@ export async function GET(request) {
             });
         }
 
+        // Try to get filename from response headers
+        const contentDisposition = response.headers.get("content-disposition");
+        console.log("contentDisposition", contentDisposition);
+        let responseFilename = filename; // default to our parameter
+        if (contentDisposition && contentDisposition.includes("filename=")) {
+            responseFilename = contentDisposition
+                .split("filename=")[1]
+                .replace(/"/g, "");
+        }
+
         const pdfBuffer = await response.arrayBuffer();
 
         return new NextResponse(pdfBuffer, {
             headers: {
                 "Content-Type": "application/pdf",
+                "Content-Disposition": `inline; filename="${responseFilename}"`,
             },
         });
     } catch (error) {
