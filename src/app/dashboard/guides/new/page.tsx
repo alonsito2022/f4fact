@@ -289,6 +289,31 @@ function NewGuidePage() {
 
         try {
             setIsSaving(true);
+
+            const invalidRelatedDocs = guide.relatedDocuments.filter(
+                (doc: IRelatedDocument) => {
+                    const withoutSerial: boolean = Boolean(
+                        doc.serial?.trim().length !== 4
+                    );
+                    const withoutCorrelative: boolean = Boolean(
+                        Number(doc.correlative) === 0
+                    );
+                    return withoutSerial || withoutCorrelative;
+                }
+            );
+
+            if (invalidRelatedDocs.length > 0) {
+                toast(
+                    "Los documentos relacionados deben tener serie (4 caracteres) y correlativo válido. Si no necesita adjuntar documentos, puede eliminar la fila existente.",
+                    {
+                        hideProgressBar: true,
+                        autoClose: 3000,
+                        type: "error",
+                    }
+                );
+                return false;
+            }
+
             if (Number(guide.clientId) === 0) {
                 toast("La guia debe tener un cliente.", {
                     hideProgressBar: true,
