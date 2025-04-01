@@ -435,7 +435,6 @@ function SaleDetailForm({
             priceWithIgv: Number(invoiceDetail.unitPrice),
             priceWithoutIgv: Number(invoiceDetail.unitValue),
         };
-        console.log(variables);
         updateProducTariff({
             variables,
             // context: getAuthContext(),
@@ -591,6 +590,26 @@ function SaleDetailForm({
                                         />
                                     </div>
 
+                                    <div className="sm:col-span-6">
+                                        <label
+                                            htmlFor="description"
+                                            className="form-label text-gray-900 dark:text-gray-200"
+                                        >
+                                            Detalle adicional
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="description"
+                                            maxLength={300}
+                                            onFocus={(e) => e.target.select()}
+                                            value={invoiceDetail.description}
+                                            onChange={
+                                                handleInputChangeSaleDetail
+                                            }
+                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                            autoComplete="off"
+                                        />
+                                    </div>
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="quantity"

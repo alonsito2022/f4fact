@@ -32,6 +32,7 @@ const CREATE_SALE_MUTATION = gql`
         $discountPercentageSet: [Float!]!
         $igvPercentageSet: [Float!]!
         $perceptionPercentageSet: [Float!]!
+        $commentSet: [String!]!
         $totalDiscountSet: [Float!]!
         $totalValueSet: [Float!]!
         $totalIgvSet: [Float!]!
@@ -89,6 +90,7 @@ const CREATE_SALE_MUTATION = gql`
             discountPercentageSet: $discountPercentageSet
             igvPercentageSet: $igvPercentageSet
             perceptionPercentageSet: $perceptionPercentageSet
+            commentSet: $commentSet
             totalDiscountSet: $totalDiscountSet
             totalValueSet: $totalValueSet
             totalIgvSet: $totalIgvSet
@@ -267,6 +269,7 @@ function WayPayForm({
         }
         try {
             setIsProcessing(true);
+            console.log("invoice", invoice);
             const variables = {
                 serial: invoice.serial,
                 correlative: parseInt(
@@ -301,6 +304,9 @@ function WayPayForm({
                 ),
                 perceptionPercentageSet: invoice.operationdetailSet.map(
                     (item: any) => parseFloat(item.totalPerception) || 0
+                ),
+                commentSet: invoice.operationdetailSet.map(
+                    (item: any) => String(item.description) || ""
                 ),
                 totalDiscountSet: invoice.operationdetailSet.map(
                     (item: any) => parseFloat(item.totalDiscount) || 0
@@ -366,6 +372,7 @@ function WayPayForm({
 
                 observation: invoice.observation || "",
             };
+            console.log("variables", variables);
             const { data, errors } = await createSale({
                 variables: variables,
             });

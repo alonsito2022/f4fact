@@ -104,6 +104,7 @@ const initialStateSaleDetail = {
     id: 0,
     productId: 0,
     productName: "",
+    description: "",
 
     quantity: "",
     quantityReturned: 0,
