@@ -356,40 +356,24 @@ function SaleList({
                                         {(item.documentType === "03" ||
                                             item.documentType === "01" ||
                                             item.documentType === "07") && (
-                                            // <a
-                                            //     href="#"
-                                            //     onClick={(e) => {
-                                            //         e.preventDefault();
-                                            //         setPdfUrl(
-                                            //             `${
-                                            //                 process.env
-                                            //                     .NEXT_PUBLIC_BASE_API
-                                            //             }/operations/${
-                                            //                 item.documentType ===
-                                            //                 "07"
-                                            //                     ? "print_credit_note"
-                                            //                     : "print_invoice"
-                                            //             }/${item.id}/`
-                                            //         );
-                                            //         pdfModal?.show();
-                                            //     }}
-                                            //     className="hover:underline"
-                                            // >
-                                            //     <span className="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
-                                            //         PDF
-                                            //     </span>
-                                            // </a>
                                             <a
-                                                href={`${
-                                                    process.env
-                                                        .NEXT_PUBLIC_BASE_API
-                                                }/operations/${
-                                                    item.documentType === "07"
-                                                        ? "print_credit_note"
-                                                        : "print_invoice"
-                                                }/${item.id}/`}
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setPdfUrl(
+                                                        `${
+                                                            process.env
+                                                                .NEXT_PUBLIC_BASE_API
+                                                        }/operations/${
+                                                            item.documentType ===
+                                                            "07"
+                                                                ? "print_credit_note"
+                                                                : "print_invoice"
+                                                        }/${item.id}/`
+                                                    );
+                                                    pdfModal?.show();
+                                                }}
                                                 className="hover:underline"
-                                                target="_blank"
                                             >
                                                 <span className="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
                                                     PDF

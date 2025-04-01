@@ -3,10 +3,12 @@ import SunatCancel from "@/components/icons/SunatCancel";
 import SunatCheck from "@/components/icons/SunatCheck";
 import Popover from "@/components/Popover";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 import SalePagination from "../sales/SalePagination";
 import LoadingIcon from "@/components/icons/LoadingIcon";
+import { Modal } from "flowbite";
+import PdfPreviewModal from "../sales/PdfPreviewModal";
 
 function GuideList({
     setFilterObj,
@@ -18,6 +20,8 @@ function GuideList({
     setCpe,
     user,
 }: any) {
+    const [pdfModal, setPdfModal] = useState<Modal | null>(null);
+    const [pdfUrl, setPdfUrl] = useState<string>("");
     const handleDownload = (url: string, filename: string) => {
         if (!url || !filename) {
             toast.error("URL o nombre de archivo no válido");
@@ -262,15 +266,23 @@ function GuideList({
                                             item.operationStatus === "02" &&
                                             item.linkXml && (
                                                 <a
-                                                    href={
-                                                        process.env
-                                                            .NEXT_PUBLIC_BASE_API +
-                                                        "/operations/print_guide/" +
-                                                        item.id +
-                                                        "/"
-                                                    }
+                                                    // href={
+                                                    //     process.env
+                                                    //         .NEXT_PUBLIC_BASE_API +
+                                                    //     "/operations/print_guide/" +
+                                                    //     item.id +
+                                                    //     "/"
+                                                    // }
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setPdfUrl(
+                                                            `${process.env.NEXT_PUBLIC_BASE_API}/operations/print_guide/${item.id}/`
+                                                        );
+                                                        pdfModal?.show();
+                                                    }}
                                                     className="hover:underline"
-                                                    target="_blank"
+                                                    // target="_blank"
                                                 >
                                                     <span className="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
                                                         PDF
@@ -455,6 +467,12 @@ function GuideList({
                     guidesData={guidesData}
                 />
             </div>
+            <PdfPreviewModal
+                pdfModal={pdfModal}
+                setPdfModal={setPdfModal}
+                pdfUrl={pdfUrl}
+                setPdfUrl={setPdfUrl}
+            />
         </>
     );
 }
