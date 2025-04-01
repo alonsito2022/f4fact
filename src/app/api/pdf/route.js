@@ -21,6 +21,7 @@ export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const url = searchParams.get("url");
+        const filename = searchParams.get("filename") || "documento.pdf";
 
         if (!url) {
             return new NextResponse("URL parameter is required", {
