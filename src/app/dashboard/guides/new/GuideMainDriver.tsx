@@ -1,7 +1,7 @@
-import React from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import GuideDriverItem from "./GuideDriverItem";
 import { IDocumentType, IPerson } from "@/app/types";
-import { gql, useMutation, useQuery } from "@apollo/client";
+import { gql, useLazyQuery, useMutation, useQuery } from "@apollo/client";
 import { toast } from "react-toastify";
 const SNT_PERSON_MUTATION = gql`
     mutation ($document: String!) {
@@ -17,6 +17,17 @@ const SNT_PERSON_MUTATION = gql`
                 sntDistrict
                 sntDriverLicense
             }
+        }
+    }
+`;
+const SEARCH_CLIENT_BY_PARAMETER = gql`
+    query ($search: String!, $documentType: String) {
+        searchClientByParameter(search: $search, documentType: $documentType) {
+            id
+            documentType
+            documentNumber
+            names
+            driverLicense
         }
     }
 `;
@@ -36,6 +47,8 @@ function GuideMainDriver({
     authContext,
     auth,
 }: any) {
+    const [driverSearch, setDriverSearch] = useState("");
+
     const {
         loading: documentTypesLoading,
         error: documentTypesError,
@@ -54,6 +67,20 @@ function GuideMainDriver({
     ] = useMutation(SNT_PERSON_MUTATION, {
         context: authContext,
     });
+
+    const [
+        searchClientQuery,
+        {
+            loading: searchClientLoading,
+            error: searchClientError,
+            data: searchClientData,
+        },
+    ] = useLazyQuery(SEARCH_CLIENT_BY_PARAMETER, {
+        context: authContext,
+        fetchPolicy: "network-only",
+        onError: (err) => console.error("Error in Search Client:", err),
+    });
+
     const handleSntDocument = async () => {
         if (
             guide.mainDriverDocumentType === "6" &&
@@ -138,6 +165,41 @@ function GuideMainDriver({
         newItems[index] = { ...newItems[index], [field]: value };
         setGuide({ ...guide, othersDrivers: newItems });
     };
+
+    const handleDriverSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setDriverSearch(event.target.value);
+    };
+    const handleDriverSelect = (event: ChangeEvent<HTMLInputElement>) => {
+        const selectedOption = event.target.value;
+
+        const selectedData = searchClientData?.searchClientByParameter?.find(
+            (person: IPerson) => person.names === selectedOption
+        );
+
+        if (selectedData) {
+            setGuide({
+                ...guide,
+                mainDriverDocumentNumber: selectedData.documentNumber,
+                mainDriverNames: selectedData.names,
+            });
+        }
+    };
+
+    useEffect(() => {
+        if (driverSearch.length > 2) {
+            const queryVariables: { search: string; documentType?: string } = {
+                search: driverSearch,
+            };
+
+            if (guide.mainDriverDocumentType) {
+                queryVariables.documentType = guide.mainDriverDocumentType;
+            }
+
+            searchClientQuery({
+                variables: queryVariables,
+            });
+        }
+    }, [driverSearch]);
 
     return (
         <>
@@ -230,23 +292,33 @@ function GuideMainDriver({
                                     </div>
                                     {/* Nombres y Apellidos del conductor */}
                                     <div className="md:col-span-2">
-                                        <label
-                                            htmlFor="mainDriverNames"
-                                            className="text-sm font-medium text-gray-900 dark:text-gray-200"
-                                        >
+                                        <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
                                             Nombres y Apellidos del conductor
                                         </label>
                                         <input
-                                            type="text"
-                                            name="mainDriverNames"
-                                            id="mainDriverNames"
+                                            type="search"
                                             maxLength={200}
-                                            value={guide.mainDriverNames}
-                                            onChange={handleGuide}
                                             onFocus={(e) => e.target.select()}
+                                            // name="mainDriverNames"
+                                            // value={guide.mainDriverNames}
+                                            // onChange={handleGuide}
+                                            onChange={handleDriverSearchChange}
+                                            onInput={handleDriverSelect}
+                                            list="driverList"
                                             className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                             autoComplete="off"
                                         />
+                                        <datalist id="driverList">
+                                            {searchClientData?.searchClientByParameter?.map(
+                                                (n: IPerson, index: number) => (
+                                                    <option
+                                                        key={index}
+                                                        data-key={n.id}
+                                                        value={n.names}
+                                                    />
+                                                )
+                                            )}
+                                        </datalist>
                                     </div>
                                     {/* Licencia de conducir */}
                                     <div>
