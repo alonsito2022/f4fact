@@ -51,6 +51,12 @@ function GuideMainDriver({
 }: any) {
     const [driverSearch, setDriverSearch] = useState("");
 
+    // Add these state variables at the beginning of the component
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(-1);
+    // Add this ref at the beginning of your component
+    const dropdownRef = React.useRef<HTMLDivElement>(null);
+
     const {
         loading: documentTypesLoading,
         error: documentTypesError,
@@ -168,6 +174,73 @@ function GuideMainDriver({
         setGuide({ ...guide, othersDrivers: newItems });
     };
 
+    const handleDriverSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+        // setDriverSearch(event.target.value);
+        const value = event.target.value;
+        setDriverSearch(value);
+        setGuide({
+            ...guide,
+            mainDriverNames: value,
+        });
+
+        if (value.length > 2) {
+            searchClientQuery({
+                variables: {
+                    search: value,
+                    documentType: guide.mainDriverDocumentType,
+                },
+            });
+        }
+    };
+
+    // Add this handler for keyboard navigation
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (!searchClientData?.searchClientByParameter?.length) return;
+
+        switch (e.key) {
+            case "ArrowDown":
+                e.preventDefault();
+                setSelectedIndex((prev) =>
+                    prev < searchClientData.searchClientByParameter.length - 1
+                        ? prev + 1
+                        : prev
+                );
+                // Add this scroll logic
+                setTimeout(() => {
+                    const selectedElement =
+                        dropdownRef.current?.children[selectedIndex + 1];
+                    selectedElement?.scrollIntoView({ block: "nearest" });
+                }, 0);
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+                setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+                // Add this scroll logic
+                setTimeout(() => {
+                    const selectedElement =
+                        dropdownRef.current?.children[selectedIndex - 1];
+                    selectedElement?.scrollIntoView({ block: "nearest" });
+                }, 0);
+                break;
+            case "Enter":
+                e.preventDefault();
+                if (selectedIndex >= 0) {
+                    const selectedPerson =
+                        searchClientData.searchClientByParameter[selectedIndex];
+                    setGuide({
+                        ...guide,
+                        mainDriverDocumentNumber: selectedPerson.documentNumber,
+                        mainDriverNames: selectedPerson.names,
+                    });
+                    setShowDropdown(false);
+                }
+                break;
+            case "Escape":
+                setShowDropdown(false);
+                break;
+        }
+    };
+
     useEffect(() => {
         if (driverSearch.length > 2) {
             const queryVariables: { search: string; documentType?: string } = {
@@ -183,6 +256,22 @@ function GuideMainDriver({
             });
         }
     }, [driverSearch]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node)
+            ) {
+                setShowDropdown(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     return (
         <>
@@ -274,45 +363,93 @@ function GuideMainDriver({
                                         />
                                     </div>
                                     {/* Nombres y Apellidos del conductor */}
+                                    {/* <div className="md:col-span-2">
+                                        <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
+                                            Nombres y Apellidos del conductor
+                                        </label>
+                                        <input
+                                            type="search"
+                                            maxLength={200}
+                                            onFocus={(e) => e.target.select()}
+                                            // name="mainDriverNames"
+                                            // value={guide.mainDriverNames}
+                                            // onChange={handleGuide}
+                                            onChange={handleDriverSearchChange}
+                                            onInput={handleDriverSelect}
+                                            list="driverList"
+                                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                            autoComplete="off"
+                                        />
+                                        <datalist id="driverList">
+                                            {searchClientData?.searchClientByParameter?.map(
+                                                (n: IPerson, index: number) => (
+                                                    <option
+                                                        key={index}
+                                                        data-key={n.id}
+                                                        value={n.names}
+                                                    />
+                                                )
+                                            )}
+                                        </datalist>
+                                    </div> */}
                                     <div className="sm:col-span-2 relative">
                                         <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
                                             Nombres y Apellidos del conductor
                                         </label>
-
-                                        <SearchableDropdown
+                                        <input
+                                            type="text"
+                                            maxLength={200}
+                                            onFocus={(e) => {
+                                                e.target.select();
+                                                setShowDropdown(true);
+                                            }}
+                                            onChange={handleDriverSearchChange}
+                                            onKeyDown={handleKeyDown}
+                                            name="mainDriverNames"
                                             value={guide.mainDriverNames}
-                                            onChange={(value) => {
-                                                setDriverSearch(value);
-                                                setGuide({
-                                                    ...guide,
-                                                    mainDriverNames: value,
-                                                });
-                                                if (value.length > 2) {
-                                                    searchClientQuery({
-                                                        variables: {
-                                                            search: value,
-                                                            documentType:
-                                                                guide.mainDriverDocumentType,
-                                                        },
-                                                    });
-                                                }
-                                            }}
-                                            onSelect={(person) => {
-                                                setGuide({
-                                                    ...guide,
-                                                    mainDriverDocumentNumber:
-                                                        person.documentNumber,
-                                                    mainDriverNames:
-                                                        person.names,
-                                                });
-                                            }}
-                                            items={
-                                                searchClientData?.searchClientByParameter ||
-                                                []
-                                            }
-                                            displayKey="names"
                                             className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                            autoComplete="off"
                                         />
+                                        {showDropdown &&
+                                            searchClientData
+                                                ?.searchClientByParameter
+                                                ?.length > 0 && (
+                                                <div
+                                                    ref={dropdownRef}
+                                                    className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                                                >
+                                                    {searchClientData.searchClientByParameter.map(
+                                                        (
+                                                            person: IPerson,
+                                                            index: number
+                                                        ) => (
+                                                            <div
+                                                                key={person.id}
+                                                                className={`px-4 py-2 cursor-pointer ${
+                                                                    index ===
+                                                                    selectedIndex
+                                                                        ? "bg-blue-100 dark:bg-blue-600"
+                                                                        : "hover:bg-gray-100 dark:hover:bg-gray-600"
+                                                                }`}
+                                                                onClick={() => {
+                                                                    setGuide({
+                                                                        ...guide,
+                                                                        mainDriverDocumentNumber:
+                                                                            person.documentNumber,
+                                                                        mainDriverNames:
+                                                                            person.names,
+                                                                    });
+                                                                    setShowDropdown(
+                                                                        false
+                                                                    );
+                                                                }}
+                                                            >
+                                                                {person.names}
+                                                            </div>
+                                                        )
+                                                    )}
+                                                </div>
+                                            )}
                                     </div>
                                     {/* Licencia de conducir */}
                                     <div>
