@@ -3,6 +3,8 @@ import GuideDriverItem from "./GuideDriverItem";
 import { IDocumentType, IPerson } from "@/app/types";
 import { gql, useLazyQuery, useMutation, useQuery } from "@apollo/client";
 import { toast } from "react-toastify";
+import SearchableDropdown from "@/components/SearchableDropdown";
+
 const SNT_PERSON_MUTATION = gql`
     mutation ($document: String!) {
         sntPerson(document: $document) {
@@ -166,25 +168,6 @@ function GuideMainDriver({
         setGuide({ ...guide, othersDrivers: newItems });
     };
 
-    const handleDriverSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setDriverSearch(event.target.value);
-    };
-    const handleDriverSelect = (event: ChangeEvent<HTMLInputElement>) => {
-        const selectedOption = event.target.value;
-
-        const selectedData = searchClientData?.searchClientByParameter?.find(
-            (person: IPerson) => person.names === selectedOption
-        );
-
-        if (selectedData) {
-            setGuide({
-                ...guide,
-                mainDriverDocumentNumber: selectedData.documentNumber,
-                mainDriverNames: selectedData.names,
-            });
-        }
-    };
-
     useEffect(() => {
         if (driverSearch.length > 2) {
             const queryVariables: { search: string; documentType?: string } = {
@@ -291,34 +274,45 @@ function GuideMainDriver({
                                         />
                                     </div>
                                     {/* Nombres y Apellidos del conductor */}
-                                    <div className="md:col-span-2">
+                                    <div className="sm:col-span-2 relative">
                                         <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
                                             Nombres y Apellidos del conductor
                                         </label>
-                                        <input
-                                            type="search"
-                                            maxLength={200}
-                                            onFocus={(e) => e.target.select()}
-                                            // name="mainDriverNames"
-                                            // value={guide.mainDriverNames}
-                                            // onChange={handleGuide}
-                                            onChange={handleDriverSearchChange}
-                                            onInput={handleDriverSelect}
-                                            list="driverList"
+
+                                        <SearchableDropdown
+                                            value={guide.mainDriverNames}
+                                            onChange={(value) => {
+                                                setDriverSearch(value);
+                                                setGuide({
+                                                    ...guide,
+                                                    mainDriverNames: value,
+                                                });
+                                                if (value.length > 2) {
+                                                    searchClientQuery({
+                                                        variables: {
+                                                            search: value,
+                                                            documentType:
+                                                                guide.mainDriverDocumentType,
+                                                        },
+                                                    });
+                                                }
+                                            }}
+                                            onSelect={(person) => {
+                                                setGuide({
+                                                    ...guide,
+                                                    mainDriverDocumentNumber:
+                                                        person.documentNumber,
+                                                    mainDriverNames:
+                                                        person.names,
+                                                });
+                                            }}
+                                            items={
+                                                searchClientData?.searchClientByParameter ||
+                                                []
+                                            }
+                                            displayKey="names"
                                             className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                            autoComplete="off"
                                         />
-                                        <datalist id="driverList">
-                                            {searchClientData?.searchClientByParameter?.map(
-                                                (n: IPerson, index: number) => (
-                                                    <option
-                                                        key={index}
-                                                        data-key={n.id}
-                                                        value={n.names}
-                                                    />
-                                                )
-                                            )}
-                                        </datalist>
                                     </div>
                                     {/* Licencia de conducir */}
                                     <div>
