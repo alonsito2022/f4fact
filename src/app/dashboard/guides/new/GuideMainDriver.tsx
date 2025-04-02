@@ -182,7 +182,7 @@ function GuideMainDriver({
             ...guide,
             mainDriverNames: value,
         });
-
+        setShowDropdown(true);
         if (value.length > 2) {
             searchClientQuery({
                 variables: {
@@ -395,6 +395,12 @@ function GuideMainDriver({
                                     <div className="sm:col-span-2 relative">
                                         <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
                                             Nombres y Apellidos del conductor
+                                            {/* {" showDropdown: " +
+                                                showDropdown +
+                                                " searchClientData: " +
+                                                searchClientData
+                                                    ?.searchClientByParameter
+                                                    ?.length} */}
                                         </label>
                                         <input
                                             type="text"
