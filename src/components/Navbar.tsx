@@ -632,7 +632,7 @@ function Navbar() {
                                 >
                                     {u?.companyIsProduction
                                         ? "Producción"
-                                        : "Desarrollo"}
+                                        : "Demo"}
                                 </span>
                             </div>
                             <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
