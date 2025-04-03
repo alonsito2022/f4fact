@@ -44,12 +44,28 @@ const today =
     String(limaDate.getDate()).padStart(2, "0");
 
 const SEARCH_CLIENT_BY_PARAMETER = gql`
-    query ($search: String!, $documentType: String) {
-        searchClientByParameter(search: $search, documentType: $documentType) {
+    query SearchClient(
+        $search: String!
+        $documentType: String
+        $operationDocumentType: String
+        $isClient: Boolean
+        $isDriver: Boolean
+        $isSupplier: Boolean
+        $isReceiver: Boolean
+    ) {
+        searchClientByParameter(
+            search: $search
+            documentType: $documentType
+            operationDocumentType: $operationDocumentType
+            isClient: $isClient
+            isDriver: $isDriver
+            isSupplier: $isSupplier
+            isReceiver: $isReceiver
+        ) {
             id
-            documentType
-            documentNumber
             names
+            documentNumber
+            documentType
         }
     }
 `;
@@ -794,8 +810,16 @@ function NewSalePage() {
 
     useEffect(() => {
         if (clientSearch.length > 2) {
-            const queryVariables: { search: string; documentType?: string } = {
+            const queryVariables: {
+                search: string;
+                documentType?: string;
+                isClient: boolean;
+                operationDocumentType: string;
+            } = {
                 search: clientSearch,
+                isClient: true,
+                operationDocumentType: sale.documentType,
+                documentType: sale.documentType === "01" ? "6" : "1",
             };
 
             searchClientQuery({

@@ -8,12 +8,28 @@ import { gql, useLazyQuery, useQuery } from "@apollo/client";
 import React, { ChangeEvent, useEffect, useState } from "react";
 
 const SEARCH_CLIENT_BY_PARAMETER = gql`
-    query ($search: String!, $documentType: String) {
-        searchClientByParameter(search: $search, documentType: $documentType) {
+    query SearchClient(
+        $search: String!
+        $documentType: String
+        $operationDocumentType: String
+        $isClient: Boolean
+        $isDriver: Boolean
+        $isSupplier: Boolean
+        $isReceiver: Boolean
+    ) {
+        searchClientByParameter(
+            search: $search
+            documentType: $documentType
+            operationDocumentType: $operationDocumentType
+            isClient: $isClient
+            isDriver: $isDriver
+            isSupplier: $isSupplier
+            isReceiver: $isReceiver
+        ) {
             id
-            documentType
-            documentNumber
             names
+            documentNumber
+            documentType
         }
     }
 `;
@@ -157,8 +173,13 @@ function GuideHeader({
 
     useEffect(() => {
         if (clientSearch.length > 2) {
-            const queryVariables: { search: string; documentType?: string } = {
+            const queryVariables: {
+                search: string;
+                documentType?: string;
+                isClient: boolean;
+            } = {
                 search: clientSearch,
+                isClient: true,
             };
 
             if (guide?.documentType === "31") {
@@ -181,6 +202,7 @@ function GuideHeader({
             searchClientQuery({
                 variables: {
                     search: auth?.user?.companyDoc,
+                    isClient: true,
                 },
                 onCompleted: (data) => {
                     const clientFound = data?.searchClientByParameter[0];

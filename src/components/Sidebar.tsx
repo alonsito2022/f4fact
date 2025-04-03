@@ -366,6 +366,68 @@ function Sidebar() {
                                         </li>
                                     </ul>
                                 </li> */}
+                                <li>
+                                    <button
+                                        type="button"
+                                        className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                        aria-controls="dropdown-quotes"
+                                        data-collapse-toggle="dropdown-quotes"
+                                    >
+                                        <svg
+                                            className="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                                            />
+                                        </svg>
+                                        <span className="flex-1 ml-3 text-left whitespace-nowrap">
+                                            Cotizaciones
+                                        </span>
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clipRule="evenodd"
+                                            ></path>
+                                        </svg>
+                                    </button>
+                                    <ul
+                                        suppressHydrationWarning
+                                        id="dropdown-quotes"
+                                        className="hidden py-2 space-y-2"
+                                    >
+                                        <li>
+                                            <Link
+                                                href="/dashboard/sales"
+                                                className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                                onClick={handleLinkClick}
+                                            >
+                                                Mostrar todas
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href="/dashboard/sales/new"
+                                                className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                                onClick={handleLinkClick}
+                                            >
+                                                Nueva Cotización
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </li>
 
                                 <li>
                                     <button
@@ -413,7 +475,7 @@ function Sidebar() {
                                                 className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
                                                 onClick={handleLinkClick}
                                             >
-                                                Ventas
+                                                Comprobantes
                                             </Link>
                                         </li>
                                         <li>
@@ -422,7 +484,7 @@ function Sidebar() {
                                                 className="text-base text-gray-900 rounded-lg flex items-center p-2 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
                                                 onClick={handleLinkClick}
                                             >
-                                                Nueva Venta
+                                                Nuevo comprobante
                                             </Link>
                                         </li>
                                     </ul>
@@ -436,16 +498,18 @@ function Sidebar() {
                                         data-collapse-toggle="dropdown-guides"
                                     >
                                         <svg
-                                            className="w-6 h-4 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
-                                            aria-hidden="true"
+                                            className="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                            fill="none"
                                             stroke="currentColor"
-                                            fill="currentColor"
-                                            strokeWidth="0"
-                                            role="img"
                                             viewBox="0 0 24 24"
                                             xmlns="http://www.w3.org/2000/svg"
                                         >
-                                            <path d="M.8 24h13.6c.88 0 1.6-.72 1.6-1.6v-4.8c0-.88-.72-1.6-1.6-1.6H9.6c-.88 0-1.6-.72-1.6-1.6V9.6C8 8.72 7.28 8 6.4 8H1.6C.72 8 0 8.72 0 9.6v13.6c0 .44.36.8.8.8zM23.2 0H9.6C8.72 0 8 .72 8 1.6v4.8C8 7.28 8.72 8 9.6 8h4.8c.88 0 1.6.72 1.6 1.6v4.8c0 .88.72 1.6 1.6 1.6h4.8c.88 0 1.6-.72 1.6-1.6V.8c0-.44-.36-.8-.8-.8Z"></path>
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M8.5 18.5h6M5 16.5h2a1 1 0 011 1v1H4v-1a1 1 0 011-1zm11 0h2a1 1 0 011 1v1h-4v-1a1 1 0 011-1zm-6-3h4m-9-4h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2z"
+                                            />
                                         </svg>
 
                                         <span className="flex-1 ml-3 text-left whitespace-nowrap">
@@ -498,17 +562,18 @@ function Sidebar() {
                                         data-collapse-toggle="dropdown-retentions"
                                     >
                                         <svg
-                                            className="w-6 h-4 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
+                                            className="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
                                             xmlns="http://www.w3.org/2000/svg"
                                         >
-                                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
                                             <path
-                                                fillRule="evenodd"
-                                                d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
-                                                clipRule="evenodd"
-                                            ></path>
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3-3 3 3 3-3 3 3z"
+                                            />
                                         </svg>
 
                                         <span className="flex-1 ml-3 text-left whitespace-nowrap">

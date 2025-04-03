@@ -23,13 +23,28 @@ const SNT_PERSON_MUTATION = gql`
     }
 `;
 const SEARCH_CLIENT_BY_PARAMETER = gql`
-    query ($search: String!, $documentType: String) {
-        searchClientByParameter(search: $search, documentType: $documentType) {
+    query SearchClient(
+        $search: String!
+        $documentType: String
+        $operationDocumentType: String
+        $isClient: Boolean
+        $isDriver: Boolean
+        $isSupplier: Boolean
+        $isReceiver: Boolean
+    ) {
+        searchClientByParameter(
+            search: $search
+            documentType: $documentType
+            operationDocumentType: $operationDocumentType
+            isClient: $isClient
+            isDriver: $isDriver
+            isSupplier: $isSupplier
+            isReceiver: $isReceiver
+        ) {
             id
-            documentType
-            documentNumber
             names
-            driverLicense
+            documentNumber
+            documentType
         }
     }
 `;
@@ -188,6 +203,7 @@ function GuideMainDriver({
                 variables: {
                     search: value,
                     documentType: guide.mainDriverDocumentType,
+                    isDriver: true,
                 },
             });
         }
@@ -243,8 +259,13 @@ function GuideMainDriver({
 
     useEffect(() => {
         if (driverSearch.length > 2) {
-            const queryVariables: { search: string; documentType?: string } = {
+            const queryVariables: {
+                search: string;
+                documentType?: string;
+                isDriver: boolean;
+            } = {
                 search: driverSearch,
+                isDriver: true,
             };
 
             if (guide.mainDriverDocumentType) {
