@@ -821,7 +821,6 @@ function NewSalePage() {
                 operationDocumentType: sale.documentType,
                 documentType: sale.documentType === "01" ? "6" : "1",
             };
-
             searchClientQuery({
                 variables: queryVariables,
             });
