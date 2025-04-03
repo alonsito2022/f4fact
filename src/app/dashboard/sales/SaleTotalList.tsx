@@ -102,14 +102,14 @@ function SaleTotalList({
                 </div>
                 <div className="p-4 space-y-3">
                     {/* Grid for totals */}
-                    <div className="grid grid-cols-1 sm:grid-cols-6 md:grid-cols-4">
-                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                    <div className="grid grid-cols-1 sm:grid-cols-6 md:grid-cols-4 gap-y-1">
+                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 rounded-lg transition-colors">
                             % Descuento Global
                         </div>
-                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 p-2">
+                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2">
                             0.00
                         </div>
-                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 rounded-lg transition-colors">
                             Descuento Global (-){" "}
                             {invoice.currencyType === "PEN"
                                 ? "S/"
@@ -121,10 +121,10 @@ function SaleTotalList({
                                 ? "£"
                                 : null}
                         </div>
-                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 p-2">
+                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2">
                             {invoice.discountGlobal}
                         </div>
-                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 rounded-lg transition-colors">
                             Descuento por Item (-){" "}
                             {invoice.currencyType === "PEN"
                                 ? "S/"
@@ -136,10 +136,10 @@ function SaleTotalList({
                                 ? "£"
                                 : null}
                         </div>
-                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 p-2">
+                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2">
                             {invoice.discountForItem}
                         </div>
-                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 rounded-lg transition-colors">
                             Descuento Total (-){" "}
                             {invoice.currencyType === "PEN"
                                 ? "S/"
@@ -151,10 +151,10 @@ function SaleTotalList({
                                 ? "£"
                                 : null}
                         </div>
-                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 p-2">
+                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2">
                             {invoice.totalDiscount}
                         </div>
-                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 rounded-lg transition-colors">
                             Exonerada{" "}
                             {invoice.currencyType === "PEN"
                                 ? "S/"
@@ -166,10 +166,10 @@ function SaleTotalList({
                                 ? "£"
                                 : null}
                         </div>
-                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 p-2">
+                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2">
                             {invoice.totalExonerated || "0.00"}
                         </div>
-                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 rounded-lg transition-colors">
                             Inafecta{" "}
                             {invoice.currencyType === "PEN"
                                 ? "S/"
@@ -181,10 +181,10 @@ function SaleTotalList({
                                 ? "£"
                                 : null}
                         </div>
-                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 p-2">
+                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2">
                             {invoice.totalUnaffected || "0.00"}
                         </div>
-                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 rounded-lg transition-colors">
                             Gravada{" "}
                             {invoice.currencyType === "PEN"
                                 ? "S/"
@@ -196,10 +196,10 @@ function SaleTotalList({
                                 ? "£"
                                 : null}
                         </div>
-                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 p-2">
+                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2">
                             {invoice.totalTaxed}
                         </div>
-                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 rounded-lg transition-colors">
                             IGV{" "}
                             {invoice.currencyType === "PEN"
                                 ? "S/"
@@ -211,10 +211,10 @@ function SaleTotalList({
                                 ? "£"
                                 : null}
                         </div>
-                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 p-2">
+                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2">
                             {invoice.totalIgv}
                         </div>
-                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 rounded-lg transition-colors">
                             Gratuita{" "}
                             {invoice.currencyType === "PEN"
                                 ? "S/"
@@ -226,10 +226,10 @@ function SaleTotalList({
                                 ? "£"
                                 : null}
                         </div>
-                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 p-2">
+                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2">
                             {invoice.totalFree || "0.00"}
                         </div>
-                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 rounded-lg transition-colors">
                             Otros Cargos{" "}
                             {invoice.currencyType === "PEN"
                                 ? "S/"
@@ -241,10 +241,10 @@ function SaleTotalList({
                                 ? "£"
                                 : null}
                         </div>
-                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 p-2">
+                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2">
                             0.00
                         </div>
-                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                        <div className="sm:col-span-3 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 rounded-lg transition-colors">
                             Total{" "}
                             {invoice.currencyType === "PEN"
                                 ? "S/"
@@ -256,7 +256,7 @@ function SaleTotalList({
                                 ? "£"
                                 : null}
                         </div>
-                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 p-2">
+                        <div className="sm:col-span-1 text-right font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2">
                             {invoice.totalAmount}
                         </div>
                     </div>
@@ -264,7 +264,7 @@ function SaleTotalList({
             </div>
 
             {/* Checkboxes section with better organization */}
-            {invoice.documentType !== "07" && (
+            {!["07", "48"].includes(invoice.documentType) && (
                 <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
                         Opciones Adicionales

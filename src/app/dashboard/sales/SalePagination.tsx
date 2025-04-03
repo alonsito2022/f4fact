@@ -7,6 +7,8 @@ function SalePagination({
     filteredSalesData,
     guidesQuery,
     guidesData,
+    quotesQuery,
+    quotesData,
 }: any) {
     return (
         <div className="flex items-center justify-center gap-2 my-4">
@@ -28,7 +30,7 @@ function SalePagination({
                         page: prevPage - 1,
                         pageSize: Number(filterObj.pageSize),
                     };
-                    const queryToUse = salesQuery || guidesQuery;
+                    const queryToUse = salesQuery || guidesQuery || quotesQuery;
                     if (queryToUse) {
                         queryToUse({
                             variables: variables,
@@ -60,7 +62,9 @@ function SalePagination({
                 <span className="font-bold mx-2">
                     {filteredSalesData
                         ? filteredSalesData?.allSales?.totalNumberOfPages
-                        : guidesData?.allGuides?.totalNumberOfPages}
+                        : guidesData
+                        ? guidesData?.allGuides?.totalNumberOfPages
+                        : quotesData?.allQuotes?.totalNumberOfPages}
                 </span>
             </span>
 
@@ -91,11 +95,14 @@ function SalePagination({
                 }}
                 disabled={
                     (!filteredSalesData?.allSales?.totalNumberOfPages &&
-                        !guidesData?.allGuides?.totalNumberOfPages) ||
+                        !guidesData?.allGuides?.totalNumberOfPages &&
+                        !quotesData?.allQuotes?.totalNumberOfPages) ||
                     filterObj.page ===
                         (filteredSalesData
                             ? filteredSalesData?.allSales?.totalNumberOfPages
-                            : guidesData?.allGuides?.totalNumberOfPages)
+                            : guidesData
+                            ? guidesData?.allGuides?.totalNumberOfPages
+                            : quotesData?.allQuotes?.totalNumberOfPages)
                 }
             >
                 Siguiente
