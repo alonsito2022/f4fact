@@ -35,6 +35,7 @@ export interface IUser {
     companyGuide: boolean;
     companyCatalog: boolean;
     companyApp: boolean;
+    companyIsProduction: boolean;
     mobileDescription: string;
 }
 export interface ICompany {

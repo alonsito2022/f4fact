@@ -35,6 +35,7 @@ const TOKEN_AUTH_MUTATION = gql`
                         guide
                         catalog
                         app
+                        isProduction
                     }
                 }
             }
@@ -64,6 +65,7 @@ interface ExtendedUser extends User {
     companyGuide: boolean;
     companyCatalog: boolean;
     companyApp: boolean;
+    companyIsProduction: boolean;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -149,6 +151,10 @@ export const authOptions: NextAuthOptions = {
                             companyApp:
                                 data.tokenAuth.user.subsidiary.company.app,
 
+                            companyIsProduction:
+                                data.tokenAuth.user.subsidiary.company
+                                    .isProduction,
+
                             exp: data.tokenAuth?.payload.exp,
                             iat: data.tokenAuth?.payload.origIat,
                         };
@@ -202,6 +208,9 @@ export const authOptions: NextAuthOptions = {
                 token.companyGuide = (user as ExtendedUser).companyGuide;
                 token.companyCatalog = (user as ExtendedUser).companyCatalog;
                 token.companyApp = (user as ExtendedUser).companyApp;
+                token.companyIsProduction = (
+                    user as ExtendedUser
+                ).companyIsProduction;
             }
             return token;
         },
@@ -228,6 +237,7 @@ export const authOptions: NextAuthOptions = {
                     companyGuide: token.companyGuide,
                     companyCatalog: token.companyCatalog,
                     companyApp: token.companyApp,
+                    companyIsProduction: token.companyIsProduction,
                 },
                 accessToken: token.accessToken,
                 expires: new Date((token.exp as number) * 1000).toISOString(),

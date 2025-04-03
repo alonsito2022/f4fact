@@ -618,8 +618,34 @@ function Navbar() {
                             </div>
                         </div> */}
 
-                        <div className="text-xs">
-                            {u?.subsidiaryName || "NO TIENE"}
+                        <div className="flex items-center gap-3 px-3 py-1 mr-2 text-xs rounded-lg bg-gray-100 dark:bg-gray-700">
+                            <div className="flex items-center">
+                                <span className="mr-1 text-gray-500 dark:text-gray-400">
+                                    Ambiente:
+                                </span>
+                                <span
+                                    className={`font-medium ${
+                                        u?.companyIsProduction
+                                            ? "text-green-600 dark:text-green-400"
+                                            : "text-amber-600 dark:text-amber-400"
+                                    }`}
+                                >
+                                    {u?.companyIsProduction
+                                        ? "Producción"
+                                        : "Desarrollo"}
+                                </span>
+                            </div>
+                            <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+                            <div className="flex items-center">
+                                <span className="mr-1 text-gray-500 dark:text-gray-400">
+                                    Sucursal:
+                                </span>
+                                <span className="font-medium text-blue-600 dark:text-blue-400">
+                                    {u?.subsidiaryName && u?.subsidiarySerial
+                                        ? `${u?.subsidiaryName} (${u?.subsidiarySerial})`
+                                        : "Sin asignar"}
+                                </span>
+                            </div>
                         </div>
 
                         <ThemeToggle />
