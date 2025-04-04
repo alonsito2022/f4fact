@@ -429,24 +429,32 @@ function GuideList({
                                         })()}
                                     </td>
                                     <td className="p-2 text-center">
-                                        <>
-                                            <span
-                                                data-popover-target={`popover-status-${item.id}`}
-                                                className={getStatusClassName(
-                                                    item?.operationStatus
-                                                )}
-                                            >
-                                                {getStatusContent(
-                                                    item?.operationStatus,
-                                                    String(item?.documentType)
-                                                )}
-                                            </span>
-                                            <Popover
-                                                id={`popover-status-${item.id}`}
-                                            >
-                                                {getPopoverContent(item)}
-                                            </Popover>
-                                        </>
+                                        {!(
+                                            item.operationStatus === "06" &&
+                                            (item.documentType === "09" ||
+                                                item.documentType === "31")
+                                        ) && (
+                                            <>
+                                                <span
+                                                    data-popover-target={`popover-status-${item.id}`}
+                                                    className={getStatusClassName(
+                                                        item?.operationStatus
+                                                    )}
+                                                >
+                                                    {getStatusContent(
+                                                        item?.operationStatus,
+                                                        String(
+                                                            item?.documentType
+                                                        )
+                                                    )}
+                                                </span>
+                                                <Popover
+                                                    id={`popover-status-${item.id}`}
+                                                >
+                                                    {getPopoverContent(item)}
+                                                </Popover>
+                                            </>
+                                        )}
                                     </td>
                                     <td className="p-2">
                                         {item?.operationStatus === "02" ||
