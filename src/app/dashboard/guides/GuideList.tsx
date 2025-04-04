@@ -9,6 +9,16 @@ import SalePagination from "../sales/SalePagination";
 import LoadingIcon from "@/components/icons/LoadingIcon";
 import { Modal } from "flowbite";
 import PdfPreviewModal from "../sales/PdfPreviewModal";
+import { gql, useMutation } from "@apollo/client";
+
+const CANCEL_INVOICE = gql`
+    mutation CancelInvoice($operationId: Int!, $lowDate: Date!) {
+        cancelInvoice(operationId: $operationId, lowDate: $lowDate) {
+            message
+            success
+        }
+    }
+`;
 
 function GuideList({
     setFilterObj,
@@ -112,6 +122,53 @@ function GuideList({
             clientName: item.client?.names,
             clientDoc: item.client?.documentNumber,
         });
+    };
+    const [cancelInvoice, { loading, error, data }] =
+        useMutation(CANCEL_INVOICE);
+
+    const handleCancelInvoice = (operationId: number) => {
+        const limaDate = new Date(
+            new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+        );
+        const today =
+            limaDate.getFullYear() +
+            "-" +
+            String(limaDate.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            String(limaDate.getDate()).padStart(2, "0");
+
+        cancelInvoice({
+            variables: {
+                operationId,
+                lowDate: today,
+            },
+        })
+            .then((response) => {
+                if (response.data.cancelInvoice.success) {
+                    toast.success("Guia anulada correctamente.");
+                    guidesQuery({
+                        variables: {
+                            subsidiaryId: Number(filterObj.subsidiaryId),
+                            startDate: filterObj.startDate,
+                            endDate: filterObj.endDate,
+                            documentType: filterObj.documentType,
+                            page: Number(filterObj.page),
+                            pageSize: Number(filterObj.pageSize),
+                        },
+                    });
+                } else {
+                    toast.error(
+                        `Error: ${response.data.cancelInvoice.message}`
+                    );
+                }
+            })
+            .catch((err) => {
+                toast.error("Error al anular la factura.");
+                console.error(err, {
+                    operationId,
+                    lowDate: today,
+                });
+            });
     };
     return (
         <>
@@ -424,6 +481,39 @@ function GuideList({
                                                         Enviar por WhatsApp
                                                     </a>
                                                     <br />
+                                                    {item.operationStatus !==
+                                                        "06" && (
+                                                        <>
+                                                            <a
+                                                                className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                                                                href="#"
+                                                                onClick={(
+                                                                    e
+                                                                ) => {
+                                                                    e.preventDefault(); // Evita que el enlace cambie de página
+                                                                    const confirmDelete =
+                                                                        window.confirm(
+                                                                            "Esta opción solo indicará que la Guía de Remision seleccionada está inutilizada para un control interno, para dar de baja una Guía debe hacerse con clave SOL."
+                                                                        );
+
+                                                                    if (
+                                                                        confirmDelete
+                                                                    ) {
+                                                                        handleCancelInvoice(
+                                                                            Number(
+                                                                                item?.id
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                INUTILIZAR GUÍA
+                                                                DE REMISION
+                                                                (INTERNO)
+                                                            </a>
+                                                            <br />
+                                                        </>
+                                                    )}
 
                                                     <a
                                                         className="font-medium text-green-600 dark:text-green-500 hover:underline"

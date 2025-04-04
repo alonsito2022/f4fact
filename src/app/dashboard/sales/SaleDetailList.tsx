@@ -142,7 +142,7 @@ function SaleDetailList({
                                 className="bg-yellow-400 border-b dark:bg-cyan-700 dark:border-gray-700 hover:bg-cyan-100 "
                             >
                                 <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                                    {item.productName}
+                                    {item.productName} {item.description}
                                 </td>
                                 <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
                                     {item.quantity}
