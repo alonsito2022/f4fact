@@ -48,13 +48,26 @@ function QuoteList({
             );
     };
     const transformedSalesData = quotesData?.allQuotes?.quotes?.map(
-        (item: IOperation) => ({
-            ...item,
-            operationStatus: item.operationStatus.replace("A_", ""),
-            documentType: item.documentType?.replace("A_", ""),
-            fileNameXml: `${item?.subsidiary?.company?.doc}-${item?.documentType}-${item.serial}-${item.correlative}.xml`,
-            fileNameCdr: `R-${item?.subsidiary?.company?.doc}-${item?.documentType}-${item.serial}-${item.correlative}.xml`,
-        })
+        (item: IOperation) => {
+            const docType = item.client?.documentType?.replace("A_", "");
+            return {
+                ...item,
+                operationStatus: item.operationStatus.replace("A_", ""),
+                documentType: item.documentType?.replace("A_", ""),
+                client: {
+                    ...item.client,
+                    documentType: docType,
+                    documentTypeReadable:
+                        docType === "1"
+                            ? "DNI"
+                            : docType === "6"
+                            ? "RUC"
+                            : docType,
+                },
+                fileNameXml: `${item?.subsidiary?.company?.doc}-${item?.documentType}-${item.serial}-${item.correlative}.xml`,
+                fileNameCdr: `R-${item?.subsidiary?.company?.doc}-${item?.documentType}-${item.serial}-${item.correlative}.xml`,
+            };
+        }
     );
     const getStatusClassName = (status: string) => {
         const baseClasses = "flex items-center justify-center";
@@ -207,16 +220,16 @@ function QuoteList({
                             )}
                             {[
                                 "Fecha Emisión",
-                                "Tipo",
-                                "Serie",
                                 "Num.",
-                                "ENTIDAD",
-
-                                "Enviado al Cliente",
+                                "RUC / DNI / ETC",
+                                "DENOMINACIÓN",
+                                "M",
+                                "TOTAL ONEROSA",
+                                "TOTAL GRATUITA",
+                                "ENVIADO AL CLIENTE",
                                 "PDF",
-                                "XML",
-                                "CDR",
-                                "Estado SUNAT",
+
+                                "CPE RELACIONADO",
                                 "",
                             ].map((header, index) => (
                                 <th
@@ -250,39 +263,43 @@ function QuoteList({
                                     <td className="p-2 text-nowrap">
                                         {item.emitDate}
                                     </td>
-                                    <td className="p-2">{item.documentType}</td>
-                                    <td className="p-2">{item.serial}</td>
                                     <td className="p-2">{item.correlative}</td>
                                     <td className="p-2">
-                                        {item.subsidiary?.companyName}
+                                        {item.client?.documentTypeReadable}
+                                    </td>
+                                    <td className="p-2">
+                                        {item.client?.names}
+                                    </td>
+                                    <td className="p-2">
+                                        {item.currencyType === "PEN"
+                                            ? "S/"
+                                            : item.currencyType}
+                                    </td>
+                                    <td className="p-2 text-right">
+                                        {Number(item.totalAmount).toFixed(2)}
+                                    </td>
+                                    <td className="p-2 text-right">
+                                        {Number(item.totalFree).toFixed(2)}
                                     </td>
 
                                     <td className="p-2 text-center">
                                         {item.sendWhatsapp ? "SI" : "X"}
                                     </td>
                                     <td className="p-2 text-center">
-                                        {(item.documentType === "09" ||
-                                            item.documentType === "31") &&
-                                            item.operationStatus === "02" &&
-                                            item.linkXml && (
+                                        {item.documentType === "48" &&
+                                            (item.operationStatus === "01" ||
+                                                item.operationStatus ===
+                                                    "06") && (
                                                 <a
-                                                    // href={
-                                                    //     process.env
-                                                    //         .NEXT_PUBLIC_BASE_API +
-                                                    //     "/operations/print_guide/" +
-                                                    //     item.id +
-                                                    //     "/"
-                                                    // }
                                                     href="#"
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         setPdfUrl(
-                                                            `${process.env.NEXT_PUBLIC_BASE_API}/operations/print_guide/${item.id}/`
+                                                            `${process.env.NEXT_PUBLIC_BASE_API}/operations/quotation/${item.id}/`
                                                         );
                                                         pdfModal?.show();
                                                     }}
                                                     className="hover:underline"
-                                                    // target="_blank"
                                                 >
                                                     <span className="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
                                                         PDF
@@ -290,110 +307,9 @@ function QuoteList({
                                                 </a>
                                             )}
                                     </td>
-                                    <td className="p-2 text-center">
-                                        {(() => {
-                                            const hasXml =
-                                                item.operationStatus === "02" &&
-                                                item.linkXml;
-
-                                            if (!hasXml) return null;
-
-                                            const xmlUrl =
-                                                item.operationStatus === "02"
-                                                    ? item.linkXml
-                                                    : item.linkXmlLow;
-
-                                            return (
-                                                <a
-                                                    href="#"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        handleDownload(
-                                                            xmlUrl,
-                                                            item?.fileNameXml
-                                                        );
-                                                    }}
-                                                    className="hover:underline"
-                                                >
-                                                    <span className="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300 text-nowrap">
-                                                        XML
-                                                    </span>
-                                                </a>
-                                            );
-                                        })()}
-                                    </td>
-                                    <td className="p-2 text-center">
-                                        {(() => {
-                                            const hasCdr =
-                                                item.operationStatus === "02" &&
-                                                item.linkCdr;
-                                            if (!hasCdr) return null;
-
-                                            const cdrUrl =
-                                                item.operationStatus === "02"
-                                                    ? item.linkCdr
-                                                    : item.linkCdrLow;
-                                            const getCdrStyle = () => {
-                                                if (
-                                                    item.operationStatus ===
-                                                    "02"
-                                                ) {
-                                                    return item.documentType ===
-                                                        "09"
-                                                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-                                                        : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-                                                }
-                                                return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-                                            };
-
-                                            return (
-                                                <a
-                                                    href="#"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        handleDownload(
-                                                            cdrUrl,
-                                                            item?.fileNameCdr
-                                                        );
-                                                    }}
-                                                    className="hover:underline"
-                                                >
-                                                    <span
-                                                        className={`text-xs font-medium me-2 px-2.5 py-0.5 rounded-full text-nowrap ${getCdrStyle()}`}
-                                                    >
-                                                        {item.operationStatus ===
-                                                            "06" &&
-                                                        !item.linkCdrLow
-                                                            ? "SIN CDR"
-                                                            : "CDR"}
-                                                    </span>
-                                                </a>
-                                            );
-                                        })()}
-                                    </td>
-                                    <td className="p-2 text-center">
-                                        <>
-                                            <span
-                                                data-popover-target={`popover-status-${item.id}`}
-                                                className={getStatusClassName(
-                                                    item?.operationStatus
-                                                )}
-                                            >
-                                                {getStatusContent(
-                                                    item?.operationStatus,
-                                                    String(item?.documentType)
-                                                )}
-                                            </span>
-                                            <Popover
-                                                id={`popover-status-${item.id}`}
-                                            >
-                                                {getPopoverContent(item)}
-                                            </Popover>
-                                        </>
-                                    </td>
+                                    <td className="p-2 text-center"></td>
                                     <td className="p-2">
-                                        {item?.operationStatus === "02" ||
-                                        item?.operationStatus === "06" ? (
+                                        {item?.operationStatus === "01" && (
                                             <>
                                                 <span
                                                     data-popover-target={
@@ -424,13 +340,12 @@ function QuoteList({
                                                         Enviar por WhatsApp
                                                     </a>
                                                     <br />
-
                                                     <a
                                                         className="font-medium text-green-600 dark:text-green-500 hover:underline"
                                                         target="_blank"
                                                         href="https://ww1.sunat.gob.pe/ol-ti-itconsultaunificadalibre/consultaUnificadaLibre/consulta"
                                                     >
-                                                        CONSULTA SUNAT 1
+                                                        CONVERTIR EN COMPROBANTE
                                                     </a>
                                                     <br />
                                                     <a
@@ -438,7 +353,7 @@ function QuoteList({
                                                         target="_blank"
                                                         href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
                                                     >
-                                                        CONSULTA SUNAT 2
+                                                        [Editar cliente]
                                                     </a>
                                                     <br />
                                                     <a
@@ -446,13 +361,18 @@ function QuoteList({
                                                         target="_blank"
                                                         href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
                                                     >
-                                                        Verificar XML en la
-                                                        SUNAT
+                                                        [Editar]
+                                                    </a>
+                                                    <br />
+                                                    <a
+                                                        className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                                                        target="_blank"
+                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
+                                                    >
+                                                        Borrar
                                                     </a>
                                                 </Popover>
                                             </>
-                                        ) : (
-                                            item?.operationStatusReadable
                                         )}
                                     </td>
                                 </tr>

@@ -67,6 +67,7 @@ const QUOTES_QUERY = gql`
                 client {
                     names
                     documentNumber
+                    documentType
                 }
                 subsidiary {
                     companyName
