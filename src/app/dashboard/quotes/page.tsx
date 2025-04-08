@@ -3,10 +3,12 @@ import { useState, useMemo, use, useEffect } from "react";
 import Breadcrumb from "@/components/Breadcrumb";
 import QuoteList from "./QuoteList";
 import QuoteFilter from "./QuoteFilter";
-import { gql, useLazyQuery } from "@apollo/client";
+import { gql, useLazyQuery, useMutation } from "@apollo/client";
 import { initFlowbite, Modal } from "flowbite";
 import { useAuth } from "@/components/providers/AuthProvider";
 import WhatsAppModal from "../sales/WhatsAppModal";
+import ClientEdit from "./ClientEdit";
+import { toast } from "react-toastify";
 const limaDate = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
 );
@@ -65,6 +67,7 @@ const QUOTES_QUERY = gql`
                 sunatDescriptionLow
                 codeHash
                 client {
+                    id
                     names
                     documentNumber
                     documentType
@@ -78,6 +81,74 @@ const QUOTES_QUERY = gql`
             }
             totalNumberOfPages
             totalNumberOfSales
+        }
+    }
+`;
+
+const GET_CLIENT_BY_ID = gql`
+    query GetClientById($clientId: ID!) {
+        clientById(clientId: $clientId) {
+            id
+            names
+            shortName
+            email
+            phone
+            address
+            country
+            documentType
+            documentNumber
+            isEnabled
+            isClient
+            isSupplier
+            economicActivityMain
+        }
+    }
+`;
+
+const UPDATE_PERSON = gql`
+    mutation UpdatePerson(
+        $id: ID!
+        $names: String
+        $shortName: String
+        $phone: String
+        $email: String
+        $address: String
+        $country: String
+        $districtId: String
+        $documentType: String
+        $documentNumber: String
+        $isEnabled: Boolean
+        $isSupplier: Boolean
+        $isClient: Boolean
+        $economicActivityMain: Int
+    ) {
+        updatePerson(
+            id: $id
+            names: $names
+            shortName: $shortName
+            phone: $phone
+            email: $email
+            address: $address
+            country: $country
+            districtId: $districtId
+            documentType: $documentType
+            documentNumber: $documentNumber
+            isEnabled: $isEnabled
+            isSupplier: $isSupplier
+            isClient: $isClient
+            economicActivityMain: $economicActivityMain
+        ) {
+            success
+            message
+            person {
+                id
+                names
+                shortName
+                email
+                phone
+                address
+                isEnabled
+            }
         }
     }
 `;
@@ -99,10 +170,33 @@ const initialStateCpe = {
     clientName: "",
     clientDoc: "",
 };
+const initialStatePerson = {
+    id: 0,
+    names: "",
+    shortName: "",
+    phone: "",
+    email: "",
+    address: "",
+    country: "PE",
+    countryReadable: "PERÚ",
+    districtId: "040101",
+    provinceId: "0401",
+    departmentId: "04",
+    districtName: "",
+    documentType: "6",
+    documentNumber: "",
+    isEnabled: true,
+    isSupplier: false,
+    isClient: true,
+    economicActivityMain: 0,
+};
 function QuotePage() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
     const [cpe, setCpe] = useState(initialStateCpe);
+    const [person, setPerson] = useState(initialStatePerson);
+
     const [modalWhatsApp, setModalWhatsApp] = useState<Modal | null>(null);
+    const [modalEditClient, setModalEditClient] = useState<Modal | null>(null);
     const auth = useAuth();
     const authContext = useMemo(
         () => ({
@@ -121,6 +215,44 @@ function QuotePage() {
         fetchPolicy: "network-only",
         onCompleted: () => initFlowbite(),
         onError: (err) => console.error("Error in quotes:", err),
+    });
+    const [getClientById] = useLazyQuery(GET_CLIENT_BY_ID, {
+        context: authContext,
+        onCompleted: (data) => {
+            if (data?.clientById) {
+                const cleanedData = {
+                    ...data.clientById,
+                    shortName: data.clientById.shortName || "",
+                    email: data.clientById.email || "",
+                    phone: data.clientById.phone || "",
+                    address: data.clientById.address || "",
+                    documentType:
+                        data.clientById.documentType?.replace("A_", "") || "",
+                    economicActivityMain:
+                        Number(
+                            data.clientById.economicActivityMain?.replace(
+                                "A_",
+                                ""
+                            )
+                        ) || 0,
+                };
+                setPerson(cleanedData);
+                modalEditClient?.show();
+            }
+        },
+        onError: (err) => console.error("Error in getClientById:", err),
+    });
+    const [updatePerson] = useMutation(UPDATE_PERSON, {
+        context: authContext,
+        onCompleted: (data) => {
+            if (!data.updatePerson.error) {
+                toast.success(data.updatePerson.message);
+                modalEditClient?.hide();
+                quotesQuery(); // Refresh the list
+            } else {
+                toast.error(data.updatePerson.message);
+            }
+        },
     });
     useEffect(() => {
         if (auth?.status === "authenticated" && auth?.jwtToken) {
@@ -173,6 +305,8 @@ function QuotePage() {
                                 quotesQuery={quotesQuery}
                                 quotesData={quotesData}
                                 modalWhatsApp={modalWhatsApp}
+                                modalEditClient={modalEditClient}
+                                getClientById={getClientById}
                                 cpe={cpe}
                                 setCpe={setCpe}
                                 user={auth?.user}
@@ -187,6 +321,14 @@ function QuotePage() {
                 cpe={cpe}
                 setCpe={setCpe}
                 initialStateCpe={initialStateCpe}
+                authContext={authContext}
+            />
+            <ClientEdit
+                modalEditClient={modalEditClient}
+                setModalEditClient={setModalEditClient}
+                person={person}
+                setPerson={setPerson}
+                jwtToken={auth?.jwtToken}
                 authContext={authContext}
             />
         </>

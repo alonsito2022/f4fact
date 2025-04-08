@@ -9,6 +9,7 @@ import SalePagination from "../sales/SalePagination";
 import LoadingIcon from "@/components/icons/LoadingIcon";
 import { Modal } from "flowbite";
 import PdfPreviewModal from "../sales/PdfPreviewModal";
+import { gql } from "@apollo/client";
 
 function QuoteList({
     setFilterObj,
@@ -16,12 +17,15 @@ function QuoteList({
     quotesQuery,
     quotesData,
     modalWhatsApp,
+    modalEditClient,
+    getClientById,
     cpe,
     setCpe,
     user,
 }: any) {
     const [pdfModal, setPdfModal] = useState<Modal | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string>("");
+
     const handleDownload = (url: string, filename: string) => {
         if (!url || !filename) {
             toast.error("URL o nombre de archivo no válido");
@@ -351,7 +355,23 @@ function QuoteList({
                                                     <a
                                                         className="font-medium text-green-600 dark:text-green-500 hover:underline"
                                                         target="_blank"
-                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
+                                                        href="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            console.log(
+                                                                "clientId",
+                                                                item?.client?.id
+                                                            );
+                                                            getClientById({
+                                                                variables: {
+                                                                    clientId:
+                                                                        item
+                                                                            ?.client
+                                                                            ?.id,
+                                                                },
+                                                            });
+                                                            modalEditClient.show();
+                                                        }}
                                                     >
                                                         [Editar cliente]
                                                     </a>

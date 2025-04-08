@@ -4,8 +4,8 @@ import GuideDocumentItem from "./GuideDocumentItem";
 import { IOperationDetail, IProduct, IRelatedDocument } from "@/app/types";
 import { gql, useQuery } from "@apollo/client";
 const PRODUCTS_QUERY = gql`
-    query ($subsidiaryId: Int!) {
-        allProducts(subsidiaryId: $subsidiaryId) {
+    query ($subsidiaryId: Int!, $available: Boolean!) {
+        allProducts(subsidiaryId: $subsidiaryId, available: $available) {
             id
             code
             name
@@ -24,6 +24,14 @@ const PRODUCTS_QUERY = gql`
             typeAffectationName
             subjectPerception
             observation
+            priceWithIgv1
+            priceWithIgv2
+            priceWithIgv3
+            priceWithIgv4
+            priceWithoutIgv1
+            priceWithoutIgv2
+            priceWithoutIgv3
+            priceWithoutIgv4
         }
     }
 `;
@@ -31,6 +39,7 @@ const PRODUCTS_QUERY = gql`
 function GuideDetailAndDocument({ guide, setGuide, auth, authContext }: any) {
     const getVariables = () => ({
         subsidiaryId: Number(auth?.user?.subsidiaryId),
+        available: true,
     });
     const {
         loading: productsLoading,
@@ -98,12 +107,18 @@ function GuideDetailAndDocument({ guide, setGuide, auth, authContext }: any) {
     const handleItemChange = (index: number, field: string, value: any) => {
         const newItems = [...guide.operationdetailSet];
         if (field === "productName") {
+            const normalizedValue = value.replace(/[\n\r\s]+/g, " ").trim();
             const selectedData = productsData?.allProducts?.find(
-                (product: IProduct) =>
-                    `${product.code ? product.code + " " : ""}${product.name} ${
-                        product.minimumUnitName
-                    }` === value
+                (product: IProduct) => {
+                    const productString = `${
+                        product.code ? product.code + " " : ""
+                    }${product.name} ${product.minimumUnitName}`
+                        .replace(/[\n\r\s]+/g, " ")
+                        .trim();
+                    return productString === normalizedValue;
+                }
             );
+
             if (selectedData !== undefined) {
                 newItems[index] = {
                     ...newItems[index],

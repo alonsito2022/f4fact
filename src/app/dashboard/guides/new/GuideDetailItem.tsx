@@ -25,7 +25,9 @@ const GuideDetailItem: React.FC<GuideDetailItemProps> = ({
         if (name === "quantity") {
             formattedValue = value.replace(/[^0-9]/g, "").slice(0, 6);
         }
-
+        if (name === "productName" && e.target instanceof HTMLInputElement) {
+            formattedValue = value.replace(/[\n\r\s]+/g, " ").trim();
+        }
         onChange(index, name, formattedValue);
     };
 
@@ -52,9 +54,9 @@ const GuideDetailItem: React.FC<GuideDetailItemProps> = ({
                             <option
                                 key={index}
                                 data-key={n.id}
-                                value={`${n.code ? n.code + " " : ""}${
-                                    n.name
-                                } ${n.minimumUnitName}`}
+                                value={`${n.code ? n.code + " " : ""}${n.name
+                                    .replace(/[\n\r\s]+/g, " ")
+                                    .trim()} ${n.minimumUnitName}`.trim()}
                             />
                         ))}
                     </datalist>

@@ -565,9 +565,17 @@ function NewSalePage() {
         if (name === "name" && event.target instanceof HTMLInputElement) {
             const dataList = event.target.list;
             if (dataList) {
-                const option = Array.from(dataList.options).find(
-                    (option) => option.value === value
-                );
+                const normalizedValue = value.replace(/[\n\r\s]+/g, " ").trim();
+                const option = Array.from(dataList.options).find((option) => {
+                    const normalizedOptionValue = option.value
+                        .replace(/[\n\r\s]+/g, " ")
+                        .trim();
+                    return (
+                        normalizedValue === normalizedOptionValue ||
+                        normalizedValue.startsWith(normalizedOptionValue) ||
+                        normalizedOptionValue.startsWith(normalizedValue)
+                    );
+                });
                 if (option) {
                     const selectedId = option.getAttribute("data-key");
                     setProduct({
@@ -575,7 +583,6 @@ function NewSalePage() {
                         id: Number(selectedId),
                         name: value,
                     });
-
                     modalAddDetail.show();
                     // setPurchaseDetail({...purchaseDetail, id: 0});
                 } else {
@@ -1333,7 +1340,12 @@ function NewSalePage() {
                                                     <option
                                                         key={index}
                                                         data-key={n.id}
-                                                        value={n.name}
+                                                        value={n.name
+                                                            .replace(
+                                                                /[\n\r\s]+/g,
+                                                                " "
+                                                            )
+                                                            .trim()}
                                                     />
                                                 )
                                             )}

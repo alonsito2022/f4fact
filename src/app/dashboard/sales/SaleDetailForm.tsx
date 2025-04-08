@@ -8,7 +8,13 @@ import {
     IProduct,
     ITypeAffectation,
 } from "@/app/types";
-import { DocumentNode, gql, useLazyQuery, useMutation } from "@apollo/client";
+import {
+    DocumentNode,
+    gql,
+    skipToken,
+    useLazyQuery,
+    useMutation,
+} from "@apollo/client";
 
 const PRODUCT_DETAIL_QUERY = gql`
     query ($productId: Int!) {
@@ -90,7 +96,6 @@ function SaleDetailForm({
 
     useEffect(() => {
         if (Number(product.id) > 0 && Number(invoiceDetail.id) === 0) {
-            console.log({ productId: Number(product.id) });
             productDetailQuery({
                 context: getAuthContext(),
                 variables: { productId: Number(product.id) },
