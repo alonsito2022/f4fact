@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState, useEffect } from "react";
+import { ChangeEvent, FormEvent, useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import Save from "@/components/icons/Save";
 import { Modal, ModalOptions } from "flowbite";
@@ -92,10 +92,13 @@ function ClientEdit({
     setModalEditClient,
     person,
     setPerson,
+    initialStatePerson,
     updatePerson,
     jwtToken,
     authContext,
 }: any) {
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+
     const {
         loading: documentTypesLoading,
         error: documentTypesError,
@@ -171,27 +174,27 @@ function ClientEdit({
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        const variables = {
+            id: person.id,
+            names: person.names,
+            shortName: person.shortName,
+            phone: person.phone,
+            email: person.email,
+            address: person.address,
+            country: person.country,
+            districtId: person.districtId,
+            documentType: person.documentType,
+            documentNumber: person.documentNumber,
+            isEnabled: person.isEnabled,
+            isSupplier: person.isSupplier,
+            isClient: person.isClient,
+            economicActivityMain: person.economicActivityMain,
+        };
+        console.log("variables", variables);
         updatePerson({
-            variables: {
-                input: {
-                    id: person.id,
-                    names: person.names,
-                    shortName: person.shortName,
-                    phone: person.phone,
-                    email: person.email,
-                    address: person.address,
-                    country: person.country,
-                    districtId: person.districtId,
-                    documentType: person.documentType,
-                    documentNumber: person.documentNumber,
-                    isEnabled: person.isEnabled,
-                    isSupplier: person.isSupplier,
-                    isClient: person.isClient,
-                    economicActivityMain: person.economicActivityMain,
-                },
-            },
+            variables: variables,
         });
-        modalEditClient.hide();
+        handleCloseModal();
     };
 
     const handleSntDocument = async (documentNumber: string) => {
@@ -376,6 +379,13 @@ function ClientEdit({
             setPerson({ ...person, [name]: value });
         }
     };
+    const handleCloseModal = () => {
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+        setPerson(initialStatePerson);
+        modalEditClient.hide();
+    };
     useEffect(() => {
         if (modalEditClient == null) {
             const $targetEl = document.getElementById("modalEditClient");
@@ -408,10 +418,9 @@ function ClientEdit({
                                     : "Registrar nuevo cliente"}
                             </h3>
                             <button
+                                ref={closeButtonRef}
                                 type="button"
-                                onClick={() => {
-                                    modalEditClient.hide();
-                                }}
+                                onClick={handleCloseModal}
                                 className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                             >
                                 <svg
@@ -996,9 +1005,7 @@ function ClientEdit({
                             <div className="flex items-center p-4 md:p-5 space-x-3 rtl:space-x-reverse border-t border-gray-200 rounded-b dark:border-gray-600">
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        modalEditClient.hide();
-                                    }}
+                                    onClick={handleCloseModal}
                                     className="px-5 py-2 inline-flex items-center gap-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:text-white dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
                                 >
                                     Cerrar

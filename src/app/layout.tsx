@@ -27,7 +27,7 @@ export default async function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
-                <link rel="icon" href="/images/logo.svg" />
+                <link rel="icon" href="/images/4fact.svg" />
             </head>
             <body className={`${inter.className} bg-gray-50 dark:bg-gray-900 `}>
                 <AuthProvider session={session}>

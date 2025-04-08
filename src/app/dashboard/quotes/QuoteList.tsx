@@ -25,32 +25,6 @@ function QuoteList({
 }: any) {
     const [pdfModal, setPdfModal] = useState<Modal | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string>("");
-
-    const handleDownload = (url: string, filename: string) => {
-        if (!url || !filename) {
-            toast.error("URL o nombre de archivo no válido");
-            return;
-        }
-
-        fetch(url.toString().replace("http:", "https:"))
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Error en la respuesta de la descarga");
-                }
-                return response.blob();
-            })
-            .then((blob) => {
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = filename; // Nombre del archivo a descargar
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            })
-            .catch((error) =>
-                console.error("Error al descargar el archivo:", error)
-            );
-    };
     const transformedSalesData = quotesData?.allQuotes?.quotes?.map(
         (item: IOperation) => {
             const docType = item.client?.documentType?.replace("A_", "");
@@ -73,46 +47,7 @@ function QuoteList({
             };
         }
     );
-    const getStatusClassName = (status: string) => {
-        const baseClasses = "flex items-center justify-center";
-        if (status === "02") {
-            return `${baseClasses} bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300`;
-        }
-        if (status === "06") {
-            return `${baseClasses} bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap`;
-        }
-        return `${baseClasses}`;
-    };
 
-    const getStatusContent = (status: string, documentType: string) => {
-        if (status === "01") return <LoadingIcon />;
-        if (status === "02") {
-            if (documentType === "09")
-                return (
-                    <>
-                        <SunatCheck /> 0
-                    </>
-                );
-            if (documentType === "31") return <SunatCheck />;
-            return "-";
-        }
-        if (status === "06") return <SunatCancel />;
-        return "";
-    };
-
-    const getPopoverContent = (item: IOperation) => {
-        if (item.operationStatus === "02")
-            return <p>{item.sunatDescription}</p>;
-        if (item.operationStatus === "06") {
-            return (
-                <p>
-                    {item.sunatDescriptionLow ||
-                        "Los documentos no aceptados por la SUNAT se consideran como documentos ANULADOS para efectos tributarios en la mayoría de casos."}
-                </p>
-            );
-        }
-        return <p>Sin información</p>;
-    };
     const handleWhatsAppClick = (item: IOperation) => {
         modalWhatsApp.show();
         setCpe({

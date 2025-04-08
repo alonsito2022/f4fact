@@ -101,6 +101,10 @@ const GET_CLIENT_BY_ID = gql`
             isClient
             isSupplier
             economicActivityMain
+            district {
+                id
+                description
+            }
         }
     }
 `;
@@ -228,6 +232,8 @@ function QuotePage() {
                     address: data.clientById.address || "",
                     documentType:
                         data.clientById.documentType?.replace("A_", "") || "",
+                    districtId: data.clientById.district?.id || "040101",
+
                     economicActivityMain:
                         Number(
                             data.clientById.economicActivityMain?.replace(
@@ -328,6 +334,8 @@ function QuotePage() {
                 setModalEditClient={setModalEditClient}
                 person={person}
                 setPerson={setPerson}
+                initialStatePerson={initialStatePerson}
+                updatePerson={updatePerson}
                 jwtToken={auth?.jwtToken}
                 authContext={authContext}
             />

@@ -45,12 +45,12 @@ function LoginPage() {
                         <div className="flex items-center justify-start">
                             <a href="/dashboard" className="flex ml-2 md:mr-24">
                                 <img
-                                    src="/images/logo.svg"
-                                    className="h-8 mr-3"
+                                    src="/images/4fact.svg"
+                                    className="h-8 mr-3 dark:[filter:invert(100%)_sepia(100%)_brightness(100%)_contrast(300%)]"
                                     alt="FlowBite Logo"
                                 />
                                 <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white ">
-                                    4Fact
+                                    tuF4ct
                                 </span>
                             </a>
                         </div>
