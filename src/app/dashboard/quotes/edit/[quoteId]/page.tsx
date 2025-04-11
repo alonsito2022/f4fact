@@ -116,7 +116,7 @@ const QUOTE_QUERY_BY_ID = gql`
         }
     }
 `;
-export const UPDATE_QUOTE_MUTATION = gql`
+const UPDATE_QUOTE_MUTATION = gql`
     mutation UpdateQuote(
         $quoteId: ID!
         $serial: String
