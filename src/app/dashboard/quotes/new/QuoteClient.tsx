@@ -13,6 +13,7 @@ function QuoteClient({
     modalAddClient,
     authContext,
     SEARCH_CLIENT_BY_PARAMETER,
+    initialClientData,
 }: any) {
     const [clientSearch, setClientSearch] = useState("");
     const [
@@ -51,6 +52,22 @@ function QuoteClient({
             });
         }
     };
+    useEffect(() => {
+        if (
+            initialClientData &&
+            initialClientData.id !== 0 &&
+            initialClientData.documentNumber &&
+            initialClientData.names
+        ) {
+            const clientSearchValue = `${initialClientData.documentNumber} ${initialClientData.names}`;
+            setClientSearch(clientSearchValue);
+            setSale({
+                ...sale,
+                clientId: initialClientData.id,
+                clientName: initialClientData.names,
+            });
+        }
+    }, [initialClientData]);
     useEffect(() => {
         if (clientSearch.length > 2) {
             const queryVariables = {

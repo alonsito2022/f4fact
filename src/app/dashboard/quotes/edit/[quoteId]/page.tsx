@@ -33,6 +33,9 @@ import SaleDetailList from "@/app/dashboard/sales/SaleDetailList";
 import QuoteSearchProduct from "../../new/QuoteSearchProduct";
 import Add from "@/components/icons/Add";
 import { useRouter } from "next/navigation";
+import ProductForm from "@/app/dashboard/logistics/products/ProductForm";
+import ClientForm from "@/app/dashboard/sales/ClientForm";
+import SaleDetailForm from "@/app/dashboard/sales/SaleDetailForm";
 // Replace the current today constant with this:
 const limaDate = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
@@ -81,6 +84,7 @@ const QUOTE_QUERY_BY_ID = gql`
             client {
                 id
                 names
+                documentNumber
             }
             subsidiary {
                 company {
@@ -107,6 +111,7 @@ const QUOTE_QUERY_BY_ID = gql`
                 remainingQuantity
                 quantityReturned
                 quantityAvailable
+                description
             }
         }
     }
@@ -279,7 +284,18 @@ const DETRACTION_PAYMENT_METHOD_QUERY = gql`
         }
     }
 `;
-
+const TYPE_AFFECTATION_QUERY = gql`
+    query {
+        allTypeAffectations {
+            id
+            code
+            name
+            affectCode
+            affectName
+            affectType
+        }
+    }
+`;
 const PRODUCTS_QUERY = gql`
     query ($subsidiaryId: Int!, $available: Boolean!) {
         allProducts(subsidiaryId: $subsidiaryId, available: $available) {
@@ -437,6 +453,11 @@ function EditQuotePage() {
     const [saleDetail, setSaleDetail] = useState(initialStateSaleDetail);
 
     const [person, setPerson] = useState(initialStatePerson);
+    const [initialClientData, setInitialClientData] = useState({
+        id: 0,
+        names: "",
+        documentNumber: "",
+    });
     const [product, setProduct] = useState(initialStateProduct);
     const [modalProduct, setModalProduct] = useState<Modal | any>(null);
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
@@ -496,6 +517,14 @@ function EditQuotePage() {
         context: authContext,
         skip: !auth?.jwtToken,
     });
+    const {
+        loading: typeAffectationsLoading,
+        error: typeAffectationsError,
+        data: typeAffectationsData,
+    } = useQuery(TYPE_AFFECTATION_QUERY, {
+        context: authContext,
+        skip: !auth?.jwtToken,
+    });
     const getVariables = () => ({
         subsidiaryId: Number(auth?.user?.subsidiaryId),
         available: true,
@@ -519,48 +548,51 @@ function EditQuotePage() {
         context: authContext,
         fetchPolicy: "network-only",
         onCompleted: (data) => {
+            console.log(auth?.jwtToken);
             const dataQuote = data.getSaleById;
             const igv = Number(dataQuote?.igvPercentage) / 100;
-            const formattedOperationdetailSet = dataQuote.operationdetailSet
-                .filter(
-                    (detail: IOperationDetail) =>
-                        Number(detail.quantityAvailable) > 0
-                )
-                .map((detail: IOperationDetail, index: number) => ({
-                    ...detail,
-                    quantity: Number(detail.quantityAvailable).toString(),
-                    quantityReturned: Number(detail.quantityReturned),
-                    quantityAvailable: Number(detail.quantityAvailable),
-                    unitValue: Number(detail.unitValue).toFixed(2),
-                    unitPrice: Number(detail.unitPrice).toFixed(2),
-                    igvPercentage: Number(detail.igvPercentage).toFixed(2),
-                    discountPercentage: Number(
-                        detail.discountPercentage
-                    ).toFixed(2),
-                    totalDiscount: Number(detail.totalDiscount).toFixed(2),
-                    totalValue: Number(
-                        Number(detail.unitValue) *
-                            Number(detail.quantityAvailable)
-                    ).toFixed(2),
-                    totalIgv: Number(
-                        Number(detail.unitValue) *
-                            Number(detail.quantityAvailable) *
-                            igv
-                    ).toFixed(2),
-                    totalAmount: Number(
-                        Number(detail.unitValue) *
-                            Number(detail.quantityAvailable) *
-                            (1 + igv)
-                    ).toFixed(2),
-                    totalPerception: Number(detail.totalPerception).toFixed(2),
-                    totalToPay: Number(detail.totalToPay).toFixed(2),
-                    temporaryId: index + 1,
-                    productTariffId: Number(detail.productTariffId),
-                    id: Number(detail.id),
-                }));
+            const formattedOperationdetailSet =
+                dataQuote.operationdetailSet.map(
+                    (detail: IOperationDetail, index: number) => ({
+                        ...detail,
+                        quantity: Number(detail.quantityAvailable).toString(),
+                        quantityReturned: Number(detail.quantityReturned),
+                        quantityAvailable: Number(detail.quantityAvailable),
+                        unitValue: Number(detail.unitValue).toFixed(2),
+                        unitPrice: Number(detail.unitPrice).toFixed(2),
+                        igvPercentage: Number(detail.igvPercentage).toFixed(2),
+                        discountPercentage: Number(
+                            detail.discountPercentage
+                        ).toFixed(2),
+                        totalDiscount: Number(detail.totalDiscount).toFixed(2),
+                        totalValue: Number(
+                            Number(detail.unitValue) *
+                                Number(detail.quantityAvailable)
+                        ).toFixed(2),
+                        totalIgv: Number(
+                            Number(detail.unitValue) *
+                                Number(detail.quantityAvailable) *
+                                igv
+                        ).toFixed(2),
+                        totalAmount: Number(
+                            Number(detail.unitValue) *
+                                Number(detail.quantityAvailable) *
+                                (1 + igv)
+                        ).toFixed(2),
+                        totalPerception: Number(detail.totalPerception).toFixed(
+                            2
+                        ),
+                        totalToPay: Number(detail.totalToPay).toFixed(2),
+                        temporaryId: index + 1,
+                        productTariffId: Number(detail.productTariffId),
+                        id: Number(detail.id),
+                        description: String(detail.description || ""),
+                    })
+                );
 
             setQuote((prevSale) => ({
                 ...prevSale,
+                id: Number(dataQuote?.id),
                 igvType: Number(
                     dataQuote?.igvType?.toString().replace("A_", "")
                 ),
@@ -590,6 +622,11 @@ function EditQuotePage() {
                 ).toFixed(2),
                 totalToPay: Number(dataQuote?.totalToPay).toFixed(2),
             }));
+            setInitialClientData({
+                id: dataQuote?.client.id,
+                names: dataQuote?.client.names,
+                documentNumber: dataQuote?.client.documentNumber,
+            });
             setIsLoading(false);
         },
         onError: (err) => {
@@ -635,9 +672,9 @@ function EditQuotePage() {
         }
         if (isProcessing) return;
         setIsProcessing(true);
-        console.log("invoice", quote);
         try {
             const variables = {
+                quoteId: Number(quote.id),
                 serial: quote.serial,
                 correlative: parseInt(
                     quote.correlative === "" ? "0" : quote.correlative
@@ -716,12 +753,8 @@ function EditQuotePage() {
                 totalToPay: parseFloat(quote.totalToPay) || 0,
                 totalPayed: parseFloat(quote.totalPayed) || 0,
                 totalTurned: parseFloat(quote.totalTurned) || 0,
-                creditNoteType: quote.creditNoteType,
-                parentOperationId: Number(quote.parentOperationId) || 0,
-
                 observation: quote.observation || "",
             };
-            console.log("variables", variables);
             const { data, errors } = await updateQuote({
                 variables: variables,
             });
@@ -751,8 +784,8 @@ function EditQuotePage() {
                 }
             }
         } catch (error) {
-            console.error("Error creating invoice:", error);
-            toast("Error al guardar la venta", {
+            console.error("Error updating quote:", error);
+            toast("Error al guardar la cotizacion", {
                 hideProgressBar: true,
                 autoClose: 2000,
                 type: "error",
@@ -838,6 +871,9 @@ function EditQuotePage() {
                                                         }
                                                         SEARCH_CLIENT_BY_PARAMETER={
                                                             SEARCH_CLIENT_BY_PARAMETER
+                                                        }
+                                                        initialClientData={
+                                                            initialClientData
                                                         }
                                                     />
                                                 </div>
@@ -967,6 +1003,44 @@ function EditQuotePage() {
                             </div>
                         </div>
                     </div>
+                    <ProductForm
+                        modalProduct={modalProduct}
+                        setModalProduct={setModalProduct}
+                        product={product}
+                        setProduct={setProduct}
+                        initialStateProduct={initialStateProduct}
+                        auth={auth}
+                        authContext={authContext}
+                        typeAffectationsData={typeAffectationsData}
+                        PRODUCTS_QUERY={PRODUCTS_QUERY}
+                        getVariables={getVariables}
+                    />
+                    <ClientForm
+                        modalAddClient={modalAddClient}
+                        setModalAddClient={setModalAddClient}
+                        person={person}
+                        setPerson={setPerson}
+                        jwtToken={auth?.jwtToken}
+                        authContext={authContext}
+                        SEARCH_CLIENT_BY_PARAMETER={SEARCH_CLIENT_BY_PARAMETER}
+                        sale={quote}
+                        setSale={setQuote}
+                    />
+                    <SaleDetailForm
+                        modalAddDetail={modalAddDetail}
+                        setModalAddDetail={setModalAddDetail}
+                        product={product}
+                        setProduct={setProduct}
+                        invoiceDetail={saleDetail}
+                        setInvoiceDetail={setSaleDetail}
+                        invoice={quote}
+                        setInvoice={setQuote}
+                        auth={auth}
+                        initialStateProduct={initialStateProduct}
+                        initialStateSaleDetail={initialStateSaleDetail}
+                        typeAffectationsData={typeAffectationsData}
+                        productsData={productsData}
+                    />
                 </>
             )}
         </>
