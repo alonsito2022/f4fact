@@ -286,7 +286,7 @@ function NewGuidePage() {
 
     const saveGuide = useCallback(async () => {
         if (isSaving) return; // Prevent multiple submissions
-
+        console.log("operationdetailSet", guide.operationdetailSet);
         try {
             setIsSaving(true);
 

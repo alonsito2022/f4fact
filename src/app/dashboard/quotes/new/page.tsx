@@ -36,6 +36,9 @@ import SaleTotalList from "../../sales/SaleTotalList";
 import { useRouter } from "next/navigation";
 import SaleDetailList from "../../sales/SaleDetailList";
 import SaleDetailForm from "../../sales/SaleDetailForm";
+import QuoteHeader from "./QuoteHeader";
+import QuoteClient from "./QuoteClient";
+import QuoteSearchProduct from "./QuoteSearchProduct";
 
 const limaDate = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
@@ -426,7 +429,6 @@ function NewQuotePage() {
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
 
     const [modalAddClient, setModalAddClient] = useState<Modal | any>(null);
-    const [clientSearch, setClientSearch] = useState("");
     const auth = useAuth();
     const clientInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
@@ -505,41 +507,7 @@ function NewQuotePage() {
         context: authContext,
         skip: !auth?.jwtToken,
     });
-    const [
-        searchClientQuery,
-        {
-            loading: searchClientLoading,
-            error: searchClientError,
-            data: searchClientData,
-        },
-    ] = useLazyQuery(SEARCH_CLIENT_BY_PARAMETER, {
-        context: authContext,
-        fetchPolicy: "network-only",
-        onError: (err) => console.error("Error in Search Client:", err),
-    });
-    const handleClientSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setClientSearch(event.target.value);
-    };
-    const handleClientSelect = (event: ChangeEvent<HTMLInputElement>) => {
-        const selectedOption = event.target.value;
 
-        const selectedData = searchClientData?.searchClientByParameter?.find(
-            (person: IPerson) =>
-                `${person.documentNumber} ${person.names}` === selectedOption
-        );
-
-        if (selectedData) {
-            setSale({
-                ...sale,
-                clientId: selectedData.id,
-                clientName: selectedData.names,
-                clientDocumentType: selectedData?.documentType?.replace(
-                    "A_",
-                    ""
-                ),
-            });
-        }
-    };
     const handleSale = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
@@ -549,45 +517,7 @@ function NewQuotePage() {
         setSale({ ...sale, [name]: value });
         // TODO: LOGIC HERE
     };
-    const handleProduct = (
-        event: ChangeEvent<
-            HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
-        >
-    ) => {
-        const { name, value } = event.target;
 
-        if (name === "name" && event.target instanceof HTMLInputElement) {
-            const dataList = event.target.list;
-            if (dataList) {
-                const normalizedValue = value.replace(/[\n\r\s]+/g, " ").trim();
-                const option = Array.from(dataList.options).find((option) => {
-                    const normalizedOptionValue = option.value
-                        .replace(/[\n\r\s]+/g, " ")
-                        .trim();
-                    return (
-                        normalizedValue === normalizedOptionValue ||
-                        normalizedValue.startsWith(normalizedOptionValue) ||
-                        normalizedOptionValue.startsWith(normalizedValue)
-                    );
-                });
-                if (option) {
-                    const selectedId = option.getAttribute("data-key");
-                    setProduct({
-                        ...product,
-                        id: Number(selectedId),
-                        name: value,
-                    });
-
-                    modalAddDetail.show();
-                    // setPurchaseDetail({...purchaseDetail, id: 0});
-                } else {
-                    setProduct({ ...product, id: 0, name: value });
-                }
-            } else {
-                console.log("sin datalist");
-            }
-        } else setProduct({ ...product, [name]: value });
-    };
     function useCustomMutation(mutation: DocumentNode) {
         return useMutation(mutation, {
             context: authContext,
@@ -767,18 +697,6 @@ function NewQuotePage() {
         setIsProcessing,
     ]);
 
-    useEffect(() => {
-        if (clientSearch.length > 2) {
-            const queryVariables = {
-                search: clientSearch,
-                isClient: true,
-            };
-            searchClientQuery({
-                variables: queryVariables,
-            });
-        }
-    }, [clientSearch]);
-
     // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
     if (auth?.status === "loading") {
         return <p className="text-center">Cargando sesión...</p>;
@@ -803,386 +721,38 @@ function NewQuotePage() {
                         <div className="overflow-hidden shadow-lg rounded-lg">
                             <div className="p-4 md:p-5 space-y-4">
                                 <div className="grid gap-4 ">
-                                    <fieldset className="border-2 border-blue-200 dark:border-blue-900 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative group transition-all duration-300 hover:shadow-blue-500/20 hover:shadow-2xl">
-                                        <legend className="px-2 text-blue-600 dark:text-blue-400 font-semibold text-sm transition-all duration-300 group-hover:text-blue-700 dark:group-hover:text-blue-300">
-                                            <div className="flex items-center gap-2">
-                                                <svg
-                                                    className="w-4 h-4"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                    />
-                                                </svg>
-                                                Información General
-                                            </div>
-                                        </legend>
-                                        <div className="grid gap-6 lg:grid-cols-6 sm:grid-cols-1 md:grid-cols-3">
-                                            {/* IGV % */}
-                                            <div>
-                                                <label
-                                                    htmlFor="igvType"
-                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                >
-                                                    IGV %{" "}
-                                                </label>
-                                                <select
-                                                    value={sale.igvType}
-                                                    name="igvType"
-                                                    onChange={handleSale}
-                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                    required
-                                                >
-                                                    <option value={18}>
-                                                        18%
-                                                    </option>
-                                                    <option value={10}>
-                                                        10% (Ley 31556)
-                                                    </option>
-                                                    <option value={4}>
-                                                        4% (IVAP)
-                                                    </option>
-                                                </select>
-                                            </div>
-
-                                            {/* Tipo operacion */}
-                                            <div className="md:col-span-2">
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    Tipo operacion
-                                                </label>
-                                                <select
-                                                    value={sale.operationType}
-                                                    name="operationType"
-                                                    onChange={handleSale}
-                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm uppercase"
-                                                    required
-                                                >
-                                                    {operationTypesData?.allOperationTypes
-                                                        ?.filter(
-                                                            (
-                                                                o: IOperationType
-                                                            ) =>
-                                                                [
-                                                                    "0101", // Venta interna
-                                                                    // "0200", // Exportación
-                                                                    // "0502", // Anticipos
-                                                                    // "0401", // Ventas no domiciliados
-                                                                    "1001", // Operación Sujeta a Detracción
-                                                                    // "1002", // Operación Sujeta a Detracción- Recursos Hidrobiológicos
-                                                                    // "1003", // Operación Sujeta a Detracción- Servicios de Transporte Pasajeros
-                                                                    // "1004", // Operación Sujeta a Detracción- Servicios de Transporte Carga
-                                                                    "2001", // Operación Sujeta a Percepción
-                                                                ].includes(
-                                                                    o.code
-                                                                )
-                                                        )
-                                                        .map(
-                                                            (
-                                                                o: IOperationType,
-                                                                k: number
-                                                            ) => (
-                                                                <option
-                                                                    key={k}
-                                                                    value={
-                                                                        o.code
-                                                                    }
-                                                                >
-                                                                    {`[${o.code}] `}
-                                                                    {o.name}
-                                                                </option>
-                                                            )
-                                                        )}
-                                                </select>
-                                            </div>
-                                            {/* Fecha emisión */}
-                                            <div>
-                                                <label
-                                                    htmlFor="emitDate"
-                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                >
-                                                    Fecha emisión
-                                                </label>
-                                                <input
-                                                    type="date"
-                                                    name="emitDate"
-                                                    id="emitDate"
-                                                    value={sale.emitDate}
-                                                    onChange={handleSale}
-                                                    onFocus={(e) =>
-                                                        e.target.select()
-                                                    }
-                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                    required
-                                                />
-                                            </div>
-                                            {/* Moneda */}
-                                            <div>
-                                                <label
-                                                    htmlFor="currencyType"
-                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                >
-                                                    Moneda
-                                                </label>
-                                                <select
-                                                    value={sale.currencyType}
-                                                    name="currencyType"
-                                                    onChange={handleSale}
-                                                    className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                >
-                                                    <option value={0} disabled>
-                                                        Moneda
-                                                    </option>
-                                                    <option value={"PEN"}>
-                                                        S/ PEN - SOLES
-                                                    </option>
-                                                    <option value={"USD"}>
-                                                        US$ USD - DÓLARES
-                                                        AMERICANOS
-                                                    </option>
-                                                    <option value={"EUR"}>
-                                                        € EUR - EUROS
-                                                    </option>
-                                                    <option value={"GBP"}>
-                                                        £ GBP - LIBRA ESTERLINA
-                                                    </option>
-                                                </select>
-                                            </div>
-
-                                            {sale.currencyType !== "PEN" && (
-                                                <>
-                                                    {/* Tipo de Cambio */}
-                                                    <div>
-                                                        <label
-                                                            htmlFor="saleExchangeRate"
-                                                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                        >
-                                                            Tipo de cambio
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            name="saleExchangeRate"
-                                                            id="saleExchangeRate"
-                                                            maxLength={10}
-                                                            value={
-                                                                sale.saleExchangeRate
-                                                            }
-                                                            onChange={
-                                                                handleSale
-                                                            }
-                                                            onFocus={(e) =>
-                                                                e.target.select()
-                                                            }
-                                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                            autoComplete="off"
-                                                        />
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    </fieldset>
-                                    <fieldset className="border-2 border-cyan-200 dark:border-cyan-900 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative group transition-all duration-300 hover:shadow-cyan-500/20 hover:shadow-2xl">
-                                        <legend className="px-2 text-cyan-600 dark:text-cyan-400 font-semibold text-sm transition-all duration-300 group-hover:text-cyan-700 dark:group-hover:text-cyan-300">
-                                            <div className="flex items-center gap-2">
-                                                <svg
-                                                    className="w-4 h-4"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                                    />
-                                                </svg>
-                                                <span className="flex items-center gap-2">
-                                                    Datos del Cliente
-                                                    <span className="text-xs font-normal text-cyan-500 dark:text-cyan-400">
-                                                        (Buscar por RUC/DNI o
-                                                        Nombre)
-                                                    </span>
-                                                </span>
-                                            </div>
-                                        </legend>
-                                        <div className="grid gap-6 lg:grid-cols-4 sm:grid-cols-1 md:grid-cols-2">
-                                            {/* Cliente */}
-
-                                            <div className="md:col-span-4">
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                                    Cliente
-                                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
-                                                        {sale.clientId > 0
-                                                            ? "✓ Cliente seleccionado"
-                                                            : "⚠️ Seleccione un cliente"}
-                                                    </span>
-                                                </label>
-                                                <div className="relative w-full mt-1 group">
-                                                    <input
-                                                        ref={clientInputRef}
-                                                        type="text"
-                                                        className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                        maxLength={200}
-                                                        value={clientSearch}
-                                                        onChange={
-                                                            handleClientSearchChange
-                                                        }
-                                                        onInput={
-                                                            handleClientSelect
-                                                        }
-                                                        onFocus={(e) =>
-                                                            e.target.select()
-                                                        }
-                                                        autoComplete="off"
-                                                        // disabled={
-                                                        //     searchClientLoading
-                                                        // }
-                                                        placeholder="Buscar cliente..."
-                                                        list="clientNameList"
-                                                        required
-                                                    />
-                                                    <datalist
-                                                        id="clientNameList"
-                                                        className="custom-datalist"
-                                                    >
-                                                        {searchClientData?.searchClientByParameter?.map(
-                                                            (
-                                                                n: IPerson,
-                                                                index: number
-                                                            ) => (
-                                                                <option
-                                                                    key={index}
-                                                                    data-key={
-                                                                        n.id
-                                                                    }
-                                                                    value={`${n.documentNumber} ${n.names}`}
-                                                                />
-                                                            )
-                                                        )}
-                                                    </datalist>
-                                                    <button
-                                                        type="button"
-                                                        className="absolute inset-y-0 right-10 px-2 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
-                                                        onClick={() => {
-                                                            setSale({
-                                                                ...sale,
-                                                                clientName: "",
-                                                                clientId: 0,
-                                                            });
-                                                            setClientSearch("");
-                                                        }}
-                                                    >
-                                                        <SunatCancel />
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
-                                                        onClick={(e) => {
-                                                            modalAddClient.show();
-                                                            setPerson(
-                                                                initialStatePerson
-                                                            );
-                                                        }}
-                                                    >
-                                                        <Add />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <style jsx>{`
-                                                .custom-datalist option {
-                                                    background-color: #1f2937; /* Dark background */
-                                                    color: #d1d5db; /* Light text */
-                                                    padding: 8px;
-                                                    border: 1px solid #374151; /* Border color */
-                                                }
-                                                .custom-datalist option:hover {
-                                                    background-color: #4b5563; /* Hover background */
-                                                    color: #ffffff; /* Hover text */
-                                                }
-                                            `}</style>
-                                        </div>
-                                    </fieldset>
+                                    <QuoteHeader
+                                        sale={sale}
+                                        handleSale={handleSale}
+                                        operationTypesData={operationTypesData}
+                                    />
+                                    <QuoteClient
+                                        sale={sale}
+                                        setSale={setSale}
+                                        setPerson={setPerson}
+                                        initialStatePerson={initialStatePerson}
+                                        clientInputRef={clientInputRef}
+                                        modalAddClient={modalAddClient}
+                                        authContext={authContext}
+                                        SEARCH_CLIENT_BY_PARAMETER={
+                                            SEARCH_CLIENT_BY_PARAMETER
+                                        }
+                                    />
                                 </div>
                                 {/* Búsqueda de Productos */}
-                                <div className="p-6 border-2 border-emerald-200 dark:border-emerald-900 bg-white dark:bg-gray-900 rounded-xl shadow-lg relative group transition-all duration-300 hover:shadow-emerald-500/20 hover:shadow-2xl">
-                                    <div className="flex items-center gap-2 mb-4 text-emerald-600 dark:text-emerald-400">
-                                        <svg
-                                            className="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                            />
-                                        </svg>
-                                        <h3 className="font-semibold text-sm">
-                                            Búsqueda de Productos
-                                        </h3>
-                                    </div>
-                                    <div className="relative w-full">
-                                        <input
-                                            type="text"
-                                            className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            maxLength={100}
-                                            value={product.name}
-                                            name="name"
-                                            onChange={handleProduct}
-                                            onFocus={(e) => e.target.select()}
-                                            autoComplete="off"
-                                            disabled={productsLoading}
-                                            placeholder="Buscar Producto..."
-                                            list="productNameList"
-                                            required
-                                        />
-                                        <datalist id="productNameList">
-                                            {productsData?.allProducts?.map(
-                                                (
-                                                    n: IProduct,
-                                                    index: number
-                                                ) => (
-                                                    <option
-                                                        key={index}
-                                                        data-key={n.id}
-                                                        value={n.name
-                                                            .replace(
-                                                                /[\n\r\s]+/g,
-                                                                " "
-                                                            )
-                                                            .trim()}
-                                                    />
-                                                )
-                                            )}
-                                        </datalist>
-                                        <button
-                                            type="button"
-                                            className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
-                                            onClick={(e) => {
-                                                modalProduct.show();
-                                                setProduct({
-                                                    ...initialStateProduct,
-                                                    onSaveSuccess: () => {
-                                                        modalProduct.hide();
-                                                        modalAddDetail.show();
-                                                        setSaleDetail(
-                                                            initialStateSaleDetail
-                                                        );
-                                                    },
-                                                });
-                                            }}
-                                        >
-                                            <Add />
-                                        </button>
-                                    </div>
-                                </div>
+                                <QuoteSearchProduct
+                                    modalProduct={modalProduct}
+                                    product={product}
+                                    productsLoading={productsLoading}
+                                    productsData={productsData}
+                                    setProduct={setProduct}
+                                    initialStateProduct={initialStateProduct}
+                                    modalAddDetail={modalAddDetail}
+                                    setSaleDetail={setSaleDetail}
+                                    initialStateSaleDetail={
+                                        initialStateSaleDetail
+                                    }
+                                />
                                 {/* Lista de Detalles */}
                                 <div className="flex flex-col gap-4">
                                     <SaleDetailList

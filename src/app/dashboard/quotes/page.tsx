@@ -193,6 +193,10 @@ const initialStatePerson = {
     isSupplier: false,
     isClient: true,
     economicActivityMain: 0,
+    district: {
+        id: "",
+        description: "",
+    },
 };
 function QuotePage() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
@@ -226,6 +230,7 @@ function QuotePage() {
             if (data?.clientById) {
                 const cleanedData = {
                     ...data.clientById,
+                    id: Number(data.clientById.id) || 0,
                     shortName: data.clientById.shortName || "",
                     email: data.clientById.email || "",
                     phone: data.clientById.phone || "",
@@ -233,7 +238,10 @@ function QuotePage() {
                     documentType:
                         data.clientById.documentType?.replace("A_", "") || "",
                     districtId: data.clientById.district?.id || "040101",
-
+                    provinceId:
+                        data.clientById.district?.id.substring(0, 4) || "0401",
+                    departmentId:
+                        data.clientById.district?.id.substring(0, 2) || "04",
                     economicActivityMain:
                         Number(
                             data.clientById.economicActivityMain?.replace(
@@ -241,6 +249,9 @@ function QuotePage() {
                                 ""
                             )
                         ) || 0,
+                    countryReadable: data.clientById.countryReadable || "PERÚ",
+                    economicActivityMainReadable:
+                        data.clientById.economicActivityMainReadable || "",
                 };
                 setPerson(cleanedData);
                 modalEditClient?.show();
@@ -254,7 +265,18 @@ function QuotePage() {
             if (!data.updatePerson.error) {
                 toast.success(data.updatePerson.message);
                 modalEditClient?.hide();
-                quotesQuery(); // Refresh the list
+                quotesQuery({
+                    variables: {
+                        subsidiaryId: auth?.user?.isSuperuser
+                            ? Number(filterObj.subsidiaryId)
+                            : Number(auth?.user?.subsidiaryId),
+                        startDate: filterObj.startDate,
+                        endDate: filterObj.endDate,
+                        documentType: filterObj.documentType,
+                        page: Number(filterObj.page),
+                        pageSize: Number(filterObj.pageSize),
+                    },
+                });
             } else {
                 toast.error(data.updatePerson.message);
             }

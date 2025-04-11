@@ -118,6 +118,7 @@ function GuideDetailAndDocument({ guide, setGuide, auth, authContext }: any) {
                     return productString === normalizedValue;
                 }
             );
+            console.log("selectedData", selectedData);
 
             if (selectedData !== undefined) {
                 newItems[index] = {

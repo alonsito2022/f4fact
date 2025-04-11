@@ -176,21 +176,56 @@ function ClientEdit({
         e.preventDefault();
         const variables = {
             id: person.id,
-            names: person.names,
-            shortName: person.shortName,
-            phone: person.phone,
-            email: person.email,
-            address: person.address,
-            country: person.country,
-            districtId: person.districtId,
-            documentType: person.documentType,
-            documentNumber: person.documentNumber,
-            isEnabled: person.isEnabled,
-            isSupplier: person.isSupplier,
-            isClient: person.isClient,
-            economicActivityMain: person.economicActivityMain,
+            names: person.names?.trim() || "",
+            shortName: person.shortName?.trim() || "",
+            phone: person.phone?.trim() || "",
+            email: person.email?.trim() || "",
+            address: person.address?.trim() || "",
+            country: person.country || "PE",
+            districtId: person.districtId || "040101",
+            documentType: person.documentType || "6",
+            documentNumber: person.documentNumber?.trim() || "",
+            isEnabled: person.isEnabled ?? true,
+            isSupplier: person.isSupplier ?? false,
+            isClient: person.isClient ?? true,
+            economicActivityMain: person.economicActivityMain || 0,
         };
-        console.log("variables", variables);
+        if (!variables.names) {
+            toast.error("El nombre o razón social es obligatorio");
+            return;
+        }
+
+        if (!variables.documentNumber) {
+            toast.error("El número de documento es obligatorio");
+            return;
+        }
+
+        // Validate document number length
+        if (
+            variables.documentType === "6" &&
+            variables.documentNumber.length !== 11
+        ) {
+            toast.error("El RUC debe tener 11 dígitos");
+            return;
+        }
+
+        if (
+            variables.documentType === "1" &&
+            variables.documentNumber.length !== 8
+        ) {
+            toast.error("El DNI debe tener 8 dígitos");
+            return;
+        }
+
+        // Validate email format if provided
+        if (
+            variables.email &&
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(variables.email)
+        ) {
+            toast.error("El formato del correo electrónico no es válido");
+            return;
+        }
+
         updatePerson({
             variables: variables,
         });
@@ -256,6 +291,16 @@ function ClientEdit({
             });
         }
     };
+    useEffect(() => {
+        if (person.id !== 0) {
+            let districtId = person.districtId;
+            // Extract department and province IDs from districtId
+            let departmentId = districtId.substring(0, 2);
+            let provinceId = districtId.substring(0, 4);
+            districtsQuery({ variables: { provinceId: provinceId } });
+            provincesQuery({ variables: { departmentId: departmentId } });
+        }
+    }, [person]);
 
     const handleInputChange = async (
         event: ChangeEvent<
@@ -756,7 +801,6 @@ function ClientEdit({
                                                             onChange={
                                                                 handleInputChange
                                                             }
-                                                            required
                                                             className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                         >
                                                             <option value={"0"}>
@@ -827,7 +871,6 @@ function ClientEdit({
                                                             onChange={
                                                                 handleInputChange
                                                             }
-                                                            required
                                                             className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                         >
                                                             <option value={"0"}>
@@ -897,7 +940,6 @@ function ClientEdit({
                                                             onChange={
                                                                 handleInputChange
                                                             }
-                                                            required
                                                             className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                         >
                                                             <option value={"0"}>
@@ -1014,7 +1056,7 @@ function ClientEdit({
                                     type="submit"
                                     className="px-5 py-2 inline-flex items-center gap-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800"
                                 >
-                                    <Save /> Crear Cliente o Proveedor
+                                    <Save /> Actualizar cliente
                                 </button>
                             </div>
                         </form>

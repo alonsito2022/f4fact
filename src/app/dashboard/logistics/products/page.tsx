@@ -60,8 +60,8 @@ const initialStateProductFilterObj = {
 };
 
 const PRODUCTS_QUERY = gql`
-    query ($subsidiaryId: Int!) {
-        allProducts(subsidiaryId: $subsidiaryId) {
+    query ($subsidiaryId: Int!, $available: Boolean!) {
+        allProducts(subsidiaryId: $subsidiaryId, available: $available) {
             id
             code
             name
@@ -162,6 +162,7 @@ function ProductPage() {
     });
     const getVariables = () => ({
         subsidiaryId: Number(productFilterObj?.subsidiaryId),
+        available: true,
     });
     const [
         productsQuery,

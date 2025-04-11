@@ -9,8 +9,15 @@ import SalePagination from "../sales/SalePagination";
 import LoadingIcon from "@/components/icons/LoadingIcon";
 import { Modal } from "flowbite";
 import PdfPreviewModal from "../sales/PdfPreviewModal";
-import { gql } from "@apollo/client";
-
+import { gql, useMutation } from "@apollo/client";
+const CANCEL_INVOICE = gql`
+    mutation CancelInvoice($operationId: Int!, $lowDate: Date!) {
+        cancelInvoice(operationId: $operationId, lowDate: $lowDate) {
+            message
+            success
+        }
+    }
+`;
 function QuoteList({
     setFilterObj,
     filterObj,
@@ -25,6 +32,8 @@ function QuoteList({
 }: any) {
     const [pdfModal, setPdfModal] = useState<Modal | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string>("");
+    const [cancelInvoice, { loading, error, data }] =
+        useMutation(CANCEL_INVOICE);
     const transformedSalesData = quotesData?.allQuotes?.quotes?.map(
         (item: IOperation) => {
             const docType = item.client?.documentType?.replace("A_", "");
@@ -54,16 +63,58 @@ function QuoteList({
             ...cpe,
             id: Number(item.id),
             documentTypeDisplay:
-                item.documentType === "09"
-                    ? "GUIA DE REMISION REMITENTE"
-                    : item.documentType === "31"
-                    ? "GUÍA DE REMISIÓN TRANSPORTISTA"
-                    : "NA",
+                item.documentType === "48" ? "COTIZACION" : "NA",
             serial: item.serial,
             correlative: item.correlative,
             clientName: item.client?.names,
             clientDoc: item.client?.documentNumber,
         });
+    };
+    const handleCancelInvoice = (operationId: number) => {
+        const limaDate = new Date(
+            new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+        );
+        const today =
+            limaDate.getFullYear() +
+            "-" +
+            String(limaDate.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            String(limaDate.getDate()).padStart(2, "0");
+
+        cancelInvoice({
+            variables: {
+                operationId,
+                lowDate: today,
+            },
+        })
+            .then((response) => {
+                if (response.data.cancelInvoice.success) {
+                    toast.success("Cotizacion borrada correctamente.");
+                    quotesQuery({
+                        variables: {
+                            subsidiaryId: user?.isSuperuser
+                                ? Number(filterObj.subsidiaryId)
+                                : Number(user?.subsidiaryId),
+                            startDate: filterObj.startDate,
+                            endDate: filterObj.endDate,
+                            documentType: filterObj.documentType,
+                            page: Number(filterObj.page),
+                            pageSize: Number(filterObj.pageSize),
+                        },
+                    });
+                } else {
+                    toast.error(
+                        `Error: ${response.data.cancelInvoice.message}`
+                    );
+                }
+            })
+            .catch((err) => {
+                toast.error("Error al anular la factura.");
+                console.error(err, {
+                    operationId,
+                    lowDate: today,
+                });
+            });
     };
     return (
         <>
@@ -313,16 +364,29 @@ function QuoteList({
                                                     <br />
                                                     <a
                                                         className="font-medium text-green-600 dark:text-green-500 hover:underline"
-                                                        target="_blank"
-                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
+                                                        href={`/dashboard/quotes/edit/${item.id}`}
                                                     >
                                                         [Editar]
                                                     </a>
                                                     <br />
                                                     <a
                                                         className="font-medium text-red-600 dark:text-red-500 hover:underline"
-                                                        target="_blank"
-                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
+                                                        href="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault(); // Evita que el enlace cambie de página
+                                                            const confirmDelete =
+                                                                window.confirm(
+                                                                    "¿Estás seguro de que deseas borrar esta cotización? Esta acción no se puede deshacer."
+                                                                );
+
+                                                            if (confirmDelete) {
+                                                                handleCancelInvoice(
+                                                                    Number(
+                                                                        item?.id
+                                                                    )
+                                                                );
+                                                            }
+                                                        }}
                                                     >
                                                         Borrar
                                                     </a>
