@@ -10,6 +10,7 @@ import { ISubsidiary, ISupplier } from "@/app/types";
 import Excel from "@/components/icons/Excel";
 import ExcelModal from "./ExcelModal";
 import { Modal } from "flowbite";
+import SearchInvoice from "./SearchInvoice";
 
 const SUPPLIERS_QUERY = gql`
     query {
@@ -45,6 +46,9 @@ function SaleFilter({
 }: any) {
     const router = useRouter();
     const [modalExcel, setModalExcel] = useState<Modal | null>(null);
+    const [modalSearchInvoice, setModalSearchInvoice] = useState<Modal | null>(
+        null
+    );
 
     const handleClickButton = async () => {
         // Reinicializa la página a 1
@@ -63,6 +67,8 @@ function SaleFilter({
                 documentType: filterObj.documentType,
                 page: 1, // Asegúrate de pasar la página como 1 aquí también
                 pageSize: Number(filterObj.pageSize),
+                // serial: String(filterObj.serial),
+                // correlative: Number(filterObj.correlative),
             },
         });
         // initFlowbite();
@@ -232,7 +238,7 @@ function SaleFilter({
                     <Filter />
                     Filtrar
                 </button>
-                <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4 col-span-full">
+                <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-4 col-span-full">
                     {/* <a
                     href={`${hostname}/operations/export_sales_to_excel/${filterObj.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/`}
                     target="_blank"
@@ -246,19 +252,34 @@ function SaleFilter({
                     <button
                         type="button"
                         onClick={() => modalExcel?.show()}
-                        className="btn-green px-5 py-3 flex items-center justify-center gap-2 w-full m-0 rounded-lg hover:opacity-90 transition-all duration-200 shadow-sm"
+                        title="Exportar ventas a Excel"
+                        className="btn-green px-5 py-3 flex items-center justify-center gap-2 w-full m-0 rounded-lg hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                         <Excel />
-                        Exportar a Excel
+                        <span className=" sm:inline">Exportar a Excel</span>
+                        <span className="sm:hidden">Excel</span>
                     </button>
 
                     <button
                         type="button"
-                        className="btn-blue px-5 py-3 flex items-center justify-center gap-2 w-full rounded-lg hover:opacity-90 transition-all duration-200 shadow-sm"
+                        onClick={() => modalSearchInvoice?.show()}
+                        title="Buscar documento por serie y número"
+                        className="btn-orange px-5 py-3 flex items-center justify-center gap-2 w-full m-0 rounded-lg hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg"
+                    >
+                        <Search />
+                        <span className=" sm:inline">Buscar Documento</span>
+                        <span className="sm:hidden">Buscar</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        title="Crear nueva venta"
+                        className="btn-blue px-5 py-3 flex items-center justify-center gap-2 w-full rounded-lg hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg"
                         onClick={() => router.push("/dashboard/sales/new")}
                     >
                         <Add />
-                        Nueva venta
+                        <span className=" sm:inline">Nueva Venta</span>
+                        <span className="sm:hidden">Nuevo</span>
                     </button>
                 </div>
             </div>
@@ -267,6 +288,14 @@ function SaleFilter({
                 setModalExcel={setModalExcel}
                 setFilterObj={setFilterObj}
                 filterObj={filterObj}
+            />
+            <SearchInvoice
+                modalSearchInvoice={modalSearchInvoice}
+                setModalSearchInvoice={setModalSearchInvoice}
+                setFilterObj={setFilterObj}
+                filterObj={filterObj}
+                salesQuery={salesQuery}
+                filteredSaleLoading={filteredSaleLoading}
             />
         </>
     );

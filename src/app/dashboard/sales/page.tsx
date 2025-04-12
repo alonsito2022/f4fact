@@ -30,6 +30,8 @@ const initialStateFilterObj = {
     pageSize: 50,
     isSuperuser: false,
     reportType: "",
+    serial: "",
+    correlative: "",
 };
 const SALES_QUERY = gql`
     query (
@@ -40,6 +42,8 @@ const SALES_QUERY = gql`
         $documentType: String!
         $page: Int!
         $pageSize: Int!
+        $serial: String
+        $correlative: Int
     ) {
         allSales(
             subsidiaryId: $subsidiaryId
@@ -49,6 +53,8 @@ const SALES_QUERY = gql`
             documentType: $documentType
             page: $page
             pageSize: $pageSize
+            serial: $serial
+            correlative: $correlative
         ) {
             sales {
                 id
@@ -158,6 +164,8 @@ function SalePage() {
                     documentType: filterObj.documentType,
                     page: Number(filterObj.page),
                     pageSize: Number(filterObj.pageSize),
+                    // serial: String(filterObj.serial),
+                    // correlative: Number(filterObj.correlative),
                 },
             });
         }
