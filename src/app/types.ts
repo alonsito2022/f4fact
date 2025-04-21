@@ -447,6 +447,7 @@ export interface ICashFlow {
     temporaryId?: number;
     total?: number;
     description: string;
+    transactionDate: string;
     wayPay: number;
 }
 

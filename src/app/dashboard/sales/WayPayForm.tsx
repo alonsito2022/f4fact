@@ -42,6 +42,7 @@ const CREATE_SALE_MUTATION = gql`
         $wayPaySet: [Int!]!
         $totalSet: [Float!]!
         $descriptionSet: [String!]!
+        $transactionDateSet: [Date!]!
         $discountForItem: Float!
         $discountGlobal: Float!
         $discountPercentageGlobal: Float!
@@ -100,6 +101,7 @@ const CREATE_SALE_MUTATION = gql`
             wayPaySet: $wayPaySet
             totalSet: $totalSet
             descriptionSet: $descriptionSet
+            transactionDateSet: $transactionDateSet
             discountForItem: $discountForItem
             discountGlobal: $discountGlobal
             discountPercentageGlobal: $discountPercentageGlobal
@@ -333,6 +335,9 @@ function WayPayForm({
                 descriptionSet: invoice.cashflowSet.map(
                     (item: any) => item.description || ""
                 ),
+                transactionDateSet: invoice.cashflowSet.map(
+                    (item: any) => item.transactionDate || ""
+                ),
                 discountForItem: parseFloat(invoice.discountForItem) || 0,
                 discountGlobal: parseFloat(invoice.discountGlobal) || 0,
                 discountPercentageGlobal:
@@ -525,18 +530,41 @@ function WayPayForm({
                                 </div>
 
                                 <div className="col-span-4">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Nota
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="description"
-                                        autoComplete="off"
-                                        onFocus={(e) => e.target.select()}
-                                        value={cashFlow.description}
-                                        onChange={handleInputChangeWayPay}
-                                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
-                                    />
+                                    {Number(cashFlow.wayPay) === 9 ? (
+                                        <>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Fecha de Pago (Cuota)
+                                            </label>
+                                            <input
+                                                type="date"
+                                                name="transactionDate"
+                                                value={cashFlow.transactionDate}
+                                                onChange={
+                                                    handleInputChangeWayPay
+                                                }
+                                                className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
+                                            />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Nota
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="description"
+                                                autoComplete="off"
+                                                onFocus={(e) =>
+                                                    e.target.select()
+                                                }
+                                                value={cashFlow.description}
+                                                onChange={
+                                                    handleInputChangeWayPay
+                                                }
+                                                className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
+                                            />
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </fieldset>

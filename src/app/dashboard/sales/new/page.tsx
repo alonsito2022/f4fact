@@ -325,6 +325,7 @@ const initialStateCashFlow = {
     wayPay: 1,
     total: 0,
     description: "",
+    transactionDate: today,
 };
 function NewSalePage() {
     const [isProcessing, setIsProcessing] = useState(false);
