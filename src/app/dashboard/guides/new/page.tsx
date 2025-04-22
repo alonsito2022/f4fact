@@ -778,10 +778,11 @@ function NewGuidePage() {
                 guideArrivalSerial: guide.guideArrivalSerial,
                 observation: guide.observation,
             };
+            // console.log("variables al guardar", variables, auth?.jwtToken);
             const { data, errors } = await createSale({
                 variables: variables,
             });
-            // console.log("variables al guardar", variables, auth?.jwtToken);
+
             if (errors) {
                 toast(errors.toString(), {
                     hideProgressBar: true,

@@ -79,7 +79,7 @@ const CREATE_GUIDE_MUTATION = gql`
         $guideReasonTransfer: String!
         $productIdSet: [Int!]!
         $descriptionSet: [String!]!
-        $quantitySet: [Int!]!
+        $quantitySet: [Float!]!
         $relatedDocumentsSerialSet: [String!]!
         $relatedDocumentsDocumentTypeSet: [String!]!
         $relatedDocumentsCorrelativeSet: [Int!]!
@@ -794,7 +794,7 @@ function NewGuidePageWithInvoice() {
                     (item: any) => item.description || ""
                 ),
                 quantitySet: guide.operationdetailSet.map((item: any) =>
-                    parseInt(item.quantity)
+                    parseFloat(item.quantity)
                 ),
 
                 relatedDocumentsSerialSet: guide.relatedDocuments.map(
