@@ -301,7 +301,7 @@ function GuideList({
                                             <td className="p-2 text-nowrap">
                                                 {index + 1}
                                             </td>
-                                        </>
+                                        </>                                        
                                     )}
 
                                     <td className="p-2 text-nowrap">
@@ -311,7 +311,7 @@ function GuideList({
                                     <td className="p-2">{item.serial}</td>
                                     <td className="p-2">{item.correlative}</td>
                                     <td className="p-2">
-                                        {item.subsidiary?.companyName}
+                                        {item.client?.names}
                                     </td>
 
                                     <td className="p-2 text-center">

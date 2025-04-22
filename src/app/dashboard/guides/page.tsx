@@ -63,6 +63,10 @@ const GUIDES_QUERY = gql`
                         doc
                     }
                 }
+                client {
+                    names
+                    documentType
+                }
                 sendWhatsapp
                 sendClient
                 linkXml
