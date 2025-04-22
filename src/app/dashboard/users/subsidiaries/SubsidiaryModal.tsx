@@ -64,6 +64,7 @@ const GET_SUBSIDIARY = gql`
                 documentType
                 isGeneratedViaApi
             }
+            fillColor
         }
     }
 `;
@@ -241,6 +242,7 @@ function SubsidiaryModal({
         const pdfFormatForReceiptInvoices =
             subsidiary.pdfFormatForReceiptInvoices || 1;
         const pdfFormatForGuides = subsidiary.pdfFormatForGuides || 1;
+        const fillColor = subsidiary.fillColor || "#D2D7DA";
 
         let queryFetch: String = "";
         if (Number(subsidiary.id) !== 0) {
@@ -250,7 +252,8 @@ function SubsidiaryModal({
                         id:${subsidiary.id}, serial: "${subsidiary.serial}", name: "${subsidiary.name}", address: "${subsidiary.address}", phone: "${subsidiary.phone}", districtId: "${subsidiary.districtId}", companyId: ${subsidiary.companyId},
                         pdfFormatForInvoices: ${pdfFormatForInvoices},
                         pdfFormatForReceiptInvoices: ${pdfFormatForReceiptInvoices},
-                        pdfFormatForGuides: ${pdfFormatForGuides}
+                        pdfFormatForGuides: ${pdfFormatForGuides},
+                        fillColor: "${fillColor}"
                     ){
                         message
                     }
@@ -283,7 +286,8 @@ function SubsidiaryModal({
                         serial: "${subsidiary.serial}", name: "${subsidiary.name}", address: "${subsidiary.address}", phone: "${subsidiary.phone}", districtId: "${subsidiary.districtId}", companyId: ${subsidiary.companyId},
                         pdfFormatForInvoices: ${pdfFormatForInvoices},
                         pdfFormatForReceiptInvoices: ${pdfFormatForReceiptInvoices},
-                        pdfFormatForGuides: ${pdfFormatForGuides}
+                        pdfFormatForGuides: ${pdfFormatForGuides},
+                        fillColor: "${fillColor}"
                     ){
                         message
                     }
@@ -534,6 +538,71 @@ function SubsidiaryModal({
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                                                 placeholder="Ingrese ubigeo"
                                             />
+                                        </div>
+                                        <div className="relative z-0 w-full mb-3">
+                                            <label
+                                                htmlFor="fillColor"
+                                                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                            >
+                                                Color del Local
+                                            </label>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex-grow relative">
+                                                    <input
+                                                        type="color"
+                                                        name="fillColor"
+                                                        id="fillColor"
+                                                        value={
+                                                            subsidiary.fillColor ||
+                                                            "#D2D7DA"
+                                                        }
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                                                    />
+                                                    <div className="flex items-center bg-gray-50 border border-gray-300 rounded-lg p-1 cursor-pointer">
+                                                        <div
+                                                            className="w-8 h-8 rounded-md mr-2"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    subsidiary.fillColor ||
+                                                                    "#D2D7DA",
+                                                            }}
+                                                        />
+                                                        <span className="text-sm text-gray-700">
+                                                            {subsidiary.fillColor ||
+                                                                "#D2D7DA"}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setSubsidiary({
+                                                            ...subsidiary,
+                                                            fillColor:
+                                                                "#D2D7DA",
+                                                        })
+                                                    }
+                                                    className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100"
+                                                    title="Restablecer color por defecto"
+                                                >
+                                                    <svg
+                                                        className="w-5 h-5"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </div>
                                         <div className="relative z-0 w-full mb-3">
                                             <label

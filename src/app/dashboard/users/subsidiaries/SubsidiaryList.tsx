@@ -42,6 +42,7 @@ function SubsidiaryList({
                             pdfFormatForInvoices
                             pdfFormatForReceiptInvoices
                         	pdfFormatForGuides
+                            fillColor
                         }
                     }
                     `,

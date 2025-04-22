@@ -24,6 +24,7 @@ const initialState = {
     pdfFormatForInvoices: 1,
     pdfFormatForReceiptInvoices: 1,
     pdfFormatForGuides: 1,
+    fillColor: "#D2D7DA",
 };
 
 const SUBSIDIARIES_QUERY = gql`
@@ -73,6 +74,7 @@ const SUBSIDIARIES_QUERY_BY_COMPANY_ID = gql`
             pdfFormatForInvoices
             pdfFormatForReceiptInvoices
             pdfFormatForGuides
+            fillColor
         }
     }
 `;

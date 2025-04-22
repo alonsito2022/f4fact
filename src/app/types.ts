@@ -210,6 +210,7 @@ export interface ISubsidiary {
     pdfFormatForInvoices?: string;
     pdfFormatForReceiptInvoices?: string;
     pdfFormatForGuides?: string;
+    fillColor?: string;
 }
 
 export interface IWarehouse {
