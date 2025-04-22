@@ -206,7 +206,11 @@ function SaleDetailForm({
         if (name === "quantity") {
             if (!validateQuantity(value)) return;
 
-            const quantity = Number(value.replace(/[^0-9]/g, "").slice(0, 6));
+            // const quantity = Number(value.replace(/[^0-9.]/g, ""));
+            const [integerPart, decimalPart] = value.split(".");
+            const formattedQuantity = decimalPart
+                ? `${integerPart.slice(0, 6)}.${decimalPart.slice(0, 4)}`
+                : integerPart.slice(0, 6);
             const foundTypeAffectation =
                 typeAffectationsData?.allTypeAffectations?.find(
                     (ta: ITypeAffectation) =>
@@ -217,7 +221,7 @@ function SaleDetailForm({
             const igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
 
             const { totalValue, totalAmount, totalIgv } = calculateBasedOnIgv(
-                quantity,
+                Number(formattedQuantity),
                 Number(invoiceDetail.unitPrice),
                 Number(invoiceDetail.unitValue),
                 Number(invoiceDetail.totalDiscount),
@@ -227,7 +231,7 @@ function SaleDetailForm({
 
             setInvoiceDetail({
                 ...invoiceDetail,
-                quantity: String(quantity),
+                quantity: formattedQuantity,
                 totalValue: totalValue.toFixed(2),
                 totalIgv: totalIgv.toFixed(2),
                 totalAmount: totalAmount.toFixed(2),

@@ -175,7 +175,7 @@ const CREATE_SALE_MUTATION = gql`
         $clientId: Int!
         $productTariffIdSet: [Int!]!
         $typeAffectationIdSet: [Int!]!
-        $quantitySet: [Int!]!
+        $quantitySet: [Float!]!
         $unitValueSet: [Float!]!
         $unitPriceSet: [Float!]!
         $discountPercentageSet: [Float!]!
@@ -567,7 +567,7 @@ function NewQuotePage() {
                     (item: any) => item.typeAffectationId
                 ),
                 quantitySet: sale.operationdetailSet.map((item: any) =>
-                    parseInt(item.quantity)
+                    parseFloat(item.quantity)
                 ),
                 unitValueSet: sale.operationdetailSet.map((item: any) =>
                     parseFloat(item.unitValue)

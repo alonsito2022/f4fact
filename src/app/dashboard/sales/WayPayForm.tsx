@@ -26,7 +26,7 @@ const CREATE_SALE_MUTATION = gql`
         $clientId: Int!
         $productTariffIdSet: [Int!]!
         $typeAffectationIdSet: [Int!]!
-        $quantitySet: [Int!]!
+        $quantitySet: [Float!]!
         $unitValueSet: [Float!]!
         $unitPriceSet: [Float!]!
         $discountPercentageSet: [Float!]!
@@ -290,7 +290,7 @@ function WayPayForm({
                     (item: any) => item.typeAffectationId
                 ),
                 quantitySet: invoice.operationdetailSet.map((item: any) =>
-                    parseInt(item.quantity)
+                    parseFloat(item.quantity)
                 ),
                 unitValueSet: invoice.operationdetailSet.map((item: any) =>
                     parseFloat(item.unitValue)

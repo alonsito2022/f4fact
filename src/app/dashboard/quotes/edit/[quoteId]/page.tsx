@@ -129,7 +129,7 @@ const UPDATE_QUOTE_MUTATION = gql`
         $clientId: Int
         $productTariffIdSet: [Int!]
         $typeAffectationIdSet: [Int!]
-        $quantitySet: [Int!]
+        $quantitySet: [Float!]
         $unitValueSet: [Float!]
         $unitPriceSet: [Float!]
         $discountPercentageSet: [Float!]

@@ -23,7 +23,10 @@ const GuideDetailItem: React.FC<GuideDetailItemProps> = ({
         let formattedValue = value;
 
         if (name === "quantity") {
-            formattedValue = value.replace(/[^0-9]/g, "").slice(0, 6);
+            const [integerPart, decimalPart] = value.split(".");
+            formattedValue = decimalPart
+                ? `${integerPart.slice(0, 6)}.${decimalPart.slice(0, 4)}`
+                : integerPart.slice(0, 6);
         }
         if (name === "productName" && e.target instanceof HTMLInputElement) {
             formattedValue = value.replace(/[\n\r\s]+/g, " ").trim();
