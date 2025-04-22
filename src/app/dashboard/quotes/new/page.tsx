@@ -172,6 +172,7 @@ const CREATE_SALE_MUTATION = gql`
         $currencyType: String!
         $saleExchangeRate: Float!
         $emitDate: Date!
+        $dueDate: Date!
         $clientId: Int!
         $productTariffIdSet: [Int!]!
         $typeAffectationIdSet: [Int!]!
@@ -230,6 +231,7 @@ const CREATE_SALE_MUTATION = gql`
             currencyType: $currencyType
             saleExchangeRate: $saleExchangeRate
             emitDate: $emitDate
+            dueDate: $dueDate
             clientId: $clientId
             productTariffIdSet: $productTariffIdSet
             typeAffectationIdSet: $typeAffectationIdSet
@@ -290,6 +292,7 @@ const initialStateSale = {
     serial: "",
     correlative: "",
     emitDate: today,
+    dueDate: today,
     clientName: "",
     clientDocumentType: "",
     clientId: 0,
@@ -559,6 +562,7 @@ function NewQuotePage() {
                 currencyType: sale.currencyType,
                 saleExchangeRate: parseFloat(sale.saleExchangeRate) || 0,
                 emitDate: sale.emitDate,
+                dueDate: sale.dueDate,
                 clientId: Number(sale.clientId),
                 productTariffIdSet: sale.operationdetailSet.map(
                     (item: any) => item.productTariffId

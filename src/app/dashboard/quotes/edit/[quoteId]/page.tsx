@@ -52,6 +52,7 @@ const QUOTE_QUERY_BY_ID = gql`
         getSaleById(pk: $pk) {
             id
             emitDate
+            dueDate
             operationDate
             currencyType
             documentTypeReadable
@@ -126,6 +127,7 @@ const UPDATE_QUOTE_MUTATION = gql`
         $currencyType: String
         $saleExchangeRate: Float
         $emitDate: Date
+        $dueDate: Date
         $clientId: Int
         $productTariffIdSet: [Int!]
         $typeAffectationIdSet: [Int!]
@@ -171,6 +173,7 @@ const UPDATE_QUOTE_MUTATION = gql`
             currencyType: $currencyType
             saleExchangeRate: $saleExchangeRate
             emitDate: $emitDate
+            dueDate: $dueDate
             clientId: $clientId
 
             productTariffIdSet: $productTariffIdSet
@@ -684,6 +687,7 @@ function EditQuotePage() {
                 currencyType: quote.currencyType,
                 saleExchangeRate: parseFloat(quote.saleExchangeRate) || 0,
                 emitDate: quote.emitDate,
+                dueDate: quote.dueDate,
                 clientId: Number(quote.clientId),
                 productTariffIdSet: quote.operationdetailSet.map(
                     (item: any) => item.productTariffId

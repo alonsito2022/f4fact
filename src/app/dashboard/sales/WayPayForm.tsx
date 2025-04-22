@@ -23,6 +23,7 @@ const CREATE_SALE_MUTATION = gql`
         $currencyType: String!
         $saleExchangeRate: Float!
         $emitDate: Date!
+        $dueDate: Date!
         $clientId: Int!
         $productTariffIdSet: [Int!]!
         $typeAffectationIdSet: [Int!]!
@@ -82,6 +83,7 @@ const CREATE_SALE_MUTATION = gql`
             currencyType: $currencyType
             saleExchangeRate: $saleExchangeRate
             emitDate: $emitDate
+            dueDate: $dueDate
             clientId: $clientId
             productTariffIdSet: $productTariffIdSet
             typeAffectationIdSet: $typeAffectationIdSet
@@ -282,6 +284,7 @@ function WayPayForm({
                 currencyType: invoice.currencyType,
                 saleExchangeRate: parseFloat(invoice.saleExchangeRate) || 0,
                 emitDate: invoice.emitDate,
+                dueDate: invoice.dueDate,
                 clientId: parseInt(invoice.clientId),
                 productTariffIdSet: invoice.operationdetailSet.map(
                     (item: any) => item.productTariffId

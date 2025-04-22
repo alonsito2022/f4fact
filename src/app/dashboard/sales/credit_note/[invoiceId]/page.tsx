@@ -70,6 +70,7 @@ const initialStateSale = {
     serial: "",
     correlative: "",
     emitDate: today,
+    dueDate: today,
     client: {
         id: 0,
         names: "",
@@ -159,6 +160,7 @@ const initialStateCashFlow = {
     wayPay: 1,
     total: 0,
     description: "",
+    transactionDate: today,
 };
 const TYPE_OPERATION_QUERY = gql`
     query {
@@ -183,6 +185,7 @@ const SALE_QUERY_BY_ID = gql`
         getSaleById(pk: $pk) {
             id
             emitDate
+            dueDate
             operationDate
             currencyType
             documentTypeReadable
