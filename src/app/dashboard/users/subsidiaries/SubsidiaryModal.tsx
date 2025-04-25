@@ -708,12 +708,12 @@ function SubsidiaryModal({
                                                 <option value={1}>
                                                     Tamaño A4
                                                 </option>
-                                                {/* <option value={2}>
+                                                {/*<option value={2}>
                                                     Tamaño A5 (Mitad de A4)
-                                                </option>
+                                                </option>*/}
                                                 <option value={3}>
                                                     Tamaño Ticketera
-                                                </option> */}
+                                                </option> 
                                             </select>
                                         </div>
                                     </div>
