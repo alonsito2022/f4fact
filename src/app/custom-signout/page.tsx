@@ -2,6 +2,14 @@
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 function CustomSignOut() {
+    const handleRefresh = async () => {
+        try {
+            await signOut({ redirect: true, callbackUrl: "/" });
+        } catch (error) {
+            // Fallback if signOut fails
+            window.location.replace("/");
+        }
+    };
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
             <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center">
@@ -20,7 +28,7 @@ function CustomSignOut() {
                         Ir al inicio
                     </Link> */}
                     <button
-                        onClick={() => signOut({ callbackUrl: "/" })}
+                        onClick={handleRefresh}
                         className="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
                     >
                         Actualizar página

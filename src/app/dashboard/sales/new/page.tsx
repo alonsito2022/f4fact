@@ -572,11 +572,7 @@ function NewSalePage() {
                     const normalizedOptionValue = option.value
                         .replace(/[\n\r\s]+/g, " ")
                         .trim();
-                    return (
-                        normalizedValue === normalizedOptionValue ||
-                        normalizedValue.startsWith(normalizedOptionValue) ||
-                        normalizedOptionValue.startsWith(normalizedValue)
-                    );
+                    return normalizedValue === normalizedOptionValue;
                 });
                 if (option) {
                     const selectedId = option.getAttribute("data-key");

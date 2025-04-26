@@ -194,7 +194,6 @@ function SaleDetailForm({
     ) => {
         const { name, value } = event.target;
         const includeIgv = auth?.user?.companyIncludeIgv;
-
         if (
             name === "productName" &&
             event.target instanceof HTMLInputElement
@@ -394,6 +393,7 @@ function SaleDetailForm({
         const option = Array.from(dataList.options).find(
             (option) => option.value === input.value
         );
+        console.log("option", option);
 
         if (option) {
             const selectedId = option.getAttribute("data-key");
@@ -542,7 +542,7 @@ function SaleDetailForm({
                                 <div className="grid sm:grid-cols-1 md:grid-cols-6 gap-4">
                                     <div className="sm:col-span-4">
                                         <label className="form-label text-gray-900 dark:text-gray-200">
-                                            Producto - Servicio (CATÁLOGO)
+                                            Producto - Servicio (CATÁLOGO) 2
                                         </label>
                                         <input
                                             type="text"
