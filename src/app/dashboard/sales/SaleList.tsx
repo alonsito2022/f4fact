@@ -497,7 +497,8 @@ function SaleList({
                                         {item?.creditNoteReferences}
                                     </td>
                                     <td className="p-2">
-                                        {item?.operationStatus === "02" ||
+                                        {item?.operationStatus === "01" ||
+                                        item?.operationStatus === "02" ||
                                         item?.operationStatus === "06" ? (
                                             <>
                                                 <span
