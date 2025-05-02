@@ -255,7 +255,7 @@ function QuoteList({
                                     </td>
                                     <td className="p-2">{item.correlative}</td>
                                     <td className="p-2">
-                                        {item.client?.documentTypeReadable}
+                                        {item.client?.documentNumber}
                                     </td>
                                     <td className="p-2">
                                         {item.client?.names}
