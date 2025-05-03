@@ -330,13 +330,13 @@ function QuoteList({
                                                         Enviar por WhatsApp
                                                     </a>
                                                     <br />
-                                                    <a
-                                                        className="font-medium text-green-600 dark:text-green-500 hover:underline"
-                                                        target="_blank"
-                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsultaunificadalibre/consultaUnificadaLibre/consulta"
+                                                    <Link
+                                                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                        href={`/dashboard/quotes/convert/${item.id}`}
                                                     >
                                                         CONVERTIR EN COMPROBANTE
-                                                    </a>
+                                                    </Link>
+
                                                     <br />
                                                     <a
                                                         className="font-medium text-green-600 dark:text-green-500 hover:underline"
