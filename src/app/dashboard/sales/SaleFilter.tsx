@@ -4,14 +4,40 @@ import Add from "@/components/icons/Add";
 import Search from "@/components/icons/Search";
 import Filter from "@/components/icons/Filter";
 import { useRouter } from "next/navigation";
-import { gql, useQuery } from "@apollo/client";
-import { ISubsidiary, ISupplier } from "@/app/types";
+import { gql, useLazyQuery, useQuery } from "@apollo/client";
+import { IPerson, ISubsidiary, ISupplier } from "@/app/types";
 // import { initFlowbite } from "flowbite";
 import Excel from "@/components/icons/Excel";
 import ExcelModal from "./ExcelModal";
 import { Modal } from "flowbite";
 import SearchInvoice from "./SearchInvoice";
-
+// Add the search client query
+const SEARCH_CLIENT_BY_PARAMETER = gql`
+    query SearchClient(
+        $search: String!
+        $documentType: String
+        $operationDocumentType: String
+        $isClient: Boolean
+        $isDriver: Boolean
+        $isSupplier: Boolean
+        $isReceiver: Boolean
+    ) {
+        searchClientByParameter(
+            search: $search
+            documentType: $documentType
+            operationDocumentType: $operationDocumentType
+            isClient: $isClient
+            isDriver: $isDriver
+            isSupplier: $isSupplier
+            isReceiver: $isReceiver
+        ) {
+            id
+            names
+            documentNumber
+            documentType
+        }
+    }
+`;
 const SUPPLIERS_QUERY = gql`
     query {
         allSuppliers {
@@ -49,6 +75,7 @@ function SaleFilter({
     const [modalSearchInvoice, setModalSearchInvoice] = useState<Modal | null>(
         null
     );
+    const [clientSearch, setClientSearch] = useState("");
 
     const handleClickButton = async () => {
         // Reinicializa la página a 1
@@ -56,6 +83,7 @@ function SaleFilter({
             ...filterObj,
             page: 1,
         });
+        console.log("clientId", filterObj.clientId);
 
         // Llama a salesQuery con la página reinicializada
         salesQuery({
@@ -157,6 +185,25 @@ function SaleFilter({
         context: getAuthContext(),
         skip: !auth?.jwtToken,
     });
+
+    // Add client search query
+    const [
+        searchClientQuery,
+        {
+            loading: searchClientLoading,
+            error: searchClientError,
+            data: searchClientData,
+        },
+    ] = useLazyQuery(SEARCH_CLIENT_BY_PARAMETER, {
+        context: {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
+            },
+        },
+        fetchPolicy: "network-only",
+        onError: (err) => console.error("Error in Search Client:", err),
+    });
     useEffect(() => {
         if (auth?.user?.subsidiaryId && subsidiariesData?.subsidiaries) {
             const subsidiaryFound = subsidiariesData?.subsidiaries.find(
@@ -173,6 +220,48 @@ function SaleFilter({
             });
         }
     }, [auth?.user?.subsidiaryId, subsidiariesData?.subsidiaries]);
+
+    const handleClientSelect = (event: ChangeEvent<HTMLInputElement>) => {
+        const selectedOption = event.target.value;
+        const selectedData = searchClientData?.searchClientByParameter?.find(
+            (person: IPerson) =>
+                `${person.documentNumber} ${person.names}` === selectedOption
+        );
+        console.log("selectedData", selectedData);
+        if (selectedData) {
+            setFilterObj({
+                ...filterObj,
+                clientId: selectedData.id,
+                page: 1, // Reset page when changing client
+            });
+            setClientSearch(
+                `${selectedData.documentNumber} ${selectedData.names}`
+            );
+        }
+    };
+    // Add client search handlers
+    const handleClientSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        setClientSearch(value);
+        // Only reset clientId if the search field is cleared
+        if (!value.trim()) {
+            setFilterObj({
+                ...filterObj,
+                clientId: 0,
+            });
+        }
+    };
+    // Add client search effect
+    useEffect(() => {
+        if (clientSearch.length > 2) {
+            searchClientQuery({
+                variables: {
+                    search: clientSearch,
+                    isClient: true,
+                },
+            });
+        }
+    }, [clientSearch]);
     return (
         <>
             <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 items-start  rounded-lg shadow-sm">
@@ -187,6 +276,29 @@ function SaleFilter({
                     <option value={"03"}>🧾 BOLETA DE VENTA ELECTRÓNICA</option>
                     <option value={"07"}>📝 NOTA DE CRÉDITO ELECTRÓNICA</option>
                 </select>
+                {/* Add client search input */}
+                <div>
+                    <input
+                        type="text"
+                        list="clientList"
+                        className="filter-form-control w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Buscar por entidad (nombre o doc)"
+                        value={clientSearch}
+                        onChange={handleClientSearchChange}
+                        onInput={handleClientSelect}
+                    />
+                    <datalist id="clientList">
+                        {searchClientData?.searchClientByParameter?.map(
+                            (person: IPerson) => (
+                                <option
+                                    key={person.id}
+                                    value={`${person.documentNumber} ${person.names}`}
+                                    data-key={person.id}
+                                />
+                            )
+                        )}
+                    </datalist>
+                </div>
                 {auth?.user?.isSuperuser ? (
                     <>
                         <input
