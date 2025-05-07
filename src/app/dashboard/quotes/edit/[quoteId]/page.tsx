@@ -4,6 +4,7 @@ import {
     IOperationDetail,
     IOperationType,
     ISerialAssigned,
+    ITypeAffectation,
 } from "@/app/types";
 import Breadcrumb from "@/components/Breadcrumb";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -553,44 +554,50 @@ function EditQuotePage() {
         onCompleted: (data) => {
             console.log(auth?.jwtToken);
             const dataQuote = data.getSaleById;
-            const igv = Number(dataQuote?.igvPercentage) / 100;
+            const decimalIgv = Number(dataQuote?.igvPercentage) / 100;
             const formattedOperationdetailSet =
                 dataQuote.operationdetailSet.map(
-                    (detail: IOperationDetail, index: number) => ({
-                        ...detail,
-                        quantity: Number(detail.quantityAvailable).toString(),
-                        quantityReturned: Number(detail.quantityReturned),
-                        quantityAvailable: Number(detail.quantityAvailable),
-                        unitValue: Number(detail.unitValue).toFixed(2),
-                        unitPrice: Number(detail.unitPrice).toFixed(2),
-                        igvPercentage: Number(detail.igvPercentage).toFixed(2),
-                        discountPercentage: Number(
-                            detail.discountPercentage
-                        ).toFixed(2),
-                        totalDiscount: Number(detail.totalDiscount).toFixed(2),
-                        totalValue: Number(
-                            Number(detail.unitValue) *
-                                Number(detail.quantityAvailable)
-                        ).toFixed(2),
-                        totalIgv: Number(
-                            Number(detail.unitValue) *
-                                Number(detail.quantityAvailable) *
-                                igv
-                        ).toFixed(2),
-                        totalAmount: Number(
-                            Number(detail.unitValue) *
-                                Number(detail.quantityAvailable) *
-                                (1 + igv)
-                        ).toFixed(2),
-                        totalPerception: Number(detail.totalPerception).toFixed(
-                            2
-                        ),
-                        totalToPay: Number(detail.totalToPay).toFixed(2),
-                        temporaryId: index + 1,
-                        productTariffId: Number(detail.productTariffId),
-                        id: Number(detail.id),
-                        description: String(detail.description || ""),
-                    })
+                    (detail: IOperationDetail, index: number) => {
+                        const productDetail = detail;
+                        const calculatedUnitValue =
+                            Number(productDetail?.unitPrice) / (1 + decimalIgv);
+                        let totalValue =
+                            calculatedUnitValue *
+                                Number(productDetail.quantityAvailable) -
+                            Number(productDetail.totalDiscount);
+                        let totalIgv = totalValue * decimalIgv;
+                        let totalAmount = totalValue + totalIgv;
+                        return {
+                            ...detail,
+                            quantity: Number(
+                                detail.quantityAvailable
+                            ).toString(),
+                            quantityReturned: Number(detail.quantityReturned),
+                            quantityAvailable: Number(detail.quantityAvailable),
+                            unitValue: Number(calculatedUnitValue).toFixed(6),
+                            unitPrice: Number(detail.unitPrice).toFixed(6),
+                            igvPercentage: Number(
+                                dataQuote?.igvPercentage
+                            ).toFixed(2),
+                            discountPercentage: Number(
+                                detail.discountPercentage
+                            ).toFixed(2),
+                            totalDiscount: Number(detail.totalDiscount).toFixed(
+                                2
+                            ),
+                            totalValue: Number(totalValue).toFixed(2),
+                            totalIgv: Number(totalIgv).toFixed(2),
+                            totalAmount: Number(totalAmount).toFixed(2),
+                            totalPerception: Number(
+                                detail.totalPerception
+                            ).toFixed(2),
+                            totalToPay: Number(totalAmount).toFixed(2),
+                            temporaryId: index + 1,
+                            productTariffId: Number(detail.productTariffId),
+                            id: Number(detail.id),
+                            description: String(detail.description || ""),
+                        };
+                    }
                 );
 
             setQuote((prevSale) => ({

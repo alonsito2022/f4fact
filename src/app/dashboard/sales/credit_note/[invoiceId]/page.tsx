@@ -410,8 +410,8 @@ function CreditPage() {
                     quantity: Number(detail.quantityAvailable).toString(),
                     quantityReturned: Number(detail.quantityReturned),
                     quantityAvailable: Number(detail.quantityAvailable),
-                    unitValue: Number(detail.unitValue).toFixed(2),
-                    unitPrice: Number(detail.unitPrice).toFixed(2),
+                    unitValue: Number(detail.unitValue).toFixed(6),
+                    unitPrice: Number(detail.unitPrice).toFixed(6),
                     igvPercentage: Number(detail.igvPercentage).toFixed(2),
                     discountPercentage: Number(
                         detail.discountPercentage

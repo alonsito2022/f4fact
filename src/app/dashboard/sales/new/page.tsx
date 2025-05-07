@@ -237,7 +237,7 @@ const initialStateSaleDetail = {
     productName: "",
     description: "",
 
-    quantity: "",
+    quantity: "1",
     maxQuantity: "",
 
     unitValue: "",
