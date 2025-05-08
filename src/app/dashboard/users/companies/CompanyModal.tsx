@@ -35,7 +35,9 @@ const CREATE_COMPANY = gql`
         $invoiceB: Boolean!
         $guide: Boolean!
         $app: Boolean!
-        $ose: Boolean
+        $ose: Boolean       
+        $accountNumber: String!
+        $comment: String!
         $disableContinuePay: Boolean
     ) {
         createCompany(
@@ -69,6 +71,8 @@ const CREATE_COMPANY = gql`
             guide: $guide
             app: $app
             ose: $ose
+            accountNumber: $accountNumber
+            comment: $comment
             disableContinuePay: $disableContinuePay
         ) {
             success
@@ -109,6 +113,8 @@ const UPDATE_COMPANY = gql`
         $guide: Boolean!
         $app: Boolean!
         $ose: Boolean!
+        $accountNumber: String!
+        $comment: String!
         $disableContinuePay: Boolean!
     ) {
         updateCompany(
@@ -143,6 +149,8 @@ const UPDATE_COMPANY = gql`
             guide: $guide
             app: $app
             ose: $ose
+            accountNumber: $accountNumber
+            comment: $comment
             disableContinuePay: $disableContinuePay
         ) {
             message
@@ -164,6 +172,7 @@ function CompanyModal({
         mutation: DocumentNode,
         refetchQuery: DocumentNode
     ) {
+        console.log("USUARIO:", auth?.user.isSuperuser);
         const getAuthContext = () => ({
             headers: {
                 "Content-Type": "application/json",
@@ -252,6 +261,7 @@ function CompanyModal({
         e.preventDefault();
         try {
             console.log("Empresa:", company);
+            let result;
             if (Number(company.id) !== 0) {
                 const { data, errors } = await updateCompany({
                     variables: {
@@ -289,6 +299,8 @@ function CompanyModal({
                         guide: company.guide,
                         app: company.app,
                         ose: company.ose,
+                        accountNumber: company.accountNumber,
+                        comment: company.comment,
                         disableContinuePay: company.disableContinuePay || false,
                     },
                 });
@@ -769,8 +781,68 @@ function CompanyModal({
                                             </div>
                                         </div>
                                     </div>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="relative z-0 w-full mb-2 group sm:col-span-1">
+                                            <textarea
+                                                name="accountNumber"
+                                                id="accountNumber"
+                                                rows={2}
+                                                maxLength={200}
+                                                value={company?.accountNumber ? company?.accountNumber : ""}
+                                                onChange={handleInputChange}
+                                                onFocus={(e) => e.target.select()}
+                                                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                placeholder=" "                                                
+                                            ></textarea>
+                                            <label
+                                                htmlFor="accountNumber"
+                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                            >
+                                                Cuentas Bancarias
+                                            </label>
+                                        </div>
+                                        <div className="relative z-0 w-full mb-2 group sm:col-span-1">
+                                            <textarea
+                                                name="deductionAccount"
+                                                id="deductionAccount"
+                                                rows={2}
+                                                maxLength={200}
+                                                value={company?.deductionAccount ? company.deductionAccount : ""}
+                                                onChange={handleInputChange}
+                                                onFocus={(e) => e.target.select()}
+                                                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                placeholder=" "
+                                            ></textarea>
+                                            <label
+                                                htmlFor="deductionAccount"
+                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                            >
+                                                Cuenta de tracción(BN)
+                                            </label>
+                                        </div>
+                                        <div className="relative z-0 w-full mb-2 group sm:col-span-1">
+                                            <textarea
+                                                name="comment"
+                                                id="comment"
+                                                rows={2}
+                                                maxLength={200}
+                                                value={company?.comment ? company?.comment : ""}
+                                                onChange={handleInputChange}
+                                                onFocus={(e) => e.target.select()}
+                                                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                placeholder=" "
+                                            ></textarea>
+                                            <label
+                                                htmlFor="comment"
+                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                            >
+                                                Comentario
+                                            </label>
+                                        </div>
+                                    </div>
                                 </fieldset>
-
+                                {auth?.user.isSuperuser && (
+                                    <>
                                 <fieldset>
                                     <legend className=" text-blue-600 font-semibold mb-2">
                                         Cuenta Sunat
@@ -791,8 +863,7 @@ function CompanyModal({
                                                     e.target.select()
                                                 }
                                                 className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" "
-                                                required
+                                                placeholder=" "                                                
                                             />
                                             <label
                                                 htmlFor="userSol"
@@ -836,7 +907,7 @@ function CompanyModal({
                                                 onChange={handleInputChange}
                                                 name="certificationExpirationDate"
                                                 className="block pb-2 pt-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                required
+                                                
                                             />
                                             <label
                                                 htmlFor="certificationExpirationDate"
@@ -861,8 +932,7 @@ function CompanyModal({
                                                     e.target.select()
                                                 }
                                                 className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" "
-                                                required
+                                                placeholder=" "                                                
                                             />
                                             <label
                                                 htmlFor="guideClientId"
@@ -897,7 +967,7 @@ function CompanyModal({
                                             </label>
                                         </div>
                                         <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <input
+                                            {/* <input
                                                 type="text"
                                                 name="deductionAccount"
                                                 id="deductionAccount"
@@ -919,7 +989,7 @@ function CompanyModal({
                                                 className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
                                             >
                                                 Cuenta de tracción(BN)
-                                            </label>
+                                            </label> */}
                                         </div>
 
                                         <div className="sm:col-span-3 relative z-0 w-full mb-2 group">
@@ -938,7 +1008,7 @@ function CompanyModal({
                                                 Certificado Digital
                                             </label>
                                             {company.certification && (
-                                                <p className="text-sm text-gray-500 mt-1">
+                                                <p className="text-sm text-orange-500 font-bold mt-1">
                                                     Archivo cargado: server.pem
                                                 </p>
                                             )}
@@ -959,7 +1029,7 @@ function CompanyModal({
                                                 Clave Certificado Digital
                                             </label>
                                             {company.certificationKey && (
-                                                <p className="text-sm text-gray-500 mt-1">
+                                                <p className="text-sm text-orange-500 font-bold mt-1">
                                                     Archivo cargado:
                                                     server_key.pem
                                                 </p>
@@ -1140,6 +1210,7 @@ function CompanyModal({
                                                     onChange={
                                                         handleCheckboxChange
                                                     }
+                                                    disabled={company.isProduction}
                                                 />
                                                 <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                                 <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
@@ -1295,6 +1366,7 @@ function CompanyModal({
                                                     onChange={
                                                         handleCheckboxChange
                                                     }
+                                                    disabled={company.ose}
                                                 />
                                                 <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                                 <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
@@ -1302,29 +1374,31 @@ function CompanyModal({
                                                 </span>
                                             </label>
                                         </div>
-                                        <div className="flex items-center mb-4">
-                                            <input
-                                                type="checkbox"
-                                                id="disableContinuePay"
-                                                name="disableContinuePay"
-                                                checked={
-                                                    company.disableContinuePay ||
-                                                    false
-                                                }
-                                                onChange={handleCheckboxChange}
-                                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                            />
-                                            <label
-                                                htmlFor="disableContinuePay"
-                                                className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                                            >
+                                        <div className="sm:col-span-2 relative z-0 w-full mb-2 group">
+                                            <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    value=""
+                                                    id="disableContinuePay"
+                                                    name="disableContinuePay"
+                                                    className="sr-only peer"
+                                                    checked={company.disableContinuePay ||
+                                                        false
+                                                    }
+                                                    onChange={
+                                                        handleCheckboxChange
+                                                    }
+                                                />
+                                                <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
                                                 Deshabilitar Continuar con el
                                                 Pago
+                                                </span>
                                             </label>
-                                        </div>
+                                        </div>                                        
                                     </div>
                                 </fieldset>
-
+                                </>)}
                                 <button type="submit" className="btn-blue">
                                     {company.id ? (
                                         <p>Actualizar datos empresa</p>
