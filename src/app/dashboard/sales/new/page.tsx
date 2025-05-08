@@ -11,6 +11,8 @@ import Breadcrumb from "@/components/Breadcrumb";
 import { Modal, ModalOptions } from "flowbite";
 import { useQuery, gql, useLazyQuery } from "@apollo/client";
 import {
+    ICashFlow,
+    IOperation,
     IOperationDetail,
     IOperationType,
     IPerson,
@@ -192,7 +194,7 @@ const initialStateSale = {
     userId: 0,
     userName: "",
     operationdetailSet: [],
-    cashflowSet: [],
+    cashflowSet: [] as ICashFlow[],
     discountForItem: "",
     discountGlobal: "",
     discountPercentageGlobal: "",
@@ -330,6 +332,8 @@ const initialStateCashFlow = {
 };
 function NewSalePage() {
     const [isProcessing, setIsProcessing] = useState(false);
+    const saveSaleRef = useRef<Function | null>(null);
+    const [triggerSaveSale, setTriggerSaveSale] = useState(false);
 
     const [sale, setSale] = useState(initialStateSale);
     const [saleDetail, setSaleDetail] = useState(initialStateSaleDetail);
@@ -347,7 +351,6 @@ function NewSalePage() {
     const auth = useAuth();
     // Add this near the top of your component with other refs
     const clientInputRef = useRef<HTMLInputElement>(null);
-
     const authContext = useMemo(
         () => ({
             headers: {
@@ -365,6 +368,23 @@ function NewSalePage() {
             }));
         }
     }, [auth?.user?.companyPercentageIgv]);
+
+    useEffect(() => {
+        if (auth?.user?.companyDisableContinuePay) {
+            setSale((prevSale) => ({
+                ...prevSale,
+                igvType: 1,
+            }));
+        }
+    }, [auth?.user?.companyDisableContinuePay]);
+
+    // Handle triggerSaveSale state to call handleSaveSale when it's true
+    useEffect(() => {
+        if (triggerSaveSale && saveSaleRef.current) {
+            saveSaleRef.current();
+            setTriggerSaveSale(false); // Reset the trigger
+        }
+    }, [triggerSaveSale]);
 
     // useEffect(() => {
     //     const subsidiarySerial = auth?.user?.subsidiarySerial;
@@ -831,6 +851,25 @@ function NewSalePage() {
             });
         }
     }, [clientSearch]);
+
+    // useEffect(() => {
+    //     if (auth?.user?.companyDisableContinuePay) {
+    //         // Automatically set cash payment
+    //         const cashPayment = {
+    //             wayPay: 1, // EFECTIVO [CONTADO]
+    //             total: Number(sale.totalToPay),
+    //             description: "Pago en efectivo",
+    //             transactionDate: today,
+    //         };
+
+    //         setSale({
+    //             ...sale,
+    //             cashflowSet: [cashPayment],
+    //             totalPayed: sale.totalToPay || "0.00",
+    //             totalTurned: "0.00",
+    //         });
+    //     }
+    // }, [auth?.user?.companyDisableContinuePay, sale.totalToPay]);
 
     // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
     if (auth?.status === "loading") {
@@ -1314,7 +1353,6 @@ function NewSalePage() {
                                         </div>
                                     </fieldset>
                                 </div>
-
                                 {/* Búsqueda de Productos */}
                                 <div className="p-6 border-2 border-emerald-200 dark:border-emerald-900 bg-white dark:bg-gray-900 rounded-xl shadow-lg relative group transition-all duration-300 hover:shadow-emerald-500/20 hover:shadow-2xl">
                                     <div className="flex items-center gap-2 mb-4 text-emerald-600 dark:text-emerald-400">
@@ -1415,7 +1453,6 @@ function NewSalePage() {
                                         </button>
                                     </div>
                                 </div>
-
                                 <SaleTotalList
                                     invoice={sale}
                                     setSale={setSale}
@@ -1450,6 +1487,7 @@ function NewSalePage() {
                                         </div>
                                     </div>
                                 </fieldset>
+
                                 {/* Botón Continuar con el Pago */}
                                 <div className="flex justify-end py-2">
                                     <button
@@ -1462,18 +1500,48 @@ function NewSalePage() {
                                         }`}
                                         onClick={async () => {
                                             if (validateBeforePayment()) {
-                                                modalWayPay.show();
-                                                setSale({
-                                                    ...sale,
-                                                    totalPayed: "",
-                                                    cashflowSet: [],
-                                                });
-                                                setCashFlow({
-                                                    ...cashFlow,
-                                                    total: Number(
-                                                        sale.totalAmount
-                                                    ),
-                                                });
+                                                if (
+                                                    !auth?.user
+                                                        ?.companyDisableContinuePay
+                                                ) {
+                                                    modalWayPay.show();
+                                                    setSale({
+                                                        ...sale,
+                                                        totalPayed: "",
+                                                        cashflowSet: [],
+                                                    });
+                                                    setCashFlow({
+                                                        ...cashFlow,
+                                                        total: Number(
+                                                            sale.totalAmount
+                                                        ),
+                                                    });
+                                                } else {
+                                                    // Handle direct cash payment
+                                                    const cashPayment = {
+                                                        wayPay: 1, // EFECTIVO [CONTADO]
+                                                        total: Number(
+                                                            sale.totalToPay
+                                                        ),
+                                                        description:
+                                                            "Pago en efectivo",
+                                                        transactionDate: today,
+                                                        temporaryId: 1,
+                                                    };
+                                                    // Update the sale state with cash payment
+                                                    setSale({
+                                                        ...sale,
+                                                        cashflowSet: [
+                                                            cashPayment,
+                                                        ],
+                                                        totalPayed:
+                                                            sale.totalToPay ||
+                                                            "0.00",
+                                                        totalTurned: "0.00",
+                                                    });
+                                                    // Set trigger to call handleSaveSale after state update
+                                                    setTriggerSaveSale(true);
+                                                }
                                             }
                                         }}
                                         disabled={
@@ -1482,7 +1550,9 @@ function NewSalePage() {
                                         }
                                     >
                                         <Save />
-                                        CONTINUAR CON EL PAGO
+                                        {auth?.user?.companyDisableContinuePay
+                                            ? "FINALIZAR VENTA"
+                                            : "CONTINUAR CON EL PAGO"}
                                     </button>
                                 </div>
                             </div>
@@ -1543,6 +1613,7 @@ function NewSalePage() {
                 wayPaysData={wayPaysData}
                 isProcessing={isProcessing}
                 setIsProcessing={setIsProcessing}
+                onSaveSaleRef={(fn: any) => (saveSaleRef.current = fn)}
             />
         </>
     );

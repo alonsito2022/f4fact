@@ -150,7 +150,6 @@ function SalePage() {
     });
 
     useEffect(() => {
-        console.log("isSuperuser", auth?.user?.isSuperuser);
         if (auth?.status === "authenticated" && auth?.jwtToken) {
             salesQuery({
                 variables: {

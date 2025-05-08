@@ -350,7 +350,7 @@ function SaleFilter({
                     <Filter />
                     Filtrar
                 </button>
-                <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-4 col-span-full">
+                <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 col-span-full">
                     {/* <a
                     href={`${hostname}/operations/export_sales_to_excel/${filterObj.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/`}
                     target="_blank"
@@ -376,7 +376,7 @@ function SaleFilter({
                         type="button"
                         onClick={() => modalSearchInvoice?.show()}
                         title="Buscar documento por serie y número"
-                        className="btn-orange px-5 py-3 flex items-center justify-center gap-2 w-full m-0 rounded-lg hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg"
+                        className=" bg-orange-400 px-5 py-3 flex items-center justify-center gap-2 w-full m-0 rounded-lg hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg"
                     >
                         <Search />
                         <span className=" sm:inline">Buscar Documento</span>

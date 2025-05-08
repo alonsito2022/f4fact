@@ -166,6 +166,7 @@ function WayPayForm({
     wayPaysData,
     isProcessing,
     setIsProcessing,
+    onSaveSaleRef,
 }: any) {
     // Add ref for the close button
     const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -433,7 +434,12 @@ function WayPayForm({
     useEffect(() => {
         calculateTotalPayed();
     }, [invoice.cashflowSet]);
-
+    // Expose handleSaveSale function to parent component
+    useEffect(() => {
+        if (onSaveSaleRef && typeof onSaveSaleRef === 'function') {
+            onSaveSaleRef(handleSaveSale);
+        }
+    }, [handleSaveSale, onSaveSaleRef]);
     const calculateTotalPayed = useCallback(() => {
         const totalPayed = invoice?.cashflowSet?.reduce(
             (total: number, detail: ICashFlow) => {
