@@ -3,6 +3,7 @@ import { Modal, ModalOptions } from "flowbite";
 import { toast } from "react-toastify";
 import { DocumentNode, gql, useMutation } from "@apollo/client";
 import { ICompany } from "@/app/types";
+import { signOut } from "next-auth/react";
 const CREATE_COMPANY = gql`
     mutation CreateCompany(
         $typeDoc: String!
@@ -35,6 +36,7 @@ const CREATE_COMPANY = gql`
         $guide: Boolean!
         $app: Boolean!
         $ose: Boolean
+        $disableContinuePay: Boolean
     ) {
         createCompany(
             typeDoc: $typeDoc
@@ -67,6 +69,7 @@ const CREATE_COMPANY = gql`
             guide: $guide
             app: $app
             ose: $ose
+            disableContinuePay: $disableContinuePay
         ) {
             success
             message
@@ -106,6 +109,7 @@ const UPDATE_COMPANY = gql`
         $guide: Boolean!
         $app: Boolean!
         $ose: Boolean!
+        $disableContinuePay: Boolean!
     ) {
         updateCompany(
             id: $id
@@ -139,6 +143,7 @@ const UPDATE_COMPANY = gql`
             guide: $guide
             app: $app
             ose: $ose
+            disableContinuePay: $disableContinuePay
         ) {
             message
         }
@@ -147,7 +152,7 @@ const UPDATE_COMPANY = gql`
 function CompanyModal({
     modal,
     setModal,
-    jwtToken,
+    auth,
     company,
     setCompany,
     initialState,
@@ -162,7 +167,7 @@ function CompanyModal({
         const getAuthContext = () => ({
             headers: {
                 "Content-Type": "application/json",
-                Authorization: jwtToken ? `JWT ${jwtToken}` : "",
+                Authorization: auth?.jwtToken ? `JWT ${auth?.jwtToken}` : "",
             },
         });
 
@@ -284,6 +289,7 @@ function CompanyModal({
                         guide: company.guide,
                         app: company.app,
                         ose: company.ose,
+                        disableContinuePay: company.disableContinuePay || false,
                     },
                 });
 
@@ -302,8 +308,21 @@ function CompanyModal({
                         autoClose: 2000,
                         type: "success",
                     });
-                    setCompany(initialState);
-                    modal.hide();
+                    // Check if updated company is the user's company
+                    if (auth?.user?.companyId === Number(company.id)) {
+                        toast.info("Los cambios requieren reiniciar sesión", {
+                            hideProgressBar: true,
+                            autoClose: 3000,
+                        });
+
+                        setTimeout(async () => {
+                            localStorage.removeItem("auth");
+                            await signOut({ redirect: true, callbackUrl: "/" });
+                        }, 3000);
+                    } else {
+                        setCompany(initialState);
+                        modal.hide();
+                    }
                 }
             } else {
                 const { data, errors } = await createCompany({
@@ -341,6 +360,7 @@ function CompanyModal({
                         guide: company.guide,
                         app: company.app,
                         ose: company.ose,
+                        disableContinuePay: company.disableContinuePay || false,
                     },
                 });
 
@@ -1280,6 +1300,26 @@ function CompanyModal({
                                                 <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
                                                     Ose
                                                 </span>
+                                            </label>
+                                        </div>
+                                        <div className="flex items-center mb-4">
+                                            <input
+                                                type="checkbox"
+                                                id="disableContinuePay"
+                                                name="disableContinuePay"
+                                                checked={
+                                                    company.disableContinuePay ||
+                                                    false
+                                                }
+                                                onChange={handleCheckboxChange}
+                                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                            />
+                                            <label
+                                                htmlFor="disableContinuePay"
+                                                className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                                            >
+                                                Deshabilitar Continuar con el
+                                                Pago
                                             </label>
                                         </div>
                                     </div>

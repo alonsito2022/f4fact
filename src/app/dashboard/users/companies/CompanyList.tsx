@@ -44,6 +44,7 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
             guide
             app
             ose
+            disableContinuePay
         }
     }
 `;

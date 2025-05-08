@@ -45,6 +45,7 @@ const initialState = {
     guide: false,
     app: false,
     ose: false,
+    disableContinuePay: false,
 };
 const COMPANIES_QUERY = gql`
     query Companies {
@@ -109,6 +110,7 @@ const COMPANY_QUERY = gql`
             guide
             app
             ose
+            disableContinuePay
         }
     }
 `;
@@ -132,16 +134,15 @@ function CompanyPage() {
         }),
         [auth?.jwtToken]
     );
-   
+
     useEffect(() => {
-       
         if (auth?.user) {
             console.log("usuario:", auth?.jwtToken);
             fetchCompanies();
         }
     }, [auth?.user]);
     async function fetchCompanies() {
-          let queryFetch: String = `
+        let queryFetch: String = `
             query{
                 companiesByUser {
                         id
@@ -237,7 +238,7 @@ function CompanyPage() {
                 </div>
             </div>
             <CompanyModal
-                jwtToken={jwtToken}
+                auth={auth}
                 COMPANIES_QUERY={COMPANIES_QUERY}
                 modal={modal}
                 setModal={setModal}

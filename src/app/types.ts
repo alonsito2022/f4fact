@@ -35,6 +35,7 @@ export interface IUser {
     companyGuide: boolean;
     companyCatalog: boolean;
     companyApp: boolean;
+    companyDisableContinuePay: boolean;
     companyIsProduction: boolean;
     mobileDescription: string;
 }
@@ -72,6 +73,7 @@ export interface ICompany {
     guide?: boolean;
     app?: boolean;
     ose?: boolean;
+    disableContinuePay?: boolean;
     deductionAccount?: String;
 }
 export interface IVehicle {
@@ -363,27 +365,27 @@ export interface IProductTariff {
 }
 
 export interface IOperation {
-    id?: number;
-    serial?: string;
-    correlative?: string;
-    emitDate?: string;
-    operationType?: string;
-    operationDate?: string;
-    supplierName?: string;
-    supplierId?: number;
-    igvType?: number;
-    documentType?: string;
-    documentTypeReadable?: string;
-    currencyType?: string;
-    saleExchangeRate?: string;
+    id: number;
+    serial: string;
+    correlative: string;
+    emitDate: string;
+    operationType: string;
+    operationDate: string;
+    supplierName: string;
+    supplierId: number;
+    igvType: number;
+    documentType: string;
+    documentTypeReadable: string;
+    currencyType: string;
+    saleExchangeRate: string;
     // observation?: string
-    supplier?: ISupplier;
-    client?: ISupplier;
+    supplier: ISupplier;
+    client: ISupplier;
     // type?: string
     subsidiary: ISubsidiary;
-    operationdetailSet?: Array<IOperationDetail>;
-    relatedDocuments?: Array<IRelatedDocument>;
-    cashflowSet?: Array<ICashFlow>;
+    operationdetailSet: Array<IOperationDetail>;
+    relatedDocuments: Array<IRelatedDocument>;
+    cashflowSet: Array<ICashFlow>;
 
     discountForItem: string;
     discountGlobal: string;
@@ -441,6 +443,12 @@ export interface IOperation {
     // totalAmount: "",
     // totalPerception: "",
     // totalToPay: "",
+    // Add these required properties that are missing from your interface
+    dueDate: string;
+    clientName: string;
+    clientDocumentType: string;
+    clientId: number;
+    detractionPercentage: string;
 }
 
 export interface ICashFlow {
