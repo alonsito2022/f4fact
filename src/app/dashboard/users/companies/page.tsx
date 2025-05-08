@@ -45,6 +45,8 @@ const initialState = {
     guide: false,
     app: false,
     ose: false,
+    accountNumber: "",
+    comment: "",
     disableContinuePay: false,
 };
 const COMPANIES_QUERY = gql`
@@ -110,6 +112,8 @@ const COMPANY_QUERY = gql`
             guide
             app
             ose
+            accountNumber
+            comment
             disableContinuePay
         }
     }
@@ -166,6 +170,9 @@ function CompanyPage() {
                         percentageIgv
                         productionDate
                         disabledDate
+                        accountNumber
+                        comment
+                        disableContinuePay
                     }
             }
         `;
