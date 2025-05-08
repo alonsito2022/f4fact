@@ -49,7 +49,7 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
             disableContinuePay
         }
     }
-`;
+        `;
         console.log(queryfetch);
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
             method: "POST",
@@ -62,12 +62,27 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
             .then((data) => {
                 console.log(data.data.companyById);
                 let companyData = data.data.companyById;
-                companyData.phone = companyData.phone || "";
-                companyData.certification = companyData.certification || "";
-                companyData.certificationKey =
-                    companyData.certificationKey || "";
-                companyData.logo = companyData.logo || "";
-                companyData.productionDate = companyData.productionDate || "";
+                console.log(companyData);
+                setCompany(companyData);
+
+                const stringFields = [
+                    'phone',
+                    'certification',
+                    'certificationKey',
+                    'logo',
+                    'productionDate',
+                    'accountNumber',
+                    'comment',
+                    'guideClientId',
+                    'guideClientSecret',
+                    'deductionAccount'
+                ];
+        
+                // Convertir cada campo null a string vacío
+                stringFields.forEach(field => {
+                    companyData[field] = companyData[field] || "";
+                });
+        
                 console.log(companyData);
                 setCompany(companyData);
             });
