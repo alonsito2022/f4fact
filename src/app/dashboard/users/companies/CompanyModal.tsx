@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { DocumentNode, gql, useMutation } from "@apollo/client";
 import { ICompany } from "@/app/types";
 import { signOut } from "next-auth/react";
+import { log } from "console";
 const CREATE_COMPANY = gql`
     mutation CreateCompany(
         $typeDoc: String!
@@ -75,8 +76,9 @@ const CREATE_COMPANY = gql`
             comment: $comment
             disableContinuePay: $disableContinuePay
         ) {
-            success
+            success 
             message
+            errors
         }
     }
 `;
@@ -153,7 +155,9 @@ const UPDATE_COMPANY = gql`
             comment: $comment
             disableContinuePay: $disableContinuePay
         ) {
+            success 
             message
+            errors
         }
     }
 `;
@@ -321,9 +325,9 @@ function CompanyModal({
         }
         
         // Validación de certificación si está en producción
-        if (companyData.isProduction && !companyData.certification) {
-            errors.push("Se requiere certificado digital para modo producción");
-        }
+        // if (companyData.isProduction && !companyData.certification) {
+        //     errors.push("Se requiere certificado digital para modo producción");
+        // }
         
         // Agrega más validaciones según necesites...
         
@@ -610,10 +614,10 @@ function CompanyModal({
             let result;
             if (Number(company.id) !== 0) {
                 // Mutación para actualizar
-                toast.info("Actualizando empresa...", {
-                    hideProgressBar: true,
-                    autoClose: 2000,
-                });
+                // toast.info("Actualizando empresa...", {
+                //     hideProgressBar: true,
+                //     autoClose: 2000,
+                // });
     
                 result = await updateCompanyMutation({
                     variables: {
@@ -632,7 +636,6 @@ function CompanyModal({
                     variables: commonVariables,
                 });
             }
-    
             // 3. Manejo de respuesta mejorado
             if (!result) {
                 throw new Error("No se recibió respuesta del servidor");
@@ -668,7 +671,7 @@ function CompanyModal({
                 success: operationResult?.success,
                 typeOfSuccess: typeof operationResult?.success
                 });
-    
+            console.log('Operation ssss:', operationResult?.success);
             if (!operationResult?.success) {
                 throw new Error(operationResult?.message || "La operación no fue exitosa");
             }
