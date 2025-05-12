@@ -75,7 +75,8 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
                     'comment',
                     'guideClientId',
                     'guideClientSecret',
-                    'deductionAccount'
+                    'deductionAccount',
+                    'certificationExpirationDate'
                 ];
         
                 // Convertir cada campo null a string vacío
