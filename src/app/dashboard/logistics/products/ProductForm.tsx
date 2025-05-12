@@ -512,7 +512,7 @@ function ProductForm({
                                             type="text"
                                             name="name"
                                             id="name"
-                                            maxLength={100}
+                                            maxLength={200}
                                             value={product.name}
                                             onChange={handleInputChange}
                                             onFocus={(e) => e.target.select()}
