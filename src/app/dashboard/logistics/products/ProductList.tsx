@@ -39,16 +39,8 @@ const initialVisibleColumns = {
     id: true,
     name: true,
     code: true,
-    price1WithIgv: false,
-    price1WithoutIgv: false,
-    price2WithIgv: false,
-    price2WithoutIgv: false,
-    price3WithIgv: true,
-    price3WithoutIgv: true,
-    price4WithIgv: false,
-    price4WithoutIgv: false,
-    company: false,
-    subsidiary: false,
+    price3WithIgv: true, // P.U. C/IGV
+    price3WithoutIgv: true, // P.U. S/IGV
 } as const;
 
 function ProductList({
@@ -108,123 +100,7 @@ function ProductList({
         },
         [productQuery, setProduct, modalProduct]
     );
-    // Add this memoized component for table rows
-    const TableRows = useCallback(
-        ({ products }: { products: IProduct[] }) => {
-            return (
-                <>
-                    {products?.map((item: IProduct) => (
-                        <tr
-                            key={item.id}
-                            className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        >
-                            {/* Move all td elements here */}
-                            {visibleColumns.id && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item.id}
-                                </td>
-                            )}
-                            {visibleColumns.name && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item.name}
-                                </td>
-                            )}
-                            {visibleColumns.code && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item.code}
-                                </td>
-                            )}
-                            {visibleColumns.price1WithIgv && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item.priceWithIgv1}
-                                </td>
-                            )}
-                            {visibleColumns.price1WithoutIgv && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item.priceWithoutIgv1}
-                                </td>
-                            )}
-                            {visibleColumns.price2WithIgv && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item.priceWithIgv2}
-                                </td>
-                            )}
-                            {visibleColumns.price2WithoutIgv && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item.priceWithoutIgv2}
-                                </td>
-                            )}
-                            {visibleColumns.price3WithIgv && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item.priceWithIgv3}
-                                </td>
-                            )}
-                            {visibleColumns.price3WithoutIgv && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item.priceWithoutIgv3}
-                                </td>
-                            )}
-                            {visibleColumns.price4WithIgv && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item.priceWithIgv4}
-                                </td>
-                            )}
-                            {visibleColumns.price4WithoutIgv && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item.priceWithoutIgv4}
-                                </td>
-                            )}
-                            {visibleColumns.company && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item?.subsidiary?.companyName}
-                                </td>
-                            )}
-                            {visibleColumns.subsidiary && (
-                                <td
-                                    className={getCellClassName(item.available)}
-                                >
-                                    {item?.subsidiary?.serial}
-                                </td>
-                            )}
-                            <td className="px-4 py-2 text-right">
-                                <a
-                                    className="cursor-pointer"
-                                    onClick={() => handleEditProduct(item.id)}
-                                >
-                                    <Edit />
-                                </a>
-                            </td>
-                        </tr>
-                    ))}
-                </>
-            );
-        },
-        [visibleColumns] // Only re-render when visibleColumns changes
-    );
+
     // Add this utility function for cell className
     const getCellClassName = useCallback((available: boolean) => {
         return `px-4 py-2 font-medium whitespace-nowrap ${
@@ -274,42 +150,6 @@ function ProductList({
                     <label className="inline-flex items-center">
                         <input
                             type="checkbox"
-                            checked={visibleColumns.price1WithIgv}
-                            onChange={() => toggleColumn("price1WithIgv")}
-                            className="form-checkbox h-4 w-4 text-blue-600"
-                        />
-                        <span className="ml-2 text-sm">C.U. C/IGV</span>
-                    </label>
-                    <label className="inline-flex items-center">
-                        <input
-                            type="checkbox"
-                            checked={visibleColumns.price1WithoutIgv}
-                            onChange={() => toggleColumn("price1WithoutIgv")}
-                            className="form-checkbox h-4 w-4 text-blue-600"
-                        />
-                        <span className="ml-2 text-sm">C.U. S/IGV</span>
-                    </label>
-                    <label className="inline-flex items-center">
-                        <input
-                            type="checkbox"
-                            checked={visibleColumns.price2WithIgv}
-                            onChange={() => toggleColumn("price2WithIgv")}
-                            className="form-checkbox h-4 w-4 text-blue-600"
-                        />
-                        <span className="ml-2 text-sm">C.M. C/IGV</span>
-                    </label>
-                    <label className="inline-flex items-center">
-                        <input
-                            type="checkbox"
-                            checked={visibleColumns.price2WithoutIgv}
-                            onChange={() => toggleColumn("price2WithoutIgv")}
-                            className="form-checkbox h-4 w-4 text-blue-600"
-                        />
-                        <span className="ml-2 text-sm">C.M. S/IGV</span>
-                    </label>
-                    <label className="inline-flex items-center">
-                        <input
-                            type="checkbox"
                             checked={visibleColumns.price3WithIgv}
                             onChange={() => toggleColumn("price3WithIgv")}
                             className="form-checkbox h-4 w-4 text-blue-600"
@@ -325,44 +165,6 @@ function ProductList({
                         />
                         <span className="ml-2 text-sm">P.U. S/IGV</span>
                     </label>
-                    <label className="inline-flex items-center">
-                        <input
-                            type="checkbox"
-                            checked={visibleColumns.price4WithIgv}
-                            onChange={() => toggleColumn("price4WithIgv")}
-                            className="form-checkbox h-4 w-4 text-blue-600"
-                        />
-                        <span className="ml-2 text-sm">P.M. C/IGV</span>
-                    </label>
-                    <label className="inline-flex items-center">
-                        <input
-                            type="checkbox"
-                            checked={visibleColumns.price4WithoutIgv}
-                            onChange={() => toggleColumn("price4WithoutIgv")}
-                            className="form-checkbox h-4 w-4 text-blue-600"
-                        />
-                        <span className="ml-2 text-sm">P.M. S/IGV</span>
-                    </label>
-                    <label className="inline-flex items-center">
-                        <input
-                            type="checkbox"
-                            checked={visibleColumns.company}
-                            onChange={() => toggleColumn("company")}
-                            className="form-checkbox h-4 w-4 text-blue-600"
-                        />
-                        <span className="ml-2 text-sm">EMPRESA</span>
-                    </label>
-                    <label className="inline-flex items-center">
-                        <input
-                            type="checkbox"
-                            checked={visibleColumns.subsidiary}
-                            onChange={() => toggleColumn("subsidiary")}
-                            className="form-checkbox h-4 w-4 text-blue-600"
-                        />
-                        <span className="ml-2 text-sm">SUC. SERIE</span>
-                    </label>
-
-                    {/* Add similar checkboxes for other columns */}
                 </div>
             </div>
 
@@ -398,38 +200,6 @@ function ProductList({
                                 CODIGO
                             </th>
                         )}
-                        {visibleColumns.price1WithIgv && (
-                            <th
-                                scope="col"
-                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                            >
-                                C.U. C/IGV
-                            </th>
-                        )}
-                        {visibleColumns.price1WithoutIgv && (
-                            <th
-                                scope="col"
-                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                            >
-                                C.U. S/IGV
-                            </th>
-                        )}
-                        {visibleColumns.price2WithIgv && (
-                            <th
-                                scope="col"
-                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                            >
-                                C.M. C/IGV
-                            </th>
-                        )}
-                        {visibleColumns.price2WithoutIgv && (
-                            <th
-                                scope="col"
-                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                            >
-                                C.M. S/IGV
-                            </th>
-                        )}
                         {visibleColumns.price3WithIgv && (
                             <th
                                 scope="col"
@@ -446,39 +216,6 @@ function ProductList({
                                 P.U. S/IGV
                             </th>
                         )}
-                        {visibleColumns.price4WithIgv && (
-                            <th
-                                scope="col"
-                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                            >
-                                P.M. C/IGV
-                            </th>
-                        )}
-                        {visibleColumns.price4WithoutIgv && (
-                            <th
-                                scope="col"
-                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                            >
-                                P.M. S/IGV
-                            </th>
-                        )}
-                        {visibleColumns.company && (
-                            <th
-                                scope="col"
-                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                            >
-                                EMPRESA
-                            </th>
-                        )}
-                        {visibleColumns.subsidiary && (
-                            <th
-                                scope="col"
-                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                            >
-                                SUC. SERIE
-                            </th>
-                        )}
-
                         <th
                             scope="col"
                             className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
@@ -488,7 +225,56 @@ function ProductList({
                     </tr>
                 </thead>
                 <tbody>
-                    <TableRows products={filteredProducts} />
+                    {filteredProducts?.map((item: IProduct) => (
+                        <tr
+                            key={item.id}
+                            className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
+                            {visibleColumns.id && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.id}
+                                </td>
+                            )}
+                            {visibleColumns.name && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.name}
+                                </td>
+                            )}
+                            {visibleColumns.code && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.code}
+                                </td>
+                            )}
+                            {visibleColumns.price3WithIgv && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.priceWithIgv3}
+                                </td>
+                            )}
+                            {visibleColumns.price3WithoutIgv && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.priceWithoutIgv3}
+                                </td>
+                            )}
+                            <td className="px-4 py-2 text-right">
+                                <a
+                                    className="cursor-pointer"
+                                    onClick={() => handleEditProduct(item.id)}
+                                >
+                                    <Edit />
+                                </a>
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
         </div>
