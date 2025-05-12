@@ -814,7 +814,6 @@ function NewSalePage() {
     };
     const handleClientSelect = (event: ChangeEvent<HTMLInputElement>) => {
         const selectedOption = event.target.value;
-
         const selectedData = searchClientData?.searchClientByParameter?.find(
             (person: IPerson) =>
                 `${person.documentNumber} ${person.names}` === selectedOption
@@ -829,6 +828,15 @@ function NewSalePage() {
                     "A_",
                     ""
                 ),
+            });
+            setClientSearch(selectedOption); // Ensure the search field shows the complete selected value
+        } else {
+            // Clear client data if no match is found
+            setSale({
+                ...sale,
+                clientId: 0,
+                clientName: "",
+                clientDocumentType: "",
             });
         }
     };
@@ -1575,6 +1583,8 @@ function NewSalePage() {
             <ClientForm
                 modalAddClient={modalAddClient}
                 setModalAddClient={setModalAddClient}
+                setClientSearch={setClientSearch}
+                clientSearch={clientSearch}
                 person={person}
                 setPerson={setPerson}
                 jwtToken={auth?.jwtToken}

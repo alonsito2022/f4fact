@@ -19,6 +19,7 @@ import {
     IProvince,
     IUser,
 } from "@/app/types";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 const SNT_PERSON_MUTATION = gql`
     mutation ($document: String!) {
@@ -75,6 +76,7 @@ const ADD_PERSON_MUTATION = gql`
                 names
                 address
                 documentNumber
+                documentType
             }
         }
     }
@@ -137,6 +139,8 @@ const DISTRICTS_QUERY = gql`
 function ClientForm({
     modalAddClient,
     setModalAddClient,
+    setClientSearch,
+    clientSearch,
     person,
     setPerson,
     jwtToken,
@@ -147,14 +151,39 @@ function ClientForm({
 }: any) {
     const [addPerson] = useMutation(ADD_PERSON_MUTATION, {
         context: authContext,
-        refetchQueries: () => [
-            {
-                query: SEARCH_CLIENT_BY_PARAMETER,
-                context: authContext,
-                variables: { search: person.documentNumber },
-            },
-        ],
-        onError: (err) => console.error("Error in person mutation:", err), // Log the error for debugging
+        onCompleted: (data) => {
+            if (data.createPerson.success) {
+                const newPerson = data.createPerson.person;
+                toast(data.createPerson.message, {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "success",
+                });
+
+                // Update sale state with complete client information
+                setSale({
+                    ...sale,
+                    clientId: Number(newPerson.id),
+                    clientName: newPerson.names,
+                    clientDocumentType: newPerson.documentType,
+                });
+
+                // Update client search field
+                setClientSearch(
+                    `${newPerson.documentNumber} ${newPerson.names}`
+                );
+
+                modalAddClient.hide();
+            }
+        },
+        onError: (err) => {
+            console.error("Error in person mutation:", err);
+            toast("Error al crear el cliente", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "error",
+            });
+        },
     });
     useEffect(() => {
         if (modalAddClient == null) {
@@ -429,7 +458,7 @@ function ClientForm({
         setPerson({ ...person, [name]: checked });
     };
 
-    const handleSaveSupplier = async (e: FormEvent<HTMLFormElement>) => {
+    const handleSaveClient = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         if (person?.documentNumber.length === 0) {
@@ -481,6 +510,7 @@ function ClientForm({
         }
 
         if (Number(person.id) !== 0) {
+            // Handle edit case if needed
         } else {
             const values = {
                 names: person.names,
@@ -498,36 +528,32 @@ function ClientForm({
                 economicActivityMain: Number(person.economicActivityMain),
             };
 
-            const { data, errors } = await addPerson({ variables: values });
-            if (errors) {
-                toast(errors.toString(), {
-                    hideProgressBar: true,
-                    autoClose: 2000,
-                    type: "error",
-                });
-            } else {
-                if (data.createPerson.success) {
-                    toast(data.createPerson.message, {
+            try {
+                const { data, errors } = await addPerson({ variables: values });
+
+                if (errors) {
+                    toast(errors.toString(), {
                         hideProgressBar: true,
                         autoClose: 2000,
-                        type: "success",
+                        type: "error",
                     });
-                    const p = data.createPerson.person;
-                    if (p)
-                        setSale({
-                            ...sale,
-                            supplierId: Number(p.id),
-                            supplierName: `${p.documentNumber} ${p.names}`,
-                        });
+                    return;
+                }
 
-                    modalAddClient.hide();
-                } else {
+                if (!data.createPerson.success) {
                     toast(data.createPerson.message, {
                         hideProgressBar: true,
                         autoClose: 2000,
                         type: "error",
                     });
                 }
+            } catch (error) {
+                console.error("Error creating person:", error);
+                toast("Error al crear el cliente", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "error",
+                });
             }
         }
     };
@@ -589,7 +615,7 @@ function ClientForm({
                         </div>
                         {/* Modal body */}
 
-                        <form onSubmit={handleSaveSupplier}>
+                        <form onSubmit={handleSaveClient}>
                             <div className="p-6 md:p-8 space-y-6">
                                 <div className="grid gap-6 mb-6 sm:grid-cols-4 items-start">
                                     {/* Group document fields */}
@@ -599,7 +625,7 @@ function ClientForm({
                                         </legend>
                                         <div className="grid gap-4 sm:grid-cols-4">
                                             {/* Document Type and Number fields */}
-                                            <div className="sm:col-span-1">
+                                            <div className="sm:col-span-2">
                                                 <label
                                                     htmlFor="documentType"
                                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -628,7 +654,7 @@ function ClientForm({
                                                     )}
                                                 </select>
                                             </div>
-                                            <div className="sm:col-span-3">
+                                            <div className="sm:col-span-2">
                                                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                                     Número (RUC, DNI, Etc){" "}
                                                 </label>
@@ -754,7 +780,7 @@ function ClientForm({
                                                 </div>
                                             )}
 
-                                            {person.documentType === "6" && (
+                                            {person.documentType === "M" && (
                                                 <div className="sm:col-span-4">
                                                     <label
                                                         htmlFor="economicActivityMainReadable"
@@ -848,7 +874,9 @@ function ClientForm({
                                         </legend>
                                         <div className="grid gap-4 sm:grid-cols-4">
                                             {/* Address, Department, Province, District fields */}
-                                            {person.documentType === "6" && (
+                                            {(person.documentType === "6" ||
+                                                person.documentType ===
+                                                    "-") && (
                                                 <div className="sm:col-span-4">
                                                     <label
                                                         htmlFor="address"

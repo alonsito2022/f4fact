@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, MouseEvent, useEffect, useRef } from "react";
+import { ChangeEvent, FormEvent, MouseEvent, useEffect, useRef, useState } from "react";
 import { Modal, ModalOptions } from "flowbite";
 import { toast } from "react-toastify";
 import { DocumentNode, gql, useMutation } from "@apollo/client";
@@ -168,6 +168,14 @@ function CompanyModal({
     COMPANIES_QUERY,
 }: any) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const getAuthContext = () => ({
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
+        },
+    });
+
     function useCustomMutation(
         mutation: DocumentNode,
         refetchQuery: DocumentNode
@@ -188,6 +196,32 @@ function CompanyModal({
             onError: (err) => console.error("Error in unit:", err), // Log the error for debugging
         });
     }
+    // Declara las mutaciones al nivel superior del componente
+    const [updateCompanyMutation] = useMutation(UPDATE_COMPANY, {
+        context: getAuthContext(),
+        refetchQueries: [
+            {
+                query: COMPANIES_QUERY,
+                context: getAuthContext()
+            }
+        ],
+        onError: (err) => {
+            console.error("Update error:", err);
+        }
+    });
+
+    const [createCompanyMutation] = useMutation(CREATE_COMPANY, {
+        context: getAuthContext(),
+        refetchQueries: [
+            {
+                query: COMPANIES_QUERY,
+                context: getAuthContext()
+            }
+        ],
+        onError: (err) => {
+            console.error("Create error:", err);
+        }
+    });
     const [createCompany] = useCustomMutation(CREATE_COMPANY, COMPANIES_QUERY);
     const [updateCompany] = useCustomMutation(UPDATE_COMPANY, COMPANIES_QUERY);
     const handleFileReset = () => {
@@ -246,168 +280,473 @@ function CompanyModal({
     };
     const handleCheckboxChange = ({
         target: { name, checked },
-    }: ChangeEvent<HTMLInputElement>) => {
-        setCompany({ ...company, [name]: checked });
+        }: ChangeEvent<HTMLInputElement>) => {
+            setCompany({ ...company, [name]: checked });
+        };
+        // const fileToBase64 = (file: File): Promise<string> => {
+        //     return new Promise((resolve, reject) => {
+        //         const reader = new FileReader();
+        //         reader.readAsDataURL(file);
+        //         reader.onload = () => resolve(reader.result as string);
+        //         reader.onerror = error => reject(error);
+        //     });
+        // };
+    const validateCompanyData = (companyData: ICompany): string[] => {
+        const errors: string[] = [];
+        
+        // Validación del RUC (11 dígitos)
+        if (!companyData.doc || companyData.doc.length !== 11) {
+            errors.push("El RUC debe tener exactamente 11 dígitos");
+        }
+        
+        // Validación de razón social
+        if (!companyData.businessName || companyData.businessName.trim().length < 3) {
+            errors.push("La razón social es requerida y debe tener al menos 3 caracteres");
+        }
+        
+        // Validación de nombre comercial
+        if (!companyData.shortName || companyData.shortName.trim().length < 3) {
+            errors.push("El nombre comercial es requerido y debe tener al menos 3 caracteres");
+        }
+        
+        // Validación de dirección
+        if (!companyData.address || companyData.address.trim().length < 5) {
+            errors.push("La dirección es requerida y debe tener al menos 5 caracteres");
+        }
+        
+        // Validación de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!companyData.email || !emailRegex.test(companyData.email)) {
+            errors.push("Ingrese un correo electrónico válido");
+        }
+        
+        // Validación de certificación si está en producción
+        if (companyData.isProduction && !companyData.certification) {
+            errors.push("Se requiere certificado digital para modo producción");
+        }
+        
+        // Agrega más validaciones según necesites...
+        
+        return errors;
     };
-    // const fileToBase64 = (file: File): Promise<string> => {
-    //     return new Promise((resolve, reject) => {
-    //         const reader = new FileReader();
-    //         reader.readAsDataURL(file);
-    //         reader.onload = () => resolve(reader.result as string);
-    //         reader.onerror = error => reject(error);
-    //     });
+    // const handleSaveCompany = async (e: FormEvent<HTMLFormElement>) => {
+    //     e.preventDefault();
+    //     setIsSubmitting(true);
+    //     // 1. Validación inicial de datos
+    //     const validationErrors = validateCompanyData(company);
+    //     if (validationErrors.length > 0) {
+    //         toast(validationErrors.join("\n"), {
+    //             hideProgressBar: true,
+    //             autoClose: 5000,
+    //             type: "error",
+    //         });
+    //         return;
+    //     }
+    //     try {
+    //         let result;
+    //         let mutationError;
+    //         if (Number(company.id) !== 0) {
+    //             // Mutación para actualizar
+    //             const [update, { loading: updateLoading, error: updateError }] = useMutation(UPDATE_COMPANY, {
+    //                 context: getAuthContext(),
+    //                 refetchQueries: [
+    //                     {
+    //                         query: COMPANIES_QUERY,
+    //                         context: getAuthContext()
+    //                     }
+    //                 ],
+    //                 onError: (err) => {
+    //                     console.error("Update error:", err);
+    //                     mutationError = err;
+    //                 }
+    //             });
+    //             result = await update({
+    //                 variables: {
+    //                     id: company.id,
+    //                     typeDoc: "6",
+    //                     doc: company.doc,
+    //                     shortName: company.shortName,
+    //                     businessName: company.businessName,
+    //                     address: company.address,
+    //                     email: company.email,
+    //                     phone: company.phone,
+    //                     userSol: company.userSol,
+    //                     keySol: company.keySol,
+    //                     limit: company.limit,
+    //                     emissionInvoiceWithPreviousDate:
+    //                         company.emissionInvoiceWithPreviousDate,
+    //                     emissionReceiptWithPreviousDate:
+    //                         company.emissionReceiptWithPreviousDate,
+    //                     logo: company.logo || "",
+    //                     includeIgv: company.includeIgv,
+    //                     percentageIgv: company.percentageIgv,
+    //                     isEnabled: company.isEnabled,
+    //                     isProduction: company.isProduction,
+    //                     certification: company.certification || "",
+    //                     certificationExpirationDate:
+    //                         company.certificationExpirationDate,
+    //                     certificationKey: company.certificationKey || "",
+    //                     guideClientId: company.guideClientId,
+    //                     guideClientSecret: company.guideClientSecret,
+    //                     deductionAccount: company.deductionAccount,
+    //                     withStock: company.withStock,
+    //                     catalog: company.catalog,
+    //                     invoiceF: company.invoiceF,
+    //                     invoiceB: company.invoiceB,
+    //                     guide: company.guide,
+    //                     app: company.app,
+    //                     ose: company.ose,
+    //                     accountNumber: company.accountNumber,
+    //                     comment: company.comment,
+    //                     disableContinuePay: company.disableContinuePay || false,
+    //                 },
+    //             });
+    //             if (updateLoading) {
+    //                 toast.info("Actualizando empresa...", {
+    //                     hideProgressBar: true,
+    //                     autoClose: 2000,
+    //                 });
+    //             }
+    
+    //             if (updateError) throw updateError;
+    //         } else {
+    //             const [create, { loading: createLoading, error: createError }] = useMutation(CREATE_COMPANY, {
+    //                 context: getAuthContext(),
+    //                 refetchQueries: [
+    //                     {
+    //                         query: COMPANIES_QUERY,
+    //                         context: getAuthContext()
+    //                     }
+    //                 ],
+    //                 onError: (err) => {
+    //                     console.error("Create error:", err);
+    //                     mutationError = err;
+    //                 }
+    //             });
+    //             result = await createCompany({
+    //                 variables: {
+    //                     typeDoc: "6",
+    //                     doc: company.doc,
+    //                     shortName: company.shortName,
+    //                     businessName: company.businessName,
+    //                     address: company.address,
+    //                     email: company.email,
+    //                     phone: company.phone,
+    //                     userSol: company.userSol,
+    //                     keySol: company.keySol,
+    //                     limit: company.limit,
+    //                     emissionInvoiceWithPreviousDate:
+    //                         company.emissionInvoiceWithPreviousDate,
+    //                     emissionReceiptWithPreviousDate:
+    //                         company.emissionReceiptWithPreviousDate,
+    //                     logo: company.logo || "",
+    //                     includeIgv: company.includeIgv,
+    //                     percentageIgv: company.percentageIgv,
+    //                     isEnabled: company.isEnabled,
+    //                     isProduction: company.isProduction,
+    //                     certification: company.certification || "",
+    //                     certificationExpirationDate:
+    //                         company.certificationExpirationDate,
+    //                     certificationKey: company.certificationKey || "",
+    //                     guideClientId: company.guideClientId,
+    //                     guideClientSecret: company.guideClientSecret,
+    //                     deductionAccount: company.deductionAccount,
+    //                     withStock: company.withStock,
+    //                     catalog: company.catalog,
+    //                     invoiceF: company.invoiceF,
+    //                     invoiceB: company.invoiceB,
+    //                     guide: company.guide,
+    //                     app: company.app,
+    //                     ose: company.ose,
+    //                     disableContinuePay: company.disableContinuePay || false,
+    //                 },
+    //             });
+    //             if (createLoading) {
+    //                 toast.info("Creando empresa...", {
+    //                     hideProgressBar: true,
+    //                     autoClose: 2000,
+    //                 });
+    //             }
+    
+    //             if (createError) throw createError;
+    //         }
+    //          // 3. Manejar la respuesta
+    //         if (!result) {
+    //             throw new Error("No se recibió respuesta del servidor");
+    //         }
+
+    //         // Verificar errores de GraphQL
+    //         if (result.errors) {
+    //             const errorMessages = result.errors
+    //                 .filter(err => err?.message)
+    //                 .map(err => err.message)
+    //                 .join(", ");
+    //             throw new Error(errorMessages || "Error desconocido en la mutación");
+    //         }
+
+    //         // Verificar errores específicos de la operación
+    //         const operationResult = Number(company.id) !== 0 
+    //             ? result.data?.updateCompany 
+    //             : result.data?.createCompany;
+
+    //         if (!operationResult?.success && operationResult?.errors) {
+    //             throw new Error(operationResult.errors.join(", "));
+    //         }
+
+    //         // 4. Éxito - Mostrar mensaje y resetear
+    //         const successMessage = operationResult?.message || 
+    //                             (Number(company.id) !== 0 
+    //                                 ? "Empresa actualizada correctamente" 
+    //                                 : "Empresa creada correctamente");
+
+    //         toast(successMessage, {
+    //             hideProgressBar: true,
+    //             autoClose: 2000,
+    //             type: "success",
+    //         });
+
+    //         // 5. Manejar cierre de sesión si es necesario
+    //         if (auth?.user?.companyId === Number(company.id)) {
+    //             toast.info("Los cambios requieren reiniciar sesión", {
+    //                 hideProgressBar: true,
+    //                 autoClose: 3000,
+    //             });
+
+    //             setTimeout(async () => {
+    //                 localStorage.removeItem("auth");
+    //                 await signOut({ redirect: true, callbackUrl: "/" });
+    //             }, 3000);
+    //         } else {
+    //             setCompany(initialState);
+    //             modal.hide();
+    //         }
+    //     } catch (error: any) {
+    //         console.error("Error completo:", error);
+            
+    //         // 6. Manejo de errores detallado
+    //         let errorMessage = "Error al guardar la empresa";
+            
+    //         if (error.networkError) {
+    //             errorMessage = "Error de conexión con el servidor";
+    //             console.error("Network error details:", error.networkError);
+    //         } else if (error.graphQLErrors?.length > 0) {
+    //             errorMessage = error.graphQLErrors
+    //                 .map((e: any) => e.message)
+    //                 .join(", ");
+    //         } else if (error.message) {
+    //             errorMessage = error.message;
+    //         } else if (typeof error === 'string') {
+    //             errorMessage = error;
+    //         }
+    
+    //         toast(errorMessage, {
+    //             hideProgressBar: true,
+    //             autoClose: 5000,
+    //             type: "error",
+    //         });
+    //     } finally {
+    //         setIsSubmitting(false);
+    //     }
     // };
     const handleSaveCompany = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setIsSubmitting(true);
+        
+        // 1. Validación inicial de datos
+        const validationErrors = validateCompanyData(company);
+        if (validationErrors.length > 0) {
+            toast.error(validationErrors.join("\n"), {
+                hideProgressBar: true,
+                autoClose: 5000,
+            });
+            setIsSubmitting(false);
+            return;
+        }
+    
         try {
-            console.log("Empresa:", company);
+            // 2. Preparar variables comunes
+            const commonVariables = {
+                typeDoc: "6",
+                doc: company.doc,
+                shortName: company.shortName,
+                businessName: company.businessName,
+                address: company.address,
+                email: company.email,
+                phone: company.phone,
+                userSol: company.userSol,
+                keySol: company.keySol,
+                limit: company.limit,
+                emissionInvoiceWithPreviousDate: company.emissionInvoiceWithPreviousDate,
+                emissionReceiptWithPreviousDate: company.emissionReceiptWithPreviousDate,
+                logo: company.logo || "",
+                includeIgv: company.includeIgv,
+                percentageIgv: company.percentageIgv,
+                isEnabled: company.isEnabled,
+                isProduction: company.isProduction,
+                certification: company.certification || "",
+                certificationExpirationDate: company.certificationExpirationDate,
+                certificationKey: company.certificationKey || "",
+                guideClientId: company.guideClientId,
+                guideClientSecret: company.guideClientSecret,
+                deductionAccount: company.deductionAccount,
+                withStock: company.withStock,
+                catalog: company.catalog,
+                invoiceF: company.invoiceF,
+                invoiceB: company.invoiceB,
+                guide: company.guide,
+                app: company.app,
+                ose: company.ose,
+                accountNumber: company.accountNumber,
+                comment: company.comment,
+                disableContinuePay: company.disableContinuePay || false,
+            };
+    
+            // Debug: Mostrar variables que se enviarán
+            console.log("Enviando variables:", JSON.stringify({
+                ...commonVariables,
+                ...(Number(company.id) !== 0 ? { id: company.id } : {})
+            }, null, 2));
+    
             let result;
             if (Number(company.id) !== 0) {
-                const { data, errors } = await updateCompany({
+                // Mutación para actualizar
+                toast.info("Actualizando empresa...", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                });
+    
+                result = await updateCompanyMutation({
                     variables: {
                         id: company.id,
-                        typeDoc: "6",
-                        doc: company.doc,
-                        shortName: company.shortName,
-                        businessName: company.businessName,
-                        address: company.address,
-                        email: company.email,
-                        phone: company.phone,
-                        userSol: company.userSol,
-                        keySol: company.keySol,
-                        limit: company.limit,
-                        emissionInvoiceWithPreviousDate:
-                            company.emissionInvoiceWithPreviousDate,
-                        emissionReceiptWithPreviousDate:
-                            company.emissionReceiptWithPreviousDate,
-                        logo: company.logo || "",
-                        includeIgv: company.includeIgv,
-                        percentageIgv: company.percentageIgv,
-                        isEnabled: company.isEnabled,
-                        isProduction: company.isProduction,
-                        certification: company.certification || "",
-                        certificationExpirationDate:
-                            company.certificationExpirationDate,
-                        certificationKey: company.certificationKey || "",
-                        guideClientId: company.guideClientId,
-                        guideClientSecret: company.guideClientSecret,
-                        deductionAccount: company.deductionAccount,
-                        withStock: company.withStock,
-                        catalog: company.catalog,
-                        invoiceF: company.invoiceF,
-                        invoiceB: company.invoiceB,
-                        guide: company.guide,
-                        app: company.app,
-                        ose: company.ose,
-                        accountNumber: company.accountNumber,
-                        comment: company.comment,
-                        disableContinuePay: company.disableContinuePay || false,
+                        ...commonVariables
                     },
                 });
-
-                if (errors) {
-                    toast(
-                        errors.map((error: any) => error.message).join(", "),
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "error",
-                        }
-                    );
-                } else {
-                    toast(data.updateCompany.message, {
-                        hideProgressBar: true,
-                        autoClose: 2000,
-                        type: "success",
-                    });
-                    // Check if updated company is the user's company
-                    if (auth?.user?.companyId === Number(company.id)) {
-                        toast.info("Los cambios requieren reiniciar sesión", {
-                            hideProgressBar: true,
-                            autoClose: 3000,
-                        });
-
-                        setTimeout(async () => {
-                            localStorage.removeItem("auth");
-                            await signOut({ redirect: true, callbackUrl: "/" });
-                        }, 3000);
-                    } else {
-                        setCompany(initialState);
-                        modal.hide();
-                    }
-                }
             } else {
-                const { data, errors } = await createCompany({
-                    variables: {
-                        typeDoc: "6",
-                        doc: company.doc,
-                        shortName: company.shortName,
-                        businessName: company.businessName,
-                        address: company.address,
-                        email: company.email,
-                        phone: company.phone,
-                        userSol: company.userSol,
-                        keySol: company.keySol,
-                        limit: company.limit,
-                        emissionInvoiceWithPreviousDate:
-                            company.emissionInvoiceWithPreviousDate,
-                        emissionReceiptWithPreviousDate:
-                            company.emissionReceiptWithPreviousDate,
-                        logo: company.logo || "",
-                        includeIgv: company.includeIgv,
-                        percentageIgv: company.percentageIgv,
-                        isEnabled: company.isEnabled,
-                        isProduction: company.isProduction,
-                        certification: company.certification || "",
-                        certificationExpirationDate:
-                            company.certificationExpirationDate,
-                        certificationKey: company.certificationKey || "",
-                        guideClientId: company.guideClientId,
-                        guideClientSecret: company.guideClientSecret,
-                        deductionAccount: company.deductionAccount,
-                        withStock: company.withStock,
-                        catalog: company.catalog,
-                        invoiceF: company.invoiceF,
-                        invoiceB: company.invoiceB,
-                        guide: company.guide,
-                        app: company.app,
-                        ose: company.ose,
-                        disableContinuePay: company.disableContinuePay || false,
-                    },
+                // Mutación para crear
+                toast.info("Creando empresa...", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
                 });
-
-                if (errors) {
-                    toast(
-                        errors.map((error: any) => error.message).join(", "),
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "error",
-                        }
-                    );
-                } else {
-                    toast(data.createCompany.message, {
-                        hideProgressBar: true,
-                        autoClose: 2000,
-                        type: "success",
-                    });
-                    setCompany(initialState);
-                    modal.hide();
-                }
+    
+                result = await createCompanyMutation({
+                    variables: commonVariables,
+                });
             }
-        } catch (error) {
-            const errorMessage =
-                error instanceof Error
-                    ? error.message
-                    : "Unexpected error occurred";
-            toast(errorMessage, {
+    
+            // 3. Manejo de respuesta mejorado
+            if (!result) {
+                throw new Error("No se recibió respuesta del servidor");
+            }
+    
+            // Función para extraer mensajes de error de cualquier formato
+            const extractErrorMessages = (errorObj: any): string[] => {
+                if (!errorObj) return [];
+                if (typeof errorObj === 'string') return [errorObj];
+                if (Array.isArray(errorObj)) return errorObj.flatMap(e => extractErrorMessages(e));
+                if (errorObj.message) return [errorObj.message];
+                return [JSON.stringify(errorObj)];
+            };
+    
+            // Combinar todos los posibles errores
+            const allErrorMessages = [
+                ...extractErrorMessages(result.errors),
+                ...extractErrorMessages(result.data?.updateCompany?.errors),
+                ...extractErrorMessages(result.data?.createCompany?.errors)
+            ];
+    
+            if (allErrorMessages.length > 0) {
+                throw new Error(allErrorMessages.join(" | "));
+            }
+    
+            // Verificar éxito de la operación
+            const operationResult = Number(company.id) !== 0 
+                ? result.data?.updateCompany 
+                : result.data?.createCompany;
+            console.log('Operation Result update:', result.data);
+            console.log('Operation Result:', {
+                result: operationResult,
+                success: operationResult?.success,
+                typeOfSuccess: typeof operationResult?.success
+                });
+    
+            if (!operationResult?.success) {
+                throw new Error(operationResult?.message || "La operación no fue exitosa");
+            }
+    
+            // 4. Éxito - Mostrar mensaje
+            const successMessage = operationResult?.message || 
+                (Number(company.id) !== 0 
+                    ? "Empresa actualizada correctamente" 
+                    : "Empresa creada correctamente");
+    
+            toast.success(successMessage, {
                 hideProgressBar: true,
                 autoClose: 2000,
-                type: "error",
             });
+    
+            // 5. Manejo post-éxito
+            if (auth?.user?.companyId === Number(company.id)) {
+                toast.info("Los cambios requieren reiniciar sesión", {
+                    hideProgressBar: true,
+                    autoClose: 3000,
+                });
+    
+                setTimeout(async () => {
+                    localStorage.removeItem("auth");
+                    await signOut({ redirect: true, callbackUrl: "/" });
+                }, 3000);
+            } else {
+                setCompany(initialState);
+                modal.hide();
+            }
+        } catch (error: any) {
+            console.error("Error completo:", error);
+            
+            // 6. Manejo detallado de errores
+            let errorMessage = "Error al guardar la empresa";
+            
+            // Error de GraphQL
+            if (error.graphQLErrors?.length > 0) {
+                errorMessage = error.graphQLErrors
+                    .map((e: any) => e.message)
+                    .join(", ");
+            } 
+            // Error de red (incluyendo 400)
+            else if (error.networkError) {
+                console.error("Detalles del error de red:", error.networkError);
+                
+                if (error.networkError.statusCode === 400) {
+                    try {
+                        // Intenta parsear el cuerpo del error 400
+                        const errorBody = JSON.parse(error.networkError.bodyText);
+                        errorMessage = errorBody.message || "Datos inválidos enviados al servidor";
+                        
+                        // Debug adicional para errores 400
+                        console.error("Detalles del error 400:", {
+                            statusCode: error.networkError.statusCode,
+                            body: errorBody,
+                            operation: Number(company.id) !== 0 ? "update" : "create"
+                        });
+                    } catch (e) {
+                        errorMessage = "Error en la solicitud (400)";
+                    }
+                } else {
+                    errorMessage = `Error de conexión (${error.networkError.statusCode || "desconocido"})`;
+                }
+            } 
+            // Error de mensaje directo
+            else if (error.message) {
+                errorMessage = error.message;
+            }
+    
+            toast.error(errorMessage, {
+                hideProgressBar: true,
+                autoClose: 5000,
+            });
+        } finally {
+            setIsSubmitting(false);
         }
     };
-
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]; // Obtiene el primer archivo seleccionado
         // Verifica si se seleccionó un archivo
@@ -1399,11 +1738,13 @@ function CompanyModal({
                                     </div>
                                 </fieldset>
                                 </>)}
-                                <button type="submit" className="btn-blue">
-                                    {company.id ? (
-                                        <p>Actualizar datos empresa</p>
+                                <button type="submit" className="btn-blue" disabled={isSubmitting}>
+                                    {isSubmitting ? (
+                                        <span>Procesando...</span>
+                                    ) : company.id ? (
+                                        <span>Actualizar datos empresa</span>
                                     ) : (
-                                        <p>Crear datos empresa</p>
+                                        <span>Crear datos empresa</span>
                                     )}
                                 </button>
                             </form>
