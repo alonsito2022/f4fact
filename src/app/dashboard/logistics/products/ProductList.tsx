@@ -108,6 +108,131 @@ function ProductList({
         },
         [productQuery, setProduct, modalProduct]
     );
+    // Add this memoized component for table rows
+    const TableRows = useCallback(
+        ({ products }: { products: IProduct[] }) => {
+            return (
+                <>
+                    {products?.map((item: IProduct) => (
+                        <tr
+                            key={item.id}
+                            className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
+                            {/* Move all td elements here */}
+                            {visibleColumns.id && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.id}
+                                </td>
+                            )}
+                            {visibleColumns.name && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.name}
+                                </td>
+                            )}
+                            {visibleColumns.code && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.code}
+                                </td>
+                            )}
+                            {visibleColumns.price1WithIgv && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.priceWithIgv1}
+                                </td>
+                            )}
+                            {visibleColumns.price1WithoutIgv && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.priceWithoutIgv1}
+                                </td>
+                            )}
+                            {visibleColumns.price2WithIgv && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.priceWithIgv2}
+                                </td>
+                            )}
+                            {visibleColumns.price2WithoutIgv && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.priceWithoutIgv2}
+                                </td>
+                            )}
+                            {visibleColumns.price3WithIgv && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.priceWithIgv3}
+                                </td>
+                            )}
+                            {visibleColumns.price3WithoutIgv && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.priceWithoutIgv3}
+                                </td>
+                            )}
+                            {visibleColumns.price4WithIgv && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.priceWithIgv4}
+                                </td>
+                            )}
+                            {visibleColumns.price4WithoutIgv && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item.priceWithoutIgv4}
+                                </td>
+                            )}
+                            {visibleColumns.company && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item?.subsidiary?.companyName}
+                                </td>
+                            )}
+                            {visibleColumns.subsidiary && (
+                                <td
+                                    className={getCellClassName(item.available)}
+                                >
+                                    {item?.subsidiary?.serial}
+                                </td>
+                            )}
+                            <td className="px-4 py-2 text-right">
+                                <a
+                                    className="cursor-pointer"
+                                    onClick={() => handleEditProduct(item.id)}
+                                >
+                                    <Edit />
+                                </a>
+                            </td>
+                        </tr>
+                    ))}
+                </>
+            );
+        },
+        [visibleColumns] // Only re-render when visibleColumns changes
+    );
+    // Add this utility function for cell className
+    const getCellClassName = useCallback((available: boolean) => {
+        return `px-4 py-2 font-medium whitespace-nowrap ${
+            !available
+                ? "text-red-500 line-through"
+                : "text-gray-900 dark:text-white"
+        }`;
+    }, []);
     if (foundProductLoading) return <p>Loading...</p>;
     if (foundProductError) return <p>Error: {foundProductError.message}</p>;
 
@@ -363,168 +488,7 @@ function ProductList({
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredProducts?.map((item: IProduct) => (
-                        <tr
-                            key={item.id}
-                            className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        >
-                            {visibleColumns.id && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {item.id}
-                                </td>
-                            )}
-
-                            {visibleColumns.name && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {item.name}
-                                </td>
-                            )}
-
-                            {visibleColumns.code && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {item.code}
-                                </td>
-                            )}
-                            {visibleColumns.price1WithIgv && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {Number(item.priceWithIgv1).toFixed(2)}
-                                </td>
-                            )}
-                            {visibleColumns.price1WithoutIgv && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {Number(item.priceWithoutIgv1).toFixed(2)}
-                                </td>
-                            )}
-                            {visibleColumns.price2WithIgv && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {Number(item.priceWithIgv2).toFixed(2)}
-                                </td>
-                            )}
-                            {visibleColumns.price2WithoutIgv && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {Number(item.priceWithoutIgv2).toFixed(2)}
-                                </td>
-                            )}
-                            {visibleColumns.price3WithIgv && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {Number(item.priceWithIgv3).toFixed(2)}
-                                </td>
-                            )}
-                            {visibleColumns.price3WithoutIgv && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {Number(item.priceWithoutIgv3).toFixed(2)}
-                                </td>
-                            )}
-                            {visibleColumns.price4WithIgv && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {Number(item.priceWithIgv4).toFixed(2)}
-                                </td>
-                            )}
-                            {visibleColumns.price4WithoutIgv && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {Number(item.priceWithoutIgv4).toFixed(2)}
-                                </td>
-                            )}
-                            {visibleColumns.company && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {item?.subsidiary?.companyName}
-                                </td>
-                            )}
-                            {visibleColumns.subsidiary && (
-                                <td
-                                    className={`px-4 py-2 font-medium whitespace-nowrap ${
-                                        !item.available
-                                            ? "text-red-500 line-through"
-                                            : "text-gray-900 dark:text-white"
-                                    }`}
-                                >
-                                    {item.subsidiary?.serial}
-                                </td>
-                            )}
-
-                            <td className="px-4 py-2">
-                                <a
-                                    href="#"
-                                    className="text-blue-600 hover:underline dark:text-blue-400"
-                                    onClick={() => handleEditProduct(item.id)}
-                                >
-                                    <Edit />
-                                </a>
-                            </td>
-                        </tr>
-                    ))}
+                    <TableRows products={filteredProducts} />
                 </tbody>
             </table>
         </div>

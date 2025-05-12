@@ -142,7 +142,6 @@ function ProductPage() {
         }
     }, [auth?.user]);
 
-    const [products, setProducts] = useState<IProduct[]>([]);
     const [product, setProduct] = useState(initialStateProduct);
     const [modalProduct, setModalProduct] = useState<Modal | any>(null);
     const [modalCriteria, setModalCriteria] = useState<Modal | any>(null);
@@ -180,7 +179,6 @@ function ProductPage() {
     });
 
     const fetchProducts = () => {
-        setProducts([]);
         productsQuery();
     };
 
@@ -191,20 +189,16 @@ function ProductPage() {
     }, [auth?.jwtToken]);
 
     const filteredProducts = useMemo(() => {
-        if (filteredProductsData) {
-            let newdata = filteredProductsData.allProducts?.filter(
-                (w: IProduct) =>
-                    searchField === "name"
-                        ? w?.name
-                              ?.toLowerCase()
-                              .includes(searchTerm.toLowerCase())
-                        : w?.code
-                              ?.toString()
-                              .toLowerCase()
-                              .includes(searchTerm.toLowerCase())
-            );
-            return newdata;
-        }
+        if (!filteredProductsData?.allProducts) return [];
+
+        const searchTermLower = searchTerm.toLowerCase();
+        return filteredProductsData.allProducts.filter((w: IProduct) => {
+            const searchValue =
+                searchField === "name"
+                    ? w?.name?.toLowerCase()
+                    : w?.code?.toString().toLowerCase();
+            return searchValue?.includes(searchTermLower);
+        });
     }, [searchTerm, searchField, filteredProductsData]);
 
     return (
