@@ -1,4 +1,11 @@
-import { ChangeEvent, FormEvent, MouseEvent, useEffect, useRef, useState } from "react";
+import {
+    ChangeEvent,
+    FormEvent,
+    MouseEvent,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import { Modal, ModalOptions } from "flowbite";
 import { toast } from "react-toastify";
 import { DocumentNode, gql, useMutation } from "@apollo/client";
@@ -36,7 +43,7 @@ const CREATE_COMPANY = gql`
         $invoiceB: Boolean!
         $guide: Boolean!
         $app: Boolean!
-        $ose: Boolean       
+        $ose: Boolean
         $accountNumber: String!
         $comment: String!
         $disableContinuePay: Boolean
@@ -76,7 +83,7 @@ const CREATE_COMPANY = gql`
             comment: $comment
             disableContinuePay: $disableContinuePay
         ) {
-            success 
+            success
             message
             errors
         }
@@ -155,7 +162,7 @@ const UPDATE_COMPANY = gql`
             comment: $comment
             disableContinuePay: $disableContinuePay
         ) {
-            success 
+            success
             message
             errors
         }
@@ -206,12 +213,12 @@ function CompanyModal({
         refetchQueries: [
             {
                 query: COMPANIES_QUERY,
-                context: getAuthContext()
-            }
+                context: getAuthContext(),
+            },
         ],
         onError: (err) => {
             console.error("Update error:", err);
-        }
+        },
     });
 
     const [createCompanyMutation] = useMutation(CREATE_COMPANY, {
@@ -219,12 +226,12 @@ function CompanyModal({
         refetchQueries: [
             {
                 query: COMPANIES_QUERY,
-                context: getAuthContext()
-            }
+                context: getAuthContext(),
+            },
         ],
         onError: (err) => {
             console.error("Create error:", err);
-        }
+        },
     });
     const [createCompany] = useCustomMutation(CREATE_COMPANY, COMPANIES_QUERY);
     const [updateCompany] = useCustomMutation(UPDATE_COMPANY, COMPANIES_QUERY);
@@ -284,53 +291,62 @@ function CompanyModal({
     };
     const handleCheckboxChange = ({
         target: { name, checked },
-        }: ChangeEvent<HTMLInputElement>) => {
-            setCompany({ ...company, [name]: checked });
-        };
-        // const fileToBase64 = (file: File): Promise<string> => {
-        //     return new Promise((resolve, reject) => {
-        //         const reader = new FileReader();
-        //         reader.readAsDataURL(file);
-        //         reader.onload = () => resolve(reader.result as string);
-        //         reader.onerror = error => reject(error);
-        //     });
-        // };
+    }: ChangeEvent<HTMLInputElement>) => {
+        setCompany({ ...company, [name]: checked });
+    };
+    // const fileToBase64 = (file: File): Promise<string> => {
+    //     return new Promise((resolve, reject) => {
+    //         const reader = new FileReader();
+    //         reader.readAsDataURL(file);
+    //         reader.onload = () => resolve(reader.result as string);
+    //         reader.onerror = error => reject(error);
+    //     });
+    // };
     const validateCompanyData = (companyData: ICompany): string[] => {
         const errors: string[] = [];
-        
+
         // Validación del RUC (11 dígitos)
         if (!companyData.doc || companyData.doc.length !== 11) {
             errors.push("El RUC debe tener exactamente 11 dígitos");
         }
-        
+
         // Validación de razón social
-        if (!companyData.businessName || companyData.businessName.trim().length < 3) {
-            errors.push("La razón social es requerida y debe tener al menos 3 caracteres");
+        if (
+            !companyData.businessName ||
+            companyData.businessName.trim().length < 3
+        ) {
+            errors.push(
+                "La razón social es requerida y debe tener al menos 3 caracteres"
+            );
         }
-        
+
         // Validación de nombre comercial
         if (!companyData.shortName || companyData.shortName.trim().length < 3) {
-            errors.push("El nombre comercial es requerido y debe tener al menos 3 caracteres");
+            errors.push(
+                "El nombre comercial es requerido y debe tener al menos 3 caracteres"
+            );
         }
-        
+
         // Validación de dirección
         if (!companyData.address || companyData.address.trim().length < 5) {
-            errors.push("La dirección es requerida y debe tener al menos 5 caracteres");
+            errors.push(
+                "La dirección es requerida y debe tener al menos 5 caracteres"
+            );
         }
-        
+
         // Validación de email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!companyData.email || !emailRegex.test(companyData.email)) {
             errors.push("Ingrese un correo electrónico válido");
         }
-        
+
         // Validación de certificación si está en producción
         // if (companyData.isProduction && !companyData.certification) {
         //     errors.push("Se requiere certificado digital para modo producción");
         // }
-        
+
         // Agrega más validaciones según necesites...
-        
+
         return errors;
     };
     // const handleSaveCompany = async (e: FormEvent<HTMLFormElement>) => {
@@ -411,7 +427,7 @@ function CompanyModal({
     //                     autoClose: 2000,
     //                 });
     //             }
-    
+
     //             if (updateError) throw updateError;
     //         } else {
     //             const [create, { loading: createLoading, error: createError }] = useMutation(CREATE_COMPANY, {
@@ -471,7 +487,7 @@ function CompanyModal({
     //                     autoClose: 2000,
     //                 });
     //             }
-    
+
     //             if (createError) throw createError;
     //         }
     //          // 3. Manejar la respuesta
@@ -489,8 +505,8 @@ function CompanyModal({
     //         }
 
     //         // Verificar errores específicos de la operación
-    //         const operationResult = Number(company.id) !== 0 
-    //             ? result.data?.updateCompany 
+    //         const operationResult = Number(company.id) !== 0
+    //             ? result.data?.updateCompany
     //             : result.data?.createCompany;
 
     //         if (!operationResult?.success && operationResult?.errors) {
@@ -498,9 +514,9 @@ function CompanyModal({
     //         }
 
     //         // 4. Éxito - Mostrar mensaje y resetear
-    //         const successMessage = operationResult?.message || 
-    //                             (Number(company.id) !== 0 
-    //                                 ? "Empresa actualizada correctamente" 
+    //         const successMessage = operationResult?.message ||
+    //                             (Number(company.id) !== 0
+    //                                 ? "Empresa actualizada correctamente"
     //                                 : "Empresa creada correctamente");
 
     //         toast(successMessage, {
@@ -526,10 +542,10 @@ function CompanyModal({
     //         }
     //     } catch (error: any) {
     //         console.error("Error completo:", error);
-            
+
     //         // 6. Manejo de errores detallado
     //         let errorMessage = "Error al guardar la empresa";
-            
+
     //         if (error.networkError) {
     //             errorMessage = "Error de conexión con el servidor";
     //             console.error("Network error details:", error.networkError);
@@ -542,7 +558,7 @@ function CompanyModal({
     //         } else if (typeof error === 'string') {
     //             errorMessage = error;
     //         }
-    
+
     //         toast(errorMessage, {
     //             hideProgressBar: true,
     //             autoClose: 5000,
@@ -555,7 +571,7 @@ function CompanyModal({
     const handleSaveCompany = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitting(true);
-        
+
         // 1. Validación inicial de datos
         const validationErrors = validateCompanyData(company);
         if (validationErrors.length > 0) {
@@ -566,7 +582,7 @@ function CompanyModal({
             setIsSubmitting(false);
             return;
         }
-    
+
         try {
             // 2. Preparar variables comunes
             const commonVariables = {
@@ -580,15 +596,18 @@ function CompanyModal({
                 userSol: company.userSol,
                 keySol: company.keySol,
                 limit: company.limit,
-                emissionInvoiceWithPreviousDate: company.emissionInvoiceWithPreviousDate,
-                emissionReceiptWithPreviousDate: company.emissionReceiptWithPreviousDate,
+                emissionInvoiceWithPreviousDate:
+                    company.emissionInvoiceWithPreviousDate,
+                emissionReceiptWithPreviousDate:
+                    company.emissionReceiptWithPreviousDate,
                 logo: company.logo || "",
                 includeIgv: company.includeIgv,
                 percentageIgv: company.percentageIgv,
                 isEnabled: company.isEnabled,
                 isProduction: company.isProduction,
                 certification: company.certification || "",
-                certificationExpirationDate: company.certificationExpirationDate,
+                certificationExpirationDate:
+                    company.certificationExpirationDate,
                 certificationKey: company.certificationKey || "",
                 guideClientId: company.guideClientId,
                 guideClientSecret: company.guideClientSecret,
@@ -604,13 +623,20 @@ function CompanyModal({
                 comment: company.comment,
                 disableContinuePay: company.disableContinuePay || false,
             };
-    
+
             // Debug: Mostrar variables que se enviarán
-            console.log("Enviando variables:", JSON.stringify({
-                ...commonVariables,
-                ...(Number(company.id) !== 0 ? { id: company.id } : {})
-            }, null, 2));
-    
+            console.log(
+                "Enviando variables:",
+                JSON.stringify(
+                    {
+                        ...commonVariables,
+                        ...(Number(company.id) !== 0 ? { id: company.id } : {}),
+                    },
+                    null,
+                    2
+                )
+            );
+
             let result;
             if (Number(company.id) !== 0) {
                 // Mutación para actualizar
@@ -618,11 +644,11 @@ function CompanyModal({
                 //     hideProgressBar: true,
                 //     autoClose: 2000,
                 // });
-    
+
                 result = await updateCompanyMutation({
                     variables: {
                         id: company.id,
-                        ...commonVariables
+                        ...commonVariables,
                     },
                 });
             } else {
@@ -631,7 +657,7 @@ function CompanyModal({
                     hideProgressBar: true,
                     autoClose: 2000,
                 });
-    
+
                 result = await createCompanyMutation({
                     variables: commonVariables,
                 });
@@ -640,60 +666,65 @@ function CompanyModal({
             if (!result) {
                 throw new Error("No se recibió respuesta del servidor");
             }
-    
+
             // Función para extraer mensajes de error de cualquier formato
             const extractErrorMessages = (errorObj: any): string[] => {
                 if (!errorObj) return [];
-                if (typeof errorObj === 'string') return [errorObj];
-                if (Array.isArray(errorObj)) return errorObj.flatMap(e => extractErrorMessages(e));
+                if (typeof errorObj === "string") return [errorObj];
+                if (Array.isArray(errorObj))
+                    return errorObj.flatMap((e) => extractErrorMessages(e));
                 if (errorObj.message) return [errorObj.message];
                 return [JSON.stringify(errorObj)];
             };
-    
+
             // Combinar todos los posibles errores
             const allErrorMessages = [
                 ...extractErrorMessages(result.errors),
                 ...extractErrorMessages(result.data?.updateCompany?.errors),
-                ...extractErrorMessages(result.data?.createCompany?.errors)
+                ...extractErrorMessages(result.data?.createCompany?.errors),
             ];
-    
+
             if (allErrorMessages.length > 0) {
                 throw new Error(allErrorMessages.join(" | "));
             }
-    
+
             // Verificar éxito de la operación
-            const operationResult = Number(company.id) !== 0 
-                ? result.data?.updateCompany 
-                : result.data?.createCompany;
-            console.log('Operation Result update:', result.data);
-            console.log('Operation Result:', {
+            const operationResult =
+                Number(company.id) !== 0
+                    ? result.data?.updateCompany
+                    : result.data?.createCompany;
+            console.log("Operation Result update:", result.data);
+            console.log("Operation Result:", {
                 result: operationResult,
                 success: operationResult?.success,
-                typeOfSuccess: typeof operationResult?.success
-                });
-            console.log('Operation ssss:', operationResult?.success);
+                typeOfSuccess: typeof operationResult?.success,
+            });
+            console.log("Operation ssss:", operationResult?.success);
             if (!operationResult?.success) {
-                throw new Error(operationResult?.message || "La operación no fue exitosa");
+                throw new Error(
+                    operationResult?.message || "La operación no fue exitosa"
+                );
             }
-    
+
             // 4. Éxito - Mostrar mensaje
-            const successMessage = operationResult?.message || 
-                (Number(company.id) !== 0 
-                    ? "Empresa actualizada correctamente" 
+            const successMessage =
+                operationResult?.message ||
+                (Number(company.id) !== 0
+                    ? "Empresa actualizada correctamente"
                     : "Empresa creada correctamente");
-    
+
             toast.success(successMessage, {
                 hideProgressBar: true,
                 autoClose: 2000,
             });
-    
+
             // 5. Manejo post-éxito
             if (auth?.user?.companyId === Number(company.id)) {
                 toast.info("Los cambios requieren reiniciar sesión", {
                     hideProgressBar: true,
                     autoClose: 3000,
                 });
-    
+
                 setTimeout(async () => {
                     localStorage.removeItem("auth");
                     await signOut({ redirect: true, callbackUrl: "/" });
@@ -704,44 +735,51 @@ function CompanyModal({
             }
         } catch (error: any) {
             console.error("Error completo:", error);
-            
+
             // 6. Manejo detallado de errores
             let errorMessage = "Error al guardar la empresa";
-            
+
             // Error de GraphQL
             if (error.graphQLErrors?.length > 0) {
                 errorMessage = error.graphQLErrors
                     .map((e: any) => e.message)
                     .join(", ");
-            } 
+            }
             // Error de red (incluyendo 400)
             else if (error.networkError) {
                 console.error("Detalles del error de red:", error.networkError);
-                
+
                 if (error.networkError.statusCode === 400) {
                     try {
                         // Intenta parsear el cuerpo del error 400
-                        const errorBody = JSON.parse(error.networkError.bodyText);
-                        errorMessage = errorBody.message || "Datos inválidos enviados al servidor";
-                        
+                        const errorBody = JSON.parse(
+                            error.networkError.bodyText
+                        );
+                        errorMessage =
+                            errorBody.message ||
+                            "Datos inválidos enviados al servidor";
+
                         // Debug adicional para errores 400
                         console.error("Detalles del error 400:", {
                             statusCode: error.networkError.statusCode,
                             body: errorBody,
-                            operation: Number(company.id) !== 0 ? "update" : "create"
+                            operation:
+                                Number(company.id) !== 0 ? "update" : "create",
                         });
                     } catch (e) {
                         errorMessage = "Error en la solicitud (400)";
                     }
                 } else {
-                    errorMessage = `Error de conexión (${error.networkError.statusCode || "desconocido"})`;
+                    errorMessage = `Error de conexión (${
+                        error.networkError.statusCode || "desconocido"
+                    })`;
                 }
-            } 
+            }
             // Error de mensaje directo
             else if (error.message) {
                 errorMessage = error.message;
             }
-    
+
             toast.error(errorMessage, {
                 hideProgressBar: true,
                 autoClose: 5000,
@@ -1130,11 +1168,17 @@ function CompanyModal({
                                                 id="accountNumber"
                                                 rows={2}
                                                 maxLength={200}
-                                                value={company?.accountNumber ? company?.accountNumber : ""}
+                                                value={
+                                                    company?.accountNumber
+                                                        ? company?.accountNumber
+                                                        : ""
+                                                }
                                                 onChange={handleInputChange}
-                                                onFocus={(e) => e.target.select()}
+                                                onFocus={(e) =>
+                                                    e.target.select()
+                                                }
                                                 className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" "                                                
+                                                placeholder=" "
                                             ></textarea>
                                             <label
                                                 htmlFor="accountNumber"
@@ -1149,9 +1193,15 @@ function CompanyModal({
                                                 id="deductionAccount"
                                                 rows={2}
                                                 maxLength={200}
-                                                value={company?.deductionAccount ? company.deductionAccount : ""}
+                                                value={
+                                                    company?.deductionAccount
+                                                        ? company.deductionAccount
+                                                        : ""
+                                                }
                                                 onChange={handleInputChange}
-                                                onFocus={(e) => e.target.select()}
+                                                onFocus={(e) =>
+                                                    e.target.select()
+                                                }
                                                 className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                 placeholder=" "
                                             ></textarea>
@@ -1159,7 +1209,7 @@ function CompanyModal({
                                                 htmlFor="deductionAccount"
                                                 className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
                                             >
-                                                Cuenta de tracción(BN)
+                                                Cuenta detracción(BN)
                                             </label>
                                         </div>
                                         <div className="relative z-0 w-full mb-2 group sm:col-span-1">
@@ -1168,9 +1218,15 @@ function CompanyModal({
                                                 id="comment"
                                                 rows={2}
                                                 maxLength={200}
-                                                value={company?.comment ? company?.comment : ""}
+                                                value={
+                                                    company?.comment
+                                                        ? company?.comment
+                                                        : ""
+                                                }
                                                 onChange={handleInputChange}
-                                                onFocus={(e) => e.target.select()}
+                                                onFocus={(e) =>
+                                                    e.target.select()
+                                                }
                                                 className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                 placeholder=" "
                                             ></textarea>
@@ -1185,131 +1241,140 @@ function CompanyModal({
                                 </fieldset>
                                 {auth?.user.isSuperuser && (
                                     <>
-                                <fieldset>
-                                    <legend className=" text-blue-600 font-semibold mb-2">
-                                        Cuenta Sunat
-                                    </legend>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <input
-                                                type="text"
-                                                name="userSol"
-                                                id="userSol"
-                                                value={
-                                                    company?.userSol
-                                                        ? company?.userSol
-                                                        : ""
-                                                }
-                                                onChange={handleInputChange}
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" "                                                
-                                            />
-                                            <label
-                                                htmlFor="userSol"
-                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                            >
-                                                Usuario Sol
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <input
-                                                type="text"
-                                                name="keySol"
-                                                id="keySol"
-                                                value={
-                                                    company?.keySol
-                                                        ? company.keySol
-                                                        : ""
-                                                }
-                                                onChange={handleInputChange}
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" "
-                                            />
-                                            <label
-                                                htmlFor="keySol"
-                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                            >
-                                                Clave Sol
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <input
-                                                type="date"
-                                                value={
-                                                    company?.certificationExpirationDate
-                                                        ? company?.certificationExpirationDate
-                                                        : ""
-                                                }
-                                                onChange={handleInputChange}
-                                                name="certificationExpirationDate"
-                                                className="block pb-2 pt-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                
-                                            />
-                                            <label
-                                                htmlFor="certificationExpirationDate"
-                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                            >
-                                                Fecha expiración
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <input
-                                                type="text"
-                                                name="guideClientId"
-                                                id="guideClientId"
-                                                maxLength={500}
-                                                value={
-                                                    company?.guideClientId
-                                                        ? company?.guideClientId
-                                                        : ""
-                                                }
-                                                onChange={handleInputChange}
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" "                                                
-                                            />
-                                            <label
-                                                htmlFor="guideClientId"
-                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                            >
-                                                ID Guia cliente
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <input
-                                                type="text"
-                                                name="guideClientSecret"
-                                                id="guideClientSecret"
-                                                maxLength={500}
-                                                value={
-                                                    company?.guideClientSecret
-                                                        ? company.guideClientSecret
-                                                        : ""
-                                                }
-                                                onChange={handleInputChange}
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" "
-                                            />
-                                            <label
-                                                htmlFor="guideClientSecret"
-                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                            >
-                                                Token Guia Cliente
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            {/* <input
+                                        <fieldset>
+                                            <legend className=" text-blue-600 font-semibold mb-2">
+                                                Cuenta Sunat
+                                            </legend>
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <input
+                                                        type="text"
+                                                        name="userSol"
+                                                        id="userSol"
+                                                        value={
+                                                            company?.userSol
+                                                                ? company?.userSol
+                                                                : ""
+                                                        }
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                        placeholder=" "
+                                                    />
+                                                    <label
+                                                        htmlFor="userSol"
+                                                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                                    >
+                                                        Usuario Sol
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <input
+                                                        type="text"
+                                                        name="keySol"
+                                                        id="keySol"
+                                                        value={
+                                                            company?.keySol
+                                                                ? company.keySol
+                                                                : ""
+                                                        }
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                        placeholder=" "
+                                                    />
+                                                    <label
+                                                        htmlFor="keySol"
+                                                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                                    >
+                                                        Clave Sol
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <input
+                                                        type="date"
+                                                        value={
+                                                            company?.certificationExpirationDate
+                                                                ? company?.certificationExpirationDate
+                                                                : ""
+                                                        }
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        name="certificationExpirationDate"
+                                                        className="block pb-2 pt-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                    />
+                                                    <label
+                                                        htmlFor="certificationExpirationDate"
+                                                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                                    >
+                                                        Fecha expiración
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <input
+                                                        type="text"
+                                                        name="guideClientId"
+                                                        id="guideClientId"
+                                                        maxLength={500}
+                                                        value={
+                                                            company?.guideClientId
+                                                                ? company?.guideClientId
+                                                                : ""
+                                                        }
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                        placeholder=" "
+                                                    />
+                                                    <label
+                                                        htmlFor="guideClientId"
+                                                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                                    >
+                                                        ID Guia cliente
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <input
+                                                        type="text"
+                                                        name="guideClientSecret"
+                                                        id="guideClientSecret"
+                                                        maxLength={500}
+                                                        value={
+                                                            company?.guideClientSecret
+                                                                ? company.guideClientSecret
+                                                                : ""
+                                                        }
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                        placeholder=" "
+                                                    />
+                                                    <label
+                                                        htmlFor="guideClientSecret"
+                                                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                                    >
+                                                        Token Guia Cliente
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    {/* <input
                                                 type="text"
                                                 name="deductionAccount"
                                                 id="deductionAccount"
@@ -1332,416 +1397,447 @@ function CompanyModal({
                                             >
                                                 Cuenta de tracción(BN)
                                             </label> */}
-                                        </div>
+                                                </div>
 
-                                        <div className="sm:col-span-3 relative z-0 w-full mb-2 group">
-                                            <input
-                                                ref={fileInputRef}
-                                                onChange={handleInputChange}
-                                                className="block pt-2.5 pb-1 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                id="certification"
-                                                name="certification"
-                                                type="file"
-                                            />
-                                            <label
-                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                                htmlFor="certification"
-                                            >
-                                                Certificado Digital
-                                            </label>
-                                            {company.certification && (
-                                                <p className="text-sm text-orange-500 font-bold mt-1">
-                                                    Archivo cargado: server.pem
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div className="sm:col-span-3 relative z-0 w-full mb-2 group">
-                                            <input
-                                                ref={fileInputRef}
-                                                onChange={handleInputChange}
-                                                className="block pt-2.5 pb-1 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                id="certificationKey"
-                                                name="certificationKey"
-                                                type="file"
-                                            />
-                                            <label
-                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                                htmlFor="certificationKey"
-                                            >
-                                                Clave Certificado Digital
-                                            </label>
-                                            {company.certificationKey && (
-                                                <p className="text-sm text-orange-500 font-bold mt-1">
-                                                    Archivo cargado:
-                                                    server_key.pem
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </fieldset>
+                                                <div className="sm:col-span-3 relative z-0 w-full mb-2 group">
+                                                    <input
+                                                        ref={fileInputRef}
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        className="block pt-2.5 pb-1 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                        id="certification"
+                                                        name="certification"
+                                                        type="file"
+                                                    />
+                                                    <label
+                                                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                                        htmlFor="certification"
+                                                    >
+                                                        Certificado Digital
+                                                    </label>
+                                                    {company.certification && (
+                                                        <p className="text-sm text-orange-500 font-bold mt-1">
+                                                            Archivo cargado:
+                                                            server.pem
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="sm:col-span-3 relative z-0 w-full mb-2 group">
+                                                    <input
+                                                        ref={fileInputRef}
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        className="block pt-2.5 pb-1 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                        id="certificationKey"
+                                                        name="certificationKey"
+                                                        type="file"
+                                                    />
+                                                    <label
+                                                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                                        htmlFor="certificationKey"
+                                                    >
+                                                        Clave Certificado
+                                                        Digital
+                                                    </label>
+                                                    {company.certificationKey && (
+                                                        <p className="text-sm text-orange-500 font-bold mt-1">
+                                                            Archivo cargado:
+                                                            server_key.pem
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </fieldset>
 
-                                <fieldset>
-                                    <legend className=" text-blue-600 font-semibold mb-2">
-                                        Configuraciones
-                                    </legend>
-                                    <div className="grid grid-cols-4 gap-4">
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <input
-                                                type="number"
-                                                step={1}
-                                                min={0}
-                                                name="limit"
-                                                id="limit"
-                                                value={company?.limit!}
-                                                onChange={handleInputChange}
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                className="block py-2.5 px-0 w-full text-right text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" "
-                                            />
-                                            <label
-                                                htmlFor="limit"
-                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                            >
-                                                Limite comprobantes
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <input
-                                                type="number"
-                                                step={1}
-                                                min={0}
-                                                max={7}
-                                                name="emissionInvoiceWithPreviousDate"
-                                                id="emissionInvoiceWithPreviousDate"
-                                                value={
-                                                    company?.emissionInvoiceWithPreviousDate
-                                                        ? company?.emissionInvoiceWithPreviousDate!
-                                                        : 0
-                                                }
-                                                onChange={handleInputChange}
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                className="text-right block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" "
-                                            />
-                                            <label
-                                                htmlFor="emissionInvoiceWithPreviousDate"
-                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                            >
-                                                Días atras(Facturas)
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <input
-                                                type="number"
-                                                step={1}
-                                                min={0}
-                                                max={7}
-                                                name="emissionReceiptWithPreviousDate"
-                                                id="emissionReceiptWithPreviousDate"
-                                                value={
-                                                    company?.emissionReceiptWithPreviousDate
-                                                        ? company?.emissionReceiptWithPreviousDate!
-                                                        : 0
-                                                }
-                                                onChange={handleInputChange}
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                className="block py-2.5 px-0 w-full text-right text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" "
-                                            />
-                                            <label
-                                                htmlFor="emissionReceiptWithPreviousDate"
-                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                            >
-                                                Días atras(Boletas)
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <select
-                                                value={
-                                                    company?.percentageIgv
-                                                        ? company?.percentageIgv
-                                                        : 18
-                                                }
-                                                name="percentageIgv"
-                                                onChange={handleInputChange}
-                                                className="text-right block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                required
-                                            >
-                                                {/* <option selected>Porcentaje IGV %</option> */}
-                                                <option value={18}>18%</option>
-                                                <option value={10}>
-                                                    10% (Ley 31556)
-                                                </option>
-                                                <option value={4}>
-                                                    4% (IVAP)
-                                                </option>
-                                            </select>
-                                            <label
-                                                htmlFor="percentageIgv"
-                                                className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300  transform -translate-y-6 scale-75 top-3  origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                            >
-                                                Porcentaje IGV %
-                                            </label>
-                                        </div>
+                                        <fieldset>
+                                            <legend className=" text-blue-600 font-semibold mb-2">
+                                                Configuraciones
+                                            </legend>
+                                            <div className="grid grid-cols-4 gap-4">
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <input
+                                                        type="number"
+                                                        step={1}
+                                                        min={0}
+                                                        name="limit"
+                                                        id="limit"
+                                                        value={company?.limit!}
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        className="block py-2.5 px-0 w-full text-right text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                        placeholder=" "
+                                                    />
+                                                    <label
+                                                        htmlFor="limit"
+                                                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                                    >
+                                                        Limite comprobantes
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <input
+                                                        type="number"
+                                                        step={1}
+                                                        min={0}
+                                                        max={7}
+                                                        name="emissionInvoiceWithPreviousDate"
+                                                        id="emissionInvoiceWithPreviousDate"
+                                                        value={
+                                                            company?.emissionInvoiceWithPreviousDate
+                                                                ? company?.emissionInvoiceWithPreviousDate!
+                                                                : 0
+                                                        }
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        className="text-right block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                        placeholder=" "
+                                                    />
+                                                    <label
+                                                        htmlFor="emissionInvoiceWithPreviousDate"
+                                                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                                    >
+                                                        Días atras(Facturas)
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <input
+                                                        type="number"
+                                                        step={1}
+                                                        min={0}
+                                                        max={7}
+                                                        name="emissionReceiptWithPreviousDate"
+                                                        id="emissionReceiptWithPreviousDate"
+                                                        value={
+                                                            company?.emissionReceiptWithPreviousDate
+                                                                ? company?.emissionReceiptWithPreviousDate!
+                                                                : 0
+                                                        }
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        onFocus={(e) =>
+                                                            e.target.select()
+                                                        }
+                                                        className="block py-2.5 px-0 w-full text-right text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                        placeholder=" "
+                                                    />
+                                                    <label
+                                                        htmlFor="emissionReceiptWithPreviousDate"
+                                                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                                    >
+                                                        Días atras(Boletas)
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <select
+                                                        value={
+                                                            company?.percentageIgv
+                                                                ? company?.percentageIgv
+                                                                : 18
+                                                        }
+                                                        name="percentageIgv"
+                                                        onChange={
+                                                            handleInputChange
+                                                        }
+                                                        className="text-right block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                        required
+                                                    >
+                                                        {/* <option selected>Porcentaje IGV %</option> */}
+                                                        <option value={18}>
+                                                            18%
+                                                        </option>
+                                                        <option value={10}>
+                                                            10% (Ley 31556)
+                                                        </option>
+                                                        <option value={4}>
+                                                            4% (IVAP)
+                                                        </option>
+                                                    </select>
+                                                    <label
+                                                        htmlFor="percentageIgv"
+                                                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300  transform -translate-y-6 scale-75 top-3  origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                                    >
+                                                        Porcentaje IGV %
+                                                    </label>
+                                                </div>
 
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <label className="inline-flex items-center mb-1 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    value=""
-                                                    id="isEnabled"
-                                                    name="isEnabled"
-                                                    className="sr-only peer"
-                                                    checked={
-                                                        company?.isEnabled
-                                                            ? company?.isEnabled
-                                                            : false
-                                                    }
-                                                    onChange={
-                                                        handleCheckboxChange
-                                                    }
-                                                />
-                                                <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                    Estado Activo
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <label className="inline-flex items-center mb-1 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    value=""
-                                                    id="includeIgv"
-                                                    name="includeIgv"
-                                                    className="sr-only peer"
-                                                    checked={
-                                                        company?.includeIgv
-                                                            ? company?.includeIgv
-                                                            : false
-                                                    }
-                                                    onChange={
-                                                        handleCheckboxChange
-                                                    }
-                                                />
-                                                <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                    Incluir IGV
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <label className="inline-flex items-center mb-1 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    value=""
-                                                    id="isProduction"
-                                                    name="isProduction"
-                                                    className="sr-only peer"
-                                                    checked={
-                                                        company?.isProduction
-                                                            ? company?.isProduction
-                                                            : false
-                                                    }
-                                                    onChange={
-                                                        handleCheckboxChange
-                                                    }
-                                                    disabled={company.isProduction}
-                                                />
-                                                <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                    Producción
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <label className="inline-flex items-center mb-1 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    value=""
-                                                    id="withStock"
-                                                    name="withStock"
-                                                    className="sr-only peer"
-                                                    checked={
-                                                        company?.withStock
-                                                            ? company?.withStock
-                                                            : false
-                                                    }
-                                                    onChange={
-                                                        handleCheckboxChange
-                                                    }
-                                                />
-                                                <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                    Incluir Stock
-                                                </span>
-                                            </label>
-                                        </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="isEnabled"
+                                                            name="isEnabled"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company?.isEnabled
+                                                                    ? company?.isEnabled
+                                                                    : false
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Estado Activo
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="includeIgv"
+                                                            name="includeIgv"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company?.includeIgv
+                                                                    ? company?.includeIgv
+                                                                    : false
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Incluir IGV
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="isProduction"
+                                                            name="isProduction"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company?.isProduction
+                                                                    ? company?.isProduction
+                                                                    : false
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                            disabled={
+                                                                company.isProduction
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Producción
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="withStock"
+                                                            name="withStock"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company?.withStock
+                                                                    ? company?.withStock
+                                                                    : false
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Incluir Stock
+                                                        </span>
+                                                    </label>
+                                                </div>
 
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <label className="inline-flex items-center mb-1 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    value=""
-                                                    id="invoiceF"
-                                                    name="invoiceF"
-                                                    className="sr-only peer"
-                                                    checked={
-                                                        company?.invoiceF
-                                                            ? company?.invoiceF
-                                                            : false
-                                                    }
-                                                    onChange={
-                                                        handleCheckboxChange
-                                                    }
-                                                />
-                                                <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                    Incluir Factura
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <label className="inline-flex items-center mb-1 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    value=""
-                                                    id="invoiceB"
-                                                    name="invoiceB"
-                                                    className="sr-only peer"
-                                                    checked={
-                                                        company?.invoiceB
-                                                            ? company?.invoiceB
-                                                            : false
-                                                    }
-                                                    onChange={
-                                                        handleCheckboxChange
-                                                    }
-                                                />
-                                                <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                    Incluir Boleta
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <label className="inline-flex items-center mb-1 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    value=""
-                                                    id="guide"
-                                                    name="guide"
-                                                    className="sr-only peer"
-                                                    checked={
-                                                        company?.guide
-                                                            ? company?.guide
-                                                            : false
-                                                    }
-                                                    onChange={
-                                                        handleCheckboxChange
-                                                    }
-                                                />
-                                                <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                    Incluir Guía
-                                                </span>
-                                            </label>
-                                        </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="invoiceF"
+                                                            name="invoiceF"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company?.invoiceF
+                                                                    ? company?.invoiceF
+                                                                    : false
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Incluir Factura
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="invoiceB"
+                                                            name="invoiceB"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company?.invoiceB
+                                                                    ? company?.invoiceB
+                                                                    : false
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Incluir Boleta
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="guide"
+                                                            name="guide"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company?.guide
+                                                                    ? company?.guide
+                                                                    : false
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Incluir Guía
+                                                        </span>
+                                                    </label>
+                                                </div>
 
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <label className="inline-flex items-center mb-1 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    value=""
-                                                    id="app"
-                                                    name="app"
-                                                    className="sr-only peer"
-                                                    checked={
-                                                        company?.app
-                                                            ? company?.app
-                                                            : false
-                                                    }
-                                                    onChange={
-                                                        handleCheckboxChange
-                                                    }
-                                                />
-                                                <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                    Incluir App Mobil
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <label className="inline-flex items-center mb-1 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    value=""
-                                                    id="catalog"
-                                                    name="catalog"
-                                                    className="sr-only peer"
-                                                    checked={company.catalog}
-                                                    onChange={
-                                                        handleCheckboxChange
-                                                    }
-                                                />
-                                                <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                    Incluir Catalago
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                            <label className="inline-flex items-center mb-1 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    value=""
-                                                    id="ose"
-                                                    name="ose"
-                                                    className="sr-only peer"
-                                                    checked={company.ose}
-                                                    onChange={
-                                                        handleCheckboxChange
-                                                    }
-                                                    disabled={company.ose}
-                                                />
-                                                <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                    Ose
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div className="sm:col-span-2 relative z-0 w-full mb-2 group">
-                                            <label className="inline-flex items-center mb-1 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    value=""
-                                                    id="disableContinuePay"
-                                                    name="disableContinuePay"
-                                                    className="sr-only peer"
-                                                    checked={company.disableContinuePay ||
-                                                        false
-                                                    }
-                                                    onChange={
-                                                        handleCheckboxChange
-                                                    }
-                                                />
-                                                <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                Deshabilitar Continuar con el
-                                                Pago
-                                                </span>
-                                            </label>
-                                        </div>                                        
-                                    </div>
-                                </fieldset>
-                                </>)}
-                                <button type="submit" className="btn-blue" disabled={isSubmitting}>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="app"
+                                                            name="app"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company?.app
+                                                                    ? company?.app
+                                                                    : false
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Incluir App Mobil
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="catalog"
+                                                            name="catalog"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company.catalog
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Incluir Catalago
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="ose"
+                                                            name="ose"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company.ose
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                            disabled={
+                                                                company.ose
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Ose
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-2 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="disableContinuePay"
+                                                            name="disableContinuePay"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company.disableContinuePay ||
+                                                                false
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Deshabilitar
+                                                            Continuar con el
+                                                            Pago
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </>
+                                )}
+                                <button
+                                    type="submit"
+                                    className="btn-blue"
+                                    disabled={isSubmitting}
+                                >
                                     {isSubmitting ? (
                                         <span>Procesando...</span>
                                     ) : company.id ? (
