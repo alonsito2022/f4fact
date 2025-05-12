@@ -133,12 +133,8 @@ function ProductPage() {
                 ...prev,
                 subsidiaryId: user.subsidiaryId! || "0",
                 subsidiaryName: user.subsidiaryName! || "",
-                isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
+                isSuperuser: user.isSuperuser ?? false,
             }));
-            // setProduct({
-            //     ...product,
-            //     subsidiaryId: Number(user.subsidiaryId! || "0"),
-            // });
         }
     }, [auth?.user]);
 
@@ -183,11 +179,10 @@ function ProductPage() {
     };
 
     useEffect(() => {
-        if (auth?.jwtToken) {
-            fetchProducts(); // Llama a productsQuery() a través de fetchProducts()
+        if (auth?.jwtToken && Number(productFilterObj.subsidiaryId) > 0) {
+            fetchProducts();
         }
-    }, [auth?.jwtToken]);
-
+    }, [auth?.jwtToken, productFilterObj.subsidiaryId]);
     const filteredProducts = useMemo(() => {
         if (!filteredProductsData?.allProducts) return [];
 
