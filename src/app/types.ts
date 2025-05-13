@@ -75,6 +75,8 @@ export interface ICompany {
     ose?: boolean;
     disableContinuePay?: boolean;
     deductionAccount?: String;
+    registerDate?: string;
+    isRus?: boolean;
 }
 export interface IVehicle {
     id: number;

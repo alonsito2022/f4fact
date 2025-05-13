@@ -47,6 +47,8 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
             accountNumber
             comment
             disableContinuePay
+            registerDate
+            isRus
         }
     }
         `;
@@ -76,7 +78,8 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
                     'guideClientId',
                     'guideClientSecret',
                     'deductionAccount',
-                    'certificationExpirationDate'
+                    'certificationExpirationDate',
+                    'registerDate'
                 ];
         
                 // Convertir cada campo null a string vacío
@@ -132,17 +135,46 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
                     </tr>
                 </thead>
                 <tbody>
-                    {companies?.map((item: ICompany) => (
+                    {companies?.map((item: ICompany) => {
+                        // Calcular si faltan 20 días o menos para expirar
+                        // Calcular si faltan 20 días o menos para expirar
+                    let isExpiring = false;
+                    if (item.certificationExpirationDate) {
+                        const today = new Date();
+                        const expiration = new Date(item.certificationExpirationDate);
+                        const diffTime = expiration.getTime() - today.getTime();
+                        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                        isExpiring = diffDays <= 20;
+                        console.log("Fecha", diffDays);
+                        
+                    }
+                    console.log("Fechas", item.certificationExpirationDate);
+                    return (
                         <tr
                             key={item.id}
-                            className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-700"
+                            className={`border-b hover:bg-gray-300 dark:hover:bg-gray-700 ${
+                                isExpiring
+                                    ? "text-red-600 dark:text-red-400"
+                                    : "text-gray-900 dark:text-white"
+                            } dark:border-gray-700`}
                         >
                             <th
                                 scope="row"
-                                className="px-2 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                                className="px-2 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white flex items-center justify-end gap-2 items-center"
                             >
                                 {item.id}
+                                {item.isRus ? (
+                                    <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                        <path fillRule="evenodd" d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z" clipRule="evenodd"/>
+                                    </svg>
+                                ) : (
+                                    <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                        <path fillRule="evenodd" d="M15 4c0-.55228.4477-1 1-1h4c.5523 0 1 .44772 1 1v3c0 .55228-.4477 1-1 1h-4v13H8V7.86853l-1.44532.96352c-.45952.30635-1.08039.18218-1.38675-.27735-.30635-.45953-.18217-1.0804.27735-1.38675l6.00002-4c.3359-.22393.7735-.22393 1.1094 0L15 4.79816V4Zm-5 8c0-.5523.4477-1 1-1h2c.5523 0 1 .4477 1 1s-.4477 1-1 1h-2c-.5523 0-1-.4477-1-1Zm1-4c-.5523 0-1 .44772-1 1s.4477 1 1 1h2c.5523 0 1-.44772 1-1s-.4477-1-1-1h-2Z" clipRule="evenodd"/>
+                                        <path d="M18 9.00011 17.9843 9h.0296L18 9.00011ZM6 10.5237l-2.27075.6386C3.29797 11.2836 3 11.677 3 12.125V20c0 .5523.44772 1 1 1h2V10.5237Zm14.2707.6386L18 10.5237V21h2c.5523 0 1-.4477 1-1v-7.875c0-.448-.298-.8414-.7293-.9627Z"/>
+                                    </svg>
+                                )}
                             </th>
+                            
                             <td className="px-2 py-3">{item.doc}</td>
                             <td className="px-2 py-3">{item.businessName}</td>
                             <td className="px-2 py-3">{item.shortName}</td>
@@ -223,7 +255,8 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
                                 </a>
                             </td>
                         </tr>
-                    ))}
+                    );
+                    })}
                 </tbody>
             </table>
         </>

@@ -48,6 +48,8 @@ const initialState = {
     accountNumber: "",
     comment: "",
     disableContinuePay: false,
+    registerDate: "",
+    isRus: false
 };
 const COMPANIES_QUERY = gql`
     query Companies {
@@ -69,10 +71,13 @@ const COMPANIES_QUERY = gql`
             keySol
             emissionInvoiceWithPreviousDate
             emissionReceiptWithPreviousDate
+            certificationExpirationDate
             includeIgv
             percentageIgv
             productionDate
             disabledDate
+            registerDate
+            isRus
         }
     }
 `;
@@ -96,13 +101,13 @@ const COMPANY_QUERY = gql`
             keySol
             emissionInvoiceWithPreviousDate
             emissionReceiptWithPreviousDate
+            certificationExpirationDate
             includeIgv
             percentageIgv
             isEnabled
             productionDate
             isProduction
             disabledDate
-            passwordSignature
             certification
             certificationExpirationDate
             withStock
@@ -115,6 +120,8 @@ const COMPANY_QUERY = gql`
             accountNumber
             comment
             disableContinuePay
+            registerDate
+            isRus
         }
     }
 `;
@@ -166,6 +173,7 @@ function CompanyPage() {
                         keySol
                         emissionInvoiceWithPreviousDate
                         emissionReceiptWithPreviousDate
+                        certificationExpirationDate
                         includeIgv
                         percentageIgv
                         productionDate
@@ -173,6 +181,8 @@ function CompanyPage() {
                         accountNumber
                         comment
                         disableContinuePay
+                        registerDate
+                        isRus
                     }
             }
         `;
