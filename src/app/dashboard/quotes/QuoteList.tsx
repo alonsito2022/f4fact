@@ -285,7 +285,7 @@ function QuoteList({
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         setPdfUrl(
-                                                            `${process.env.NEXT_PUBLIC_BASE_API}/operations/quotation/${item.id}/`
+                                                            `${process.env.NEXT_PUBLIC_BASE_API}/operations/print_quotation/${item.id}/`
                                                         );
                                                         pdfModal?.show();
                                                     }}
