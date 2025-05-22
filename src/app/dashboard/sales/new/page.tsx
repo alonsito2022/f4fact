@@ -369,15 +369,6 @@ function NewSalePage() {
         }
     }, [auth?.user?.companyPercentageIgv]);
 
-    useEffect(() => {
-        if (auth?.user?.companyDisableContinuePay) {
-            setSale((prevSale) => ({
-                ...prevSale,
-                igvType: 1,
-            }));
-        }
-    }, [auth?.user?.companyDisableContinuePay]);
-
     // Handle triggerSaveSale state to call handleSaveSale when it's true
     useEffect(() => {
         if (triggerSaveSale && saveSaleRef.current) {
