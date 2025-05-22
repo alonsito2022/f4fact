@@ -41,6 +41,7 @@ const initialStateProduct = {
     maximumFactor: "1",
     minimumFactor: "1",
     // subsidiaryId: 0,
+    stock: 0,
 };
 
 const initialStateProductFilterObj = {
@@ -93,6 +94,7 @@ const PRODUCTS_QUERY = gql`
             priceWithoutIgv2
             priceWithoutIgv3
             priceWithoutIgv4
+            stock
         }
     }
 `;

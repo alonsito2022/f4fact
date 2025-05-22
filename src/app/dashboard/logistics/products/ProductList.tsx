@@ -28,6 +28,7 @@ const PRODUCT_QUERY = gql`
             maximumUnitId
             maximumFactor
             minimumFactor
+            stock
         }
     }
 `;
@@ -75,6 +76,7 @@ function ProductList({
                 variables: { pk: Number(productId) },
             });
             const productFound = data.productById;
+            console.log("productFound", productFound);
             const updatedProduct = {
                 ...productFound,
                 code: productFound?.code ?? "",

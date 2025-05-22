@@ -29,6 +29,7 @@ const ADD_PRODUCT = gql`
         $maximumUnitId: Int!
         $maximumFactor: Int!
         $minimumFactor: Int!
+        $stock: Float!
     ) {
         createProduct(
             code: $code
@@ -52,6 +53,7 @@ const ADD_PRODUCT = gql`
             maximumUnitId: $maximumUnitId
             maximumFactor: $maximumFactor
             minimumFactor: $minimumFactor
+            stock: $stock
         ) {
             message
             product {
@@ -89,6 +91,7 @@ const UPDATE_PRODUCT = gql`
         $maximumUnitId: Int!
         $maximumFactor: Int!
         $minimumFactor: Int!
+        $stock: Float!
     ) {
         updateProduct(
             id: $id
@@ -113,6 +116,7 @@ const UPDATE_PRODUCT = gql`
             maximumUnitId: $maximumUnitId
             maximumFactor: $maximumFactor
             minimumFactor: $minimumFactor
+            stock: $stock
         ) {
             message
         }
@@ -292,6 +296,7 @@ function ProductForm({
                     maximumUnitId: Number(product.maximumUnitId),
                     maximumFactor: Number(product.maximumFactor),
                     minimumFactor: Number(product.minimumFactor),
+                    stock: Number(product.stock),
                 };
                 const { data, errors } = await updateProduct({
                     variables: values,
@@ -342,6 +347,7 @@ function ProductForm({
                     maximumUnitId: Number(product.maximumUnitId),
                     maximumFactor: Number(product.maximumFactor),
                     minimumFactor: Number(product.minimumFactor),
+                    stock: Number(product.stock),
                 };
                 try {
                     const response = await createProduct({
@@ -570,6 +576,7 @@ function ProductForm({
                                             autoComplete="off"
                                         />
                                     </div>
+
                                     {/* EAN */}
                                     <div className="sm:col-span-2 hidden">
                                         <label
@@ -608,7 +615,7 @@ function ProductForm({
                                         />
                                     </div>
                                     {/* Tipo afectacion */}
-                                    <div className="sm:col-span-6">
+                                    <div className="sm:col-span-5">
                                         <label
                                             htmlFor="typeAffectationId"
                                             className="form-label"
@@ -640,6 +647,27 @@ function ProductForm({
                                                 )
                                             )}
                                         </select>
+                                    </div>
+                                    {/* Stock */}
+                                    <div className="sm:col-span-1">
+                                        <label
+                                            htmlFor="stock"
+                                            className="form-label"
+                                        >
+                                            Stock
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="stock"
+                                            id="stock"
+                                            value={product.stock}
+                                            onChange={
+                                                handleInputChangeQuantityMinimum
+                                            }
+                                            onFocus={(e) => e.target.select()}
+                                            className="form-control"
+                                            autoComplete="off"
+                                        />
                                     </div>
                                     {/*Unidad de medida SUNAT */}
                                     <div className="sm:col-span-3">

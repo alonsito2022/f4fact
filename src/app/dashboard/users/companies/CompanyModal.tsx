@@ -169,7 +169,7 @@ const UPDATE_COMPANY = gql`
             comment: $comment
             disableContinuePay: $disableContinuePay
             registerDate: $registerDate
-            isRus: $isRus   
+            isRus: $isRus
         ) {
             success
             message
@@ -632,7 +632,7 @@ function CompanyModal({
                 comment: company.comment,
                 disableContinuePay: company.disableContinuePay || false,
                 registerDate: company.registerDate || "",
-                isRus: company.isRus || false 
+                isRus: company.isRus || false,
             };
 
             // Debug: Mostrar variables que se enviarán
@@ -1386,26 +1386,27 @@ function CompanyModal({
                                                 </div>
                                                 <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
                                                     <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
-                                                    <input
-                                                        type="date"
-                                                        value={
-                                                            company?.certificationExpirationDate
-                                                                ? company?.certificationExpirationDate
-                                                                : ""
-                                                        }
-                                                        onChange={
-                                                            handleInputChange
-                                                        }
-                                                        name="certificationExpirationDate"
-                                                        className="block pb-2 pt-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                    />
-                                                    <label
-                                                        htmlFor="certificationExpirationDate"
-                                                        className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                                                    >
-                                                        Fecha expiración certificado
-                                                    </label>
-                                                </div>
+                                                        <input
+                                                            type="date"
+                                                            value={
+                                                                company?.certificationExpirationDate
+                                                                    ? company?.certificationExpirationDate
+                                                                    : ""
+                                                            }
+                                                            onChange={
+                                                                handleInputChange
+                                                            }
+                                                            name="certificationExpirationDate"
+                                                            className="block pb-2 pt-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                        />
+                                                        <label
+                                                            htmlFor="certificationExpirationDate"
+                                                            className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                                                        >
+                                                            Fecha expiración
+                                                            certificado
+                                                        </label>
+                                                    </div>
                                                     {/* <input
                                                 type="text"
                                                 name="deductionAccount"
@@ -1694,7 +1695,7 @@ function CompanyModal({
                                                         />
                                                         <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                                         <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                            Incluir Stock
+                                                            Habilitar Stock
                                                         </span>
                                                     </label>
                                                 </div>
