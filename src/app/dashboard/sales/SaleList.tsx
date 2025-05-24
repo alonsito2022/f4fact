@@ -334,7 +334,7 @@ function SaleList({
                   {item.sendWhatsapp ? (
                     "SI"
                   ) : (
-                    <span className="text-red-700 font-black">x</span>
+                    <span className="text-red-800 font-black">x</span>
                   )}
                 </td>
                 <td className="p-0.5 text-center">
