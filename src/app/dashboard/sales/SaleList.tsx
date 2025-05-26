@@ -114,10 +114,10 @@ function SaleList({
   const getStatusClassName = (status: string) => {
     const baseClasses = "flex items-center justify-center";
     if (status === "02") {
-      return `${baseClasses} text-green-600 text-xs font-medium px-2.5 py-0.5 rounded-full dark:text-green-300`;
+      return `${baseClasses} text-green-600 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300`;
     }
     if (status === "06") {
-      return `${baseClasses} text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:text-yellow-300 text-nowrap`;
+      return `${baseClasses} bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap`;
     }
     return `${baseClasses}`;
   };

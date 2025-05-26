@@ -130,39 +130,39 @@ function GuidePage() {
         return <p className="text-center text-red-500">No autorizado</p>;
     }
     return (
-        <>
-            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
-                <div className="w-full mb-1">
-                    <Breadcrumb
-                        section={"Guías de Remisión"}
-                        article={"Guías de Remisión"}
-                    />
-                    <GuideFilter
-                        setFilterObj={setFilterObj}
-                        filterObj={filterObj}
-                        guidesQuery={guidesQuery}
-                        guidesLoading={guidesLoading}
-                        authContext={authContext}
-                        auth={auth}
-                    />
-                </div>
-            </div>
-            <div className="flex flex-col">
-                <div className="overflow-x-auto">
-                    <div className="inline-block min-w-full align-middle">
-                        <div className="overflow-hidden shadow">
-                            <GuideList
-                                setFilterObj={setFilterObj}
-                                filterObj={filterObj}
-                                guidesQuery={guidesQuery}
-                                guidesData={guidesData}
-                                modalWhatsApp={modalWhatsApp}
-                                cpe={cpe}
-                                setCpe={setCpe}
-                                user={auth?.user}
-                            />
+        <div className="min-h-screen bg-white dark:bg-gray-800">
+            <div className="container mx-auto pb-16">
+                <div className="grid grid-cols-12 gap-4">
+                    <div className="col-span-1"></div>
+                    <div className="col-span-10">
+                        <GuideFilter
+                            setFilterObj={setFilterObj}
+                            filterObj={filterObj}
+                            guidesQuery={guidesQuery}
+                            guidesLoading={guidesLoading}
+                            authContext={authContext}
+                            auth={auth}
+                        />
+                        <div className="flex flex-col">
+                            <div className="overflow-x-auto">
+                                <div className="inline-block min-w-full align-middle">
+                                    <div className="overflow-hidden shadow">
+                                        <GuideList
+                                            setFilterObj={setFilterObj}
+                                            filterObj={filterObj}
+                                            guidesQuery={guidesQuery}
+                                            guidesData={guidesData}
+                                            modalWhatsApp={modalWhatsApp}
+                                            cpe={cpe}
+                                            setCpe={setCpe}
+                                            user={auth?.user}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <div className="col-span-1"></div>
                 </div>
             </div>
             <WhatsAppModal
@@ -172,7 +172,7 @@ function GuidePage() {
                 setCpe={setCpe}
                 initialStateCpe={initialStateCpe}
             />
-        </>
+        </div>
     );
 }
 
