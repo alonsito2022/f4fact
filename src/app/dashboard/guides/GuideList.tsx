@@ -295,7 +295,7 @@ function GuideList({
                     <td className="p-0.5">{item.subsidiary.companyName}</td>
                   </>
                 )}
-                <td className="p-0.5 pl-2">{item.emitDate}</td>
+                <td className="p-0.5 pl-2 text-nowrap">{item.emitDate}</td>
                 <td className="p-0.5 text-center">{item.documentType}</td>
                 <td className="p-0.5 text-center">{item.serial}</td>
                 <td className="p-0.5 tex-left">{item.correlative}</td>
