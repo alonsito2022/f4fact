@@ -1,104 +1,206 @@
 "use client";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Breadcrumb from "@/components/Breadcrumb";
 import PurchaseList from "./PurchaseList";
 import PurchaseFilter from "./PurchaseFilter";
 import { gql, useLazyQuery } from "@apollo/client";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { IUser } from "@/app/types";
-const today = new Date().toISOString().split('T')[0];
+
+const limaDate = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+);
+const today =
+    limaDate.getFullYear() +
+    "-" +
+    String(limaDate.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(limaDate.getDate()).padStart(2, "0");
+
 const initialStateFilterObj = {
     startDate: today,
     endDate: today,
     supplierId: 0,
+    subsidiaryId: "",
+    subsidiaryName: "",
     supplierName: "",
-}
+    documentType: "NA",
+    page: 1,
+    pageSize: 50,
+    serial: "",
+    correlative: "",
+};
 
 const PURCHASES_QUERY = gql`
-    query ($supplierId: Int!, $startDate: Date!, $endDate: Date!) {
-        allPurchases(supplierId: $supplierId, startDate: $startDate, endDate: $endDate) {
-            id
-            emitDate
-            operationDate
-            currencyType
-            documentType
-            serial
-            correlative
-            totalAmount
-            totalTaxed
-            totalDiscount
-            totalExonerated
-            totalUnaffected
-            totalFree
-            totalIgv
-            totalToPay
-            supplier{
-                names
+    query getPurchases(
+        $subsidiaryId: Int!
+        $supplierId: Int!
+        $startDate: Date!
+        $endDate: Date!
+        $documentType: String!
+        $page: Int!
+        $pageSize: Int!
+        $serial: String
+        $correlative: Int
+    ) {
+        allPurchases(
+            subsidiaryId: $subsidiaryId
+            supplierId: $supplierId
+            startDate: $startDate
+            endDate: $endDate
+            documentType: $documentType
+            page: $page
+            pageSize: $pageSize
+            serial: $serial
+            correlative: $correlative
+        ) {
+            purchases {
+                id
+                emitDate
+                operationDate
+                currencyType
+                documentType
+                serial
+                correlative
+                totalAmount
+                totalTaxed
+                totalDiscount
+                totalExonerated
+                totalUnaffected
+                totalFree
+                totalIgv
+                totalToPay
+                totalPayed
+                operationStatus
+                operationStatusReadable
+                linkXml
+                linkXmlLow
+                linkCdr
+                linkCdrLow
+                sunatStatus
+                sunatDescription
+                sunatDescriptionLow
+                codeHash
+                supplier {
+                    names
+                    documentNumber
+                }
+                subsidiary {
+                    companyName
+                    company {
+                        doc
+                    }
+                }
+                creditNoteReferences
             }
+            totalInvoices
+            totalPurchasesTickets
+            totalCreditNotes
+            totalDebitNotes
+            totalNumberOfPages
+            totalNumberOfPurchases
         }
     }
 `;
 
 function PurchasePage() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
-    const { data: session } = useSession();
-    const [jwtToken, setJwtToken] = useState<string | null>(null);
-    const u = session?.user as IUser;
+    const auth = useAuth();
 
-    useEffect(() => {
-        if (session?.user) {
-            const user = session.user as IUser;
-            setJwtToken(user.accessToken as string);
-        }
-    }, [session]);
+    const authContext = useMemo(
+        () => ({
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
+            },
+        }),
+        [auth?.jwtToken]
+    );
 
-    const getAuthContext = () => ({
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": jwtToken ? `JWT ${jwtToken}` : "",
+    const [
+        purchasesQuery,
+        {
+            loading: filteredPurchasesLoading,
+            error: filteredPurchasesError,
+            data: filteredPurchasesData,
         },
+    ] = useLazyQuery(PURCHASES_QUERY, {
+        context: authContext,
+        fetchPolicy: "network-only",
+        onError: (err) =>
+            console.error("Error in purchases:", err, auth?.jwtToken),
     });
 
-    const [purchasesQuery, { loading: filteredPurchasesLoading, error: filteredPurchasesError, data: filteredPurchasesData }] = useLazyQuery(PURCHASES_QUERY, {
-        context: getAuthContext(),
-        variables: {
-            supplierId: filterObj.supplierId, startDate: filterObj.startDate, endDate: filterObj.endDate,
-        },
-        fetchPolicy: 'network-only',
-        onCompleted(data) {
-            console.log("object", data)
-        },
-        onError: (err) => console.error("Error in purchases:", err),
-      });
+    useEffect(() => {
+        if (auth?.status === "authenticated" && auth?.jwtToken) {
+            const variables = {
+                subsidiaryId: auth?.user?.isSuperuser
+                    ? Number(filterObj.subsidiaryId)
+                    : Number(auth?.user?.subsidiaryId),
+                supplierId: Number(filterObj.supplierId),
+                startDate: filterObj.startDate,
+                endDate: filterObj.endDate,
+                documentType: filterObj.documentType,
+                page: Number(filterObj.page),
+                pageSize: Number(filterObj.pageSize),
+            };
+            purchasesQuery({
+                variables: variables,
+            });
+        }
+    }, [auth?.status, auth?.jwtToken]);
 
-// useEffect(() => {
-//     console.log("jwtToken", jwtToken)
-//     if(filterObj.startDate !== null && filterObj.endDate !== null && jwtToken) purchasesQuery();
-// }, []);
+    if (auth?.status === "loading") {
+        return <p className="text-center">Cargando sesión...</p>;
+    }
+    if (auth?.status === "unauthenticated") {
+        return <p className="text-center text-red-500">No autorizado</p>;
+    }
 
     return (
-        <>
-            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
-                <div className="w-full mb-1">
-                    <Breadcrumb section={"Compras"} article={"Compras"} />
-                    <PurchaseFilter setFilterObj={setFilterObj} filterObj={filterObj} purchasesQuery={purchasesQuery} filteredPurchasesLoading={filteredPurchasesLoading} jwtToken={jwtToken}/>
-                </div>
-            </div>
-
-            <div className="flex flex-col">
-                <div className="overflow-x-auto">
-                    <div className="inline-block min-w-full align-middle">
-                        <div className="overflow-hidden shadow">
-                            
-                            {filteredPurchasesError ? <div>{filteredPurchasesError.message}</div> : <PurchaseList filteredPurchasesData={filteredPurchasesData} />}
-                            
-                            
+        <div className="min-h-screen bg-white dark:bg-gray-800">
+            <div className="container mx-auto pb-16">
+                <div className="grid grid-cols-12 gap-4">
+                    <div className="col-span-1"></div>
+                    <div className="col-span-10">
+                        <PurchaseFilter
+                            setFilterObj={setFilterObj}
+                            filterObj={filterObj}
+                            purchasesQuery={purchasesQuery}
+                            filteredPurchasesLoading={filteredPurchasesLoading}
+                            auth={auth}
+                        />
+                        <div className="flex flex-col">
+                            <div className="overflow-x-auto">
+                                <div className="inline-block min-w-full align-middle">
+                                    <div className="overflow-hidden shadow">
+                                        {filteredPurchasesLoading ? (
+                                            <div className="p-4 text-center">
+                                                <span className="loader"></span>
+                                                Cargando compras...
+                                            </div>
+                                        ) : filteredPurchasesError ? (
+                                            <div className="p-4 text-red-500 text-center">
+                                                {filteredPurchasesError.message}
+                                            </div>
+                                        ) : (
+                                            <PurchaseList
+                                                filteredPurchasesData={
+                                                    filteredPurchasesData
+                                                }
+                                                user={auth?.user}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <div className="col-span-1"></div>
                 </div>
             </div>
-        </>
-    )
+        </div>
+    );
 }
 
-export default PurchasePage
+export default PurchasePage;

@@ -74,7 +74,9 @@ function SaleDetailForm({
         });
     }
 
-    const [updateProducTariff] = useCustomMutation(UPDATE_PRODUCT_TARIFF_PRICE);
+    const [updateProductTariff] = useCustomMutation(
+        UPDATE_PRODUCT_TARIFF_PRICE
+    );
 
     const [productDetailQuery] = useLazyQuery(PRODUCT_DETAIL_QUERY);
     // Add ref for the close button
@@ -444,7 +446,7 @@ function SaleDetailForm({
             priceWithIgv: Number(invoiceDetail.unitPrice),
             priceWithoutIgv: Number(invoiceDetail.unitValue),
         };
-        updateProducTariff({
+        updateProductTariff({
             variables,
             // context: getAuthContext(),
             onCompleted: (data) => {

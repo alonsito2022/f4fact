@@ -375,6 +375,7 @@ export interface IOperation {
     operationDate: string;
     supplierName: string;
     supplierId: number;
+    supplierDocumentType: string;
     igvType: number;
     documentType: string;
     documentTypeReadable: string;

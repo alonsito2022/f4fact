@@ -107,6 +107,13 @@ function SerialAssignedTable({
                                         <option value="40">
                                             Comprobante de Percepción
                                         </option>
+                                        <option value="89">Cotización</option>
+                                        <option value="NE">
+                                            Nota de entrada
+                                        </option>
+                                        <option value="NS">
+                                            Nota de salida
+                                        </option>
                                     </select>
                                 </td>
                                 <td className="px-6 py-4">
@@ -209,6 +216,15 @@ function SerialAssignedTable({
                                                         Comprobante de
                                                         Percepción
                                                     </option>
+                                                    <option value="89">
+                                                        Cotización
+                                                    </option>
+                                                    <option value="NE">
+                                                        Nota de entrada
+                                                    </option>
+                                                    <option value="NS">
+                                                        Nota de salida
+                                                    </option>
                                                 </select>
                                             ) : (
                                                 <span
@@ -240,6 +256,15 @@ function SerialAssignedTable({
                                                         : o.documentType ===
                                                           "40"
                                                         ? "Comprobante de Percepción"
+                                                        : o.documentType ===
+                                                          "89"
+                                                        ? "Cotización"
+                                                        : o.documentType ===
+                                                          "NE"
+                                                        ? "Nota de entrada"
+                                                        : o.documentType ===
+                                                          "NS"
+                                                        ? "Nota de salida"
                                                         : o.documentType}
                                                 </span>
                                             )}

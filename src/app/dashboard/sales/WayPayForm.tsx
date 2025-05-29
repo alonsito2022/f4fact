@@ -274,7 +274,6 @@ function WayPayForm({
         }
         try {
             setIsProcessing(true);
-            console.log("invoice", invoice);
             const variables = {
                 serial: invoice.serial,
                 correlative: parseInt(
@@ -381,7 +380,6 @@ function WayPayForm({
 
                 observation: invoice.observation || "",
             };
-            console.log("variables", variables);
             const { data, errors } = await createSale({
                 variables: variables,
             });
@@ -436,7 +434,7 @@ function WayPayForm({
     }, [invoice.cashflowSet]);
     // Expose handleSaveSale function to parent component
     useEffect(() => {
-        if (onSaveSaleRef && typeof onSaveSaleRef === 'function') {
+        if (onSaveSaleRef && typeof onSaveSaleRef === "function") {
             onSaveSaleRef(handleSaveSale);
         }
     }, [handleSaveSale, onSaveSaleRef]);
