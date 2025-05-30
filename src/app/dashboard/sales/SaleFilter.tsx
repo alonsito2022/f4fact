@@ -11,6 +11,8 @@ import Excel from "@/components/icons/Excel";
 import ExcelModal from "./ExcelModal";
 import { Modal } from "flowbite";
 import SearchInvoice from "./SearchInvoice";
+import InvoiceTypeModal from './new/InvoiceTypeModal';
+import { useInvoiceTypeModal } from '@/components/context/InvoiceTypeModalContext'
 // Add the search client query
 const SEARCH_CLIENT_BY_PARAMETER = gql`
     query SearchClient(
@@ -71,10 +73,11 @@ function SaleFilter({
     auth,
 }: any) {
     const router = useRouter();
+    const { showModal } = useInvoiceTypeModal();
     const [modalExcel, setModalExcel] = useState<Modal | null>(null);
     const [modalSearchInvoice, setModalSearchInvoice] = useState<Modal | null>(
         null
-    );
+    );    
     const [clientSearch, setClientSearch] = useState("");
 
     const handleClickButton = async () => {
@@ -271,7 +274,9 @@ function SaleFilter({
                         type="button"
                         title="Crear nueva venta"
                         className="btn-blue h-8 px-3 flex items-center justify-center gap-1 rounded-full hover:opacity-90 transition-all duration-200 shadow-xs hover:shadow-sm text-sm"
-                        onClick={() => router.push("/dashboard/sales/new")}
+                        //onClick={() => router.push("/dashboard/sales/new")}
+                        //onClick={() => modalInvoiceType?.show()}
+                        onClick={showModal}
                     >
                         <Add />
                         <span className="sm:inline">Agregar Nuevo</span>

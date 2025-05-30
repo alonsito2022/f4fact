@@ -93,8 +93,8 @@ function SaleTotalList({
   return (
     <>
       <div className="bg-white-100 dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
-        <div className="bg-gray-50 border-b border-gray-200 dark:border-gray-700 p-4">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+        <div className="bg-gray-50 border-b border-gray-200 dark:border-gray-700 p-4 dark:bg-gray-800 text-right">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-400">
             Resumen de Venta
           </h3>
         </div>
@@ -104,7 +104,7 @@ function SaleTotalList({
               % Descuento Global
             </div>
             <div
-              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
+              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
               style={{ border: "1px solid rgb(179, 178, 173)" }}
             >
               0.00
@@ -125,7 +125,7 @@ function SaleTotalList({
                 : null}
             </div>
             <div
-              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
+              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
               style={{ border: "1px solid rgb(179, 178, 173)" }}
             >
               {invoice.discountGlobal}
@@ -146,7 +146,7 @@ function SaleTotalList({
                 : null}
             </div>
             <div
-              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
+              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
               style={{ border: "1px solid rgb(179, 178, 173)" }}
             >
               {invoice.discountForItem}
@@ -168,7 +168,7 @@ function SaleTotalList({
                 : null}
             </div>
             <div
-              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
+              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
               style={{ border: "1px solid rgb(179, 178, 173)" }}
             >
               {invoice.totalDiscount}
@@ -189,7 +189,7 @@ function SaleTotalList({
                 : null}
             </div>
             <div
-              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
+              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
               style={{ border: "1px solid rgb(179, 178, 173)" }}
             >
               {invoice.totalExonerated || "0.00"}
@@ -211,7 +211,7 @@ function SaleTotalList({
                 : null}
             </div>
             <div
-              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
+              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
               style={{ border: "1px solid rgb(179, 178, 173)" }}
             >
               {invoice.totalUnaffected || "0.00"}
@@ -233,7 +233,7 @@ function SaleTotalList({
                 : null}
             </div>
             <div
-              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
+              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
               style={{ border: "1px solid rgb(179, 178, 173)" }}
             >
               {invoice.totalTaxed}
@@ -255,7 +255,7 @@ function SaleTotalList({
                 : null}
             </div>
             <div
-              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
+              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
               style={{ border: "1px solid rgb(179, 178, 173)" }}
             >
               {invoice.totalIgv}
@@ -277,7 +277,7 @@ function SaleTotalList({
                 : null}
             </div>
             <div
-              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
+              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
               style={{ border: "1px solid rgb(179, 178, 173)" }}
             >
               {invoice.totalFree || "0.00"}
@@ -299,7 +299,7 @@ function SaleTotalList({
                 : null}
             </div>
             <div
-              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
+              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
               style={{ border: "1px solid rgb(179, 178, 173)" }}
             >
               0.00
@@ -321,7 +321,7 @@ function SaleTotalList({
                 : null}
             </div>
             <div
-              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
+              className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
               style={{ border: "1px solid rgb(179, 178, 173)" }}
             >
               {invoice.totalAmount}

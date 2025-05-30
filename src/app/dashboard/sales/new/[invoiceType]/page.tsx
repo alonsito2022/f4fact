@@ -25,15 +25,16 @@ import Add from "@/components/icons/Add";
 import Edit from "@/components/icons/Edit";
 import Delete from "@/components/icons/Delete";
 import Save from "@/components/icons/Save";
-import ProductForm from "../../logistics/products/ProductForm";
+import { useParams } from "next/navigation";
+import ProductForm from "../../../logistics/products/ProductForm";
 import { toast } from "react-toastify";
-import SaleDetailForm from "../SaleDetailForm";
-import WayPayForm from "../WayPayForm";
+import SaleDetailForm from "../../SaleDetailForm";
+import WayPayForm from "../../WayPayForm";
 import { useAuth } from "@/components/providers/AuthProvider";
 import SunatCancel from "@/components/icons/SunatCancel";
-import ClientForm from "../ClientForm";
-import SaleDetailList from "../SaleDetailList";
-import SaleTotalList from "../SaleTotalList";
+import ClientForm from "../../ClientForm";
+import SaleDetailList from "../../SaleDetailList";
+import SaleTotalList from "../../SaleTotalList";
 // Replace the current today constant with this:
 const limaDate = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
@@ -331,6 +332,10 @@ const initialStateCashFlow = {
     transactionDate: today,
 };
 function NewSalePage() {
+
+    const params = useParams();
+    const { invoiceType } = params;
+
     const [isProcessing, setIsProcessing] = useState(false);
     const saveSaleRef = useRef<Function | null>(null);
     const [triggerSaveSale, setTriggerSaveSale] = useState(false);
@@ -376,6 +381,19 @@ function NewSalePage() {
             setTriggerSaveSale(false); // Reset the trigger
         }
     }, [triggerSaveSale]);
+
+    useEffect(() => {
+        // Si no hay parámetro, establecer FACTURA por defecto (01)
+        setSale(prevSale => ({
+            ...prevSale,
+            documentType: invoiceType ? invoiceType as string : "01"
+        }));
+
+        // Opcional: Mostrar mensaje informativo
+        if (!invoiceType) {
+            console.log("No se recibió parámetro, usando FACTURA por defecto");
+        }
+    }, [invoiceType]);
 
     // useEffect(() => {
     //     const subsidiarySerial = auth?.user?.subsidiarySerial;
@@ -907,10 +925,19 @@ function NewSalePage() {
                         <div className="col-span-1"></div>
                         <div className="col-span-10">
                             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
-                                <div className="mb-1">
-                                    <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
-                                        Nuevo Comprobante
-                                    </h1>
+                                <div className="mb-1 w-full">
+                                    <div className="flex items-center gap-4">
+                                    <h1 className="text-2xl font-medium text-black-0 sm:text-2xl dark:text-white">
+                                            Nuevo Comprobante
+                                        </h1>
+                                        <h2 className="text-4xl font-semibold text-gray-500 dark:text-white">
+                                            {sale.documentType === "01" 
+                                                ? "FACTURA ELECTRÓNICA" 
+                                                : sale.documentType === "03" 
+                                                ? "BOLETA DE VENTA ELECTRÓNICA" 
+                                                : ""}
+                                        </h2>
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex flex-col space-y-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
@@ -919,8 +946,8 @@ function NewSalePage() {
                                         <div className="overflow-hidden shadow-lg rounded-lg">
                                             <div className="p-4 md:p-5 space-y-4">
                                                 <div className="grid gap-4">
-                                                    <fieldset className="border-2 border-blue-200 dark:border-blue-900 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg p-6 relative group transition-all duration-300 hover:shadow-blue-500/20 hover:shadow-2xl">
-                                                        <legend className="px-2 text-blue-600 dark:text-blue-400 font-semibold text-sm transition-all duration-300 group-hover:text-blue-700 dark:group-hover:text-blue-300">
+                                                    <fieldset className="border-2 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg p-6 relative group">
+                                                        <legend className="px-2 text-gray-500 dark:text-white font-semibold text-sm transition-all duration-300 group-hover:text-blue-700 dark:group-hover:text-blue-300">
                                                             <div className="flex items-center gap-2">
                                                                 <svg
                                                                     className="w-4 h-4"
@@ -1389,8 +1416,8 @@ function NewSalePage() {
                                                         </div>
                                                     </fieldset>
 
-                                                    <fieldset className="border-2 border-cyan-200 dark:border-cyan-900 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg p-6 relative group transition-all duration-300 hover:shadow-cyan-500/20 hover:shadow-2xl">
-                                                        <legend className="px-2 text-cyan-600 dark:text-cyan-400 font-semibold text-sm transition-all duration-300 group-hover:text-cyan-700 dark:group-hover:text-cyan-300">
+                                                    <fieldset className="border-2 border-gray-200 dark:border-white bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg p-6 relative group hover:shadow-gray-500/20 hover:shadow-2xl">
+                                                        <legend className="px-2 text-gray-500 dark:text-white font-semibold text-sm ">
                                                             <div className="flex items-center gap-2">
                                                                 <svg
                                                                     className="w-4 h-4"
@@ -1542,8 +1569,8 @@ function NewSalePage() {
                                                     </fieldset>
                                                 </div>
                                                 {/* Búsqueda de Productos */}
-                                                <div className="p-6 border-2 border-emerald-200 dark:border-emerald-900 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-lg relative group transition-all duration-300 hover:shadow-emerald-500/20 hover:shadow-2xl">
-                                                    <div className="flex items-center gap-2 mb-4 text-emerald-600 dark:text-emerald-400">
+                                                <div className="p-6 border-2 border-gray-200 dark:border-emerald-900 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-lg relative ">
+                                                    <div className="flex items-center gap-2 mb-4 text-gray-500 dark:text-emerald-400">
                                                         <svg
                                                             className="w-4 h-4"
                                                             fill="none"

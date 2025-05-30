@@ -9,6 +9,8 @@ import { getServerSession } from "next-auth/next";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { authOptions } from "@/app/api/auth/authOptions";
+import { InvoiceTypeModalProvider } from '@/components/context/InvoiceTypeModalContext'
+import InvoiceTypeModal from "./dashboard/sales/new/InvoiceTypeModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,14 +33,17 @@ export default async function RootLayout({
             </head>
             <body className={`${inter.className} bg-gray-50 dark:bg-gray-900 `}>
                 <AuthProvider session={session}>
-                    <ThemeProvider
-                        attribute="class"
-                        defaultTheme="system"
-                        enableSystem
-                    >
-                        <ApolloWrapper>{children}</ApolloWrapper>
-                        <ToastContainer />
-                    </ThemeProvider>
+                    <InvoiceTypeModalProvider>                    
+                        <ThemeProvider
+                            attribute="class"
+                            defaultTheme="system"
+                            enableSystem
+                        >
+                            <ApolloWrapper>{children}</ApolloWrapper>
+                            <ToastContainer />
+                        </ThemeProvider>
+                        <InvoiceTypeModal />
+                    </InvoiceTypeModalProvider>
                 </AuthProvider>
             </body>
         </html>
