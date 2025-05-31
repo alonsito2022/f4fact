@@ -12,142 +12,143 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useSidebar } from "@/components/context/SidebarContext";
 
 function Navbar() {
-    const { data: session, update } = useSession();
-    const u = session?.user as IUser;
-    const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const { data: session, update } = useSession();
+  const u = session?.user as IUser;
+  const { isSidebarOpen, toggleSidebar } = useSidebar();
 
-    // useEffect(() => {
-    //     setMounted(true)
-    //   }, [])
+  // useEffect(() => {
+  //     setMounted(true)
+  //   }, [])
 
-    //   if (!mounted) {
-    //     return null
-    //   }
+  //   if (!mounted) {
+  //     return null
+  //   }
 
-    const handleLogout = async () => {
-        await signOut({ redirect: true });
-    };
+  const handleLogout = async () => {
+    await signOut({ redirect: true });
+  };
 
-    return (
-        // <nav className="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-        //     <div className="px-3 py-3 lg:px-5 lg:pl-3">
-        //         <div className="flex items-center justify-between">
-        //             <div className="flex items-center justify-start">
-        //                 <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar" type="button" className="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
-        //                     <span className="sr-only">Open sidebar</span>
-        //                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-        //                         <path clipRule="evenodd" fillRule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
-        //                     </svg>
-        //                 </button>
-        //                 <a href="/dashboard" className="flex ml-2 md:mr-24">
+  return (
+    // <nav className="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+    //     <div className="px-3 py-3 lg:px-5 lg:pl-3">
+    //         <div className="flex items-center justify-between">
+    //             <div className="flex items-center justify-start">
+    //                 <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar" type="button" className="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
+    //                     <span className="sr-only">Open sidebar</span>
+    //                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+    //                         <path clipRule="evenodd" fillRule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
+    //                     </svg>
+    //                 </button>
+    //                 <a href="/dashboard" className="flex ml-2 md:mr-24">
 
-        //                     <Image
-        //                     src="/isotipo.png"
-        //                     alt="FlowBite Logo"
-        //                     className="w-full h-auto mr-3"
-        //                     width={89}
-        //                     height={86}
-        //                     sizes="20vw"
-        //                     blurDataURL={'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg'}
-        //                     />
-        //                     <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Portal facturador</span>
-        //                 </a>
-        //             </div>
-        //             <div className="flex items-center">
-        //                 <div className="flex items-center ml-3">
+    //                     <Image
+    //                     src="/isotipo.png"
+    //                     alt="FlowBite Logo"
+    //                     className="w-full h-auto mr-3"
+    //                     width={89}
+    //                     height={86}
+    //                     sizes="20vw"
+    //                     blurDataURL={'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg'}
+    //                     />
+    //                     <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Portal facturador</span>
+    //                 </a>
+    //             </div>
+    //             <div className="flex items-center">
+    //                 <div className="flex items-center ml-3">
 
-        //                     <div>
-        //                         <button type="button" className="flex text-sm bg-gray-200 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" aria-expanded="false" data-dropdown-toggle="dropdown-user">
-        //                             <span className="sr-only">Open user menu</span>
+    //                     <div>
+    //                         <button type="button" className="flex text-sm bg-gray-200 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" aria-expanded="false" data-dropdown-toggle="dropdown-user">
+    //                             <span className="sr-only">Open user menu</span>
 
-        //                             <Image
-        //                             src="/vercel.svg"
-        //                             alt="user photo"
-        //                             className="w-8 h-8 rounded-full"
-        //                             width={24}
-        //                             height={24}
-        //                             blurDataURL={'/logo.png'}
-        //                             />
+    //                             <Image
+    //                             src="/vercel.svg"
+    //                             alt="user photo"
+    //                             className="w-8 h-8 rounded-full"
+    //                             width={24}
+    //                             height={24}
+    //                             blurDataURL={'/logo.png'}
+    //                             />
 
-        //                         </button>
-        //                     </div>
+    //                         </button>
+    //                     </div>
 
-        //                     <div suppressHydrationWarning={true} className="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600" id="dropdown-user">
-        //                         <div className="px-4 py-3" role="none">
-        //                             <p className="text-sm text-gray-900 dark:text-white" role="none">{u ?u.firstName + "" + u.lastName: ""}</p>
-        //                             <p className="text-sm font-medium text-gray-900 truncate dark:text-gray-300" role="none">{u ?u.email: ""}</p>
-        //                         </div>
-        //                         <ul className="py-1" role="none">
-        //                         {u ? (
-        //                             <>
-        //                                 <li><Link href="/dashboard/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Perfil</Link></li>
-        //                                 <li><a className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer" role="menuitem" onClick={()=>signOut()}>Cerrar Sesion</a></li>
-        //                             </>
-        //                         ): ("")}
-        //                         </ul>
+    //                     <div suppressHydrationWarning={true} className="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600" id="dropdown-user">
+    //                         <div className="px-4 py-3" role="none">
+    //                             <p className="text-sm text-gray-900 dark:text-white" role="none">{u ?u.firstName + "" + u.lastName: ""}</p>
+    //                             <p className="text-sm font-medium text-gray-900 truncate dark:text-gray-300" role="none">{u ?u.email: ""}</p>
+    //                         </div>
+    //                         <ul className="py-1" role="none">
+    //                         {u ? (
+    //                             <>
+    //                                 <li><Link href="/dashboard/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Perfil</Link></li>
+    //                                 <li><a className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer" role="menuitem" onClick={()=>signOut()}>Cerrar Sesion</a></li>
+    //                             </>
+    //                         ): ("")}
+    //                         </ul>
 
-        //                     </div>
+    //                     </div>
 
-        //                 </div>
-        //             </div>
-        //         </div>
-        //     </div>
-        // </nav>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     </div>
+    // </nav>
 
-        <nav className="fixed top-0 left-0 z-30 w-full h-16 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700 font-encodeSansCondensed">
-            {/* <div className=" bg-red-300 dark:bg-red-500 text-center p-1 text-sm">Hoy, {formatDate(new Date())}, se presenta intermitencia en los servidores de la SUNAT. La obtención del PDF y CDR podría demorar, sin embargo puede seguir facturando. Nuestro sistema los enviará automáticamente cuando sea posible.</div> */}
-            <div className="px-3 py-3 lg:px-5 lg:pl-3">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center justify-start">
-                        <button
-                            type="button"
-                            onClick={toggleSidebar}
-                            id="toggleSidebarMobile"
-                            className="p-2 text-gray-600 rounded hover:text-gray-900 dark:text-gray-400"
-                        >
-                            {isSidebarOpen ? (
-                                // Ícono de "Cerrar" (X)
-                                <svg
-                                    className="w-6 h-6"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                        clipRule="evenodd"
-                                    ></path>
-                                </svg>
-                            ) : (
-                                // Ícono de "Menú" (☰)
-                                <svg
-                                    className="w-6 h-6"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                        clipRule="evenodd"
-                                    ></path>
-                                </svg>
-                            )}
-                        </button>
+    <nav
+      className={`fixed top-0 left-0 z-30 w-full h-16 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700 font-encodeSansCondensed transition-all duration-300 ease-in-out ${
+        isSidebarOpen ? "lg:pl-64" : ""
+      }`}
+    >
+      {/* <div className=" bg-red-300 dark:bg-red-500 text-center p-1 text-sm">Hoy, {formatDate(new Date())}, se presenta intermitencia en los servidores de la SUNAT. La obtención del PDF y CDR podría demorar, sin embargo puede seguir facturando. Nuestro sistema los enviará automáticamente cuando sea posible.</div> */}
+      <div className="px-3 py-3 lg:px-5 lg:pl-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center justify-start">
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              id="toggleSidebarMobile"
+              className="p-2 text-gray-600 rounded hover:text-gray-900 dark:text-gray-400"
+            >
+              {isSidebarOpen ? (
+                // Ícono de "Cerrar" (X)
+                <svg
+                  className="w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              ) : (
+                // Ícono de "Menú" (☰)
+                <svg
+                  className="w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              )}
+            </button>
 
-                        <a
-                            href="/dashboard"
-                            className="ml-2 md:mr-24 hidden sm:flex"
-                        >
-                            <img
-                                src="/images/4fact.svg"
-                                className="h-8 mr-3 dark:[filter:invert(100%)_sepia(100%)_brightness(100%)_contrast(300%)]"
-                                alt="FlowBite Logo"
-                            />
-                            <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
-                                tuF4ct
-                            </span>
-                        </a>
-                        {/* <form action="#" method="GET" className="hidden lg:block lg:pl-3.5">
+            <a href="/dashboard" className="ml-2 md:mr-24 hidden sm:flex">
+              <img
+                src="/images/4fact.svg"
+                className="h-8 mr-3 dark:[filter:invert(100%)_sepia(100%)_brightness(100%)_contrast(300%)]"
+                alt="FlowBite Logo"
+              />
+              <span className="self-center text-blue-900 font-sm sm:text-2xl whitespace-nowrap dark:text-white transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/50 hover:text-blue-800 dark:hover:text-blue-200 rounded-lg font-nulshock">
+                TUFACT
+              </span>
+            </a>
+            {/* <form action="#" method="GET" className="hidden lg:block lg:pl-3.5">
                             <label htmlFor="topbar-search" className="sr-only">Search</label>
                             <div className="relative mt-1 lg:w-96">
                                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -156,19 +157,19 @@ function Navbar() {
                                 <input type="text" name="email" id="topbar-search" className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search" />
                             </div>
                         </form> */}
-                    </div>
-                    <div className="flex items-center">
-                        {/* <div className="hidden mr-3 -mb-1 sm:block">
+          </div>
+          <div className="flex items-center">
+            {/* <div className="hidden mr-3 -mb-1 sm:block">
                             <a className="github-button" href="https://github.com/themesberg/flowbite-admin-dashboard" data-color-scheme="no-preference: dark; light: light; dark: light;" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star themesberg/flowbite-admin-dashboard on GitHub">Star</a>
                         </div> */}
 
-                        {/* <button id="toggleSidebarMobileSearch" type="button" className="p-2 text-gray-500 rounded-lg lg:hidden hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+            {/* <button id="toggleSidebarMobileSearch" type="button" className="p-2 text-gray-500 rounded-lg lg:hidden hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                             <span className="sr-only">Search</span>
 
                             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"></path></svg>
                         </button> */}
 
-                        {/* <button
+            {/* <button
                             type="button"
                             data-dropdown-toggle="notification-dropdown"
                             className="p-2 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700"
@@ -269,7 +270,7 @@ function Navbar() {
                                 </a>
                                 <a
                                     href="#"
-                                    className="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600"
+                                    className="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600"
                                 >
                                     <div className="flex-shrink-0">
                                         <img
@@ -311,7 +312,7 @@ function Navbar() {
                                 </a>
                                 <a
                                     href="#"
-                                    className="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600"
+                                    className="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600"
                                 >
                                     <div className="flex-shrink-0">
                                         <img
@@ -409,7 +410,7 @@ function Navbar() {
                             </a>
                         </div> */}
 
-                        {/* <button
+            {/* <button
                             type="button"
                             data-dropdown-toggle="apps-dropdown"
                             className=" p-2 text-gray-500 rounded-lg sm:flex hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700"
@@ -523,7 +524,7 @@ function Navbar() {
                                     >
                                         <path
                                             fillRule="evenodd"
-                                            d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                                            d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
                                             clipRule="evenodd"
                                         ></path>
                                     </svg>
@@ -618,61 +619,57 @@ function Navbar() {
                             </div>
                         </div> */}
 
-                        <div className="flex items-center gap-3 px-3 py-1 mr-2 text-xs rounded-lg bg-gray-100 dark:bg-gray-700">
-                            <div className="flex items-center">
-                                <span className="mr-1 text-gray-500 dark:text-gray-400">
-                                    Ambiente:
-                                </span>
-                                <span
-                                    className={`font-medium ${
-                                        u?.companyIsProduction
-                                            ? "text-green-600 dark:text-green-400"
-                                            : "text-amber-600 dark:text-amber-400"
-                                    }`}
-                                >
-                                    {u?.companyIsProduction
-                                        ? "Producción"
-                                        : "Demo"}
-                                </span>
-                            </div>
-                            <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
-                            <div className="flex items-center">
-                                <span className="mr-1 text-gray-500 dark:text-gray-400">
-                                    Sucursal:
-                                </span>
-                                <span className="font-medium text-blue-600 dark:text-blue-400">
-                                    {u?.subsidiaryName && u?.subsidiarySerial
-                                        ? `${u?.subsidiaryName} (${u?.subsidiarySerial})`
-                                        : "Sin asignar"}
-                                </span>
-                            </div>
-                        </div>
+            <div className="flex items-center gap-3 px-3 py-1 mr-2 text-xs rounded-lg bg-gray-100 dark:bg-gray-700">
+              <div className="flex items-center">
+                <span className="mr-1 text-gray-500 dark:text-gray-400">
+                  Ambiente:
+                </span>
+                <span
+                  className={`font-medium ${
+                    u?.companyIsProduction
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-amber-600 dark:text-amber-400"
+                  }`}
+                >
+                  {u?.companyIsProduction ? "Producción" : "Demo"}
+                </span>
+              </div>
+              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+              <div className="flex items-center">
+                <span className="mr-1 text-gray-500 dark:text-gray-400">
+                  Sucursal:
+                </span>
+                <span className="font-medium text-blue-600 dark:text-blue-400">
+                  {u?.subsidiaryName && u?.subsidiarySerial
+                    ? `${u?.subsidiaryName} (${u?.subsidiarySerial})`
+                    : "Sin asignar"}
+                </span>
+              </div>
+            </div>
 
-                        <ThemeToggle />
+            <ThemeToggle />
 
-                        {/* <!-- Profile --> */}
-                        <div className="flex items-center ml-3">
-                            <div>
-                                <button
-                                    type="button"
-                                    className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                                    id="user-menu-button-2"
-                                    aria-expanded="false"
-                                    data-dropdown-toggle="dropdown-2"
-                                >
-                                    <span className="sr-only">
-                                        Open user menu
-                                    </span>
-                                    <img
-                                        className="w-8 h-8 rounded-full"
-                                        src={
-                                            u?.avatar != null && u?.avatar != ""
-                                                ? `${process.env.NEXT_PUBLIC_BASE_API}/media/users/${u?.avatar}`
-                                                : "/images/users/user-profile-avatar.png"
-                                        }
-                                        alt="user photo"
-                                    />
-                                    {/* {u?.avatarUrl?  
+            {/* <!-- Profile --> */}
+            <div className="flex items-center ml-3">
+              <div>
+                <button
+                  type="button"
+                  className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
+                  id="user-menu-button-2"
+                  aria-expanded="false"
+                  data-dropdown-toggle="dropdown-2"
+                >
+                  <span className="sr-only">Open user menu</span>
+                  <img
+                    className="w-8 h-8 rounded-full"
+                    src={
+                      u?.avatar != null && u?.avatar != ""
+                        ? `${process.env.NEXT_PUBLIC_BASE_API}/media/users/${u?.avatar}`
+                        : "/images/users/user-profile-avatar.png"
+                    }
+                    alt="user photo"
+                  />
+                  {/* {u?.avatarUrl?  
                                     <>
                                     <ImageCircle image={ u?.id&&(u?.avatarUrl as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${u?.avatarUrl}`:u?.avatarUrl as string}/>                   
                                     </>                                 
@@ -680,38 +677,36 @@ function Navbar() {
                                     <>
                                     <UserCircle/>                 
                                     </> */}
-                                </button>
-                            </div>
+                </button>
+              </div>
 
-                            <div
-                                suppressHydrationWarning
-                                className="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600"
-                                id="dropdown-2"
-                            >
-                                <div className="px-4 py-3" role="none">
-                                    <p
-                                        className="text-sm text-gray-900 dark:text-white"
-                                        role="none"
-                                    >
-                                        {u?.fullName}
-                                    </p>
-                                    <p
-                                        className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
-                                        role="none"
-                                    >
-                                        {u?.email}
-                                    </p>
-                                    <p
-                                        className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
-                                        role="none"
-                                    >
-                                        {u?.isSuperuser
-                                            ? "Superusuario"
-                                            : "Usuario"}
-                                    </p>
-                                </div>
-                                <ul className="py-1" role="none">
-                                    {/* <li>
+              <div
+                suppressHydrationWarning
+                className="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600"
+                id="dropdown-2"
+              >
+                <div className="px-4 py-3" role="none">
+                  <p
+                    className="text-sm text-gray-900 dark:text-white"
+                    role="none"
+                  >
+                    {u?.fullName}
+                  </p>
+                  <p
+                    className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
+                    role="none"
+                  >
+                    {u?.email}
+                  </p>
+                  <p
+                    className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
+                    role="none"
+                  >
+                    {u?.isSuperuser ? "Superusuario" : "Usuario"}
+                  </p>
+                </div>
+                <ul className="py-1" role="none">
+                  {/* <li>
                                         <a
                                             href="#"
                                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
@@ -738,23 +733,23 @@ function Navbar() {
                                             Earnings
                                         </a>
                                     </li> */}
-                                    <li>
-                                        <a
-                                            onClick={handleLogout}
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer"
-                                            role="menuitem"
-                                        >
-                                            Cerrar Sesión
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                  <li>
+                    <a
+                      onClick={handleLogout}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer"
+                      role="menuitem"
+                    >
+                      Cerrar Sesión
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
-        </nav>
-    );
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
 }
 
 export default Navbar;
