@@ -107,7 +107,7 @@ function SerialAssignedTable({
                                         <option value="40">
                                             Comprobante de Percepción
                                         </option>
-                                        <option value="89">Cotización</option>
+                                        <option value="48">Cotización</option>
                                         <option value="NE">
                                             Nota de entrada
                                         </option>
@@ -216,7 +216,7 @@ function SerialAssignedTable({
                                                         Comprobante de
                                                         Percepción
                                                     </option>
-                                                    <option value="89">
+                                                    <option value="48">
                                                         Cotización
                                                     </option>
                                                     <option value="NE">
@@ -257,7 +257,7 @@ function SerialAssignedTable({
                                                           "40"
                                                         ? "Comprobante de Percepción"
                                                         : o.documentType ===
-                                                          "89"
+                                                          "48"
                                                         ? "Cotización"
                                                         : o.documentType ===
                                                           "NE"
