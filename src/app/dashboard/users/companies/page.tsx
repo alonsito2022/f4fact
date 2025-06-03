@@ -49,7 +49,9 @@ const initialState = {
     comment: "",
     disableContinuePay: false,
     registerDate: "",
-    isRus: false
+    isRus: false,
+    isAgentRetention: false,
+    isAgentPerception: false
 };
 const COMPANIES_QUERY = gql`
     query Companies {
@@ -78,6 +80,8 @@ const COMPANIES_QUERY = gql`
             disabledDate
             registerDate
             isRus
+            isAgentRetention
+            isAgentPerception
         }
     }
 `;
@@ -122,6 +126,8 @@ const COMPANY_QUERY = gql`
             disableContinuePay
             registerDate
             isRus
+            isAgentRetention
+            isAgentPerception
         }
     }
 `;
@@ -183,6 +189,8 @@ function CompanyPage() {
                         disableContinuePay
                         registerDate
                         isRus
+                        isAgentRetention
+                        isAgentPerception
                     }
             }
         `;

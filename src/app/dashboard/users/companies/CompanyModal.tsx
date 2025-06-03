@@ -50,6 +50,8 @@ const CREATE_COMPANY = gql`
         $disableContinuePay: Boolean
         $registerDate: String!
         $isRus: Boolean!
+        $isAgentPerception: Boolean = false
+        $isAgentRetention: Boolean = false
     ) {
         createCompany(
             typeDoc: $typeDoc
@@ -87,6 +89,8 @@ const CREATE_COMPANY = gql`
             disableContinuePay: $disableContinuePay
             registerDate: $registerDate
             isRus: $isRus
+            isAgentPerception: $isAgentPerception
+            isAgentRetention: $isAgentRetention
         ) {
             success
             message
@@ -132,6 +136,8 @@ const UPDATE_COMPANY = gql`
         $disableContinuePay: Boolean!
         $registerDate: String!
         $isRus: Boolean!
+        $isAgentPerception: Boolean = false
+        $isAgentRetention: Boolean = false
     ) {
         updateCompany(
             id: $id
@@ -170,6 +176,8 @@ const UPDATE_COMPANY = gql`
             disableContinuePay: $disableContinuePay
             registerDate: $registerDate
             isRus: $isRus
+            isAgentPerception: $isAgentPerception
+            isAgentRetention: $isAgentRetention
         ) {
             success
             message
@@ -347,6 +355,13 @@ function CompanyModal({
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!companyData.email || !emailRegex.test(companyData.email)) {
             errors.push("Ingrese un correo electrónico válido");
+        }
+
+        if (!companyData.registerDate || companyData.registerDate.trim().length < 10) {
+            errors.push("La fecha de registro es requerida y debe tener al menos 10 caracteres");
+        }
+        if (!companyData.certificationExpirationDate || companyData.certificationExpirationDate.trim().length < 10) {
+            errors.push("La fecha de expiracion es requerida y debe tener al menos 10 caracteres");
         }
 
         // Validación de certificación si está en producción
@@ -633,6 +648,8 @@ function CompanyModal({
                 disableContinuePay: company.disableContinuePay || false,
                 registerDate: company.registerDate || "",
                 isRus: company.isRus || false,
+                isAgentPerception: company.isAgentPerception || false,
+                isAgentRetention: company.isAgentRetention || false
             };
 
             // Debug: Mostrar variables que se enviarán
@@ -1879,6 +1896,50 @@ function CompanyModal({
                                                         <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                                         <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
                                                             Empresa RUS
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="isAgentRetention"
+                                                            name="isAgentRetention"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company.isAgentRetention ||
+                                                                false
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Agente retención
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                                <div className="sm:col-span-1 relative z-0 w-full mb-2 group">
+                                                    <label className="inline-flex items-center mb-1 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            value=""
+                                                            id="isAgentPerception"
+                                                            name="isAgentPerception"
+                                                            className="sr-only peer"
+                                                            checked={
+                                                                company.isAgentPerception ||
+                                                                false
+                                                            }
+                                                            onChange={
+                                                                handleCheckboxChange
+                                                            }
+                                                        />
+                                                        <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                        <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                            Agente percepción
                                                         </span>
                                                     </label>
                                                 </div>

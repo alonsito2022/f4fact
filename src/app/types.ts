@@ -77,6 +77,8 @@ export interface ICompany {
     deductionAccount?: String;
     registerDate?: string;
     isRus?: boolean;
+    isAgentRetention?: boolean;
+    isAgentPerception?: boolean;
 }
 export interface IVehicle {
     id: number;

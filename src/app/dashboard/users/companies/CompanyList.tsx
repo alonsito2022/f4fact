@@ -49,6 +49,8 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
             disableContinuePay
             registerDate
             isRus
+            isAgentRetention
+            isAgentPerception
         }
     }
         `;
