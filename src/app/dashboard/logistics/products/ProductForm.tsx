@@ -349,6 +349,7 @@ function ProductForm({
                     minimumFactor: Number(product.minimumFactor),
                     stock: Number(product.stock),
                 };
+                console.log("values", values, auth?.jwtToken);
                 try {
                     const response = await createProduct({
                         variables: values,

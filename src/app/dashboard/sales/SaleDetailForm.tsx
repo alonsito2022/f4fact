@@ -19,7 +19,7 @@ import {
 const PRODUCT_DETAIL_QUERY = gql`
     query ($productId: Int!) {
         productDetailByProductId(productId: $productId) {
-            remainingQuantity
+            stock
             priceWithoutIgv3
             priceWithIgv3
             productTariffId3
@@ -147,9 +147,7 @@ function SaleDetailForm({
                             totalValue: Number(totalValue).toFixed(2),
                             totalIgv: Number(totalIgv).toFixed(2),
                             totalAmount: Number(totalAmount).toFixed(2),
-                            remainingQuantity: Number(
-                                productDetail.remainingQuantity
-                            ),
+                            stock: Number(productDetail.stock),
                             typeAffectationId: Number(
                                 productDetail.typeAffectationId
                             ),
@@ -578,20 +576,18 @@ function SaleDetailForm({
 
                                     <div className="sm:col-span-2">
                                         <label
-                                            htmlFor="remainingQuantity"
+                                            htmlFor="stock"
                                             className="form-label text-gray-900 dark:text-gray-200"
                                         >
                                             Stock actual disponible
                                         </label>
                                         <input
                                             type="number"
-                                            name="remainingQuantity"
+                                            name="stock"
                                             onWheel={(e) =>
                                                 e.currentTarget.blur()
                                             }
-                                            value={
-                                                invoiceDetail.remainingQuantity
-                                            }
+                                            value={invoiceDetail.stock}
                                             onChange={
                                                 handleInputChangeSaleDetail
                                             }

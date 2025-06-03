@@ -364,7 +364,7 @@ const initialStateSaleDetail = {
 
     typeAffectationId: 0,
     productTariffId: 0,
-    remainingQuantity: 0,
+    stock: 0,
 
     temporaryId: 0,
 };
@@ -400,6 +400,7 @@ const initialStateProduct = {
     minimumFactor: "1",
 
     onSaveSuccess(): void {},
+    stock: 0,
 };
 const initialStatePerson = {
     id: 0,

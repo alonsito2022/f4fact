@@ -124,7 +124,7 @@ const initialStateSaleDetail = {
 
     typeAffectationId: 0,
     productTariffId: 0,
-    remainingQuantity: 0,
+    stock: 0,
 
     temporaryId: 0,
 };
@@ -155,6 +155,7 @@ const initialStateProduct = {
     maximumUnitId: 0,
     maximumFactor: "1",
     minimumFactor: "1",
+    stock: 0,
 };
 const initialStateCashFlow = {
     wayPay: 1,
@@ -241,7 +242,6 @@ const SALE_QUERY_BY_ID = gql`
                 totalToPay
                 typeAffectationId
                 productTariffId
-                remainingQuantity
                 quantityReturned
                 quantityAvailable
             }

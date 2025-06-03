@@ -109,7 +109,7 @@ const initialStatePurchaseDetail = {
 
     typeAffectationId: 0,
     productTariffId: 0,
-    remainingQuantity: 0,
+    stock: 0,
 
     temporaryId: 0,
 };
@@ -167,6 +167,8 @@ const initialStateProduct = {
     minimumFactor: "1",
 
     onSaveSuccess(): void {},
+
+    stock: 0,
 };
 
 const initialStateProductFilterObj = {
@@ -254,7 +256,41 @@ const WAY_PAY_QUERY = gql`
         }
     }
 `;
+const PERCEPTION_TYPE_QUERY = gql`
+    query {
+        allPerceptionTypes {
+            code
+            name
+        }
+    }
+`;
 
+const RETENTION_TYPE_QUERY = gql`
+    query {
+        allRetentionTypes {
+            code
+            name
+        }
+    }
+`;
+
+const DETRACTION_TYPE_QUERY = gql`
+    query {
+        allDetractionTypes {
+            code
+            name
+        }
+    }
+`;
+
+const DETRACTION_PAYMENT_METHOD_QUERY = gql`
+    query {
+        allDetractionPaymentMethods {
+            code
+            name
+        }
+    }
+`;
 const SEARCH_CLIENT_BY_PARAMETER = gql`
     query searchClientByParameter($search: String!, $isSupplier: Boolean!) {
         searchClientByParameter(search: $search, isSupplier: $isSupplier) {
@@ -1766,9 +1802,11 @@ function NewPurchasePage() {
             <SupplierForm
                 modalAddPerson={modalAddPerson}
                 setModalAddPerson={setModalAddPerson}
+                setSupplierSearch={setSupplierSearch}
                 person={person}
                 setPerson={setPerson}
                 jwtToken={auth?.jwtToken}
+                authContext={authContext}
                 SUPPLIERS_QUERY={SUPPLIERS_QUERY}
                 purchase={purchase}
                 setPurchase={setPurchase}
@@ -1778,11 +1816,12 @@ function NewPurchasePage() {
                 setModalProduct={setModalProduct}
                 product={product}
                 setProduct={setProduct}
-                jwtToken={auth?.jwtToken}
                 initialStateProduct={initialStateProduct}
+                auth={auth}
+                authContext={authContext}
                 typeAffectationsData={typeAffectationsData}
                 PRODUCTS_QUERY={PRODUCTS_QUERY}
-                productFilterObj={productFilterObj}
+                getVariables={getVariables}
             />
             <PurchaseDetailForm
                 modalAddDetail={modalAddDetail}
@@ -1793,7 +1832,7 @@ function NewPurchasePage() {
                 setPurchaseDetail={setPurchaseDetail}
                 purchase={purchase}
                 setPurchase={setPurchase}
-                jwtToken={auth?.jwtToken}
+                auth={auth}
                 initialStateProduct={initialStateProduct}
                 initialStatePurchaseDetail={initialStatePurchaseDetail}
                 typeAffectationsData={typeAffectationsData}

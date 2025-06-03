@@ -256,7 +256,7 @@ const initialStateSaleDetail = {
 
     typeAffectationId: 0,
     productTariffId: 0,
-    remainingQuantity: 0,
+    stock: 0,
 
     temporaryId: 0,
 };
@@ -312,6 +312,8 @@ const initialStateProduct = {
     minimumFactor: "1",
 
     onSaveSuccess(): void {},
+
+    stock: 0,
 };
 const initialStateProductFilterObj = {
     criteria: "name",
@@ -332,7 +334,6 @@ const initialStateCashFlow = {
     transactionDate: today,
 };
 function NewSalePage() {
-
     const params = useParams();
     const { invoiceType } = params;
 
@@ -384,9 +385,9 @@ function NewSalePage() {
 
     useEffect(() => {
         // Si no hay parámetro, establecer FACTURA por defecto (01)
-        setSale(prevSale => ({
+        setSale((prevSale) => ({
             ...prevSale,
-            documentType: invoiceType ? invoiceType as string : "01"
+            documentType: invoiceType ? (invoiceType as string) : "01",
         }));
 
         // Opcional: Mostrar mensaje informativo
@@ -927,14 +928,14 @@ function NewSalePage() {
                             <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
                                 <div className="mb-1 w-full">
                                     <div className="flex items-center gap-4">
-                                    <h1 className="text-2xl font-medium text-black-0 sm:text-2xl dark:text-white">
+                                        <h1 className="text-2xl font-medium text-black-0 sm:text-2xl dark:text-white">
                                             Nuevo Comprobante
                                         </h1>
                                         <h2 className="text-4xl font-semibold text-gray-500 dark:text-white">
-                                            {sale.documentType === "01" 
-                                                ? "FACTURA ELECTRÓNICA" 
-                                                : sale.documentType === "03" 
-                                                ? "BOLETA DE VENTA ELECTRÓNICA" 
+                                            {sale.documentType === "01"
+                                                ? "FACTURA ELECTRÓNICA"
+                                                : sale.documentType === "03"
+                                                ? "BOLETA DE VENTA ELECTRÓNICA"
                                                 : ""}
                                         </h2>
                                     </div>

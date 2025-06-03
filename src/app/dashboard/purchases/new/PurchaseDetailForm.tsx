@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState, useEffect } from "react";
+import { ChangeEvent, FormEvent, useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import Save from "@/components/icons/Save";
 import { Modal, ModalOptions } from "flowbite";
@@ -8,12 +8,12 @@ import {
     IProduct,
     ITypeAffectation,
 } from "@/app/types";
-import { gql, useLazyQuery, useMutation } from "@apollo/client";
+import { DocumentNode, gql, useLazyQuery, useMutation } from "@apollo/client";
 
 const PRODUCT_DETAIL_QUERY = gql`
     query ($productId: Int!) {
         productDetailByProductId(productId: $productId) {
-            remainingQuantity
+            stock
             priceWithoutIgv1
             priceWithIgv1
             productTariffId1
@@ -48,7 +48,6 @@ function PurchaseDetailForm({
     setPurchaseDetail,
     purchase,
     setPurchase,
-    jwtToken,
     initialStateProduct,
     initialStatePurchaseDetail,
     typeAffectationsData,
@@ -58,17 +57,22 @@ function PurchaseDetailForm({
     const getAuthContext = () => ({
         headers: {
             "Content-Type": "application/json",
-            Authorization: jwtToken ? `JWT ${jwtToken}` : "",
+            Authorization: auth?.jwtToken ? `JWT ${auth?.jwtToken}` : "",
         },
     });
+    function useCustomMutation(mutation: DocumentNode) {
+        return useMutation(mutation, {
+            context: getAuthContext(),
+            onError: (err) => console.error("Error of sent:", err), // Log the error for debugging
+        });
+    }
 
+    const [updateProductTariff] = useCustomMutation(
+        UPDATE_PRODUCT_TARIFF_MUTATION
+    );
     const [productDetailQuery] = useLazyQuery(PRODUCT_DETAIL_QUERY);
-    const [updateProductTariff] = useMutation(UPDATE_PRODUCT_TARIFF_MUTATION);
 
-    // useEffect(() => {
-    //     if(Number(purchaseDetail.productId)>0)
-    //     console.log(" useEffect purchaseDetail", purchaseDetail)
-    // }, [purchaseDetail.productId]);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         if (modalAddDetail == null) {
@@ -82,21 +86,17 @@ function PurchaseDetailForm({
             };
             setModalAddDetail(new Modal($targetEl, options));
         }
-    }, []);
+    }, [modalAddDetail, setModalAddDetail]);
 
     useEffect(() => {
-        if (Number(product.id) > 0) {
+        if (Number(product.id) > 0 && Number(purchaseDetail.id) === 0) {
             productDetailQuery({
                 context: getAuthContext(),
                 variables: { productId: Number(product.id) },
-                fetchPolicy: "network-only",
+                fetchPolicy: "network-only", // Siempre hace una nueva consulta ignorando el caché
                 onCompleted: (data) => {
                     const productDetail = data.productDetailByProductId;
                     if (productDetail) {
-                        let totalValue =
-                            Number(productDetail.priceWithoutIgv1) *
-                                Number(purchaseDetail.quantity) -
-                            Number(purchaseDetail.totalDiscount);
                         let foundTypeAffectation =
                             typeAffectationsData?.allTypeAffectations?.find(
                                 (ta: ITypeAffectation) =>
@@ -109,6 +109,14 @@ function PurchaseDetailForm({
                                 : "10";
                         let igvPercentage =
                             code === "10" ? Number(purchase.igvType) : 0;
+                        const calculatedPriceWithoutIgv =
+                            productDetail.priceWithIgv1 /
+                            (1 + igvPercentage * 0.01);
+                        let totalValue =
+                            calculatedPriceWithoutIgv *
+                                Number(purchaseDetail.quantity) -
+                            Number(purchaseDetail.totalDiscount);
+
                         let totalIgv = totalValue * igvPercentage * 0.01;
                         let totalAmount = totalValue + totalIgv;
                         setPurchaseDetail({
@@ -119,7 +127,7 @@ function PurchaseDetailForm({
                             productId: Number(product.id),
                             productName: product.name,
                             unitValue: Number(
-                                productDetail.priceWithoutIgv1
+                                calculatedPriceWithoutIgv
                             ).toFixed(2),
                             unitPrice: Number(
                                 productDetail.priceWithIgv1
@@ -128,9 +136,7 @@ function PurchaseDetailForm({
                             totalValue: Number(totalValue).toFixed(2),
                             totalIgv: Number(totalIgv).toFixed(2),
                             totalAmount: Number(totalAmount).toFixed(2),
-                            remainingQuantity: Number(
-                                productDetail.remainingQuantity
-                            ),
+                            stock: Number(productDetail.stock),
                             typeAffectationId: Number(
                                 productDetail.typeAffectationId
                             ),
@@ -147,7 +153,7 @@ function PurchaseDetailForm({
                 },
             });
         }
-    }, [product.id]);
+    }, [purchaseDetail.id, product.id]);
 
     // Add this new helper function
     const calculateBasedOnIgv = (
@@ -171,7 +177,7 @@ function PurchaseDetailForm({
 
     // Validation helpers
     const validateQuantity = (value: string): boolean => {
-        if (Number(value) > Number(purchaseDetail?.remainingQuantity)) {
+        if (Number(value) > Number(purchaseDetail?.stock)) {
             toast.warning(
                 "La cantidad no puede ser mayor al stock disponible."
             );
@@ -189,6 +195,31 @@ function PurchaseDetailForm({
         return formatted;
     };
 
+    const handleProductNameChange = (input: HTMLInputElement) => {
+        const dataList = input.list;
+        if (!dataList) {
+            console.log("sin datalist");
+            return;
+        }
+
+        const option = Array.from(dataList.options).find(
+            (option) => option.value === input.value
+        );
+        console.log("option", option);
+
+        if (option) {
+            const selectedId = option.getAttribute("data-key");
+            const selectedValue = option.getAttribute("value");
+            setProduct({
+                ...product,
+                id: Number(selectedId),
+                name: selectedValue,
+            });
+        } else {
+            setProduct({ ...product, id: 0, name: "" });
+        }
+    };
+
     const handleInputChangePurchaseDetail = async (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
@@ -201,23 +232,7 @@ function PurchaseDetailForm({
             name === "productName" &&
             event.target instanceof HTMLInputElement
         ) {
-            const dataList = event.target.list;
-            if (dataList) {
-                const option = Array.from(dataList.options).find(
-                    (option) => option.value === value
-                );
-                if (option) {
-                    const selectedId = option.getAttribute("data-key");
-                    const selectedValue = option.getAttribute("value");
-                    setProduct({
-                        ...product,
-                        id: Number(selectedId),
-                        name: selectedValue,
-                    });
-                } else {
-                    setProduct({ ...product, id: 0, name: "" });
-                }
-            }
+            handleProductNameChange(event.target);
             return;
         }
 
@@ -244,6 +259,11 @@ function PurchaseDetailForm({
                 igvPercentage,
                 includeIgv
             );
+
+            if (Number(value) < 0) {
+                toast.warning("La cantidad no puede ser negativa.");
+                return false;
+            }
 
             setPurchaseDetail({
                 ...purchaseDetail,
@@ -480,6 +500,7 @@ function PurchaseDetailForm({
                                 {purchaseDetail.temporaryId}
                             </h3>
                             <button
+                                ref={closeButtonRef}
                                 type="button"
                                 onClick={handleCloseModal}
                                 className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
@@ -543,25 +564,24 @@ function PurchaseDetailForm({
 
                                     <div className="sm:col-span-2">
                                         <label
-                                            htmlFor="remainingQuantity"
+                                            htmlFor="stock"
                                             className="form-label"
                                         >
                                             Stock actual disponible
                                         </label>
                                         <input
                                             type="number"
-                                            name="remainingQuantity"
+                                            name="stock"
                                             onWheel={(e) =>
                                                 e.currentTarget.blur()
                                             }
-                                            value={
-                                                purchaseDetail.remainingQuantity
-                                            }
+                                            value={purchaseDetail.stock}
                                             onChange={
                                                 handleInputChangePurchaseDetail
                                             }
                                             onFocus={(e) => e.target.select()}
                                             className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
+                                            disabled
                                         />
                                     </div>
 

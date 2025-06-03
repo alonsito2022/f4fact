@@ -110,7 +110,6 @@ const QUOTE_QUERY_BY_ID = gql`
                 totalToPay
                 typeAffectationId
                 productTariffId
-                remainingQuantity
                 quantityReturned
                 quantityAvailable
                 description
@@ -393,7 +392,7 @@ const initialStateSaleDetail = {
 
     typeAffectationId: 0,
     productTariffId: 0,
-    remainingQuantity: 0,
+    stock: 0,
 
     temporaryId: 0,
 };
@@ -449,6 +448,7 @@ const initialStateProduct = {
     minimumFactor: "1",
 
     onSaveSuccess(): void {},
+    stock: 0,
 };
 function EditQuotePage() {
     const [isProcessing, setIsProcessing] = useState(false);
