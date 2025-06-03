@@ -10,11 +10,13 @@ import { initFlowbite, Modal } from "flowbite";
 import { useSidebar } from "@/components/context/SidebarContext";
 import InvoiceTypeModal from "@/app/dashboard/sales/new/InvoiceTypeModal";
 import { useInvoiceTypeModal } from "@/components/context/InvoiceTypeModalContext";
+import { useAuth } from "./providers/AuthProvider";
 
 function Sidebar() {
   const { showModal } = useInvoiceTypeModal();
-  const { data: session } = useSession();
-  const u = session?.user as IUser;
+  const auth = useAuth();
+  // const { data: session } = useSession();
+  // const u = session?.user as IUser;
   const { isSidebarOpen, toggleSidebar } = useSidebar();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
@@ -42,11 +44,17 @@ function Sidebar() {
   };
 
   useEffect(() => {
-    console.log(u);
-    if (u !== undefined) {
-      initFlowbite();
+    if (auth?.status === "authenticated" && auth?.jwtToken) {
+      console.log(auth);
     }
-  }, [u]);
+  }, [auth?.status, auth?.jwtToken]);
+
+  // useEffect(() => {
+  //   console.log(u);
+  //   if (u !== undefined) {
+  //     initFlowbite();
+  //   }
+  // }, [u]);
 
   return (
     <>
@@ -60,10 +68,10 @@ function Sidebar() {
           {/* Header info */}
           <div className="p-4 pb-0 border-gray-200 dark:border-gray-700">
             <div className="text-sm border-b pb-1 font-medium text-gray-800 dark:text-gray-100">
-              Empresa: {u?.companyName}
+              {auth?.user?.companyName}
             </div>
             <div className="text-sm pt-1 text-gray-600 dark:text-gray-400">
-              {u?.email}
+              {auth?.user?.email}
             </div>
           </div>
 
