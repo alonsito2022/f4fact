@@ -47,7 +47,7 @@ function Sidebar() {
         <>
             <aside
                 id="sidebar"
-                className={`fixed top-0 left-0 w-64 bg-gray-100 dark:bg-gray-800 transition-all duration-300 ease-in-out transform h-screen font-encodeSansCondensed border-r border-gray-200 dark:border-gray-700 ${
+                className={`fixed top-0 left-0 w-64 bg-gray-100 dark:bg-gray-800 transition-all duration-300 ease-in-out transform h-screen border-r border-gray-200 dark:border-gray-700 ${
                     isSidebarOpen ? "translate-x-0" : "-translate-x-full"
                 } z-50`}
             >

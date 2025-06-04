@@ -10,7 +10,7 @@ export default function MainContent({
     const { isSidebarOpen, toggleSidebar } = useSidebar();
 
     return (
-        <div className="relative w-full h-full overflow-y-auto bg-gray-50 dark:bg-gray-900 font-encodeSansCondensed">
+        <div className="relative w-full h-full overflow-y-auto bg-gray-50 dark:bg-gray-900">
             {/* Fondo translúcido cuando el Sidebar está abierto */}
             {isSidebarOpen && (
                 <div
