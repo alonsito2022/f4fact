@@ -286,9 +286,18 @@ function NewGuidePage() {
 
     const saveGuide = useCallback(async () => {
         if (isSaving) return; // Prevent multiple submissions
-        console.log("operationdetailSet", guide.operationdetailSet);
         try {
             setIsSaving(true);
+
+            const today = new Date().toISOString().split("T")[0];
+            if (guide.emitDate !== today) {
+                toast("La fecha de emisión debe ser la fecha actual.", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "error",
+                });
+                return false;
+            }
 
             const invalidRelatedDocs = guide.relatedDocuments.filter(
                 (doc: IRelatedDocument) => {
@@ -698,6 +707,94 @@ function NewGuidePage() {
                 return false;
             }
 
+            if (guide.guideModeTransfer === "02") {
+                // Validar placa del vehículo principal
+                const mainVehicleLicensePlate =
+                    guide.mainVehicleLicensePlate || "";
+                if (
+                    !/^\S+(-\S+)?$/.test(mainVehicleLicensePlate) ||
+                    mainVehicleLicensePlate.length < 6 ||
+                    mainVehicleLicensePlate.length > 7
+                ) {
+                    toast(
+                        "La placa del vehículo principal debe tener entre 6 y 7 caracteres, no debe tener espacios y solo puede contener un guion.",
+                        {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                        }
+                    );
+                    return false;
+                }
+
+                // Validar placas de otros vehículos
+                const invalidOtherVehicles = guide.othersVehicles.filter(
+                    (item) => {
+                        const licensePlate = item.licensePlate || "";
+                        return (
+                            !/^\S+(-\S+)?$/.test(licensePlate) ||
+                            licensePlate.length < 6 ||
+                            licensePlate.length > 7
+                        );
+                    }
+                );
+
+                if (invalidOtherVehicles.length > 0) {
+                    toast(
+                        "Las placas de los vehículos deben tener entre 6 y 7 caracteres, no deben tener espacios y solo pueden contener un guion.",
+                        {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        }
+                    );
+                    return false;
+                }
+
+                // Validar licencia del conductor principal
+                const mainDriverDriverLicense =
+                    guide.mainDriverDriverLicense || "";
+                if (
+                    !/^\S+(-\S+)?$/.test(mainDriverDriverLicense) ||
+                    mainDriverDriverLicense.length < 8 ||
+                    mainDriverDriverLicense.length > 12
+                ) {
+                    toast(
+                        "La licencia del conductor principal debe tener entre 8 y 12 caracteres, no debe tener espacios y solo puede contener un guion.",
+                        {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                        }
+                    );
+                    return false;
+                }
+
+                // Validar licencias de otros conductores
+                const invalidOtherDrivers = guide.othersDrivers.filter(
+                    (item) => {
+                        const driverLicense = item.driverLicense || "";
+                        return (
+                            !/^\S+(-\S+)?$/.test(driverLicense) ||
+                            driverLicense.length < 8 ||
+                            driverLicense.length > 12
+                        );
+                    }
+                );
+
+                if (invalidOtherDrivers.length > 0) {
+                    toast(
+                        "Las licencias de los conductores deben tener entre 8 y 12 caracteres, no deben tener espacios y solo pueden contener un guion.",
+                        {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        }
+                    );
+                    return false;
+                }
+            }
+
             const variables = {
                 clientId: Number(guide.clientId),
                 documentType: guide.documentType,
@@ -746,13 +843,17 @@ function NewGuidePage() {
                 transportationCompanyNames: guide.transportationCompanyNames,
                 transportationCompanyMtcRegistrationNumber:
                     guide.transportationCompanyMtcRegistrationNumber,
-                mainVehicleLicensePlate: guide.mainVehicleLicensePlate,
+                mainVehicleLicensePlate: String(
+                    guide.mainVehicleLicensePlate
+                ).toUpperCase(),
                 othersVehiclesLicensePlateSet: guide.othersVehicles.map(
-                    (item: any) => item.licensePlate || ""
+                    (item: any) => String(item.licensePlate).toUpperCase() || ""
                 ),
                 mainDriverDocumentType: guide.mainDriverDocumentType,
                 mainDriverDocumentNumber: guide.mainDriverDocumentNumber,
-                mainDriverDriverLicense: guide.mainDriverDriverLicense,
+                mainDriverDriverLicense: String(
+                    guide.mainDriverDriverLicense
+                ).toUpperCase(),
                 mainDriverNames: guide.mainDriverNames,
                 othersDriversDocumentTypeSet: guide.othersDrivers.map(
                     (item: any) => item.documentType || ""
@@ -761,7 +862,8 @@ function NewGuidePage() {
                     (item: any) => item.documentNumber || ""
                 ),
                 othersDriversDriverLicenseSet: guide.othersDrivers.map(
-                    (item: any) => item.driverLicense || ""
+                    (item: any) =>
+                        String(item.driverLicense).toUpperCase() || ""
                 ),
                 othersDriversNamesSet: guide.othersDrivers.map(
                     (item: any) => item.names || ""

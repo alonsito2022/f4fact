@@ -6,6 +6,7 @@ import {
 } from "@/app/types";
 import { gql, useLazyQuery, useQuery } from "@apollo/client";
 import React, { ChangeEvent, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 const SEARCH_CLIENT_BY_PARAMETER = gql`
     query SearchClient(
@@ -132,17 +133,43 @@ function GuideHeader({
             }
         }
     }, [serialsAssignedData, guide.documentType]);
-    const handleClientSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-        console.log("handleClientSearchChange value", event.target.value);
-        setClientSearch(event.target.value);
+    const toastId = "itinerantTransferToast";
+    const validateClientSelection = (clientIdentifier: string) => {
+        if (guide.guideReasonTransfer !== "18") {
+            const companyDoc = auth?.user?.companyDoc; // 20611894067
+            if (clientIdentifier.includes(companyDoc)) {
+                if (!toast.isActive(toastId)) {
+                    toast(
+                        "Cuando es motivo es TRASLADO EMISOR ITINERANTE CP. El cliente debe ser otro diferente al RUC del emisor. " +
+                            companyDoc,
+                        {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                            toastId: toastId,
+                        }
+                    );
+                }
+                return false;
+            }
+        }
+        return true;
     };
+
+    const handleClientSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const clientSearchValue = event.target.value;
+        if (!validateClientSelection(clientSearchValue)) return;
+        setClientSearch(clientSearchValue);
+    };
+
     const handleClientSelect = (event: ChangeEvent<HTMLInputElement>) => {
         const selectedOption = event.target.value;
-        console.log("handleClientSelect selectedOption", selectedOption);
         const selectedData = searchClientData?.searchClientByParameter?.find(
             (person: IPerson) =>
                 `${person.documentNumber} ${person.names}` === selectedOption
         );
+
+        if (!validateClientSelection(selectedOption)) return;
 
         if (selectedData) {
             setGuide({
@@ -185,7 +212,6 @@ function GuideHeader({
             if (guide?.documentType === "31") {
                 queryVariables.documentType = "6";
             }
-            console.log(queryVariables);
 
             searchClientQuery({
                 variables: queryVariables,
@@ -421,6 +447,7 @@ function GuideHeader({
                             onFocus={(e) => e.target.select()}
                             className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                             required
+                            disabled
                         />
                     </div>
                 </div>

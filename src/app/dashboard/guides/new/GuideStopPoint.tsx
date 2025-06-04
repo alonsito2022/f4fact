@@ -158,21 +158,23 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                         />
                     </div>
                     {/* Código establecimiento Sunat */}
-                    <div className="md:col-span-1">
-                        <label className="text-sm text-gray-700 dark:text-gray-200">
-                            Código establecimiento Sunat
-                        </label>
-                        <input
-                            type="text"
-                            name="guideOriginSerial"
-                            maxLength={4}
-                            onFocus={(e) => e.target.select()}
-                            value={guide.guideOriginSerial}
-                            onChange={handleGuide}
-                            autoComplete="off"
-                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        />
-                    </div>
+                    {guide.guideReasonTransfer === "04" && (
+                        <div className="md:col-span-1">
+                            <label className="text-sm text-gray-700 dark:text-gray-200">
+                                Código establecimiento Sunat
+                            </label>
+                            <input
+                                type="text"
+                                name="guideOriginSerial"
+                                maxLength={4}
+                                onFocus={(e) => e.target.select()}
+                                value={guide.guideOriginSerial}
+                                onChange={handleGuide}
+                                autoComplete="off"
+                                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+                    )}
                 </div>
             </fieldset>
             {/* PUNTO DE LLEGADA */}
@@ -227,21 +229,23 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                         />
                     </div>
                     {/* Código establecimiento Sunat */}
-                    <div className="md:col-span-1">
-                        <label className="text-sm text-gray-700 dark:text-gray-200">
-                            Código establecimiento Sunat
-                        </label>
-                        <input
-                            type="text"
-                            name="guideArrivalSerial"
-                            maxLength={4}
-                            onFocus={(e) => e.target.select()}
-                            value={guide.guideArrivalSerial}
-                            onChange={handleGuide}
-                            autoComplete="off"
-                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        />
-                    </div>
+                    {guide.guideReasonTransfer === "04" && (
+                        <div className="md:col-span-1">
+                            <label className="text-sm text-gray-700 dark:text-gray-200">
+                                Código establecimiento Sunat
+                            </label>
+                            <input
+                                type="text"
+                                name="guideArrivalSerial"
+                                maxLength={4}
+                                onFocus={(e) => e.target.select()}
+                                value={guide.guideArrivalSerial}
+                                onChange={handleGuide}
+                                autoComplete="off"
+                                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+                    )}
                 </div>
             </fieldset>
         </>

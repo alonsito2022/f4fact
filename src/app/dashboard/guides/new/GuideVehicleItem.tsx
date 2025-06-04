@@ -37,7 +37,7 @@ const GuideVehicleItem: React.FC<GuideVehicleItemProps> = ({
                 <input
                     type="text"
                     name="licensePlate"
-                    maxLength={10}
+                    maxLength={7}
                     onFocus={(e) => e.target.select()}
                     value={item.licensePlate}
                     onChange={handleChange}

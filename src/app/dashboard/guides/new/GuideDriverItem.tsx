@@ -174,7 +174,7 @@ const GuideDriverItem: React.FC<GuideDriverItemProps> = ({
                 <input
                     type="text"
                     name="driverLicense"
-                    maxLength={25}
+                    maxLength={12}
                     value={item.driverLicense}
                     onChange={handleChange}
                     onFocus={(e) => e.target.select()}

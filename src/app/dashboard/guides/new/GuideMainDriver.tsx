@@ -490,7 +490,7 @@ function GuideMainDriver({
                                             type="text"
                                             name="mainDriverDriverLicense"
                                             id="mainDriverDriverLicense"
-                                            maxLength={200}
+                                            maxLength={12}
                                             value={
                                                 guide.mainDriverDriverLicense
                                             }

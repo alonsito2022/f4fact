@@ -235,7 +235,7 @@ function GuideTransportation({
                                                 <input
                                                     type="text"
                                                     name="mainVehicleLicensePlate"
-                                                    maxLength={10}
+                                                    maxLength={7}
                                                     onFocus={(e) =>
                                                         e.target.select()
                                                     }
