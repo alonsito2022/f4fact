@@ -210,6 +210,7 @@ function QuoteList({
                             )}
                             {[
                                 "Fecha Emisión",
+                                "Serie",
                                 "Num.",
                                 "RUC / DNI / ETC",
                                 "DENOMINACIÓN",
@@ -253,7 +254,12 @@ function QuoteList({
                                     <td className="p-2 text-nowrap">
                                         {item.emitDate}
                                     </td>
-                                    <td className="p-2">{item.correlative}</td>
+                                    <td className="p-0.5 text-center">
+                                        {item.serial}
+                                    </td>
+                                    <td className="p-0.5 tex-left">
+                                        {item.correlative}
+                                    </td>
                                     <td className="p-2">
                                         {item.client?.documentNumber}
                                     </td>

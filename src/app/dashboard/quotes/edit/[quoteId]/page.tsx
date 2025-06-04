@@ -219,6 +219,16 @@ const UPDATE_QUOTE_MUTATION = gql`
         }
     }
 `;
+const SERIALS_QUERY = gql`
+    query ($subsidiaryId: Int) {
+        allSerials(subsidiaryId: $subsidiaryId) {
+            documentType
+            documentTypeReadable
+            serial
+            isGeneratedViaApi
+        }
+    }
+`;
 const SEARCH_CLIENT_BY_PARAMETER = gql`
     query SearchClient(
         $search: String!
@@ -466,7 +476,7 @@ function EditQuotePage() {
     const [modalProduct, setModalProduct] = useState<Modal | any>(null);
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
     const [modalAddClient, setModalAddClient] = useState<Modal | any>(null);
-
+    const [clientSearch, setClientSearch] = useState("");
     const params = useParams();
     const { quoteId } = params;
     const clientInputRef = useRef<HTMLInputElement>(null);
@@ -481,6 +491,18 @@ function EditQuotePage() {
         }),
         [auth?.jwtToken]
     );
+    const {
+        loading: serialsAssignedLoading,
+        error: serialsAssignedError,
+        data: serialsAssignedData,
+    } = useQuery(SERIALS_QUERY, {
+        context: authContext,
+        fetchPolicy: "network-only",
+        variables: {
+            subsidiaryId: Number(auth?.user?.subsidiaryId),
+        },
+        skip: !auth?.jwtToken,
+    });
     const {
         loading: operationTypesLoading,
         error: operationTypesError,
@@ -552,7 +574,6 @@ function EditQuotePage() {
         context: authContext,
         fetchPolicy: "network-only",
         onCompleted: (data) => {
-            console.log(auth?.jwtToken);
             const dataQuote = data.getSaleById;
             const decimalIgv = Number(dataQuote?.igvPercentage) / 100;
             const formattedOperationdetailSet =
@@ -603,6 +624,8 @@ function EditQuotePage() {
             setQuote((prevSale) => ({
                 ...prevSale,
                 id: Number(dataQuote?.id),
+                serial: dataQuote?.serial,
+                correlative: dataQuote?.correlative,
                 igvType: Number(
                     dataQuote?.igvType?.toString().replace("A_", "")
                 ),
@@ -644,6 +667,27 @@ function EditQuotePage() {
             setIsLoading(false);
         },
     });
+    useEffect(() => {
+        if (serialsAssignedData?.allSerials?.length > 0) {
+            const filteredSeries = serialsAssignedData.allSerials.filter(
+                (s: ISerialAssigned) =>
+                    s.documentType === `A_${quote.documentType}` &&
+                    !s.isGeneratedViaApi
+            );
+
+            if (filteredSeries.length > 0) {
+                setQuote((prev) => ({
+                    ...prev,
+                    serial: filteredSeries[0].serial,
+                }));
+            } else {
+                setQuote((prev) => ({
+                    ...prev,
+                    serial: "",
+                }));
+            }
+        }
+    }, [serialsAssignedData, quote.documentType]);
     const handleSale = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
@@ -863,6 +907,9 @@ function EditQuotePage() {
                                                         operationTypesData={
                                                             operationTypesData
                                                         }
+                                                        serialsAssignedData={
+                                                            serialsAssignedData
+                                                        }
                                                     />
                                                     <QuoteClient
                                                         sale={quote}
@@ -885,6 +932,12 @@ function EditQuotePage() {
                                                         }
                                                         initialClientData={
                                                             initialClientData
+                                                        }
+                                                        clientSearch={
+                                                            clientSearch
+                                                        }
+                                                        setClientSearch={
+                                                            setClientSearch
                                                         }
                                                     />
                                                 </div>
@@ -1029,6 +1082,8 @@ function EditQuotePage() {
                     <ClientForm
                         modalAddClient={modalAddClient}
                         setModalAddClient={setModalAddClient}
+                        setClientSearch={setClientSearch}
+                        clientSearch={clientSearch}
                         person={person}
                         setPerson={setPerson}
                         jwtToken={auth?.jwtToken}

@@ -49,7 +49,16 @@ const today =
     String(limaDate.getMonth() + 1).padStart(2, "0") +
     "-" +
     String(limaDate.getDate()).padStart(2, "0");
-
+const SERIALS_QUERY = gql`
+    query ($subsidiaryId: Int) {
+        allSerials(subsidiaryId: $subsidiaryId) {
+            documentType
+            documentTypeReadable
+            serial
+            isGeneratedViaApi
+        }
+    }
+`;
 const SEARCH_CLIENT_BY_PARAMETER = gql`
     query SearchClient(
         $search: String!
@@ -450,7 +459,19 @@ function NewQuotePage() {
         subsidiaryId: Number(auth?.user?.subsidiaryId),
         available: true,
     });
-
+    const [clientSearch, setClientSearch] = useState("");
+    const {
+        loading: serialsAssignedLoading,
+        error: serialsAssignedError,
+        data: serialsAssignedData,
+    } = useQuery(SERIALS_QUERY, {
+        context: authContext,
+        fetchPolicy: "network-only",
+        variables: {
+            subsidiaryId: Number(auth?.user?.subsidiaryId),
+        },
+        skip: !auth?.jwtToken,
+    });
     const {
         loading: productsLoading,
         error: productsError,
@@ -511,7 +532,27 @@ function NewQuotePage() {
         context: authContext,
         skip: !auth?.jwtToken,
     });
+    useEffect(() => {
+        if (serialsAssignedData?.allSerials?.length > 0) {
+            const filteredSeries = serialsAssignedData.allSerials.filter(
+                (s: ISerialAssigned) =>
+                    s.documentType === `A_${sale.documentType}` &&
+                    !s.isGeneratedViaApi
+            );
 
+            if (filteredSeries.length > 0) {
+                setSale((prev) => ({
+                    ...prev,
+                    serial: filteredSeries[0].serial,
+                }));
+            } else {
+                setSale((prev) => ({
+                    ...prev,
+                    serial: "",
+                }));
+            }
+        }
+    }, [serialsAssignedData, sale.documentType]);
     const handleSale = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
@@ -730,6 +771,9 @@ function NewQuotePage() {
                                         sale={sale}
                                         handleSale={handleSale}
                                         operationTypesData={operationTypesData}
+                                        serialsAssignedData={
+                                            serialsAssignedData
+                                        }
                                     />
                                     <QuoteClient
                                         sale={sale}
@@ -742,6 +786,8 @@ function NewQuotePage() {
                                         SEARCH_CLIENT_BY_PARAMETER={
                                             SEARCH_CLIENT_BY_PARAMETER
                                         }
+                                        setClientSearch={setClientSearch}
+                                        clientSearch={clientSearch}
                                     />
                                 </div>
                                 {/* Búsqueda de Productos */}
@@ -860,6 +906,8 @@ function NewQuotePage() {
             <ClientForm
                 modalAddClient={modalAddClient}
                 setModalAddClient={setModalAddClient}
+                setClientSearch={setClientSearch}
+                clientSearch={clientSearch}
                 person={person}
                 setPerson={setPerson}
                 jwtToken={auth?.jwtToken}

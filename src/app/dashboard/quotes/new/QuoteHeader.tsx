@@ -1,6 +1,11 @@
-import { IOperationType } from "@/app/types";
+import { IOperationType, ISerialAssigned } from "@/app/types";
 
-function QuoteHeader({ sale, handleSale, operationTypesData }: any) {
+function QuoteHeader({
+    sale,
+    handleSale,
+    operationTypesData,
+    serialsAssignedData,
+}: any) {
     return (
         <fieldset className="border-2 border-blue-200 dark:border-blue-900 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative group transition-all duration-300 hover:shadow-blue-500/20 hover:shadow-2xl">
             <legend className="px-2 text-blue-600 dark:text-blue-400 font-semibold text-sm transition-all duration-300 group-hover:text-blue-700 dark:group-hover:text-blue-300">
@@ -164,6 +169,76 @@ function QuoteHeader({ sale, handleSale, operationTypesData }: any) {
                             />
                         </div>
                     </>
+                )}
+                {/* Serie */}
+                <div>
+                    <label
+                        htmlFor="serial"
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                        Serie
+                    </label>
+                    <select
+                        name="serial"
+                        id="serial"
+                        value={sale.serial}
+                        onChange={handleSale}
+                        className="mt-1 px-3 py-2 block w-full rounded-full dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        style={{
+                            border: "1px solid rgb(202, 202, 202)",
+                        }}
+                        required
+                    >
+                        {/* <option value="">
+                                                        Seleccione una serie
+                                                    </option> */}
+                        {serialsAssignedData?.allSerials
+                            ?.filter(
+                                (s: ISerialAssigned) =>
+                                    s.documentType ===
+                                        `A_${sale.documentType}` &&
+                                    !s.isGeneratedViaApi
+                            )
+                            .map((s: ISerialAssigned) => (
+                                <option key={s.serial} value={s.serial}>
+                                    {s.serial}
+                                </option>
+                            )) || (
+                            <option value="">No hay series disponibles</option>
+                        )}
+                    </select>
+                    {serialsAssignedData?.allSerials?.filter(
+                        (s: ISerialAssigned) =>
+                            s.documentType === `A_${sale.documentType}` &&
+                            !s.isGeneratedViaApi
+                    ).length === 0 && (
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-500">
+                            No hay series asignadas para este tipo de documento
+                        </p>
+                    )}
+                </div>
+                {/* Numero */}
+                {sale.correlative && (
+                    <div>
+                        <label
+                            htmlFor="correlative"
+                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >
+                            Numero
+                        </label>
+                        <input
+                            type="text"
+                            name="correlative"
+                            maxLength={10}
+                            value={sale.correlative}
+                            className="mt-1 px-3 py-2 block w-full rounded-full dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            style={{
+                                border: "1px solid rgb(202, 202, 202)",
+                            }}
+                            autoComplete="off"
+                            disabled
+                        />
+                    </div>
                 )}
             </div>
         </fieldset>

@@ -14,8 +14,10 @@ function QuoteClient({
     authContext,
     SEARCH_CLIENT_BY_PARAMETER,
     initialClientData,
+    setClientSearch,
+    clientSearch,
 }: any) {
-    const [clientSearch, setClientSearch] = useState("");
+    // const [clientSearch, setClientSearch] = useState("");
     const [
         searchClientQuery,
         {
