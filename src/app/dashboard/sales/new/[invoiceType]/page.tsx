@@ -396,40 +396,6 @@ function NewSalePage() {
         }
     }, [invoiceType]);
 
-    // useEffect(() => {
-    //     const subsidiarySerial = auth?.user?.subsidiarySerial;
-    //     if (subsidiarySerial) {
-    //         const lastTwoDigits = subsidiarySerial.slice(-2);
-    //         let prefix = "";
-
-    //         switch (sale.documentType) {
-    //             case "01":
-    //                 prefix = "F0";
-    //                 break;
-    //             case "03":
-    //                 prefix = "B0";
-    //                 break;
-    //             case "07":
-    //                 prefix = "NC";
-    //                 break;
-    //             case "08":
-    //                 prefix = "ND";
-    //                 break;
-    //             case "09":
-    //                 prefix = "GT";
-    //                 break;
-    //             default:
-    //                 prefix = "";
-    //         }
-
-    //         const customSerial = `${prefix}${lastTwoDigits}`;
-    //         setSale((prevSale) => ({
-    //             ...prevSale,
-    //             serial: customSerial,
-    //         }));
-    //     }
-    // }, [auth?.user?.subsidiarySerial, sale.documentType]);
-
     const getVariables = () => ({
         subsidiaryId: Number(auth?.user?.subsidiaryId),
         available: true,
@@ -825,6 +791,43 @@ function NewSalePage() {
                 }
                 break;
         }
+
+        // Validar la fecha de emisión
+        const emitDate = new Date(sale.emitDate);
+        const currentDate = new Date();
+        const fiveDaysAgo = new Date(currentDate);
+        fiveDaysAgo.setDate(currentDate.getDate() - 6);
+        const threeDaysAgo = new Date(currentDate);
+        threeDaysAgo.setDate(currentDate.getDate() - 4);
+
+        if (sale.documentType === "03") {
+            // Boleta
+            if (emitDate < fiveDaysAgo || emitDate > currentDate) {
+                toast(
+                    "La fecha de emisión de la boleta debe estar entre 5 días antes y hoy.",
+                    {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "warning",
+                    }
+                );
+                return false;
+            }
+        } else if (sale.documentType === "01") {
+            // Factura
+            if (emitDate < threeDaysAgo || emitDate > currentDate) {
+                toast(
+                    "La fecha de emisión de la factura debe estar entre 3 días antes y hoy.",
+                    {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "warning",
+                    }
+                );
+                return false;
+            }
+        }
+
         return true;
     };
 

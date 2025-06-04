@@ -179,7 +179,7 @@ function WayPayForm({
         }
 
         setCashFlow(initialStateCashFlow);
-        setInvoice(initialStateSale);
+        // setInvoice(initialStateSale);
         modalWayPay.hide();
     };
 

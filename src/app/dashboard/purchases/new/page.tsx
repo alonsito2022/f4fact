@@ -511,9 +511,7 @@ function NewPurchasePage() {
     ] = useLazyQuery(SEARCH_CLIENT_BY_PARAMETER, {
         context: authContext,
         fetchPolicy: "network-only",
-        onCompleted(data) {
-            console.log("data", data);
-        },
+
         onError: (err) => console.error("Error in Search Supplier:", err),
     });
 
@@ -610,8 +608,6 @@ function NewPurchasePage() {
                 search: supplierSearch,
                 isSupplier: true,
             };
-            console.log("queryVariables", queryVariables);
-            console.log("authContext", authContext);
             searchSupplierQuery({
                 variables: queryVariables,
             });
@@ -897,7 +893,6 @@ function NewPurchasePage() {
         }
         try {
             setIsProcessing(true);
-            console.log("purchase", purchase);
             const variables = {
                 serial: purchase.serial,
                 correlative: parseInt(
@@ -965,12 +960,10 @@ function NewPurchasePage() {
                 totalDetraction: Number(purchase.totalDetraction),
                 detractionPercentage: Number(purchase.detractionPercentage),
             };
-            console.log("variables", variables);
             const { data, errors } = await createPurchase({
                 variables: variables,
             });
             if (errors) {
-                console.error("Error creating purchase:", errors);
                 toast("Error al crear la compra", {
                     hideProgressBar: true,
                     autoClose: 2000,
@@ -987,7 +980,6 @@ function NewPurchasePage() {
                 router.push("/dashboard/purchases");
             }
         } catch (error) {
-            console.error("Error creating purchase:", error);
             toast("Error al crear la compra", {
                 hideProgressBar: true,
                 autoClose: 2000,
