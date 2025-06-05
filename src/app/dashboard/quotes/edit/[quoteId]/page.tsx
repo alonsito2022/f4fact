@@ -1086,7 +1086,7 @@ function EditQuotePage() {
                         clientSearch={clientSearch}
                         person={person}
                         setPerson={setPerson}
-                        jwtToken={auth?.jwtToken}
+                        auth={auth}
                         authContext={authContext}
                         SEARCH_CLIENT_BY_PARAMETER={SEARCH_CLIENT_BY_PARAMETER}
                         sale={quote}

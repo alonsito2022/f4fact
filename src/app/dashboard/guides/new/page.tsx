@@ -289,13 +289,22 @@ function NewGuidePage() {
         try {
             setIsSaving(true);
 
-            // const today = new Date().toISOString().split("T")[0];
+            // const limaDate = new Date(
+            //     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+            // );
+            // const today = limaDate.toISOString().split("T")[0];
             // if (guide.emitDate !== today) {
-            //     toast("La fecha de emisión debe ser la fecha actual.", {
-            //         hideProgressBar: true,
-            //         autoClose: 2000,
-            //         type: "error",
-            //     });
+            //     toast(
+            //         "La fecha de emisión debe ser la fecha actual. emitDate: " +
+            //             guide.emitDate +
+            //             " today: " +
+            //             today,
+            //         {
+            //             hideProgressBar: true,
+            //             autoClose: 2000,
+            //             type: "error",
+            //         }
+            //     );
             //     return false;
             // }
 

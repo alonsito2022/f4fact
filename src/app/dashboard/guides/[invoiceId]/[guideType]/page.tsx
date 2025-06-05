@@ -861,8 +861,11 @@ function NewGuidePageWithInvoice() {
                     return false;
                 }
             }
+            // const limaDate = new Date(
+            //     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+            // );
+            // const today = limaDate.toISOString().split("T")[0];
 
-            // const today = new Date().toISOString().split("T")[0];
             // if (guide.emitDate !== today) {
             //     toast("La fecha de emisión debe ser la fecha actual.", {
             //         hideProgressBar: true,

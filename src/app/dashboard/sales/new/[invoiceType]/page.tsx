@@ -800,32 +800,23 @@ function NewSalePage() {
         const threeDaysAgo = new Date(currentDate);
         threeDaysAgo.setDate(currentDate.getDate() - 4);
 
-        if (sale.documentType === "03") {
-            // Boleta
-            if (emitDate < fiveDaysAgo || emitDate > currentDate) {
-                toast(
-                    "La fecha de emisión de la boleta debe estar entre 5 días antes y hoy.",
-                    {
-                        hideProgressBar: true,
-                        autoClose: 2000,
-                        type: "warning",
-                    }
-                );
-                return false;
-            }
-        } else if (sale.documentType === "01") {
-            // Factura
-            if (emitDate < threeDaysAgo || emitDate > currentDate) {
-                toast(
-                    "La fecha de emisión de la factura debe estar entre 3 días antes y hoy.",
-                    {
-                        hideProgressBar: true,
-                        autoClose: 2000,
-                        type: "warning",
-                    }
-                );
-                return false;
-            }
+        if (emitDate > currentDate) {
+            toast("La fecha de emisión no puede ser una fecha futura.", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            return false;
+        }
+
+        const dueDate = new Date(sale.dueDate);
+        if (dueDate > currentDate) {
+            toast("La fecha de vencimiento no puede ser una fecha futura.", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            return false;
         }
 
         return true;
@@ -1846,7 +1837,7 @@ function NewSalePage() {
                 clientSearch={clientSearch}
                 person={person}
                 setPerson={setPerson}
-                jwtToken={auth?.jwtToken}
+                auth={auth}
                 authContext={authContext}
                 SEARCH_CLIENT_BY_PARAMETER={SEARCH_CLIENT_BY_PARAMETER}
                 sale={sale}
