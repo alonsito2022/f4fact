@@ -862,15 +862,15 @@ function NewGuidePageWithInvoice() {
                 }
             }
 
-            const today = new Date().toISOString().split("T")[0];
-            if (guide.emitDate !== today) {
-                toast("La fecha de emisión debe ser la fecha actual.", {
-                    hideProgressBar: true,
-                    autoClose: 2000,
-                    type: "error",
-                });
-                return false;
-            }
+            // const today = new Date().toISOString().split("T")[0];
+            // if (guide.emitDate !== today) {
+            //     toast("La fecha de emisión debe ser la fecha actual.", {
+            //         hideProgressBar: true,
+            //         autoClose: 2000,
+            //         type: "error",
+            //     });
+            //     return false;
+            // }
 
             const variables = {
                 clientId: Number(guide.clientId),
