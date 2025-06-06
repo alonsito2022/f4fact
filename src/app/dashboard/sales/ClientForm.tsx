@@ -323,6 +323,7 @@ function ClientForm({
                 type: "error",
             });
         } else {
+            // console.log("data.sntPerson.person", data.sntPerson.person);
             if (documentNumber.length === 11) {
                 departmentId = data.sntPerson.person.sntDepartment;
                 provinceId = data.sntPerson.person.sntProvince;
@@ -340,7 +341,7 @@ function ClientForm({
                 departmentId: departmentId,
                 provinceId: provinceId,
                 districtId: districtId,
-                id: Number(data.sntPerson.person.id),
+                id: Number(data.sntPerson.person.sntId),
                 phone: data.sntPerson.person.sntPhone,
                 shortName: data.sntPerson.person.sntShortName,
                 documentType: data.sntPerson.person.sntDocumentType,
@@ -1262,15 +1263,17 @@ function ClientForm({
                                 >
                                     Cerrar
                                 </button>
-                                {person.id === 0 && (
+                                {Number(person.id) === 0 && (
                                     <button
                                         type="submit"
                                         className="px-5 py-2 inline-flex items-center gap-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800"
+                                        disabled={Number(person.id) !== 0}
                                     >
-                                        <Save /> Crear Cliente o Proveedor
+                                        <Save /> Crear Cliente o Proveedor{" "}
+                                        {person.id}
                                     </button>
                                 )}
-                                {person.id !== 0 && (
+                                {Number(person.id) !== 0 && (
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -1286,6 +1289,7 @@ function ClientForm({
                                             );
                                             modalAddClient.hide();
                                         }}
+                                        disabled={Number(person.id) === 0}
                                         className="px-5 py-2 inline-flex items-center gap-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800"
                                     >
                                         <Save /> Seleccionar este cliente

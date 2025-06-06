@@ -380,6 +380,7 @@ function WayPayForm({
 
                 observation: invoice.observation || "",
             };
+            console.log("variables", variables);
             const { data, errors } = await createSale({
                 variables: variables,
             });
