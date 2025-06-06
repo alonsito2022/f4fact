@@ -366,8 +366,18 @@ function SaleDetailForm({
             invoice?.documentType === "07" &&
             Number(value) > Number(invoiceDetail?.quantityAvailable)
         ) {
+            // only for credit note
             toast.warning(
                 "La cantidad no puede ser mayor al máximo permitido."
+            );
+            return false;
+        }
+        if (
+            auth?.user?.companyWithStock &&
+            Number(value) > Number(invoiceDetail?.stock)
+        ) {
+            toast.warning(
+                "La cantidad no puede ser mayor al stock disponible."
             );
             return false;
         }
@@ -436,6 +446,15 @@ function SaleDetailForm({
                 autoClose: 2000,
                 type: "warning",
             });
+            return;
+        }
+        if (
+            auth?.user?.companyWithStock &&
+            Number(invoiceDetail?.quantity) > Number(invoiceDetail?.stock)
+        ) {
+            toast.warning(
+                "La cantidad no puede ser mayor al stock disponible."
+            );
             return;
         }
 
