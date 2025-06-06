@@ -1758,7 +1758,7 @@ function NewSalePage() {
                                                                         {
                                                                             ...cashFlow,
                                                                             total: Number(
-                                                                                sale.totalAmount
+                                                                                sale.totalToPay
                                                                             ),
                                                                         }
                                                                     );

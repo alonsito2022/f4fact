@@ -380,7 +380,6 @@ function WayPayForm({
 
                 observation: invoice.observation || "",
             };
-            console.log("variables", variables);
             const { data, errors } = await createSale({
                 variables: variables,
             });
@@ -447,7 +446,7 @@ function WayPayForm({
             0
         );
 
-        const totalTurned = totalPayed - Number(invoice?.totalAmount);
+        const totalTurned = Number(invoice?.totalToPay) - totalPayed;
 
         setInvoice((prevEntry: any) => ({
             ...prevEntry,

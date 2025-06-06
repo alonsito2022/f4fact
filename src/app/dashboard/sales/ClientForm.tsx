@@ -1269,8 +1269,7 @@ function ClientForm({
                                         className="px-5 py-2 inline-flex items-center gap-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800"
                                         disabled={Number(person.id) !== 0}
                                     >
-                                        <Save /> Crear Cliente o Proveedor{" "}
-                                        {person.id}
+                                        <Save /> Crear Cliente o Proveedor
                                     </button>
                                 )}
                                 {Number(person.id) !== 0 && (
