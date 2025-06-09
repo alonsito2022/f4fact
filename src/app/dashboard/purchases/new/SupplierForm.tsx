@@ -32,6 +32,15 @@ const SNT_PERSON_MUTATION = gql`
                 sntDepartment
                 sntProvince
                 sntDistrict
+                sntId
+                sntPhone
+                sntShortName
+                sntDocumentType
+                sntDocumentNumber
+                sntEmail
+                sntIsEnabled
+                sntIsSupplier
+                sntIsClient
             }
         }
     }
@@ -52,6 +61,7 @@ const ADD_PERSON_MUTATION = gql`
         $isSupplier: Boolean!
         $isClient: Boolean!
         $economicActivityMain: Int!
+        $subsidiaryId: Int
     ) {
         createPerson(
             names: $names
@@ -67,15 +77,26 @@ const ADD_PERSON_MUTATION = gql`
             isSupplier: $isSupplier
             isClient: $isClient
             economicActivityMain: $economicActivityMain
+            subsidiaryId: $subsidiaryId
         ) {
             message
             success
             person {
                 id
                 names
+                shortName
+                phone
+                email
                 address
+                country
+                economicActivityMain
+                isEnabled
+                isSupplier
+                isClient
                 documentNumber
+                documentType
             }
+            personAlreadyRegistered
         }
     }
 `;
@@ -140,6 +161,7 @@ function SupplierForm({
     setSupplierSearch,
     person,
     setPerson,
+    auth,
     jwtToken,
     authContext,
     PEOPLE_QUERY,
@@ -151,11 +173,6 @@ function SupplierForm({
         refetchQueries: () => [{ query: PEOPLE_QUERY, context: authContext }],
         onCompleted: (data) => {
             if (data.createPerson.success) {
-                toast(data.createPerson.message, {
-                    hideProgressBar: true,
-                    autoClose: 2000,
-                    type: "success",
-                });
                 const p = data.createPerson.person;
                 if (p) {
                     setPurchase({
@@ -497,26 +514,29 @@ function SupplierForm({
                 isSupplier: person.isSupplier,
                 isClient: person.isClient,
                 economicActivityMain: Number(person.economicActivityMain),
+                subsidiaryId: Number(auth?.user?.subsidiaryId),
             };
 
             try {
-                const { data, errors } = await addPerson({ variables: values });
+                const response = await addPerson({ variables: values });
 
-                if (errors) {
-                    toast(errors.toString(), {
+                if (response.data?.createPerson) {
+                    toast(response.data.createPerson.message, {
                         hideProgressBar: true,
                         autoClose: 2000,
-                        type: "error",
+                        type: "success",
                     });
-                    return;
-                }
-
-                if (!data.createPerson.success) {
-                    toast(data.createPerson.message, {
-                        hideProgressBar: true,
-                        autoClose: 2000,
-                        type: "error",
-                    });
+                    // if (person.onSaveSuccess) {
+                    //     const newPerson = response.data.createPerson.person;
+                    //     setPerson({
+                    //         ...initialStatePerson,
+                    //         id: newPerson.id,
+                    //         names: newPerson.names,
+                    //         documentType: newPerson.documentType,
+                    //         documentNumber: newPerson.documentNumber,
+                    //     });
+                    //     person.onSaveSuccess();
+                    // }
                 }
             } catch (error) {
                 console.error("Error creating person:", error);
@@ -1047,8 +1067,7 @@ function SupplierForm({
                                     type="submit"
                                     className="btn-green px-5 py-2 inline-flex items-center gap-2"
                                 >
-                                    {" "}
-                                    <Save /> Crear Cliente o Proveedor
+                                    <Save /> Crear o Asignar Proveedor
                                 </button>
                             </div>
                         </form>

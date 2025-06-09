@@ -1797,6 +1797,7 @@ function NewPurchasePage() {
                 setSupplierSearch={setSupplierSearch}
                 person={person}
                 setPerson={setPerson}
+                auth={auth}
                 jwtToken={auth?.jwtToken}
                 authContext={authContext}
                 SUPPLIERS_QUERY={SUPPLIERS_QUERY}
