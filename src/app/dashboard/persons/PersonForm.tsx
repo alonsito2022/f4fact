@@ -469,9 +469,9 @@ function PersonForm({
                         }
                     }
                 } catch (error: any) {
-                    if (error.networkError?.result?.data?.createProduct) {
+                    if (error.networkError?.result?.data?.createPerson) {
                         const data = error.networkError.result.data;
-                        toast(data.createProduct.message, {
+                        toast(data.createPerson.message, {
                             hideProgressBar: true,
                             autoClose: 2000,
                             type: "success",

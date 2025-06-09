@@ -810,12 +810,15 @@ function NewSalePage() {
         }
 
         const dueDate = new Date(sale.dueDate);
-        if (dueDate > currentDate) {
-            toast("La fecha de vencimiento no puede ser una fecha futura.", {
-                hideProgressBar: true,
-                autoClose: 2000,
-                type: "warning",
-            });
+        if (dueDate < emitDate) {
+            toast(
+                "La fecha de vencimiento no puede ser menor a la fecha de emisión.",
+                {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "warning",
+                }
+            );
             return false;
         }
 
