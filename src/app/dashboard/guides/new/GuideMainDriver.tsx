@@ -45,6 +45,7 @@ const SEARCH_CLIENT_BY_PARAMETER = gql`
             names
             documentNumber
             documentType
+            driverLicense
         }
     }
 `;
@@ -102,6 +103,9 @@ function GuideMainDriver({
         context: authContext,
         fetchPolicy: "network-only",
         onError: (err) => console.error("Error in Search Client:", err),
+        onCompleted: (data) => {
+            console.log("data", data);
+        },
     });
 
     const handleSntDocument = async () => {
@@ -199,6 +203,16 @@ function GuideMainDriver({
         });
         setShowDropdown(true);
         if (value.length > 2) {
+            console.log("value", value);
+            console.log(
+                "variables",
+                {
+                    search: value,
+                    documentType: guide.mainDriverDocumentType,
+                    isDriver: true,
+                },
+                authContext
+            );
             searchClientQuery({
                 variables: {
                     search: value,
@@ -247,6 +261,7 @@ function GuideMainDriver({
                         ...guide,
                         mainDriverDocumentNumber: selectedPerson.documentNumber,
                         mainDriverNames: selectedPerson.names,
+                        mainDriverDriverLicense: selectedPerson.driverLicense,
                     });
                     setShowDropdown(false);
                 }
@@ -465,6 +480,8 @@ function GuideMainDriver({
                                                                             person.documentNumber,
                                                                         mainDriverNames:
                                                                             person.names,
+                                                                        mainDriverDriverLicense:
+                                                                            person.driverLicense,
                                                                     });
                                                                     setShowDropdown(
                                                                         false

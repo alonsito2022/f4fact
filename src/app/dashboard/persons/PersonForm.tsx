@@ -24,6 +24,15 @@ const SNT_PERSON_MUTATION = gql`
                 sntDepartment
                 sntProvince
                 sntDistrict
+                sntId
+                sntPhone
+                sntShortName
+                sntDocumentType
+                sntDocumentNumber
+                sntEmail
+                sntIsEnabled
+                sntIsSupplier
+                sntIsClient
             }
         }
     }
@@ -71,10 +80,19 @@ const ADD_PERSON_MUTATION = gql`
             person {
                 id
                 names
+                shortName
+                phone
+                email
                 address
+                country
+                economicActivityMain
+                isEnabled
+                isSupplier
+                isClient
                 documentNumber
                 documentType
             }
+            personAlreadyRegistered
         }
     }
 `;
