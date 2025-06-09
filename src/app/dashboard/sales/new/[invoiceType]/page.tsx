@@ -1406,6 +1406,7 @@ function NewSalePage() {
                                                                         border: "1px solid rgb(202, 202, 202)",
                                                                     }}
                                                                     autoComplete="off"
+                                                                    disabled
                                                                 />
                                                             </div>
                                                         </div>
