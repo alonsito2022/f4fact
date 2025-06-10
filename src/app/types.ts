@@ -391,6 +391,7 @@ export interface IOperation {
     operationdetailSet: Array<IOperationDetail>;
     relatedDocuments: Array<IRelatedDocument>;
     cashflowSet: Array<ICashFlow>;
+    nextTemporaryId?: number;
 
     discountForItem: string;
     discountGlobal: string;

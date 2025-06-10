@@ -233,6 +233,7 @@ const initialStateSale = {
     detractionPaymentMethod: 0,
     totalDetraction: "",
     detractionPercentage: "",
+    nextTemporaryId: 1,
 };
 const initialStateSaleDetail = {
     id: 0,

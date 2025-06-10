@@ -496,9 +496,11 @@ function SaleDetailForm({
                 ),
             }));
         } else {
+            // Get the next temporaryId from the parent component
+            const nextTemporaryId = invoice.nextTemporaryId || invoice.operationdetailSet.length + 1;
             let newSaleDetail = {
                 ...invoiceDetail,
-                temporaryId: invoice.operationdetailSet.length + 1,
+                temporaryId: nextTemporaryId,
             };
             setInvoice((previnvoice: IOperation) => ({
                 ...previnvoice,
@@ -506,6 +508,7 @@ function SaleDetailForm({
                     ...previnvoice.operationdetailSet!,
                     newSaleDetail,
                 ],
+                nextTemporaryId: nextTemporaryId + 1,
             }));
         }
 
@@ -528,8 +531,7 @@ function SaleDetailForm({
                         {/* Modal header */}
                         <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                             <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-                                Detalle de la LINEA o ITEM{" "}
-                                {invoiceDetail.temporaryId}
+                                Detalle de la LINEA o ITEM
                             </h3>
                             <button
                                 ref={closeButtonRef}
