@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Edit from "@/components/icons/Edit";
 import { IOperation, IProduct } from "@/app/types";
-import { gql, useLazyQuery } from "@apollo/client";
+import { gql, useLazyQuery, useMutation } from "@apollo/client";
 import { toast } from "react-toastify";
 import Close from "@/components/icons/Close";
 import Popover from "@/components/Popover";
@@ -13,10 +13,26 @@ import LoadingIcon from "@/components/icons/LoadingIcon";
 import { Modal } from "flowbite";
 import PdfPreviewModal from "../sales/PdfPreviewModal";
 
-function PurchaseList({ filteredPurchasesData, user }: any) {
+const CANCEL_INVOICE = gql`
+    mutation CancelInvoice($operationId: Int!, $lowDate: Date!) {
+        cancelInvoice(operationId: $operationId, lowDate: $lowDate) {
+            message
+            success
+        }
+    }
+`;
+function PurchaseList({
+    setFilterObj,
+    filterObj,
+    filteredPurchasesData,
+    user,
+    purchasesQuery,
+}: any) {
     const [pdfModal, setPdfModal] = useState<Modal | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string>("");
 
+    const [cancelInvoice, { loading, error, data }] =
+        useMutation(CANCEL_INVOICE);
     const handleDownload = (url: string, filename: string) => {
         if (!url || !filename) {
             toast.error("URL o nombre de archivo no válido");
@@ -93,6 +109,64 @@ function PurchaseList({ filteredPurchasesData, user }: any) {
             })
         );
 
+    const handleCancelInvoice = (operationId: number) => {
+        const limaDate = new Date(
+            new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+        );
+        const today =
+            limaDate.getFullYear() +
+            "-" +
+            String(limaDate.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            String(limaDate.getDate()).padStart(2, "0");
+
+        cancelInvoice({
+            variables: {
+                operationId,
+                lowDate: today,
+            },
+        })
+            .then((response) => {
+                if (response.data.cancelInvoice.success) {
+                    toast.success("Compra borrada correctamente.");
+                    console.log("variables", {
+                        subsidiaryId: user?.isSuperuser
+                            ? Number(filterObj.subsidiaryId)
+                            : Number(user?.subsidiaryId),
+                        supplierId: Number(filterObj.supplierId),
+                        startDate: filterObj.startDate,
+                        endDate: filterObj.endDate,
+                        documentType: filterObj.documentType,
+                        page: Number(filterObj.page),
+                        pageSize: Number(filterObj.pageSize),
+                    });
+                    purchasesQuery({
+                        variables: {
+                            subsidiaryId: user?.isSuperuser
+                                ? Number(filterObj.subsidiaryId)
+                                : Number(user?.subsidiaryId),
+                            supplierId: Number(filterObj.supplierId),
+                            startDate: filterObj.startDate,
+                            endDate: filterObj.endDate,
+                            documentType: filterObj.documentType,
+                            page: Number(filterObj.page),
+                            pageSize: Number(filterObj.pageSize),
+                        },
+                    });
+                } else {
+                    toast.error(
+                        `Error: ${response.data.cancelInvoice.message}`
+                    );
+                }
+            })
+            .catch((err) => {
+                toast.error("Error al anular la factura.");
+                console.error(err, {
+                    operationId,
+                    lowDate: today,
+                });
+            });
+    };
     return (
         <>
             <div className="w-full overflow-x-auto">
@@ -260,18 +334,32 @@ function PurchaseList({ filteredPurchasesData, user }: any) {
                                                         [Editar cliente]
                                                     </a>
                                                     <br />
-                                                    <a
+                                                    {/* <a
                                                         className="font-medium text-green-600 dark:text-green-500 hover:underline"
                                                         target="_blank"
                                                         href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
                                                     >
                                                         [Editar]
                                                     </a>
-                                                    <br />
+                                                    <br /> */}
                                                     <a
                                                         className="font-medium text-red-600 dark:text-red-500 hover:underline"
-                                                        target="_blank"
-                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
+                                                        href="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault(); // Evita que el enlace cambie de página
+                                                            const confirmDelete =
+                                                                window.confirm(
+                                                                    "¿Estás seguro de que deseas borrar esta compra? Esta acción no se puede deshacer."
+                                                                );
+
+                                                            if (confirmDelete) {
+                                                                handleCancelInvoice(
+                                                                    Number(
+                                                                        item?.id
+                                                                    )
+                                                                );
+                                                            }
+                                                        }}
                                                     >
                                                         Borrar
                                                     </a>
