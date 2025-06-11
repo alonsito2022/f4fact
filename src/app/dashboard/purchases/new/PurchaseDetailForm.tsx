@@ -453,9 +453,11 @@ function PurchaseDetailForm({
                 ),
             }));
         } else {
+            // Get the next temporaryId from the parent component
+            const nextTemporaryId = purchase.nextTemporaryId || purchase.operationdetailSet.length + 1;
             let newPurchaseDetail = {
                 ...purchaseDetail,
-                temporaryId: purchase.operationdetailSet.length + 1,
+                temporaryId: nextTemporaryId,
             };
             setPurchase((prevPurchase: IOperation) => ({
                 ...prevPurchase,
@@ -463,6 +465,7 @@ function PurchaseDetailForm({
                     ...prevPurchase.operationdetailSet!,
                     newPurchaseDetail,
                 ],
+                nextTemporaryId: nextTemporaryId + 1,
             }));
         }
 
@@ -496,8 +499,7 @@ function PurchaseDetailForm({
                         {/* Modal header */}
                         <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                             <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-                                Detalle de la LINEA o ITEM{" "}
-                                {purchaseDetail.temporaryId}
+                                Detalle de la LINEA o ITEM
                             </h3>
                             <button
                                 ref={closeButtonRef}

@@ -64,6 +64,7 @@ const initialStateCreditNote = {
 
     creditNoteType: "NA",
     parentOperationId: 0,
+    nextTemporaryId: 1,
 };
 const initialStateSale = {
     id: 0,
@@ -219,6 +220,7 @@ const SALE_QUERY_BY_ID = gql`
             client {
                 id
                 names
+                documentNumber
             }
             subsidiary {
                 company {
@@ -244,6 +246,7 @@ const SALE_QUERY_BY_ID = gql`
                 productTariffId
                 quantityReturned
                 quantityAvailable
+                description
             }
         }
     }
@@ -436,6 +439,7 @@ function CreditPage() {
                     temporaryId: index + 1,
                     productTariffId: Number(detail.productTariffId),
                     id: Number(detail.id),
+                    stock: 0,
                 }));
 
             setCreditNote((prevSale) => ({
@@ -468,6 +472,7 @@ function CreditPage() {
                     dataSale?.totalPerception ? dataSale?.totalPerception : 0
                 ).toFixed(2),
                 totalToPay: Number(dataSale?.totalToPay).toFixed(2),
+                nextTemporaryId: formattedOperationdetailSet.length + 1,
             }));
             setIsLoading(false);
         },

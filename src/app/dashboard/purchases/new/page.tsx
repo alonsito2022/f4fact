@@ -86,6 +86,7 @@ const initialStatePurchase = {
     detractionPaymentMethod: 0,
     totalDetraction: "",
     detractionPercentage: "",
+    nextTemporaryId: 1,
 };
 
 const initialStatePurchaseDetail = {
@@ -548,7 +549,11 @@ function NewPurchasePage() {
                     const normalizedOptionValue = option.value
                         .replace(/[\n\r\s]+/g, " ")
                         .trim();
-                    return normalizedValue === normalizedOptionValue;
+                    return (
+                        normalizedValue === normalizedOptionValue ||
+                        normalizedValue.startsWith(normalizedOptionValue) ||
+                        normalizedOptionValue.startsWith(normalizedValue)
+                    );
                 });
                 if (option) {
                     const selectedId = option.getAttribute("data-key");
@@ -1364,7 +1369,7 @@ function NewPurchasePage() {
                                         <input
                                             type="text"
                                             className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                            maxLength={100}
+                                            maxLength={200}
                                             value={product.name}
                                             name="name"
                                             onChange={handleProduct}

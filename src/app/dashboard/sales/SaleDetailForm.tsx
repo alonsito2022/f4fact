@@ -497,7 +497,9 @@ function SaleDetailForm({
             }));
         } else {
             // Get the next temporaryId from the parent component
-            const nextTemporaryId = invoice.nextTemporaryId || invoice.operationdetailSet.length + 1;
+            const nextTemporaryId =
+                invoice.nextTemporaryId ||
+                invoice.operationdetailSet.length + 1;
             let newSaleDetail = {
                 ...invoiceDetail,
                 temporaryId: nextTemporaryId,
