@@ -92,6 +92,7 @@ const initialStateSale = {
     detractionPaymentMethod: 0,
     totalDetraction: "",
     detractionPercentage: "",
+    nextTemporaryId: 1,
 };
 const initialStateSaleDetail = {
     id: 0,
@@ -568,6 +569,7 @@ function ConvertToInvoicePage() {
                             productTariffId: Number(detail.productTariffId),
                             id: Number(detail.id),
                             description: String(detail.description || ""),
+                            stock: 0,
                         };
                     }
                 );
@@ -626,6 +628,7 @@ function ConvertToInvoicePage() {
                     dataQuote?.totalPerception ? dataQuote?.totalPerception : 0
                 ).toFixed(2),
                 totalToPay: Number(dataQuote?.totalToPay).toFixed(2),
+                nextTemporaryId: formattedOperationdetailSet.length + 1,
             }));
 
             setIsLoading(false);

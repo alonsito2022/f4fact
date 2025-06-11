@@ -350,6 +350,7 @@ const initialStateSale = {
     detractionPaymentMethod: 0,
     totalDetraction: "",
     detractionPercentage: "",
+    nextTemporaryId: 1,
 };
 const initialStateSaleDetail = {
     id: 0,
@@ -553,7 +554,7 @@ function NewQuotePage() {
             }
         }
     }, [serialsAssignedData, sale.documentType]);
-    const handleSale = (
+    const handleQuote = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
         >
@@ -570,7 +571,7 @@ function NewQuotePage() {
         });
     }
     const [createSale] = useCustomMutation(CREATE_SALE_MUTATION);
-    const handleSaveSale = useCallback(async () => {
+    const handleSaveQuote = useCallback(async () => {
         // Validate client and sale details
         if (Number(sale.clientId) === 0) {
             toast("Por favor ingrese un cliente.", {
@@ -769,7 +770,7 @@ function NewQuotePage() {
                                 <div className="grid gap-4 ">
                                     <QuoteHeader
                                         sale={sale}
-                                        handleSale={handleSale}
+                                        handleQuote={handleQuote}
                                         operationTypesData={operationTypesData}
                                         serialsAssignedData={
                                             serialsAssignedData
@@ -832,7 +833,7 @@ function NewQuotePage() {
                                 <SaleTotalList
                                     invoice={sale}
                                     setSale={setSale}
-                                    handleSale={handleSale}
+                                    handleQuote={handleQuote}
                                     perceptionTypesData={perceptionTypesData}
                                     retentionTypesData={retentionTypesData}
                                     detractionTypesData={detractionTypesData}
@@ -857,7 +858,7 @@ function NewQuotePage() {
                                                 }
                                                 maxLength={500}
                                                 value={sale.observation}
-                                                onChange={handleSale}
+                                                onChange={handleQuote}
                                                 className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                             ></textarea>
                                         </div>
@@ -867,7 +868,7 @@ function NewQuotePage() {
                                 <div className="flex justify-end py-2">
                                     <button
                                         type="button"
-                                        onClick={handleSaveSale}
+                                        onClick={handleSaveQuote}
                                         disabled={isProcessing}
                                         className={`px-5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2 ${
                                             sale?.operationdetailSet?.length ===

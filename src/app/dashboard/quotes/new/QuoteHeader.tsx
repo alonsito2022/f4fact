@@ -2,7 +2,7 @@ import { IOperationType, ISerialAssigned } from "@/app/types";
 
 function QuoteHeader({
     sale,
-    handleSale,
+    handleQuote,
     operationTypesData,
     serialsAssignedData,
 }: any) {
@@ -38,7 +38,7 @@ function QuoteHeader({
                     <select
                         value={sale.igvType}
                         name="igvType"
-                        onChange={handleSale}
+                        onChange={handleQuote}
                         className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         required
                     >
@@ -56,7 +56,7 @@ function QuoteHeader({
                     <select
                         value={sale.operationType}
                         name="operationType"
-                        onChange={handleSale}
+                        onChange={handleQuote}
                         className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm uppercase"
                         required
                     >
@@ -95,7 +95,7 @@ function QuoteHeader({
                         name="emitDate"
                         id="emitDate"
                         value={sale.emitDate}
-                        onChange={handleSale}
+                        onChange={handleQuote}
                         onFocus={(e) => e.target.select()}
                         className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         required
@@ -114,7 +114,7 @@ function QuoteHeader({
                         name="dueDate"
                         id="dueDate"
                         value={sale.dueDate}
-                        onChange={handleSale}
+                        onChange={handleQuote}
                         onFocus={(e) => e.target.select()}
                         className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         required
@@ -131,7 +131,7 @@ function QuoteHeader({
                     <select
                         value={sale.currencyType}
                         name="currencyType"
-                        onChange={handleSale}
+                        onChange={handleQuote}
                         className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                     >
                         <option value={0} disabled>
@@ -162,7 +162,7 @@ function QuoteHeader({
                                 id="saleExchangeRate"
                                 maxLength={10}
                                 value={sale.saleExchangeRate}
-                                onChange={handleSale}
+                                onChange={handleQuote}
                                 onFocus={(e) => e.target.select()}
                                 className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                 autoComplete="off"
@@ -182,7 +182,7 @@ function QuoteHeader({
                         name="serial"
                         id="serial"
                         value={sale.serial}
-                        onChange={handleSale}
+                        onChange={handleQuote}
                         className="mt-1 px-3 py-2 block w-full rounded-full dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         style={{
                             border: "1px solid rgb(202, 202, 202)",
@@ -231,6 +231,7 @@ function QuoteHeader({
                             name="correlative"
                             maxLength={10}
                             value={sale.correlative}
+                            onChange={handleQuote}
                             className="mt-1 px-3 py-2 block w-full rounded-full dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                             style={{
                                 border: "1px solid rgb(202, 202, 202)",

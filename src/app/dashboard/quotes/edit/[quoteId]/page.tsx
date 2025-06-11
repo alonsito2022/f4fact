@@ -348,6 +348,7 @@ const initialStateQuote = {
     emitDate: today,
     dueDate: today,
     clientName: "",
+    clientDocumentType: "",
     clientId: 0,
     igvType: 18,
     igvPercentage: 18,
@@ -378,6 +379,7 @@ const initialStateQuote = {
 
     creditNoteType: "NA",
     parentOperationId: 0,
+    nextTemporaryId: 1,
 };
 
 const initialStateSaleDetail = {
@@ -386,7 +388,7 @@ const initialStateSaleDetail = {
     productName: "",
     description: "",
 
-    quantity: "",
+    quantity: "1",
     maxQuantity: "",
 
     unitValue: "",
@@ -617,6 +619,7 @@ function EditQuotePage() {
                             productTariffId: Number(detail.productTariffId),
                             id: Number(detail.id),
                             description: String(detail.description || ""),
+                            stock: 0,
                         };
                     }
                 );
@@ -654,6 +657,7 @@ function EditQuotePage() {
                     dataQuote?.totalPerception ? dataQuote?.totalPerception : 0
                 ).toFixed(2),
                 totalToPay: Number(dataQuote?.totalToPay).toFixed(2),
+                nextTemporaryId: formattedOperationdetailSet.length + 1,
             }));
             setInitialClientData({
                 id: dataQuote?.client.id,
@@ -866,6 +870,7 @@ function EditQuotePage() {
             });
         }
     }, [quoteId]);
+
     return (
         <>
             {isLoading ? (
@@ -903,7 +908,7 @@ function EditQuotePage() {
                                                 <div className="grid gap-4 ">
                                                     <QuoteHeader
                                                         sale={quote}
-                                                        handleSale={handleSale}
+                                                        handleQuote={handleSale}
                                                         operationTypesData={
                                                             operationTypesData
                                                         }
