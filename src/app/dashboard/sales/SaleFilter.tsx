@@ -40,16 +40,6 @@ const SEARCH_CLIENT_BY_PARAMETER = gql`
         }
     }
 `;
-const SUPPLIERS_QUERY = gql`
-    query {
-        allSuppliers {
-            names
-            id
-            address
-            documentNumber
-        }
-    }
-`;
 
 const SUBSIDIARIES_QUERY = gql`
     query {
@@ -171,14 +161,7 @@ function SaleFilter({
             Authorization: auth?.jwtToken ? `JWT ${auth?.jwtToken}` : "",
         },
     });
-    const {
-        loading: suppliersLoading,
-        error: suppliersError,
-        data: suppliersData,
-    } = useQuery(SUPPLIERS_QUERY, {
-        context: getAuthContext(),
-        skip: !auth?.jwtToken,
-    });
+
     const {
         loading: subsidiariesLoading,
         error: subsidiariesError,

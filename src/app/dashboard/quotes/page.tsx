@@ -4,11 +4,14 @@ import Breadcrumb from "@/components/Breadcrumb";
 import QuoteList from "./QuoteList";
 import QuoteFilter from "./QuoteFilter";
 import { gql, useLazyQuery, useMutation } from "@apollo/client";
-import { initFlowbite, Modal } from "flowbite";
+import { initFlowbite } from "flowbite";
+import { Modal } from "flowbite";
 import { useAuth } from "@/components/providers/AuthProvider";
 import WhatsAppModal from "../sales/WhatsAppModal";
 import ClientEdit from "./ClientEdit";
 import { toast } from "react-toastify";
+import InvoiceTypeModal from "../sales/new/InvoiceTypeModal";
+import { useInvoiceTypeModal } from "@/components/context/InvoiceTypeModalContext";
 const limaDate = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
 );
@@ -22,19 +25,25 @@ const today =
 const QUOTES_QUERY = gql`
     query (
         $subsidiaryId: Int!
+        $clientId: Int!
         $startDate: Date!
         $endDate: Date!
         $documentType: String!
         $page: Int!
         $pageSize: Int!
+        $serial: String
+        $correlative: Int
     ) {
         allQuotes(
             subsidiaryId: $subsidiaryId
+            clientId: $clientId
             startDate: $startDate
             endDate: $endDate
             documentType: $documentType
             page: $page
             pageSize: $pageSize
+            serial: $serial
+            correlative: $correlative
         ) {
             quotes {
                 id
@@ -165,6 +174,10 @@ const initialStateFilterObj = {
     documentType: "NA",
     page: 1,
     pageSize: 50,
+    clientId: "",
+    clientName: "",
+    serial: "",
+    correlative: "",
 };
 const initialStateCpe = {
     id: 0,
@@ -187,11 +200,14 @@ const initialStatePerson = {
     provinceId: "0401",
     departmentId: "04",
     districtName: "",
-    documentType: "6",
+    documentType: "",
     documentNumber: "",
-    isEnabled: true,
+    isClient: false,
+    isDriver: false,
     isSupplier: false,
-    isClient: true,
+    isReceiver: false,
+    operationDocumentType: "",
+    isEnabled: true,
     economicActivityMain: 0,
     district: {
         id: "",
@@ -202,7 +218,6 @@ function QuotePage() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
     const [cpe, setCpe] = useState(initialStateCpe);
     const [person, setPerson] = useState(initialStatePerson);
-
     const [modalWhatsApp, setModalWhatsApp] = useState<Modal | null>(null);
     const [modalEditClient, setModalEditClient] = useState<Modal | null>(null);
     const auth = useAuth();
@@ -215,6 +230,10 @@ function QuotePage() {
         }),
         [auth?.jwtToken]
     );
+
+    useEffect(() => {
+        initFlowbite();
+    }, []);
     const [
         quotesQuery,
         { loading: quotesLoading, error: quotesError, data: quotesData },
@@ -289,6 +308,7 @@ function QuotePage() {
                     subsidiaryId: auth?.user?.isSuperuser
                         ? Number(filterObj.subsidiaryId)
                         : Number(auth?.user?.subsidiaryId),
+                    clientId: Number(filterObj.clientId),
                     startDate: filterObj.startDate,
                     endDate: filterObj.endDate,
                     documentType: filterObj.documentType,
@@ -308,41 +328,60 @@ function QuotePage() {
     }
     return (
         <>
-            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-                <div className="w-full">
-                    <Breadcrumb
-                        section={"Cotizaciones"}
-                        article={"Cotizaciones"}
-                    />
-                    <QuoteFilter
-                        setFilterObj={setFilterObj}
-                        filterObj={filterObj}
-                        quotesQuery={quotesQuery}
-                        quotesLoading={quotesLoading}
-                        auth={auth}
-                    />
-                </div>
-            </div>
-            <div className="flex flex-col">
-                <div className="overflow-x-auto">
-                    <div className="inline-block min-w-full align-middle">
-                        <div className="overflow-hidden shadow">
-                            <QuoteList
+            <div className="min-h-screen bg-white dark:bg-gray-800">
+                <div className="container mx-auto pb-16">
+                    <div className="grid grid-cols-12 gap-4">
+                        <div className="col-span-1"></div>
+                        <div className="col-span-10">
+                            <QuoteFilter
                                 setFilterObj={setFilterObj}
                                 filterObj={filterObj}
                                 quotesQuery={quotesQuery}
-                                quotesData={quotesData}
-                                modalWhatsApp={modalWhatsApp}
-                                modalEditClient={modalEditClient}
-                                getClientById={getClientById}
-                                cpe={cpe}
-                                setCpe={setCpe}
-                                user={auth?.user}
+                                quotesLoading={quotesLoading}
+                                auth={auth}
                             />
+                            <div className="flex flex-col">
+                                <div className="overflow-x-auto">
+                                    <div className="inline-block min-w-full align-middle">
+                                        <div className="overflow-hidden shadow">
+                                            {quotesLoading ? (
+                                                <div className="p-4 text-center">
+                                                    <span className="loader"></span>
+                                                    Cargando cotizaciones...
+                                                </div>
+                                            ) : quotesError ? (
+                                                <div className="p-4 text-red-500 text-center">
+                                                    {quotesError.message}
+                                                </div>
+                                            ) : (
+                                                <QuoteList
+                                                    setFilterObj={setFilterObj}
+                                                    filterObj={filterObj}
+                                                    quotesQuery={quotesQuery}
+                                                    quotesData={quotesData}
+                                                    modalWhatsApp={
+                                                        modalWhatsApp
+                                                    }
+                                                    modalEditClient={
+                                                        modalEditClient
+                                                    }
+                                                    getClientById={
+                                                        getClientById
+                                                    }
+                                                    cpe={cpe}
+                                                    setCpe={setCpe}
+                                                    user={auth?.user}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
             <WhatsAppModal
                 modalWhatsApp={modalWhatsApp}
                 setModalWhatsApp={setModalWhatsApp}

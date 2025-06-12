@@ -1,15 +1,18 @@
-import { IOperation } from "@/app/types";
-import SunatCancel from "@/components/icons/SunatCancel";
-import SunatCheck from "@/components/icons/SunatCheck";
-import Popover from "@/components/Popover";
-import Link from "next/link";
 import React, { useState } from "react";
+import { IOperation, IProduct } from "@/app/types";
+import Close from "@/components/icons/Close";
+import Popover from "@/components/Popover";
+import Check from "@/components/icons/Check";
 import { toast } from "react-toastify";
+import { gql, useMutation } from "@apollo/client";
+import SunatCheck from "@/components/icons/SunatCheck";
+import SunatCancel from "@/components/icons/SunatCancel";
+import Link from "next/link";
 import SalePagination from "../sales/SalePagination";
 import LoadingIcon from "@/components/icons/LoadingIcon";
 import { Modal } from "flowbite";
 import PdfPreviewModal from "../sales/PdfPreviewModal";
-import { gql, useMutation } from "@apollo/client";
+
 const CANCEL_INVOICE = gql`
     mutation CancelInvoice($operationId: Int!, $lowDate: Date!) {
         cancelInvoice(operationId: $operationId, lowDate: $lowDate) {
@@ -34,6 +37,39 @@ function QuoteList({
     const [pdfUrl, setPdfUrl] = useState<string>("");
     const [cancelInvoice, { loading, error, data }] =
         useMutation(CANCEL_INVOICE);
+
+    const normalizeDate = (date: string) => {
+        const normalized = new Date(date);
+        normalized.setHours(0, 0, 0, 0);
+        return normalized;
+    };
+
+    const handleDownload = (url: string, filename: string) => {
+        if (!url || !filename) {
+            toast.error("URL o nombre de archivo no válido");
+            return;
+        }
+
+        fetch(url.toString().replace("http:", "https:"))
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Error en la respuesta de la descarga");
+                }
+                return response.blob();
+            })
+            .then((blob) => {
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            })
+            .catch((error) =>
+                console.error("Error al descargar el archivo:", error)
+            );
+    };
+
     const transformedSalesData = quotesData?.allQuotes?.quotes?.map(
         (item: IOperation) => {
             const docType = item.client?.documentType?.replace("A_", "");
