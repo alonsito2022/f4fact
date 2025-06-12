@@ -91,19 +91,48 @@ function QuoteFilter({
     ) => {
         const { name, value } = event.target;
 
-        setFilterObj({ ...filterObj, [name]: value });
+        if (
+            name === "subsidiaryName" &&
+            event.target instanceof HTMLInputElement
+        ) {
+            const dataList = event.target.list;
+            if (dataList) {
+                const option = Array.from(dataList.options).find(
+                    (option) => option.value === value
+                );
+                if (option) {
+                    const selectedId = option.getAttribute("data-key");
+                    setFilterObj({
+                        ...filterObj,
+                        subsidiaryId: Number(selectedId),
+                        subsidiaryName: value,
+                    });
+                } else {
+                    setFilterObj({
+                        ...filterObj,
+                        subsidiaryId: 0,
+                        subsidiaryName: value,
+                    });
+                }
+            } else {
+                console.log("sin datalist");
+            }
+        } else setFilterObj({ ...filterObj, [name]: value });
     };
 
-    // Add client search query
-    const [subsidiariesQuery] = useLazyQuery(SUBSIDIARIES_QUERY, {
-        context: {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
-            },
+    const getAuthContext = () => ({
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: auth?.jwtToken ? `JWT ${auth?.jwtToken}` : "",
         },
-        fetchPolicy: "network-only",
-        onError: (err) => console.error("Error in Subsidiaries Query:", err),
+    });
+    const {
+        loading: subsidiariesLoading,
+        error: subsidiariesError,
+        data: subsidiariesData,
+    } = useQuery(SUBSIDIARIES_QUERY, {
+        context: getAuthContext(),
+        skip: !auth?.jwtToken,
     });
 
     const [
@@ -123,7 +152,22 @@ function QuoteFilter({
         fetchPolicy: "network-only",
         onError: (err) => console.error("Error in Search Client:", err),
     });
-
+    useEffect(() => {
+        if (auth?.user?.subsidiaryId && subsidiariesData?.subsidiaries) {
+            const subsidiaryFound = subsidiariesData?.subsidiaries.find(
+                (subsidiary: ISubsidiary) =>
+                    Number(subsidiary.id) === Number(auth?.user?.subsidiaryId)
+            );
+            setFilterObj({
+                ...filterObj,
+                subsidiaryId: auth?.user?.subsidiaryId,
+                subsidiaryName:
+                    subsidiaryFound?.company?.businessName +
+                    " " +
+                    subsidiaryFound?.serial,
+            });
+        }
+    }, [auth?.user?.subsidiaryId, subsidiariesData?.subsidiaries]);
     const handleClientSelect = (event: ChangeEvent<HTMLInputElement>) => {
         const selectedOption = event.target.value;
         const selectedData = searchClientData?.searchClientByParameter?.find(
@@ -206,6 +250,33 @@ function QuoteFilter({
                             )}
                         </datalist>
                     </div>
+                    {auth?.user?.isSuperuser ? (
+                        <>
+                            <input
+                                type="search"
+                                name="subsidiaryName"
+                                onChange={handleInputChange}
+                                value={filterObj.subsidiaryName}
+                                onFocus={(e) => e.target.select()}
+                                autoComplete="off"
+                                disabled={subsidiariesLoading}
+                                className="filter-form-control h-10 w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                list="subsidiaryList"
+                                placeholder="🏢 Buscar por sede"
+                            />
+                            <datalist id="subsidiaryList">
+                                {subsidiariesData?.subsidiaries?.map(
+                                    (n: ISubsidiary, index: number) => (
+                                        <option
+                                            key={index}
+                                            data-key={n.id}
+                                            value={`${n.company?.businessName} ${n.serial}`}
+                                        />
+                                    )
+                                )}
+                            </datalist>
+                        </>
+                    ) : null}
                     <input
                         type="date"
                         name="startDate"
