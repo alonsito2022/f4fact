@@ -190,7 +190,7 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
                                                         }
                                                     />
                                                 ) : (
-                                                    <UserCircle className="w-5 h-5" />
+                                                    <UserCircle />
                                                 )}
                                             </div>
                                         </td>
