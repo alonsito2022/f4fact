@@ -179,20 +179,21 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
                                             )}
                                         </td>
                                         <td className="px-2 py-1">
-                                            <div className="flex items-center justify-center w-5 h-5">
-                                                {item?.logo ? (
-                                                    <ImageCircle
-                                                        image={
-                                                            item.id &&
-                                                            (item.logo as string).search("base64") == -1
-                                                                ? `${process.env.NEXT_PUBLIC_BASE_API}/${item.logo}`
-                                                                : (item.logo as string)
-                                                        }
-                                                    />
-                                                ) : (
-                                                    <UserCircle />
-                                                )}
-                                            </div>
+                                        <div className="flex items-center justify-center">
+                                            {item?.logo ? (
+                                            <ImageCircle
+                                                image={
+                                                item.id &&
+                                                (item.logo as string).search("base64") == -1
+                                                    ? `${process.env.NEXT_PUBLIC_BASE_API}/${item.logo}`
+                                                    : (item.logo as string)
+                                                }
+                                                className="w-5 h-5 object-cover rounded-full"
+                                            />
+                                            ) : (
+                                            <UserCircle />
+                                            )}
+                                        </div>
                                         </td>
                                         <td className="px-2 py-1 text-right">
                                             <a
