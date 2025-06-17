@@ -293,10 +293,10 @@ function SupplierForm({
             });
         } else {
             if (documentNumber.length === 11) {
-                departmentId = data.sntPerson.person.sntDepartment;
-                provinceId = data.sntPerson.person.sntProvince;
-                districtId = data.sntPerson.person.sntDistrict;
-                address = data.sntPerson.person.sntAddress;
+                departmentId = data.sntPerson.person.sntDepartment || "04";
+                provinceId = data.sntPerson.person.sntProvince || "0406";
+                districtId = data.sntPerson.person.sntDistrict || "040601";
+                address = data.sntPerson.person.sntAddress || "";
             }
 
             await provincesQuery({ variables: { departmentId: departmentId } });
@@ -309,6 +309,12 @@ function SupplierForm({
                 departmentId: departmentId,
                 provinceId: provinceId,
                 districtId: districtId,
+                id: Number(data.sntPerson.person.sntId),
+                documentType: data.sntPerson.person.sntDocumentType,
+                documentNumber: data.sntPerson.person.sntDocumentNumber,
+                isEnabled: data.sntPerson.person.sntIsEnabled,
+                isSupplier: data.sntPerson.person.sntIsSupplier,
+                isClient: data.sntPerson.person.sntIsClient,
             });
             toast(data.sntPerson.message, {
                 hideProgressBar: true,
@@ -499,6 +505,14 @@ function SupplierForm({
         }
 
         if (Number(person.id) !== 0) {
+            setPurchase({
+                ...purchase,
+                supplierId: Number(person.id),
+                supplierName: person.names,
+                supplierDocumentType: person.documentType,
+            });
+            setSupplierSearch(`${person.documentNumber} ${person.names}`);
+            modalAddPerson.hide();
         } else {
             const values = {
                 names: person.names,
@@ -507,12 +521,12 @@ function SupplierForm({
                 email: person.email,
                 address: person.address,
                 country: person.country,
-                districtId: person.districtId,
+                districtId: person.districtId || "040601",
                 documentType: person.documentType,
                 documentNumber: person.documentNumber,
                 isEnabled: person.isEnabled,
-                isSupplier: person.isSupplier,
-                isClient: person.isClient,
+                isSupplier: true,
+                isClient: true,
                 economicActivityMain: Number(person.economicActivityMain),
                 subsidiaryId: Number(auth?.user?.subsidiaryId),
             };
@@ -1067,7 +1081,10 @@ function SupplierForm({
                                     type="submit"
                                     className="btn-green px-5 py-2 inline-flex items-center gap-2"
                                 >
-                                    <Save /> Crear o Asignar Proveedor
+                                    <Save />
+                                    {Number(person.id) !== 0
+                                        ? "Seleccionar Proveedor"
+                                        : "Crear Proveedor"}
                                 </button>
                             </div>
                         </form>

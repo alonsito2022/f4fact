@@ -21,7 +21,7 @@ const initialStatePerson = {
     observation: "",
     isEnabled: true,
     isClient: true,
-    isSupplier: false,
+    isSupplier: true,
     country: "PE",
     districtId: "040101",
     shortName: "",

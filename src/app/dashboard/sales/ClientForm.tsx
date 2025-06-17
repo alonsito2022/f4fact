@@ -174,11 +174,6 @@ function ClientForm({
         onCompleted: (data) => {
             if (data.createPerson.success) {
                 const newPerson = data.createPerson.person;
-                // toast(data.createPerson.message, {
-                //     hideProgressBar: true,
-                //     autoClose: 2000,
-                //     type: "success",
-                // });
 
                 // Update sale state with complete client information
                 setSale({
@@ -325,10 +320,10 @@ function ClientForm({
         } else {
             // console.log("data.sntPerson.person", data.sntPerson.person);
             if (documentNumber.length === 11) {
-                departmentId = data.sntPerson.person.sntDepartment;
-                provinceId = data.sntPerson.person.sntProvince;
-                districtId = data.sntPerson.person.sntDistrict;
-                address = data.sntPerson.person.sntAddress;
+                departmentId = data.sntPerson.person.sntDepartment || "04";
+                provinceId = data.sntPerson.person.sntProvince || "0401";
+                districtId = data.sntPerson.person.sntDistrict || "040101";
+                address = data.sntPerson.person.sntAddress || "";
             }
 
             await provincesQuery({ variables: { departmentId: departmentId } });
@@ -548,7 +543,18 @@ function ClientForm({
         }
 
         if (Number(person.id) !== 0) {
-            // Handle edit case if needed
+            // en caso de que la persona ya exista, se actualiza el estado de la venta
+            setSale({
+                ...sale,
+                clientId: Number(person.id),
+                clientName: person.names,
+                clientDocumentType: person.documentType,
+            });
+
+            // se actualiza el campo de busqueda de clientes
+            setClientSearch(`${person.documentNumber} ${person.names}`);
+
+            modalAddClient.hide();
         } else {
             const values = {
                 names: person.names,
@@ -557,69 +563,26 @@ function ClientForm({
                 email: person.email,
                 address: person.address,
                 country: person.country,
-                districtId: person.districtId,
+                districtId: person.districtId || "040601",
                 documentType: person.documentType,
                 documentNumber: person.documentNumber,
                 isEnabled: person.isEnabled,
-                isSupplier: person.isSupplier,
-                isClient: person.isClient,
+                isSupplier: true,
+                isClient: true,
                 economicActivityMain: Number(person.economicActivityMain),
                 subsidiaryId: Number(auth?.user?.subsidiaryId),
             };
 
             try {
-                const { data, errors } = await addPerson({ variables: values });
-
-                if (errors) {
-                    toast(errors.toString(), {
-                        hideProgressBar: true,
-                        autoClose: 2000,
-                        type: "error",
-                    });
-                    return;
-                }
-
-                if (!data.createPerson.success) {
-                    if (data.createPerson.personAlreadyRegistered) {
-                        setPerson({
-                            ...person,
-                            id: data.createPerson.person.id,
-                            names: data.createPerson.person.names,
-                            shortName: data.createPerson.person.shortName,
-                            phone: data.createPerson.person.phone,
-                            email: data.createPerson.person.email,
-                            address: data.createPerson.person.address,
-                            country: data.createPerson.person.country,
-                            economicActivityMain:
-                                data.createPerson.person.economicActivityMain,
-                            isEnabled: data.createPerson.person.isEnabled,
-                            isSupplier: data.createPerson.person.isSupplier,
-                            isClient: data.createPerson.person.isClient,
-                        });
-                        toast(
-                            "El cliente ya existe, por favor seleccionelo de la lista",
-                            {
-                                hideProgressBar: true,
-                                autoClose: 2000,
-                                type: "error",
-                            }
-                        );
-                        return;
-                    } else {
-                        toast(data.createPerson.message, {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "error",
-                        });
-                        return;
-                    }
-                } else {
+                const { data, errors } = await addPerson({
+                    variables: values,
+                });
+                if (data?.createPerson) {
                     toast(data.createPerson.message, {
                         hideProgressBar: true,
                         autoClose: 2000,
                         type: "success",
                     });
-                    return;
                 }
             } catch (error) {
                 console.error("Error creating person:", error);
@@ -1263,37 +1226,15 @@ function ClientForm({
                                 >
                                     Cerrar
                                 </button>
-                                {Number(person.id) === 0 && (
-                                    <button
-                                        type="submit"
-                                        className="px-5 py-2 inline-flex items-center gap-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800"
-                                        disabled={Number(person.id) !== 0}
-                                    >
-                                        <Save /> Crear Cliente o Proveedor
-                                    </button>
-                                )}
-                                {Number(person.id) !== 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSale({
-                                                ...sale,
-                                                clientId: Number(person.id),
-                                                clientName: person.names,
-                                                clientDocumentType:
-                                                    person.documentType,
-                                            });
-                                            setClientSearch(
-                                                `${person.documentNumber} ${person.names}`
-                                            );
-                                            modalAddClient.hide();
-                                        }}
-                                        disabled={Number(person.id) === 0}
-                                        className="px-5 py-2 inline-flex items-center gap-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800"
-                                    >
-                                        <Save /> Seleccionar este cliente
-                                    </button>
-                                )}
+                                <button
+                                    type="submit"
+                                    className="px-5 py-2 inline-flex items-center gap-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800"
+                                >
+                                    <Save />
+                                    {Number(person.id) !== 0
+                                        ? "Seleccionar Cliente o Proveedor"
+                                        : "Crear Cliente o Proveedor"}
+                                </button>
                             </div>
                         </form>
                     </div>
