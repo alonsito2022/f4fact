@@ -405,8 +405,11 @@ function WayPayForm({
                     });
                     // Use the new close function
                     handleCloseModal();
-
-                    router.push("/dashboard/sales");
+                    if (invoice.documentType === "NS") {
+                        router.push("/dashboard/sales/exit_note");
+                    } else {
+                        router.push("/dashboard/sales");
+                    }
                 }
             }
         } catch (error) {
@@ -427,6 +430,7 @@ function WayPayForm({
         modalWayPay,
         isProcessing,
         setIsProcessing,
+        handleCloseModal,
     ]);
 
     useEffect(() => {

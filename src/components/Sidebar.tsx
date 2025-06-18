@@ -476,6 +476,26 @@ function Sidebar() {
                                             Nuevo Comprobante
                                         </button>
                                     </li>
+                                    <hr className="my-2 border-gray-300 dark:border-gray-700" />
+                                    {/* Notas de Salida */}
+                                    <li>
+                                        <Link
+                                            href="/dashboard/sales/exit_note"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                            onClick={toggleSidebar}
+                                        >
+                                            Notas de Salida
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/sales/exit_note/new"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700 "
+                                            onClick={toggleSidebar}
+                                        >
+                                            Nueva Nota de Salida
+                                        </Link>
+                                    </li>
                                 </ul>
                             </li>
 

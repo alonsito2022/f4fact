@@ -9,6 +9,8 @@ function SalePagination({
     guidesData,
     quotesQuery,
     quotesData,
+    exitNotesQuery,
+    exitNotesData,
 }: any) {
     return (
         <div className="flex items-center justify-center gap-2 my-4">
@@ -30,7 +32,11 @@ function SalePagination({
                         page: prevPage - 1,
                         pageSize: Number(filterObj.pageSize),
                     };
-                    const queryToUse = salesQuery || guidesQuery || quotesQuery;
+                    const queryToUse =
+                        salesQuery ||
+                        guidesQuery ||
+                        quotesQuery ||
+                        exitNotesQuery;
                     if (queryToUse) {
                         queryToUse({
                             variables: variables,
@@ -64,7 +70,8 @@ function SalePagination({
                         ? filteredSalesData?.allSales?.totalNumberOfPages
                         : guidesData
                         ? guidesData?.allGuides?.totalNumberOfPages
-                        : quotesData?.allQuotes?.totalNumberOfPages}
+                        : quotesData?.allQuotes?.totalNumberOfPages ||
+                          exitNotesData?.allExitNotes?.totalNumberOfPages}
                 </span>
             </span>
 
@@ -86,7 +93,11 @@ function SalePagination({
                         pageSize: Number(filterObj.pageSize),
                     };
 
-                    const queryToUse = salesQuery || guidesQuery;
+                    const queryToUse =
+                        salesQuery ||
+                        guidesQuery ||
+                        quotesQuery ||
+                        exitNotesQuery;
                     if (queryToUse) {
                         queryToUse({
                             variables: variables,
@@ -96,13 +107,15 @@ function SalePagination({
                 disabled={
                     (!filteredSalesData?.allSales?.totalNumberOfPages &&
                         !guidesData?.allGuides?.totalNumberOfPages &&
-                        !quotesData?.allQuotes?.totalNumberOfPages) ||
+                        !quotesData?.allQuotes?.totalNumberOfPages &&
+                        !exitNotesData?.allExitNotes?.totalNumberOfPages) ||
                     filterObj.page ===
                         (filteredSalesData
                             ? filteredSalesData?.allSales?.totalNumberOfPages
                             : guidesData
                             ? guidesData?.allGuides?.totalNumberOfPages
-                            : quotesData?.allQuotes?.totalNumberOfPages)
+                            : quotesData?.allQuotes?.totalNumberOfPages ||
+                              exitNotesData?.allExitNotes?.totalNumberOfPages)
                 }
             >
                 Siguiente

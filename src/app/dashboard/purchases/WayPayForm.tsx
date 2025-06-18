@@ -333,6 +333,7 @@ function WayPayForm({
         modalWayPay,
         isProcessing,
         setIsProcessing,
+        handleCloseModal,
     ]);
 
     // Add this useEffect to set the ref when the component mounts
@@ -354,7 +355,7 @@ function WayPayForm({
             };
             setModalWayPay(new Modal($targetEl, options));
         }
-    }, []);
+    }, [modalWayPay, setModalWayPay]);
 
     const handleInputChangeWayPay = ({
         target: { name, value },
