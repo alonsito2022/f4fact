@@ -203,6 +203,25 @@ function SaleList({
             clientDoc: item.client?.documentNumber,
         });
     };
+
+    const formatEmitTime = (emitTime: string) => {
+        if (!emitTime) return "";
+
+        try {
+            // Convert to Peru timezone and format as HH:MM
+            const date = new Date(emitTime);
+            return date.toLocaleTimeString("es-PE", {
+                timeZone: "America/Lima",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+            });
+        } catch (error) {
+            console.error("Error formatting emitTime:", error);
+            return emitTime; // Return original value if formatting fails
+        }
+    };
+
     return (
         <>
             <div className="w-full overflow-x-auto">
@@ -374,7 +393,7 @@ function SaleList({
                                                 {item.subsidiary.companyName}
                                             </td>
                                             <td className="p-0.5 pl-2 text-nowrap">
-                                                {item.emitTime}
+                                                {formatEmitTime(item.emitTime)}
                                             </td>
                                         </>
                                     )}
