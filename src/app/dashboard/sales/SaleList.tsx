@@ -373,6 +373,9 @@ function SaleList({
                                             <td className="p-0.5">
                                                 {item.subsidiary.companyName}
                                             </td>
+                                            <td className="p-0.5 pl-2 text-nowrap">
+                                                {item.emitTime}
+                                            </td>
                                         </>
                                     )}
 
@@ -380,9 +383,6 @@ function SaleList({
                                         {item.emitDate}
                                     </td>
 
-                                    <td className="p-0.5 pl-2 text-nowrap">
-                                        {item.emitTime}
-                                    </td>
                                     <td className="p-0.5 text-center">
                                         {item.documentType}
                                     </td>
