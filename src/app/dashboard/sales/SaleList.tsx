@@ -208,14 +208,27 @@ function SaleList({
         if (!emitTime) return "";
 
         try {
-            // Convert to Peru timezone and format as HH:MM
+            // If emitTime is already a time string (e.g., "15:46:59.855548")
+            // Extract only hours and minutes
+            const timeMatch = emitTime.match(/^(\d{1,2}):(\d{2})/);
+            if (timeMatch) {
+                const hours = timeMatch[1].padStart(2, "0");
+                const minutes = timeMatch[2];
+                return `${hours}:${minutes}`;
+            }
+
+            // Fallback: try to parse as full datetime
             const date = new Date(emitTime);
-            return date.toLocaleTimeString("es-PE", {
-                timeZone: "America/Lima",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-            });
+            if (!isNaN(date.getTime())) {
+                return date.toLocaleTimeString("es-PE", {
+                    timeZone: "America/Lima",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                });
+            }
+
+            return emitTime; // Return original if parsing fails
         } catch (error) {
             console.error("Error formatting emitTime:", error);
             return emitTime; // Return original value if formatting fails
