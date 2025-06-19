@@ -373,6 +373,7 @@ export interface IOperation {
     serial: string;
     correlative: string;
     emitDate: string;
+    emitTime: string;
     operationType: string;
     operationDate: string;
     supplierName: string;

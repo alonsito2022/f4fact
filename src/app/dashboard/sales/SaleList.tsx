@@ -296,6 +296,9 @@ function SaleList({
                                     <th className="w-80 dark:border-gray-600">
                                         Empresa
                                     </th>
+                                    <th className="w-80 dark:border-gray-600">
+                                        Hora
+                                    </th>
                                 </>
                             )}
                             <th className="pl-2 w-8 dark:border-gray-600 text-left">
@@ -375,6 +378,10 @@ function SaleList({
 
                                     <td className="p-0.5 pl-2 text-nowrap">
                                         {item.emitDate}
+                                    </td>
+
+                                    <td className="p-0.5 pl-2 text-nowrap">
+                                        {item.emitTime}
                                     </td>
                                     <td className="p-0.5 text-center">
                                         {item.documentType}
