@@ -440,8 +440,35 @@ function SaleDetailForm({
             });
             return;
         }
-        if (Number(invoiceDetail?.quantity) === 0) {
-            toast("Por favor ingrese una cantidad.", {
+        if (Number(invoiceDetail?.quantity) < 0) {
+            toast("Por favor ingrese una cantidad mayor a 0.", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            return;
+        }
+        if (Number(invoiceDetail?.unitPrice) < 0) {
+            toast("Por favor ingrese un precio mayor a 0.", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            return;
+        }
+        if (Number(invoiceDetail?.unitValue) < 0) {
+            toast("Por favor ingrese un valor mayor a 0.", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            return;
+        }
+        if (
+            Number(invoiceDetail?.totalDiscount) >
+            Number(invoiceDetail?.totalValue)
+        ) {
+            toast("El descuento no puede ser mayor al subtotal.", {
                 hideProgressBar: true,
                 autoClose: 2000,
                 type: "warning",
