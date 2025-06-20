@@ -8,7 +8,6 @@ import { initFlowbite } from "flowbite";
 import WhatsAppModal from "./WhatsAppModal";
 import { Modal } from "flowbite";
 import { useAuth } from "@/components/providers/AuthProvider";
-// import { useSession } from "next-auth/react";
 const limaDate = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
 );
@@ -154,7 +153,6 @@ function SalePage() {
         if (auth?.status === "authenticated" && auth?.jwtToken) {
             salesQuery({
                 variables: {
-                    // subsidiaryId: Number(filterObj.subsidiaryId),
                     subsidiaryId: auth?.user?.isSuperuser
                         ? Number(filterObj.subsidiaryId)
                         : Number(auth?.user?.subsidiaryId),
@@ -170,17 +168,6 @@ function SalePage() {
             });
         }
     }, [auth?.status, auth?.jwtToken]);
-
-    // useEffect(() => {
-    //     if (auth?.status === "authenticated" && auth?.jwtToken)
-    //         setFilterObj({
-    //             ...filterObj,
-    //             subsidiaryId:
-    //                 auth?.user?.isSuperuser === true
-    //                     ? "0"
-    //                     : String(auth?.user?.subsidiary?.id),
-    //         });
-    // }, [auth?.status, auth?.jwtToken]);
 
     // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
     if (auth?.status === "loading") {

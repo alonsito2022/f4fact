@@ -399,13 +399,13 @@ function SaleList({
                                 >
                                     {user?.isSuperuser && (
                                         <>
-                                            <td className="p-0.5">
+                                            <td className="p-0.5 font-bold text-blue-600 dark:text-blue-500">
                                                 {index + 1}
                                             </td>
-                                            <td className="p-0.5">
+                                            <td className="p-0.5 font-bold text-blue-600 dark:text-blue-500">
                                                 {item.subsidiary.companyName}
                                             </td>
-                                            <td className="p-0.5 pl-2 text-nowrap">
+                                            <td className="p-0.5 pl-2 text-nowrap font-bold text-blue-600 dark:text-blue-500">
                                                 {formatEmitTime(item.emitTime)}
                                             </td>
                                         </>

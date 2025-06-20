@@ -11,8 +11,8 @@ import Excel from "@/components/icons/Excel";
 import ExcelModal from "./ExcelModal";
 import { Modal } from "flowbite";
 import SearchInvoice from "./SearchInvoice";
-import InvoiceTypeModal from './new/InvoiceTypeModal';
-import { useInvoiceTypeModal } from '@/components/context/InvoiceTypeModalContext'
+import InvoiceTypeModal from "./new/InvoiceTypeModal";
+import { useInvoiceTypeModal } from "@/components/context/InvoiceTypeModalContext";
 // Add the search client query
 const SEARCH_CLIENT_BY_PARAMETER = gql`
     query SearchClient(
@@ -67,7 +67,7 @@ function SaleFilter({
     const [modalExcel, setModalExcel] = useState<Modal | null>(null);
     const [modalSearchInvoice, setModalSearchInvoice] = useState<Modal | null>(
         null
-    );    
+    );
     const [clientSearch, setClientSearch] = useState("");
 
     const handleClickButton = async () => {
@@ -190,7 +190,11 @@ function SaleFilter({
         onError: (err) => console.error("Error in Search Client:", err),
     });
     useEffect(() => {
-        if (auth?.user?.subsidiaryId && subsidiariesData?.subsidiaries) {
+        if (
+            auth?.user?.subsidiaryId &&
+            subsidiariesData?.subsidiaries &&
+            !auth?.user?.isSuperuser
+        ) {
             const subsidiaryFound = subsidiariesData?.subsidiaries.find(
                 (subsidiary: ISubsidiary) =>
                     Number(subsidiary.id) === Number(auth?.user?.subsidiaryId)
