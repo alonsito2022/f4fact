@@ -374,7 +374,8 @@ function SaleDetailForm({
         }
         if (
             auth?.user?.companyWithStock &&
-            Number(value) > Number(invoiceDetail?.stock)
+            Number(value) > Number(invoiceDetail?.stock) &&
+            invoice?.parentOperationDocumentType !== "NS"
         ) {
             toast.warning(
                 "La cantidad no puede ser mayor al stock disponible."

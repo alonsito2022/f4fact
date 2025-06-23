@@ -93,6 +93,7 @@ const initialStateSale = {
     totalDetraction: "",
     detractionPercentage: "",
     nextTemporaryId: 1,
+    parentOperationDocumentType: "",
 };
 const initialStateSaleDetail = {
     id: 0,
@@ -629,6 +630,10 @@ function ConvertToInvoicePage() {
                 ).toFixed(2),
                 totalToPay: Number(dataQuote?.totalToPay).toFixed(2),
                 nextTemporaryId: formattedOperationdetailSet.length + 1,
+                parentOperationDocumentType: dataQuote?.documentType.replace(
+                    "A_",
+                    ""
+                ),
             }));
 
             setIsLoading(false);
