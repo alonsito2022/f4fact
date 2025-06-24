@@ -626,6 +626,20 @@ function NewSalePage() {
             });
             return false;
         }
+
+        // Validar que todos los items tengan productTariffId válido
+        const itemsWithoutTariff = sale.operationdetailSet.filter(
+            (item: any) => Number(item.productTariffId) === 0
+        );
+        if (itemsWithoutTariff.length > 0) {
+            toast("Todos los productos deben tener una tarifa asignada.", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "warning",
+            });
+            return false;
+        }
+
         if (!sale.serial) {
             toast("Por favor ingrese la serie.", {
                 hideProgressBar: true,
