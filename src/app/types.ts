@@ -247,6 +247,7 @@ export interface IUnit {
 export interface IProduct {
     id: number;
     code: string;
+    barcode: string;
     ean: string;
     name: string;
     observation: string;
@@ -277,6 +278,7 @@ export interface IProduct {
 
     priceWithIgv4: number;
     priceWithoutIgv4: number;
+    stock: number;
 
     minimumUnitId: number;
     maximumUnitId: number;

@@ -633,6 +633,268 @@ function Sidebar() {
                                 </ul>
                             </li>
 
+                            {/* Reportes */}
+                            <li className="border-t border-gray-300 dark:border-gray-700">
+                                <button
+                                    type="button"
+                                    className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                    aria-controls="dropdown-reports"
+                                    data-collapse-toggle="dropdown-reports"
+                                    onClick={() =>
+                                        handleMenuToggle("dropdown-reports")
+                                    }
+                                >
+                                    <svg
+                                        className="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                        />
+                                    </svg>
+                                    <span className="flex-1 ml-3 text-left whitespace-nowrap">
+                                        📊 Reportes
+                                    </span>
+                                    <svg
+                                        className="w-6 h-6"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                            clipRule="evenodd"
+                                        ></path>
+                                    </svg>
+                                </button>
+                                <ul
+                                    id="dropdown-reports"
+                                    className="hidden py-2 space-y-2"
+                                >
+                                    {/* Reportes de Ventas */}
+                                    <li className="px-3 py-1">
+                                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                            📈 Ventas
+                                        </span>
+                                    </li>
+                                    {/* <li>
+                                        <Link
+                                            href="/dashboard/reports/sales_summary"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            📋 Resumen de Ventas
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/sales_by_period"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            📅 Ventas por Período
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/sales_by_client"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            👥 Ventas por Cliente
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/sales_by_product"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            📦 Ventas por Producto
+                                        </Link>
+                                    </li> */}
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/sales_payments"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            💰 Pagos de Ventas
+                                        </Link>
+                                    </li>
+                                    {/* <li>
+                                        <Link
+                                            href="/dashboard/reports/credit_notes"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            🔄 Notas de Crédito
+                                        </Link>
+                                    </li> */}
+
+                                    {/* Reportes de Inventario */}
+                                    <li className="px-3 py-1 mt-4">
+                                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                            📦 Inventario
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/kardex_products"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            📊 Kardex de Productos
+                                        </Link>
+                                    </li>
+                                    {/* <li>
+                                        <Link
+                                            href="/dashboard/reports/stock_valuation"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            💎 Valoración de Stock
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/low_stock"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            ⚠️ Stock Mínimo
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/movement_history"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            📝 Historial de Movimientos
+                                        </Link>
+                                    </li> */}
+
+                                    {/* Reportes Financieros */}
+                                    <li className="px-3 py-1 mt-4">
+                                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                            💰 Financieros
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/monthly_summary"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            📊 Resumen Mensual
+                                        </Link>
+                                    </li>
+                                    {/* <li>
+                                        <Link
+                                            href="/dashboard/reports/cash_flow"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            💸 Flujo de Caja
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/accounts_receivable"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            📋 Cuentas por Cobrar
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/tax_summary"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            🏛️ Resumen de Impuestos
+                                        </Link>
+                                    </li> */}
+
+                                    {/* Reportes de Compras */}
+                                    {/* <li className="px-3 py-1 mt-4">
+                                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                            🛒 Compras
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/purchases_summary"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            📋 Resumen de Compras
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/purchases_by_supplier"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            🏢 Compras por Proveedor
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/accounts_payable"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            💳 Cuentas por Pagar
+                                        </Link>
+                                    </li> */}
+
+                                    {/* Reportes de Gestión */}
+                                    {/* <li className="px-3 py-1 mt-4">
+                                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                            ⚙️ Gestión
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/user_activity"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            👤 Actividad de Usuarios
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/performance_metrics"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            📈 Métricas de Rendimiento
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/reports/audit_trail"
+                                            className="text-base text-gray-900 rounded-lg flex items-center p-0 group hover:bg-gray-100 transition duration-75 pl-11 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            🔍 Auditoría del Sistema
+                                        </Link>
+                                    </li> */}
+                                </ul>
+                            </li>
+
                             {/* <li>
                                 <a
                                     href="/"

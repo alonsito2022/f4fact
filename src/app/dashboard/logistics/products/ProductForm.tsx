@@ -9,6 +9,7 @@ import { Modal, ModalOptions } from "flowbite";
 const ADD_PRODUCT = gql`
     mutation (
         $code: String!
+        $barcode: String!
         $name: String!
         $available: Boolean!
         $activeType: String!
@@ -33,6 +34,7 @@ const ADD_PRODUCT = gql`
     ) {
         createProduct(
             code: $code
+            barcode: $barcode
             name: $name
             available: $available
             activeType: $activeType
@@ -59,6 +61,7 @@ const ADD_PRODUCT = gql`
             product {
                 id
                 name
+                barcode
                 ean
                 minimumUnitName
                 maximumFactor
@@ -71,6 +74,7 @@ const UPDATE_PRODUCT = gql`
     mutation (
         $id: ID!
         $code: String!
+        $barcode: String!
         $name: String!
         $available: Boolean!
         $activeType: String!
@@ -96,6 +100,7 @@ const UPDATE_PRODUCT = gql`
         updateProduct(
             id: $id
             code: $code
+            barcode: $barcode
             name: $name
             available: $available
             activeType: $activeType
@@ -271,6 +276,7 @@ function ProductForm({
                 const values = {
                     id: Number(product.id),
                     code: product.code,
+                    barcode: product.barcode,
                     name: product.name,
                     available: product.available,
                     activeType: String(product.activeType).replace("A_", ""),
@@ -298,6 +304,7 @@ function ProductForm({
                     minimumFactor: Number(product.minimumFactor),
                     stock: Number(product.stock),
                 };
+                // console.log("values", values, auth?.jwtToken);
                 const { data, errors } = await updateProduct({
                     variables: values,
                 });
@@ -322,6 +329,7 @@ function ProductForm({
                 // for creating
                 const values = {
                     code: product.code,
+                    barcode: product.barcode,
                     name: product.name,
                     available: product.available,
                     activeType: product.activeType,
@@ -577,7 +585,26 @@ function ProductForm({
                                             autoComplete="off"
                                         />
                                     </div>
-
+                                    {/* Código de barras */}
+                                    <div className="sm:col-span-1">
+                                        <label
+                                            htmlFor="barcode"
+                                            className="form-label"
+                                        >
+                                            Código de barras
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="barcode"
+                                            id="barcode"
+                                            maxLength={20}
+                                            value={product.barcode || ""}
+                                            onChange={handleInputChange}
+                                            onFocus={(e) => e.target.select()}
+                                            className="form-control"
+                                            autoComplete="off"
+                                        />
+                                    </div>
                                     {/* EAN */}
                                     <div className="sm:col-span-2 hidden">
                                         <label

@@ -14,6 +14,7 @@ const initialStateProduct = {
     id: 0,
     name: "",
     code: "",
+    barcode: "",
 
     available: true,
     activeType: "01",
@@ -65,6 +66,7 @@ const PRODUCTS_QUERY = gql`
         allProducts(subsidiaryId: $subsidiaryId, available: $available) {
             id
             code
+            barcode
             name
             available
             activeType

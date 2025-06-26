@@ -3,7 +3,7 @@ import React from "react";
 function Edit() {
     return (
         <svg
-            className="w-6 h-6 text-gray-600 dark:text-white"
+            className="w-4 h-4 mr-1 text-gray-600 dark:text-white"
             stroke="currentColor"
             fill="currentColor"
             strokeWidth="0"
