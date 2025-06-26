@@ -636,6 +636,7 @@ function ConvertToInvoicePage() {
                     "A_",
                     ""
                 ),
+                observation: dataQuote?.observation || "",
             }));
 
             setIsLoading(false);

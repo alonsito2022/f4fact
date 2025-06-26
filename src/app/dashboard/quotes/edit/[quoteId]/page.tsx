@@ -660,6 +660,7 @@ function EditQuotePage() {
                 ).toFixed(2),
                 totalToPay: Number(dataQuote?.totalToPay).toFixed(2),
                 nextTemporaryId: formattedOperationdetailSet.length + 1,
+                observation: dataQuote?.observation || "",
             }));
             setInitialClientData({
                 id: dataQuote?.client.id,
