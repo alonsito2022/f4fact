@@ -432,6 +432,7 @@ const initialStateProduct = {
     id: 0,
     name: "",
     code: "",
+    barcode: "",
 
     available: true,
     activeType: "01",
