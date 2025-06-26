@@ -116,7 +116,7 @@ function SalePaymentPage() {
     }
     return (
         <div className="min-h-screen bg-white dark:bg-gray-800">
-            <div className="  pb-16">
+            <div className=" container mx-auto pb-16">
                 <div className="grid grid-cols-12 gap-4">
                     <div className="col-span-1"></div>
                     <div className="col-span-10">
