@@ -27,6 +27,7 @@ import {
 } from "@apollo/client";
 import Add from "@/components/icons/Add";
 import Save from "@/components/icons/Save";
+import Search from "@/components/icons/Search";
 import ProductForm from "../../logistics/products/ProductForm";
 import { toast } from "react-toastify";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -90,6 +91,7 @@ const PRODUCTS_QUERY = gql`
         allProducts(subsidiaryId: $subsidiaryId, available: $available) {
             id
             code
+            barcode
             name
             available
             activeType
@@ -114,6 +116,17 @@ const PRODUCTS_QUERY = gql`
             priceWithoutIgv2
             priceWithoutIgv3
             priceWithoutIgv4
+        }
+    }
+`;
+const PRODUCT_DETAIL_QUERY = gql`
+    query ($productId: Int!) {
+        productDetailByProductId(productId: $productId) {
+            stock
+            priceWithoutIgv3
+            priceWithIgv3
+            productTariffId3
+            typeAffectationId
         }
     }
 `;
@@ -311,7 +324,7 @@ const initialStateSale = {
     saleExchangeRate: "",
     userId: 0,
     userName: "",
-    operationdetailSet: [],
+    operationdetailSet: [] as IOperationDetail[],
     cashflowSet: [],
     discountForItem: "",
     discountGlobal: "",
@@ -444,6 +457,7 @@ function NewQuotePage() {
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
 
     const [modalAddClient, setModalAddClient] = useState<Modal | any>(null);
+    const [barcodeInput, setBarcodeInput] = useState("");
     const auth = useAuth();
     const clientInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
@@ -474,6 +488,7 @@ function NewQuotePage() {
         },
         skip: !auth?.jwtToken,
     });
+    const [productDetailQuery] = useLazyQuery(PRODUCT_DETAIL_QUERY);
     const {
         loading: productsLoading,
         error: productsError,
@@ -563,6 +578,90 @@ function NewQuotePage() {
         const { name, value } = event.target;
         setSale({ ...sale, [name]: value });
         // TODO: LOGIC HERE
+    };
+
+    // Función para manejar la búsqueda por código de barras
+    const handleBarcodeSearch = async (barcode: string) => {
+        if (!barcode.trim()) return;
+
+        const foundProduct = productsData?.allProducts?.find(
+            (p: IProduct) => p.barcode === barcode.trim()
+        );
+
+        if (!foundProduct) {
+            toast.error("Producto no encontrado con este código de barras");
+            setBarcodeInput("");
+            return;
+        }
+
+        // Obtener los detalles del producto para obtener productTariffId y stock
+        try {
+            const result = await productDetailQuery({
+                context: authContext,
+                variables: { productId: Number(foundProduct.id) },
+                fetchPolicy: "network-only",
+            });
+
+            const productDetail = result.data?.productDetailByProductId;
+
+            if (!productDetail) {
+                toast.error("Error al obtener detalles del producto");
+                setBarcodeInput("");
+                return;
+            }
+
+            // Crear un detalle de venta con el producto encontrado
+            const newSaleDetail: IOperationDetail = {
+                id: 0,
+                productId: Number(foundProduct.id),
+                productName: foundProduct.name,
+                description: "",
+                quantity: 1,
+                unitValue: productDetail.priceWithoutIgv3 || 0,
+                unitPrice: productDetail.priceWithIgv3 || 0,
+                igvPercentage: sale.igvType || 18,
+                discountPercentage: 0,
+                totalDiscount: 0,
+                totalValue: productDetail.priceWithoutIgv3 || 0,
+                totalIgv:
+                    ((productDetail.priceWithoutIgv3 || 0) *
+                        (sale.igvType || 18)) /
+                    100,
+                totalAmount: productDetail.priceWithIgv3 || 0,
+                totalPerception: 0,
+                totalToPay: productDetail.priceWithIgv3 || 0,
+                typeAffectationId: productDetail.typeAffectationId || 1,
+                productTariffId: Number(productDetail.productTariffId3) || 0,
+                temporaryId: sale.nextTemporaryId || 1,
+            };
+
+            // Agregar el detalle a la venta
+            setSale((prevSale) => ({
+                ...prevSale,
+                operationdetailSet: [
+                    ...(prevSale.operationdetailSet || []),
+                    newSaleDetail,
+                ],
+                nextTemporaryId: (prevSale.nextTemporaryId || 1) + 1,
+            }));
+
+            toast.success(`Producto agregado: ${foundProduct.name}`);
+            setBarcodeInput("");
+        } catch (error) {
+            console.error("Error al agregar producto:", error);
+            toast.error("Error al agregar el producto al detalle");
+            setBarcodeInput("");
+        }
+    };
+
+    // Función para manejar la tecla Enter en el input de código de barras
+    const handleBarcodeKeyPress = (
+        event: React.KeyboardEvent<HTMLInputElement>
+    ) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            handleBarcodeSearch(barcodeInput);
+        }
     };
 
     function useCustomMutation(mutation: DocumentNode) {
@@ -804,6 +903,12 @@ function NewQuotePage() {
                                     setSaleDetail={setSaleDetail}
                                     initialStateSaleDetail={
                                         initialStateSaleDetail
+                                    }
+                                    barcodeInput={barcodeInput}
+                                    setBarcodeInput={setBarcodeInput}
+                                    handleBarcodeSearch={handleBarcodeSearch}
+                                    handleBarcodeKeyPress={
+                                        handleBarcodeKeyPress
                                     }
                                 />
                                 {/* Lista de Detalles */}

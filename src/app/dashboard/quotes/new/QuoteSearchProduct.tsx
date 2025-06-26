@@ -1,5 +1,6 @@
 import { IProduct } from "@/app/types";
 import Add from "@/components/icons/Add";
+import Search from "@/components/icons/Search";
 import React, { ChangeEvent } from "react";
 
 function QuoteSearchProduct({
@@ -12,6 +13,10 @@ function QuoteSearchProduct({
     modalAddDetail,
     setSaleDetail,
     initialStateSaleDetail,
+    barcodeInput,
+    setBarcodeInput,
+    handleBarcodeSearch,
+    handleBarcodeKeyPress,
 }: any) {
     const handleProduct = (
         event: ChangeEvent<
@@ -50,21 +55,49 @@ function QuoteSearchProduct({
     };
     return (
         <div className="p-6 border-2 border-gray-200 dark:border-emerald-900 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-lg relative ">
-            <div className="flex items-center gap-2 mb-4 text-gray-500 dark:text-emerald-400">
-                <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                </svg>
-                <h3 className="font-semibold text-sm">Búsqueda de Productos</h3>
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-gray-500 dark:text-emerald-400">
+                    <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                    </svg>
+                    <h3 className="font-semibold text-sm">
+                        Búsqueda de Productos
+                    </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <input
+                            type="text"
+                            value={barcodeInput}
+                            onChange={(e) => setBarcodeInput(e.target.value)}
+                            onKeyPress={handleBarcodeKeyPress}
+                            onFocus={(e) => e.target.select()}
+                            className="pl-10 pr-3 py-1 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                            placeholder="Código de barras..."
+                            autoComplete="off"
+                        />
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Search className="h-4 w-4 text-gray-400" />
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => handleBarcodeSearch(barcodeInput)}
+                        className="px-3 py-1 text-sm bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+                    >
+                        Buscar
+                    </button>
+                </div>
             </div>
             <div className="relative w-full">
                 <input

@@ -29,6 +29,8 @@ import SaleDetailForm from "@/app/dashboard/sales/SaleDetailForm";
 import ClientForm from "@/app/dashboard/sales/ClientForm";
 import ProductForm from "@/app/dashboard/logistics/products/ProductForm";
 import { toast } from "react-toastify";
+import Search from "@/components/icons/Search";
+
 const limaDate = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
 );
@@ -53,7 +55,7 @@ const initialStateSale = {
     saleExchangeRate: "",
     userId: 0,
     userName: "",
-    operationdetailSet: [],
+    operationdetailSet: [] as IOperationDetail[],
     cashflowSet: [],
     discountForItem: "",
     discountGlobal: "",
@@ -356,6 +358,7 @@ const PRODUCTS_QUERY = gql`
         allProducts(subsidiaryId: $subsidiaryId, available: $available) {
             id
             code
+            barcode
             name
             available
             activeType
@@ -383,6 +386,17 @@ const PRODUCTS_QUERY = gql`
         }
     }
 `;
+const PRODUCT_DETAIL_QUERY = gql`
+    query ($productId: Int!) {
+        productDetailByProductId(productId: $productId) {
+            stock
+            priceWithoutIgv3
+            priceWithIgv3
+            productTariffId3
+            typeAffectationId
+        }
+    }
+`;
 function ConvertToInvoicePage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -405,6 +419,7 @@ function ConvertToInvoicePage() {
     const [modalProduct, setModalProduct] = useState<Modal | any>(null);
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
     const [modalWayPay, setModalWayPay] = useState<Modal | any>(null);
+    const [barcodeInput, setBarcodeInput] = useState("");
 
     const params = useParams();
     const { quoteId } = params;
@@ -433,6 +448,8 @@ function ConvertToInvoicePage() {
         onError: (err) => console.error("Error in products:", err),
         skip: !auth?.jwtToken,
     });
+
+    const [productDetailQuery] = useLazyQuery(PRODUCT_DETAIL_QUERY);
 
     const {
         loading: operationTypesLoading,
@@ -739,6 +756,91 @@ function ConvertToInvoicePage() {
             }
         } else setProduct({ ...product, [name]: value });
     };
+
+    // Función para manejar la búsqueda por código de barras
+    const handleBarcodeSearch = async (barcode: string) => {
+        if (!barcode.trim()) return;
+
+        const foundProduct = productsData?.allProducts?.find(
+            (p: IProduct) => p.barcode === barcode.trim()
+        );
+
+        if (!foundProduct) {
+            toast.error("Producto no encontrado con este código de barras");
+            setBarcodeInput("");
+            return;
+        }
+
+        // Obtener los detalles del producto para obtener productTariffId y stock
+        try {
+            const result = await productDetailQuery({
+                context: authContext,
+                variables: { productId: Number(foundProduct.id) },
+                fetchPolicy: "network-only",
+            });
+
+            const productDetail = result.data?.productDetailByProductId;
+
+            if (!productDetail) {
+                toast.error("Error al obtener detalles del producto");
+                setBarcodeInput("");
+                return;
+            }
+
+            // Crear un detalle de venta con el producto encontrado
+            const newSaleDetail: IOperationDetail = {
+                id: 0,
+                productId: Number(foundProduct.id),
+                productName: foundProduct.name,
+                description: "",
+                quantity: 1,
+                unitValue: productDetail.priceWithoutIgv3 || 0,
+                unitPrice: productDetail.priceWithIgv3 || 0,
+                igvPercentage: sale.igvType || 18,
+                discountPercentage: 0,
+                totalDiscount: 0,
+                totalValue: productDetail.priceWithoutIgv3 || 0,
+                totalIgv:
+                    ((productDetail.priceWithoutIgv3 || 0) *
+                        (sale.igvType || 18)) /
+                    100,
+                totalAmount: productDetail.priceWithIgv3 || 0,
+                totalPerception: 0,
+                totalToPay: productDetail.priceWithIgv3 || 0,
+                typeAffectationId: productDetail.typeAffectationId || 1,
+                productTariffId: Number(productDetail.productTariffId3) || 0,
+                temporaryId: sale.nextTemporaryId || 1,
+            };
+
+            // Agregar el detalle a la venta
+            setSale((prevSale) => ({
+                ...prevSale,
+                operationdetailSet: [
+                    ...(prevSale.operationdetailSet || []),
+                    newSaleDetail,
+                ],
+                nextTemporaryId: (prevSale.nextTemporaryId || 1) + 1,
+            }));
+
+            toast.success(`Producto agregado: ${foundProduct.name}`);
+            setBarcodeInput("");
+        } catch (error) {
+            console.error("Error al agregar producto:", error);
+            toast.error("Error al agregar el producto al detalle");
+            setBarcodeInput("");
+        }
+    };
+
+    // Función para manejar la tecla Enter en el input de código de barras
+    const handleBarcodeKeyPress = (
+        event: React.KeyboardEvent<HTMLInputElement>
+    ) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            handleBarcodeSearch(barcodeInput);
+        }
+    };
+
     useEffect(() => {
         if (quoteId) {
             // Aquí puedes manejar el parámetro quoteId
@@ -1528,23 +1630,62 @@ function ConvertToInvoicePage() {
                                         </div>
                                         {/* Búsqueda de Productos */}
                                         <div className="p-6 border-2 border-emerald-200 dark:border-emerald-900 bg-white dark:bg-gray-900 rounded-xl shadow-lg relative group transition-all duration-300 hover:shadow-emerald-500/20 hover:shadow-2xl">
-                                            <div className="flex items-center gap-2 mb-4 text-emerald-600 dark:text-emerald-400">
-                                                <svg
-                                                    className="w-4 h-4"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                                    />
-                                                </svg>
-                                                <h3 className="font-semibold text-sm">
-                                                    Búsqueda de Productos
-                                                </h3>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                                                    <svg
+                                                        className="w-4 h-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                                        />
+                                                    </svg>
+                                                    <h3 className="font-semibold text-sm">
+                                                        Búsqueda de Productos
+                                                    </h3>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="relative">
+                                                        <input
+                                                            type="text"
+                                                            value={barcodeInput}
+                                                            onChange={(e) =>
+                                                                setBarcodeInput(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            onKeyPress={
+                                                                handleBarcodeKeyPress
+                                                            }
+                                                            onFocus={(e) =>
+                                                                e.target.select()
+                                                            }
+                                                            className="pl-10 pr-3 py-1 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                                            placeholder="Código de barras..."
+                                                            autoComplete="off"
+                                                        />
+                                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                            <Search className="h-4 w-4 text-gray-400" />
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleBarcodeSearch(
+                                                                barcodeInput
+                                                            )
+                                                        }
+                                                        className="px-3 py-1 text-sm bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+                                                    >
+                                                        Buscar
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div className="relative w-full">
                                                 <input

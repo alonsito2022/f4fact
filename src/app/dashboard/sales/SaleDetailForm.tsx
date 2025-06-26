@@ -591,6 +591,7 @@ function SaleDetailForm({
                         <form onSubmit={handleAddDetail}>
                             <div className="p-4 md:p-5 space-y-4">
                                 <div className="grid sm:grid-cols-1 md:grid-cols-6 gap-4">
+                                    {/* Product name input - adjusted to 4 columns */}
                                     <div className="sm:col-span-4">
                                         <label className="form-label text-gray-900 dark:text-gray-200">
                                             Producto - Servicio (CATÁLOGO) 2
