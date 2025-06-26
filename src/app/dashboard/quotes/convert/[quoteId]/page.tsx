@@ -347,6 +347,7 @@ const QUOTE_QUERY_BY_ID = gql`
                 quantityAvailable
                 description
             }
+            observation
         }
     }
 `;
