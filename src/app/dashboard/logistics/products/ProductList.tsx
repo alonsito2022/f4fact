@@ -282,6 +282,33 @@ function ProductList({
                     </div>
                 </div>
 
+                {/* Stock Status Legend */}
+                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <div className="flex flex-wrap items-center gap-6 text-sm">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                            Estado del Stock:
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full bg-green-400"></span>
+                            <span className="text-gray-600 dark:text-gray-400">
+                                Stock Alto (&gt;10 unidades)
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full bg-yellow-400"></span>
+                            <span className="text-gray-600 dark:text-gray-400">
+                                Stock Bajo (1-10 unidades)
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full bg-red-400"></span>
+                            <span className="text-gray-600 dark:text-gray-400">
+                                Sin Stock (0 unidades)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Column controls panel */}
                 {showColumnControls && (
                     <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">

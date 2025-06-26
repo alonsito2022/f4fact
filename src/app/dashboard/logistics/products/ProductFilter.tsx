@@ -26,8 +26,6 @@ function ProductFilter({
     modalCriteria,
     searchTerm,
     setSearchTerm,
-    searchField,
-    setSearchField,
     modalProduct,
     initialStateProduct,
     setProduct,
@@ -101,21 +99,8 @@ function ProductFilter({
                 value={searchTerm}
                 onChange={handleInputSearchChange}
                 className="filter-form-control w-full justify-self-start p-2 border border-gray-300 rounded-md dark:border-gray-700"
-                placeholder="Buscar productos"
+                placeholder="Buscar por nombre o código"
             />
-
-            <select
-                value={searchField}
-                onChange={(e) =>
-                    setSearchField(e.target.value as "name" | "code" | "ean")
-                }
-                className="filter-form-control w-full justify-self-start p-2 border border-gray-300 rounded-md dark:border-gray-700"
-                disabled
-            >
-                <option value="name">Nombre</option>
-                <option value="code">Codigo</option>
-                <option value="ean">Ean</option>
-            </select>
 
             {productFilterObj.isSuperuser ? (
                 <>

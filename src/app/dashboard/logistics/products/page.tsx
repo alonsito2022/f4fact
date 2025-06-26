@@ -146,9 +146,6 @@ function ProductPage() {
     const [modalProduct, setModalProduct] = useState<Modal | any>(null);
     const [modalCriteria, setModalCriteria] = useState<Modal | any>(null);
     const [searchTerm, setSearchTerm] = useState<string>("");
-    const [searchField, setSearchField] = useState<"name" | "code" | "ean">(
-        "name"
-    );
 
     const {
         loading: typeAffectationsLoading,
@@ -192,13 +189,14 @@ function ProductPage() {
 
         const searchTermLower = searchTerm.toLowerCase();
         return filteredProductsData.allProducts.filter((w: IProduct) => {
-            const searchValue =
-                searchField === "name"
-                    ? w?.name?.toLowerCase()
-                    : w?.code?.toString().toLowerCase();
-            return searchValue?.includes(searchTermLower);
+            const nameMatch = w?.name?.toLowerCase().includes(searchTermLower);
+            const codeMatch = w?.code
+                ?.toString()
+                .toLowerCase()
+                .includes(searchTermLower);
+            return nameMatch || codeMatch;
         });
-    }, [searchTerm, searchField, filteredProductsData]);
+    }, [searchTerm, filteredProductsData]);
 
     return (
         <>
@@ -211,8 +209,6 @@ function ProductPage() {
                         modalCriteria={modalCriteria}
                         searchTerm={searchTerm}
                         setSearchTerm={setSearchTerm}
-                        searchField={searchField}
-                        setSearchField={setSearchField}
                         modalProduct={modalProduct}
                         initialStateProduct={initialStateProduct}
                         setProduct={setProduct}
