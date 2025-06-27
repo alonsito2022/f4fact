@@ -39,6 +39,8 @@ const KARDEX_PRODUCTS_QUERY = gql`
             bought
             sold
             stock
+            totalSold
+            totalBought
         }
     }
 `;

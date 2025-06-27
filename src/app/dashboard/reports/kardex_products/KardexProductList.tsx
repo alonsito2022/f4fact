@@ -8,6 +8,14 @@ function KardexProductList({ filteredKardexProductsData }: any) {
         return new Intl.NumberFormat("es-PE").format(number);
     };
 
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat("es-PE", {
+            style: "currency",
+            currency: "PEN",
+            minimumFractionDigits: 2,
+        }).format(amount);
+    };
+
     const getStockStatusBadge = (stock: number) => {
         if (stock > 10) {
             return (
@@ -170,7 +178,13 @@ function KardexProductList({ filteredKardexProductsData }: any) {
                                     Comprado
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Total Comprado
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Vendido
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Total Vendido
                                 </th>
                             </tr>
                         </thead>
@@ -211,10 +225,24 @@ function KardexProductList({ filteredKardexProductsData }: any) {
                                             )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                                {formatCurrency(
+                                                    product.totalBought || 0
+                                                )}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
                                             {getMovementBadge(
                                                 product.sold,
                                                 "sold"
                                             )}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                                                {formatCurrency(
+                                                    product.totalSold || 0
+                                                )}
+                                            </span>
                                         </td>
                                     </tr>
                                 )
