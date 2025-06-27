@@ -132,7 +132,7 @@ function ProductList({
     );
 
     const getCellClassName = useCallback((available: boolean) => {
-        return `px-6 py-4 font-medium whitespace-nowrap ${
+        return `px-6 py-4 font-medium  ${
             !available
                 ? "text-red-500 line-through"
                 : "text-gray-900 dark:text-white"
@@ -539,16 +539,19 @@ function ProductList({
                                     )}
                                     {visibleColumns.name && (
                                         <td
-                                            className={getCellClassName(
-                                                item.available
-                                            )}
+                                            className={
+                                                getCellClassName(
+                                                    item.available
+                                                ) +
+                                                "px-6 py-4 whitespace-normal break-words max-w-md"
+                                            }
                                         >
                                             <div className="flex flex-col max-w-xs min-w-0">
-                                                <span className="font-medium text-gray-900 dark:text-white break-words leading-relaxed line-clamp-2">
+                                                <span className="font-medium text-gray-900 dark:text-white ">
                                                     {item.name}
                                                 </span>
                                                 {item.observation && (
-                                                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 break-words leading-relaxed line-clamp-2">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 ">
                                                         {item.observation}
                                                     </span>
                                                 )}
@@ -660,7 +663,7 @@ function ProductList({
                                             onClick={() =>
                                                 handleEditProduct(item.id)
                                             }
-                                            className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                                            className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-500 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                                         >
                                             <Edit />
                                             Editar

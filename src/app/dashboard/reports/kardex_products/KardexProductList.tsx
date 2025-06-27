@@ -205,9 +205,9 @@ function KardexProductList({ filteredKardexProductsData }: any) {
                                                 {product.productCode || "-"}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4 whitespace-normal break-words max-w-md">
                                             <div className="flex flex-col max-w-xs min-w-0">
-                                                <span className="font-medium text-gray-900 dark:text-white break-words leading-relaxed line-clamp-2">
+                                                <span className="font-medium text-gray-900 dark:text-white">
                                                     {product.productName}
                                                 </span>
                                                 <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
