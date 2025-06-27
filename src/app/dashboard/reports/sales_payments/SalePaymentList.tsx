@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 
 function SalePaymentList({
     filteredSalesPaymentsData,
@@ -7,9 +7,23 @@ function SalePaymentList({
     salesPaymentsQuery,
     user,
 }: any) {
+    const [selectedPaymentType, setSelectedPaymentType] =
+        useState<string>("all");
+
     const salesWithPayments =
         filteredSalesPaymentsData?.allSalesPayments?.salesWithPayments || [];
     const totals = filteredSalesPaymentsData?.allSalesPayments || {};
+
+    // Filtrar ventas según el tipo de pago seleccionado
+    const filteredSales = useMemo(() => {
+        if (selectedPaymentType === "all") {
+            return salesWithPayments;
+        }
+
+        return salesWithPayments.filter((sale: any) => {
+            return sale[selectedPaymentType] && sale[selectedPaymentType] > 0;
+        });
+    }, [salesWithPayments, selectedPaymentType]);
 
     // Determinar qué métodos de pago tienen datos
     const paymentMethodsWithData = useMemo(() => {
@@ -155,8 +169,7 @@ function SalePaymentList({
                                 Reporte de Pagos de Ventas
                             </h3>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                Mostrando {salesWithPayments.length}{" "}
-                                transacciones
+                                Mostrando {filteredSales.length} transacciones
                             </p>
                         </div>
 
@@ -201,6 +214,44 @@ function SalePaymentList({
                     </div>
                 </div>
 
+                {/* Selector por tipo de pago */}
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Filtrar por tipo de pago:
+                            </label>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => setSelectedPaymentType("all")}
+                                className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                                    selectedPaymentType === "all"
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
+                                }`}
+                            >
+                                Todos
+                            </button>
+                            {activePaymentMethods.map((method) => (
+                                <button
+                                    key={method.methodKey}
+                                    onClick={() =>
+                                        setSelectedPaymentType(method.methodKey)
+                                    }
+                                    className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                                        selectedPaymentType === method.methodKey
+                                            ? "bg-blue-600 text-white"
+                                            : "bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
+                                    }`}
+                                >
+                                    {method.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
                 {/* Table */}
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -234,7 +285,7 @@ function SalePaymentList({
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {salesWithPayments.map((sale: any) => (
+                            {filteredSales.map((sale: any) => (
                                 <tr
                                     key={sale.id}
                                     className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
@@ -287,7 +338,7 @@ function SalePaymentList({
                 </div>
 
                 {/* Empty state */}
-                {(!salesWithPayments || salesWithPayments.length === 0) && (
+                {(!filteredSales || filteredSales.length === 0) && (
                     <div className="text-center py-12">
                         <div className="mx-auto h-12 w-12 text-gray-400">
                             <svg
@@ -305,10 +356,20 @@ function SalePaymentList({
                             </svg>
                         </div>
                         <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-                            No se encontraron transacciones
+                            {selectedPaymentType === "all"
+                                ? "No se encontraron transacciones"
+                                : `No se encontraron transacciones con pago en ${
+                                      activePaymentMethods.find(
+                                          (m) =>
+                                              m.methodKey ===
+                                              selectedPaymentType
+                                      )?.label || "el método seleccionado"
+                                  }`}
                         </h3>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Intenta ajustar los filtros de fecha o sucursal.
+                            {selectedPaymentType === "all"
+                                ? "Intenta ajustar los filtros de fecha o sucursal."
+                                : "Intenta seleccionar otro método de pago o ajustar los filtros."}
                         </p>
                     </div>
                 )}
