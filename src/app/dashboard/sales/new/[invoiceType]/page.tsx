@@ -589,10 +589,17 @@ function NewSalePage() {
                 });
                 if (option) {
                     const selectedId = option.getAttribute("data-key");
+                    const selectedPrice = option.getAttribute("data-price");
+                    // Extract just the product name from the combined value
+                    // Format: [CODE] Product Name ▶️ S/ Price
+                    const productName = value
+                        .split(" ▶️ S/")[0]
+                        .replace(/^\[.*?\]\s*/, "");
                     setProduct({
                         ...product,
                         id: Number(selectedId),
-                        name: value,
+                        name: productName,
+                        priceWithIgv3: Number(selectedPrice) || 0,
                     });
                     modalAddDetail.show();
                     // setPurchaseDetail({...purchaseDetail, id: 0});
@@ -1787,12 +1794,21 @@ function NewSalePage() {
                                                                         data-key={
                                                                             n.id
                                                                         }
-                                                                        value={n.name
+                                                                        data-price={
+                                                                            n.priceWithIgv3
+                                                                        }
+                                                                        value={`[${
+                                                                            n.code
+                                                                        }] ${n.name
                                                                             .replace(
                                                                                 /[\n\r\s]+/g,
                                                                                 " "
                                                                             )
-                                                                            .trim()}
+                                                                            .trim()} ▶️ S/ ${Number(
+                                                                            n.priceWithIgv3
+                                                                        ).toFixed(
+                                                                            2
+                                                                        )}`}
                                                                     />
                                                                 )
                                                             )}
