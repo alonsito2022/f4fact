@@ -110,223 +110,281 @@ function MonthlySummaryList({ monthlySummaryData }: any) {
 
                 {/* Summary Tables */}
                 <div className="p-6 space-y-6">
-                    {/* VENTAS (MES ACTUAL) */}
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <div className="p-4 border-b border-blue-200 dark:border-blue-800">
-                            <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-                                VENTAS (MES ACTUAL)
-                            </h4>
+                    {/* VENTAS - Lado a lado */}
+                    <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* VENTAS (MES ACTUAL) */}
+                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/20 rounded-xl border border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-all duration-300">
+                            <div className="p-6 border-b border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-500 to-blue-600 rounded-t-xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                                        <svg
+                                            className="w-5 h-5 text-white"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <h4 className="text-xl font-bold text-white">
+                                        VENTAS (MES ACTUAL)
+                                    </h4>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                            <span className="font-medium text-blue-800 dark:text-blue-200">
+                                                Facturas
+                                            </span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-lg font-bold text-blue-900 dark:text-blue-100">
+                                                {formatNumber(
+                                                    data.currentMonthSales
+                                                        ?.invoices?.quantity ||
+                                                        0
+                                                )}
+                                            </div>
+                                            <div className="text-sm text-blue-600 dark:text-blue-300">
+                                                {formatCurrency(
+                                                    data.currentMonthSales
+                                                        ?.invoices?.total || 0
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                            <span className="font-medium text-blue-800 dark:text-blue-200">
+                                                Boletas
+                                            </span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-lg font-bold text-blue-900 dark:text-blue-100">
+                                                {formatNumber(
+                                                    data.currentMonthSales
+                                                        ?.tickets?.quantity || 0
+                                                )}
+                                            </div>
+                                            <div className="text-sm text-blue-600 dark:text-blue-300">
+                                                {formatCurrency(
+                                                    data.currentMonthSales
+                                                        ?.tickets?.total || 0
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                                            <span className="font-medium text-blue-800 dark:text-blue-200">
+                                                Notas de Salida
+                                            </span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-lg font-bold text-blue-900 dark:text-blue-100">
+                                                {formatNumber(
+                                                    data.currentMonthSales
+                                                        ?.exitNotes?.quantity ||
+                                                        0
+                                                )}
+                                            </div>
+                                            <div className="text-sm text-blue-600 dark:text-blue-300">
+                                                {formatCurrency(
+                                                    data.currentMonthSales
+                                                        ?.exitNotes?.total || 0
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="p-4">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="border-b border-blue-200 dark:border-blue-800">
-                                        <th className="text-left py-2 px-4 font-medium text-blue-700 dark:text-blue-300">
-                                            Tipo
-                                        </th>
-                                        <th className="text-right py-2 px-4 font-medium text-blue-700 dark:text-blue-300">
-                                            Cantidades
-                                        </th>
-                                        <th className="text-right py-2 px-4 font-medium text-blue-700 dark:text-blue-300">
-                                            Totales (S/)
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr className="border-b border-blue-100 dark:border-blue-900">
-                                        <td className="py-2 px-4 text-blue-800 dark:text-blue-200">
-                                            Total de facturas
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-blue-800 dark:text-blue-200">
-                                            {formatNumber(
-                                                data.currentMonthSales?.invoices
-                                                    ?.quantity || 0
-                                            )}
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-blue-800 dark:text-blue-200">
-                                            {formatCurrency(
-                                                data.currentMonthSales?.invoices
-                                                    ?.total || 0
-                                            )}
-                                        </td>
-                                    </tr>
-                                    <tr className="border-b border-blue-100 dark:border-blue-900">
-                                        <td className="py-2 px-4 text-blue-800 dark:text-blue-200">
-                                            Total de boletas
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-blue-800 dark:text-blue-200">
-                                            {formatNumber(
-                                                data.currentMonthSales?.tickets
-                                                    ?.quantity || 0
-                                            )}
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-blue-800 dark:text-blue-200">
-                                            {formatCurrency(
-                                                data.currentMonthSales?.tickets
-                                                    ?.total || 0
-                                            )}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="py-2 px-4 text-blue-800 dark:text-blue-200">
-                                            Total de notas de salida
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-blue-800 dark:text-blue-200">
-                                            {formatNumber(
-                                                data.currentMonthSales
-                                                    ?.exitNotes?.quantity || 0
-                                            )}
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-blue-800 dark:text-blue-200">
-                                            {formatCurrency(
-                                                data.currentMonthSales
-                                                    ?.exitNotes?.total || 0
-                                            )}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+
+                        {/* VENTAS (MES ANTERIOR) */}
+                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 rounded-xl border border-purple-200 dark:border-purple-700 shadow-lg hover:shadow-xl transition-all duration-300">
+                            <div className="p-6 border-b border-purple-200 dark:border-purple-700 bg-gradient-to-r from-purple-500 to-purple-600 rounded-t-xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                                        <svg
+                                            className="w-5 h-5 text-white"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <h4 className="text-xl font-bold text-white">
+                                        VENTAS (MES ANTERIOR)
+                                    </h4>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-purple-100 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                            <span className="font-medium text-purple-800 dark:text-purple-200">
+                                                Facturas
+                                            </span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-lg font-bold text-purple-900 dark:text-purple-100">
+                                                {formatNumber(
+                                                    data.lastMonthSales
+                                                        ?.invoices?.quantity ||
+                                                        0
+                                                )}
+                                            </div>
+                                            <div className="text-sm text-purple-600 dark:text-purple-300">
+                                                {formatCurrency(
+                                                    data.lastMonthSales
+                                                        ?.invoices?.total || 0
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-purple-100 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                            <span className="font-medium text-purple-800 dark:text-purple-200">
+                                                Boletas
+                                            </span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-lg font-bold text-purple-900 dark:text-purple-100">
+                                                {formatNumber(
+                                                    data.lastMonthSales?.tickets
+                                                        ?.quantity || 0
+                                                )}
+                                            </div>
+                                            <div className="text-sm text-purple-600 dark:text-purple-300">
+                                                {formatCurrency(
+                                                    data.lastMonthSales?.tickets
+                                                        ?.total || 0
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-purple-100 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                                            <span className="font-medium text-purple-800 dark:text-purple-200">
+                                                Notas de Salida
+                                            </span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-lg font-bold text-purple-900 dark:text-purple-100">
+                                                {formatNumber(
+                                                    data.lastMonthSales
+                                                        ?.exitNotes?.quantity ||
+                                                        0
+                                                )}
+                                            </div>
+                                            <div className="text-sm text-purple-600 dark:text-purple-300">
+                                                {formatCurrency(
+                                                    data.lastMonthSales
+                                                        ?.exitNotes?.total || 0
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     {/* COMPRAS (MES ACTUAL) */}
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                        <div className="p-4 border-b border-green-200 dark:border-green-800">
-                            <h4 className="text-lg font-semibold text-green-900 dark:text-green-100">
-                                COMPRAS (MES ACTUAL)
-                            </h4>
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/20 rounded-xl border border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-all duration-300">
+                        <div className="p-6 border-b border-green-200 dark:border-green-700 bg-gradient-to-r from-green-500 to-green-600 rounded-t-xl">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                                    <svg
+                                        className="w-5 h-5 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                                        />
+                                    </svg>
+                                </div>
+                                <h4 className="text-xl font-bold text-white">
+                                    COMPRAS (MES ACTUAL)
+                                </h4>
+                            </div>
                         </div>
-                        <div className="p-4">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="border-b border-green-200 dark:border-green-800">
-                                        <th className="text-left py-2 px-4 font-medium text-green-700 dark:text-green-300">
-                                            Tipo
-                                        </th>
-                                        <th className="text-right py-2 px-4 font-medium text-green-700 dark:text-green-300">
-                                            Cantidades
-                                        </th>
-                                        <th className="text-right py-2 px-4 font-medium text-green-700 dark:text-green-300">
-                                            Totales (S/)
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr className="border-b border-green-100 dark:border-green-900">
-                                        <td className="py-2 px-4 text-green-800 dark:text-green-200">
-                                            Total de facturas
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-green-800 dark:text-green-200">
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                        <span className="font-medium text-green-800 dark:text-green-200">
+                                            Facturas
+                                        </span>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-lg font-bold text-green-900 dark:text-green-100">
                                             {formatNumber(
                                                 data.currentMonthPurchases
                                                     ?.invoices?.quantity || 0
                                             )}
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-green-800 dark:text-green-200">
+                                        </div>
+                                        <div className="text-sm text-green-600 dark:text-green-300">
                                             {formatCurrency(
                                                 data.currentMonthPurchases
                                                     ?.invoices?.total || 0
                                             )}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="py-2 px-4 text-green-800 dark:text-green-200">
-                                            Total de boletas
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-green-800 dark:text-green-200">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                        <span className="font-medium text-green-800 dark:text-green-200">
+                                            Boletas
+                                        </span>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-lg font-bold text-green-900 dark:text-green-100">
                                             {formatNumber(
                                                 data.currentMonthPurchases
                                                     ?.tickets?.quantity || 0
                                             )}
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-green-800 dark:text-green-200">
+                                        </div>
+                                        <div className="text-sm text-green-600 dark:text-green-300">
                                             {formatCurrency(
                                                 data.currentMonthPurchases
                                                     ?.tickets?.total || 0
                                             )}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* VENTAS (MES ANTERIOR) */}
-                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                        <div className="p-4 border-b border-purple-200 dark:border-purple-800">
-                            <h4 className="text-lg font-semibold text-purple-900 dark:text-purple-100">
-                                VENTAS (MES ANTERIOR)
-                            </h4>
-                        </div>
-                        <div className="p-4">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="border-b border-purple-200 dark:border-purple-800">
-                                        <th className="text-left py-2 px-4 font-medium text-purple-700 dark:text-purple-300">
-                                            Tipo
-                                        </th>
-                                        <th className="text-right py-2 px-4 font-medium text-purple-700 dark:text-purple-300">
-                                            Cantidades
-                                        </th>
-                                        <th className="text-right py-2 px-4 font-medium text-purple-700 dark:text-purple-300">
-                                            Totales (S/)
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr className="border-b border-purple-100 dark:border-purple-900">
-                                        <td className="py-2 px-4 text-purple-800 dark:text-purple-200">
-                                            Total de facturas
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-purple-800 dark:text-purple-200">
-                                            {formatNumber(
-                                                data.lastMonthSales?.invoices
-                                                    ?.quantity || 0
-                                            )}
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-purple-800 dark:text-purple-200">
-                                            {formatCurrency(
-                                                data.lastMonthSales?.invoices
-                                                    ?.total || 0
-                                            )}
-                                        </td>
-                                    </tr>
-                                    <tr className="border-b border-purple-100 dark:border-purple-900">
-                                        <td className="py-2 px-4 text-purple-800 dark:text-purple-200">
-                                            Total de boletas
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-purple-800 dark:text-purple-200">
-                                            {formatNumber(
-                                                data.lastMonthSales?.tickets
-                                                    ?.quantity || 0
-                                            )}
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-purple-800 dark:text-purple-200">
-                                            {formatCurrency(
-                                                data.lastMonthSales?.tickets
-                                                    ?.total || 0
-                                            )}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="py-2 px-4 text-purple-800 dark:text-purple-200">
-                                            Total de notas de salida
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-purple-800 dark:text-purple-200">
-                                            {formatNumber(
-                                                data.lastMonthSales?.exitNotes
-                                                    ?.quantity || 0
-                                            )}
-                                        </td>
-                                        <td className="py-2 px-4 text-right font-medium text-purple-800 dark:text-purple-200">
-                                            {formatCurrency(
-                                                data.lastMonthSales?.exitNotes
-                                                    ?.total || 0
-                                            )}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -349,6 +407,7 @@ function MonthlySummaryList({ monthlySummaryData }: any) {
                                         data={pieChartData}
                                         cx="50%"
                                         cy="50%"
+                                        innerRadius={60}
                                         labelLine={false}
                                         label={({ name, percent }) =>
                                             `${name} (${(
