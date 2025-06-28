@@ -159,10 +159,10 @@ function SalePaymentList({
     };
 
     return (
-        <div className="max-h-screen overflow-y-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                {/* Header */}
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <>
+            <div className="h-screen flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                {/* Header fijo */}
+                <div className="flex-shrink-0 p-6 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between d gap-4">
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -214,8 +214,8 @@ function SalePaymentList({
                     </div>
                 </div>
 
-                {/* Selector por tipo de pago */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+                {/* Selector por tipo de pago fijo */}
+                <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                         <div className="flex items-center gap-2">
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -252,129 +252,147 @@ function SalePaymentList({
                     </div>
                 </div>
 
-                {/* Table */}
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-50 dark:bg-gray-700">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Tipo Comprobante
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Serie
-                                    <br />
-                                    Correlativo
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Fecha/Hora
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Total a Pagar
-                                </th>
-                                {activePaymentMethods.map((method) => (
-                                    <th
-                                        key={method.methodKey}
-                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                                    >
-                                        {method.label}
-                                    </th>
-                                ))}
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Usuario
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {filteredSales.map((sale: any) => (
-                                <tr
-                                    key={sale.id}
-                                    className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
-                                >
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {getDocumentTypeBadge(
-                                            sale.documentTypeReadable
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="font-mono text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                                            {sale.serial}-{sale.correlative}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                                            {formatDateTime(
-                                                sale.emitDate,
-                                                sale.emitTime
-                                            )}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="font-semibold text-lg text-gray-900 dark:text-white">
-                                            {formatCurrency(
-                                                Number(sale.totalAmount)
-                                            )}
-                                        </span>
-                                    </td>
-                                    {activePaymentMethods.map((method) => (
-                                        <td
-                                            key={method.methodKey}
-                                            className="px-6 py-4 whitespace-nowrap"
-                                        >
-                                            {getPaymentMethodBadge(
-                                                sale[method.methodKey],
-                                                method.methodKey
-                                            )}
-                                        </td>
-                                    ))}
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="text-sm text-gray-900 dark:text-white">
-                                            {sale.user?.fullName || "DESDE API"}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Empty state */}
-                {(!filteredSales || filteredSales.length === 0) && (
-                    <div className="text-center py-12">
-                        <div className="mx-auto h-12 w-12 text-gray-400">
-                            <svg
-                                className="w-full h-full"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                />
-                            </svg>
+                {/* Contenedor de tabla con scroll */}
+                <div className="flex-1 overflow-hidden">
+                    <div className="h-full flex flex-col">
+                        {/* Header de tabla fijo */}
+                        <div className="flex-shrink-0 overflow-x-auto">
+                            <table className="min-w-full">
+                                <thead className="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Tipo Comprobante
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Serie
+                                            <br />
+                                            Correlativo
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Fecha/Hora
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Total a Pagar
+                                        </th>
+                                        {activePaymentMethods.map((method) => (
+                                            <th
+                                                key={method.methodKey}
+                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                            >
+                                                {method.label}
+                                            </th>
+                                        ))}
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Usuario
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>
                         </div>
-                        <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-                            {selectedPaymentType === "all"
-                                ? "No se encontraron transacciones"
-                                : `No se encontraron transacciones con pago en ${
-                                      activePaymentMethods.find(
-                                          (m) =>
-                                              m.methodKey ===
-                                              selectedPaymentType
-                                      )?.label || "el método seleccionado"
-                                  }`}
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            {selectedPaymentType === "all"
-                                ? "Intenta ajustar los filtros de fecha o sucursal."
-                                : "Intenta seleccionar otro método de pago o ajustar los filtros."}
-                        </p>
+
+                        {/* Cuerpo de tabla con scroll */}
+                        <div className="flex-1 overflow-y-auto">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    {filteredSales.map((sale: any) => (
+                                        <tr
+                                            key={sale.id}
+                                            className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
+                                        >
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {getDocumentTypeBadge(
+                                                    sale.documentTypeReadable
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="font-mono text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                                    {sale.serial}-
+                                                    {sale.correlative}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                    {formatDateTime(
+                                                        sale.emitDate,
+                                                        sale.emitTime
+                                                    )}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="font-semibold text-lg text-gray-900 dark:text-white">
+                                                    {formatCurrency(
+                                                        Number(sale.totalAmount)
+                                                    )}
+                                                </span>
+                                            </td>
+                                            {activePaymentMethods.map(
+                                                (method) => (
+                                                    <td
+                                                        key={method.methodKey}
+                                                        className="px-6 py-4 whitespace-nowrap"
+                                                    >
+                                                        {getPaymentMethodBadge(
+                                                            sale[
+                                                                method.methodKey
+                                                            ],
+                                                            method.methodKey
+                                                        )}
+                                                    </td>
+                                                )
+                                            )}
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="text-sm text-gray-900 dark:text-white">
+                                                    {sale.user?.fullName ||
+                                                        "DESDE API"}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+
+                            {/* Empty state */}
+                            {(!filteredSales || filteredSales.length === 0) && (
+                                <div className="text-center py-12">
+                                    <div className="mx-auto h-12 w-12 text-gray-400">
+                                        <svg
+                                            className="w-full h-full"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        {selectedPaymentType === "all"
+                                            ? "No se encontraron transacciones"
+                                            : `No se encontraron transacciones con pago en ${
+                                                  activePaymentMethods.find(
+                                                      (m) =>
+                                                          m.methodKey ===
+                                                          selectedPaymentType
+                                                  )?.label ||
+                                                  "el método seleccionado"
+                                              }`}
+                                    </h3>
+                                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                        {selectedPaymentType === "all"
+                                            ? "Intenta ajustar los filtros de fecha o sucursal."
+                                            : "Intenta seleccionar otro método de pago o ajustar los filtros."}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                )}
+                </div>
             </div>
-        </div>
+        </>
     );
 }
 
