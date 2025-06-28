@@ -32,7 +32,7 @@ function SalePaymentList({
             totalYape: { label: "Yape", key: "totalYape", hasData: false },
             totalDue: { label: "Por Pagar", key: "totalDue", hasData: false },
             totalDebitCard: {
-                label: "Tarjeta Débito",
+                label: "Tarjeta<br />Débito",
                 key: "totalDebitCard",
                 hasData: false,
             },
@@ -260,29 +260,32 @@ function SalePaymentList({
                             <table className="min-w-full">
                                 <thead className="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Tipo Comprobante
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Tipo
+                                            <br />
+                                            Comprobante
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Serie
                                             <br />
                                             Correlativo
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Fecha/Hora
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Total a Pagar
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Total a<br />
+                                            Pagar
                                         </th>
                                         {activePaymentMethods.map((method) => (
                                             <th
                                                 key={method.methodKey}
-                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                                className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                                             >
                                                 {method.label}
                                             </th>
                                         ))}
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Usuario
                                         </th>
                                     </tr>
