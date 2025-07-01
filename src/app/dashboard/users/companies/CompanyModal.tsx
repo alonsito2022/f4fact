@@ -626,7 +626,7 @@ function CompanyModal({
                     company.emissionReceiptWithPreviousDate,
                 logo: company.logo || "",
                 includeIgv: company.includeIgv,
-                percentageIgv: company.percentageIgv,
+                percentageIgv: parseInt(company.percentageIgv, 10),
                 isEnabled: company.isEnabled,
                 isProduction: company.isProduction,
                 certification: company.certification || "",
