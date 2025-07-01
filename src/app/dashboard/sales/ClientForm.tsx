@@ -172,7 +172,10 @@ function ClientForm({
     const [addPerson] = useMutation(ADD_PERSON_MUTATION, {
         context: authContext,
         onCompleted: (data) => {
-            if (data.createPerson.success) {
+            if (
+                data.createPerson.success ||
+                data.createPerson.personAlreadyRegistered === true
+            ) {
                 const newPerson = data.createPerson.person;
 
                 // Update sale state with complete client information

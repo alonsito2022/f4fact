@@ -71,17 +71,21 @@ function SaleTotalList({
     useEffect(() => {
         if (invoice?.detractionPercentage) {
             let detractionPercentage = Number(invoice?.detractionPercentage);
-            let totalDetraction =
-                Number(invoice?.totalAmount) * detractionPercentage * 0.01;
+            // Redondear al entero más cercano usando Math.round
+            let totalDetraction = Math.round(
+                Number(invoice?.totalAmount) * detractionPercentage * 0.01
+            );
 
             setSale((prevSale: IOperation) => ({
                 ...prevSale,
-                totalDetraction: totalDetraction.toFixed(2),
+                totalDetraction: totalDetraction,
             }));
         } else if (invoice?.totalDetraction && invoice?.totalAmount) {
             // Calcular el porcentaje cuando cambia totalDetraction
             let calculatedPercentage =
-                Number(invoice.totalDetraction) / Number(invoice.totalAmount);
+                (Number(invoice.totalDetraction) /
+                    Number(invoice.totalAmount)) *
+                100;
 
             setSale((prevSale: IOperation) => ({
                 ...prevSale,

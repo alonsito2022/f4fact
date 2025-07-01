@@ -272,6 +272,15 @@ function WayPayForm({
             });
             return;
         }
+        // Validate that there is at least one payment method
+        if (!invoice.cashflowSet || invoice.cashflowSet.length === 0) {
+            toast("Debe agregar al menos un medio de pago", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "error",
+            });
+            return;
+        }
         try {
             setIsProcessing(true);
             const variables = {
