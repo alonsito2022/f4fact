@@ -48,21 +48,31 @@ function BulkPdfDownloadModal({
             const downloadPromises = salesData.map(async (item) => {
                 if (!item.documentType || !item.id) return;
 
-                const url = `${process.env.NEXT_PUBLIC_BASE_API}/operations/${
+                const baseUrl = process.env.NEXT_PUBLIC_BASE_API || "";
+                const url = `${baseUrl}/operations/${
                     item.documentType === "07"
                         ? "print_credit_note"
                         : "print_invoice"
                 }/${item.id}/`;
 
                 try {
-                    const response = await fetch(
-                        url.toString().replace("http:", "https:")
-                    );
+                    // No forzamos HTTPS en desarrollo
+                    const finalUrl =
+                        process.env.NODE_ENV === "development"
+                            ? url
+                            : url.toString().replace("http:", "https:");
+
+                    const response = await fetch(finalUrl);
                     if (!response.ok)
                         throw new Error(`Error al descargar PDF ${item.id}`);
 
                     const blob = await response.blob();
-                    const fileName = `${item.documentType}-${item.serial}-${item.correlative}.pdf`;
+                    // Modificamos el formato del nombre del archivo para incluir el RUC
+                    const fileName = `${
+                        item.subsidiary?.company?.doc
+                    }-${item.documentType.replace("A_", "")}-${item.serial}-${
+                        item.correlative
+                    }.pdf`;
                     zip.file(fileName, blob);
 
                     completed++;
@@ -71,6 +81,9 @@ function BulkPdfDownloadModal({
                     );
                 } catch (error) {
                     console.error(`Error descargando ${item.id}:`, error);
+                    toast.error(
+                        `Error al descargar el documento ${item.subsidiary?.company?.doc}-${item.documentType}-${item.serial}-${item.correlative}`
+                    );
                 }
             });
 
