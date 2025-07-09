@@ -54,6 +54,7 @@ const GUIDES_QUERY = gql`
             guides {
                 id
                 emitDate
+                emitTime
                 documentType
                 serial
                 correlative

@@ -16,7 +16,7 @@ function SalePagination({
         <div className="flex items-center justify-center gap-2 my-4">
             <button
                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                disabled={filterObj.page === 1}
+                disabled={filterObj.page <= 1}
                 onClick={() => {
                     const prevPage = filterObj.page - 1;
                     setFilterObj({
@@ -29,8 +29,9 @@ function SalePagination({
                         startDate: filterObj.startDate,
                         endDate: filterObj.endDate,
                         documentType: filterObj.documentType,
-                        page: prevPage - 1,
+                        page: prevPage,
                         pageSize: Number(filterObj.pageSize),
+                        userId: Number(filterObj.userId),
                     };
                     const queryToUse =
                         salesQuery ||
@@ -89,8 +90,9 @@ function SalePagination({
                         startDate: filterObj.startDate,
                         endDate: filterObj.endDate,
                         documentType: filterObj.documentType,
-                        page: nextPage - 1, // Fixed: Using nextPage instead of filterObj.page
+                        page: nextPage, // Fixed: Using nextPage instead of filterObj.page
                         pageSize: Number(filterObj.pageSize),
+                        userId: Number(filterObj.userId),
                     };
 
                     const queryToUse =

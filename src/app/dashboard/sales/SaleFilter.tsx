@@ -5,7 +5,7 @@ import Search from "@/components/icons/Search";
 import Filter from "@/components/icons/Filter";
 import { useRouter } from "next/navigation";
 import { gql, useLazyQuery, useQuery } from "@apollo/client";
-import { IPerson, ISubsidiary, ISupplier } from "@/app/types";
+import { IPerson, ISubsidiary, ISupplier, IUser } from "@/app/types";
 // import { initFlowbite } from "flowbite";
 import Excel from "@/components/icons/Excel";
 import ExcelModal from "./ExcelModal";
@@ -54,7 +54,15 @@ const SUBSIDIARIES_QUERY = gql`
         }
     }
 `;
-
+const USERS_QUERY = gql`
+    query ($subsidiaryId: Int) {
+        usersBySubsidiaryId(subsidiaryId: $subsidiaryId) {
+            id
+            fullName
+            role
+        }
+    }
+`;
 function SaleFilter({
     setFilterObj,
     filterObj,
@@ -87,6 +95,7 @@ function SaleFilter({
                 documentType: filterObj.documentType,
                 page: 1, // Asegúrate de pasar la página como 1 aquí también
                 pageSize: Number(filterObj.pageSize),
+                userId: Number(filterObj.userId),
                 // serial: String(filterObj.serial),
                 // correlative: Number(filterObj.correlative),
             },
@@ -153,6 +162,32 @@ function SaleFilter({
             } else {
                 console.log("sin datalist");
             }
+        } else if (
+            name === "userName" &&
+            event.target instanceof HTMLInputElement
+        ) {
+            const dataList = event.target.list;
+            if (dataList) {
+                const option = Array.from(dataList.options).find(
+                    (option) =>
+                        String(option.value).toUpperCase() ===
+                        String(value).toUpperCase()
+                );
+                if (option) {
+                    const selectedId = option.getAttribute("data-key");
+                    setFilterObj({
+                        ...filterObj,
+                        userId: Number(selectedId),
+                        userName: value,
+                    });
+                } else {
+                    setFilterObj({
+                        ...filterObj,
+                        userId: "",
+                        userName: value,
+                    });
+                }
+            }
         } else setFilterObj({ ...filterObj, [name]: value });
     };
     const getAuthContext = () => ({
@@ -188,6 +223,19 @@ function SaleFilter({
         },
         fetchPolicy: "network-only",
         onError: (err) => console.error("Error in Search Client:", err),
+    });
+    const {
+        loading: usersLoading,
+        error: usersError,
+        data: usersData,
+    } = useQuery(USERS_QUERY, {
+        context: getAuthContext(),
+        fetchPolicy: "network-only",
+        variables: {
+            subsidiaryId: Number(filterObj.subsidiaryId),
+        },
+
+        skip: !auth?.jwtToken || !filterObj.subsidiaryId,
     });
     useEffect(() => {
         if (
@@ -340,6 +388,39 @@ function SaleFilter({
                             </datalist>
                         </>
                     ) : null}
+                    {usersLoading ? (
+                        <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                        </div>
+                    ) : (
+                        <>
+                            <input
+                                type="text"
+                                name="userName"
+                                onChange={handleInputChange}
+                                value={filterObj.userName}
+                                onFocus={(e) => e.target.select()}
+                                autoComplete="off"
+                                className="filter-form-control h-10 w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                list="userList"
+                                placeholder="👤 Buscar por usuario"
+                            />
+                            <datalist id="userList">
+                                {usersData?.usersBySubsidiaryId?.map(
+                                    (user: IUser) => (
+                                        <option
+                                            key={user.id}
+                                            value={String(
+                                                user.fullName
+                                            ).toUpperCase()}
+                                            data-key={user.id}
+                                        />
+                                    )
+                                )}
+                            </datalist>
+                        </>
+                    )}
+
                     <input
                         type="date"
                         name="startDate"

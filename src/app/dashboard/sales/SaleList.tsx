@@ -350,10 +350,11 @@ function SaleList({
                             <th className="w-80 dark:border-gray-600">
                                 Denominación
                             </th>
-                            <th className="w-4 dark:border-gray-600">M</th>
                             <th className="w-4 dark:border-gray-600">
                                 Usuario
                             </th>
+                            <th className="w-4 dark:border-gray-600">M</th>
+
                             <th className="pl-2 pr-1 w-16 dark:border-gray-600 text-right">
                                 Total Onerosa
                             </th>
@@ -434,13 +435,14 @@ function SaleList({
                                         {item.client?.names}
                                     </td>
                                     <td className="p-0.5 text-center">
+                                        {item?.user?.fullName}
+                                    </td>
+                                    <td className="p-0.5 text-center">
                                         {item.currencyType === "PEN"
                                             ? "S/"
                                             : item.currencyType}
                                     </td>
-                                    <td className="p-0.5 text-center">
-                                        {item?.user?.fullName}
-                                    </td>
+
                                     <td className="p-0.5 text-right">
                                         {Number(item.totalToPay).toFixed(2)}
                                     </td>
@@ -761,7 +763,7 @@ function SaleList({
                                 </td>
                             )}
                             <td
-                                colSpan={6}
+                                colSpan={7}
                                 className="p-1 text-sm font-bold text-nowrap text-right"
                             >
                                 Total de FACTURAS:
@@ -795,7 +797,7 @@ function SaleList({
                                 </td>
                             )}
                             <td
-                                colSpan={6}
+                                colSpan={7}
                                 className="p-1 text-sm font-bold text-nowrap text-right"
                             >
                                 Total de BOLETAS DE VENTA:
@@ -829,7 +831,7 @@ function SaleList({
                                 </td>
                             )}
                             <td
-                                colSpan={6}
+                                colSpan={7}
                                 className="p-1 text-sm font-bold text-nowrap text-right"
                             >
                                 Total de NOTAS DE CRÉDITO:

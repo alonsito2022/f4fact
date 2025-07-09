@@ -31,6 +31,8 @@ const initialStateFilterObj = {
     reportType: "",
     serial: "",
     correlative: "",
+    userName: "",
+    userId: "",
 };
 const SALES_QUERY = gql`
     query (
@@ -43,6 +45,7 @@ const SALES_QUERY = gql`
         $pageSize: Int!
         $serial: String
         $correlative: Int
+        $userId: Int
     ) {
         allSales(
             subsidiaryId: $subsidiaryId
@@ -54,6 +57,7 @@ const SALES_QUERY = gql`
             pageSize: $pageSize
             serial: $serial
             correlative: $correlative
+            userId: $userId
         ) {
             sales {
                 id
