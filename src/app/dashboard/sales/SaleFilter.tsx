@@ -13,6 +13,8 @@ import { Modal } from "flowbite";
 import SearchInvoice from "./SearchInvoice";
 import InvoiceTypeModal from "./new/InvoiceTypeModal";
 import { useInvoiceTypeModal } from "@/components/context/InvoiceTypeModalContext";
+import BulkPdfDownloadModal from "./BulkPdfDownloadModal";
+import Download from "@/components/icons/Download";
 // Add the search client query
 const SEARCH_CLIENT_BY_PARAMETER = gql`
     query SearchClient(
@@ -69,6 +71,7 @@ function SaleFilter({
     salesQuery,
     filteredSaleLoading,
     auth,
+    filteredSalesData,
 }: any) {
     const router = useRouter();
     const { showModal } = useInvoiceTypeModal();
@@ -76,6 +79,7 @@ function SaleFilter({
     const [modalSearchInvoice, setModalSearchInvoice] = useState<Modal | null>(
         null
     );
+    const [modalBulkPdf, setModalBulkPdf] = useState<Modal | null>(null);
     const [clientSearch, setClientSearch] = useState("");
 
     const handleClickButton = async () => {
@@ -445,7 +449,7 @@ function SaleFilter({
                         <Filter />
                         <span className="sm:inline">Filtrar</span>
                     </button>
-                    <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 col-span-full">
+                    <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 col-span-full">
                         <button
                             type="button"
                             onClick={() => modalExcel?.show()}
@@ -455,6 +459,17 @@ function SaleFilter({
                             <Excel />
                             <span className="sm:inline">Exportar a Excel</span>
                             <span className="sm:hidden">Excel</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => modalBulkPdf?.show()}
+                            title="Descargar PDFs en masa"
+                            className="btn-red h-8 px-3 flex items-center justify-center gap-1 rounded-full hover:opacity-90 transition-all duration-200 shadow-sm hover:shadow-md text-sm"
+                        >
+                            <Download />
+                            <span className="sm:inline">Descargar PDFs</span>
+                            <span className="sm:hidden">PDFs</span>
                         </button>
 
                         <button
@@ -483,6 +498,11 @@ function SaleFilter({
                 filterObj={filterObj}
                 salesQuery={salesQuery}
                 filteredSaleLoading={filteredSaleLoading}
+            />
+            <BulkPdfDownloadModal
+                modalBulkPdf={modalBulkPdf}
+                setModalBulkPdf={setModalBulkPdf}
+                salesData={filteredSalesData?.allSales?.sales || []}
             />
         </>
     );

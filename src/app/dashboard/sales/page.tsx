@@ -198,6 +198,7 @@ function SalePage() {
                             salesQuery={salesQuery}
                             filteredSalesLoading={filteredSalesLoading}
                             auth={auth}
+                            filteredSalesData={filteredSalesData}
                         />
                         <div className="flex flex-col">
                             <div className="overflow-x-auto">
