@@ -90,6 +90,10 @@ const SALES_QUERY = gql`
                     names
                     documentNumber
                 }
+                user {
+                    id
+                    fullName
+                }
                 subsidiary {
                     companyName
                     company {

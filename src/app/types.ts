@@ -458,6 +458,7 @@ export interface IOperation {
     clientDocumentType: string;
     clientId: number;
     detractionPercentage: string;
+    user: IUser;
 }
 
 export interface ICashFlow {
