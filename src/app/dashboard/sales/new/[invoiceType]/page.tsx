@@ -923,6 +923,25 @@ function NewSalePage() {
         const threeDaysAgo = new Date(currentDate);
         threeDaysAgo.setDate(currentDate.getDate() - 4);
 
+        // Calcular días máximos permitidos según tipo de documento
+        const maxDaysBack = sale.documentType === "01" ? 3 : 5; // 3 días para facturas, 5 para boletas
+        // Calcular fecha mínima permitida
+        const minAllowedDate = new Date(currentDate);
+        minAllowedDate.setDate(currentDate.getDate() - maxDaysBack);
+        // Verificar si la fecha de emisión es anterior a la mínima permitida
+        if (emitDate < minAllowedDate) {
+            const documentType =
+                sale.documentType === "01" ? "facturas" : "boletas";
+            toast(
+                `No se permite crear ${documentType} con más de ${maxDaysBack} días de antigüedad.`,
+                {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "warning",
+                }
+            );
+            return false;
+        }
         if (emitDate > currentDate) {
             toast("La fecha de emisión no puede ser una fecha futura.", {
                 hideProgressBar: true,
