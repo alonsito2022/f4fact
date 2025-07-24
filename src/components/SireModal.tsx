@@ -30,12 +30,8 @@ function SireModal({
     }, [setModalSire]);
 
     const handleDownload = async () => {
-        console.log("�� Iniciando descarga SIRE...");
-        console.log("📋 Parámetros:", { book, month, year, subsidiaryId });
-
         try {
             const baseUrl = process.env.NEXT_PUBLIC_BASE_API || "";
-            console.log("🌐 Base URL:", baseUrl);
 
             let url = "";
             if (book === "080400") {
@@ -44,52 +40,22 @@ function SireModal({
                 url = `${baseUrl}/operations/export_sales_to_sire_txt/${subsidiaryId}/${year}/${month}/`;
             }
 
-            console.log("�� URL de descarga:", url);
-
-            console.log("📡 Realizando petición fetch...");
             const response = await fetch(url);
 
-            // Log detallado de todos los headers
-            console.log("📋 Todos los headers de respuesta:");
-            response.headers.forEach((value, key) => {
-                console.log(`  ${key}: ${value}`);
-            });
-
-            console.log("�� Respuesta recibida:", {
-                status: response.status,
-                statusText: response.statusText,
-                ok: response.ok,
-            });
-
             if (!response.ok) {
-                console.error(
-                    "❌ Error en la respuesta:",
-                    response.status,
-                    response.statusText
-                );
                 throw new Error("Error al descargar archivo SIRE");
             }
 
-            console.log("📦 Convirtiendo respuesta a blob...");
             const blob = await response.blob();
-            console.log("📄 Blob creado:", {
-                size: blob.size,
-                type: blob.type,
-            });
-
             const contentDisposition = response.headers.get(
                 "Content-Disposition"
             );
-            console.log("📋 Content-Disposition header:", contentDisposition);
 
             // Extraer el nombre de archivo de forma más robusta
             let filename = "sire_export.txt";
 
             // Si no hay Content-Disposition, generar nombre basado en parámetros
             if (!contentDisposition) {
-                console.log(
-                    "⚠️ No hay Content-Disposition, generando nombre basado en parámetros..."
-                );
                 const period = `${year}${month.padStart(2, "0")}`;
 
                 // Generar nombre según el tipo de libro
@@ -100,39 +66,23 @@ function SireModal({
                     // SIRE Registro de Compras
                     filename = `LE${ruc}${period}00080400021012.TXT`;
                 }
-
-                console.log(" Nombre generado:", filename);
             } else {
-                console.log("🔍 Extrayendo nombre de archivo...");
-
                 // Buscar el patrón filename="nombre_archivo.txt"
                 const filenameMatch =
                     contentDisposition.match(/filename="([^"]+)"/);
-                console.log(
-                    '🔍 Resultado regex filename="([^"]+)":',
-                    filenameMatch
-                );
 
                 if (filenameMatch && filenameMatch[1]) {
                     filename = filenameMatch[1];
-                    console.log("✅ Nombre extraído con regex:", filename);
                 } else {
-                    console.log("⚠️ Regex no funcionó, intentando fallback...");
                     // Fallback: buscar después de filename=
                     const filenameStart =
                         contentDisposition.indexOf("filename=") + 9;
-                    console.log(
-                        "🔍 Posición inicial filename=:",
-                        filenameStart
-                    );
 
                     if (filenameStart > 9) {
                         const filenameEnd = contentDisposition.indexOf(
                             ";",
                             filenameStart
                         );
-                        console.log("🔍 Posición final (;):", filenameEnd);
-
                         const extractedFilename = contentDisposition
                             .substring(
                                 filenameStart,
@@ -140,65 +90,33 @@ function SireModal({
                             )
                             .replace(/["']/g, "");
 
-                        console.log(
-                            "🔍 Nombre extraído con fallback:",
-                            extractedFilename
-                        );
-
                         if (
                             extractedFilename &&
                             extractedFilename !== "filename="
                         ) {
                             filename = extractedFilename;
-                            console.log(
-                                "✅ Nombre final con fallback:",
-                                filename
-                            );
-                        } else {
-                            console.log(
-                                "❌ Nombre extraído inválido:",
-                                extractedFilename
-                            );
                         }
-                    } else {
-                        console.log(
-                            "❌ No se encontró 'filename=' en el header"
-                        );
                     }
                 }
             }
 
-            console.log("📁 Nombre final del archivo:", filename);
-
             // Crear ZIP con el archivo
-            console.log("🗜️ Creando archivo ZIP...");
             const JSZip = (await import("jszip")).default;
             const zip = new JSZip();
             zip.file(filename, blob);
-            console.log("📁 Archivo agregado al ZIP:", filename);
 
-            console.log("⚙️ Generando contenido ZIP...");
             const content = await zip.generateAsync({ type: "blob" });
-            console.log("�� ZIP generado:", {
-                size: content.size,
-                type: content.type,
-            });
-
             const zipUrl = URL.createObjectURL(content);
-            console.log("�� URL del ZIP creada:", zipUrl);
 
-            console.log("⬇️ Iniciando descarga...");
             const link = document.createElement("a");
             link.href = zipUrl;
             const zipFilename = filename.replace(/\.txt$/i, ".zip");
             link.download = zipFilename;
-            console.log("�� Nombre del archivo ZIP a descargar:", zipFilename);
 
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
-            console.log("✅ Descarga completada exitosamente");
             toast.success("Archivo SIRE descargado correctamente");
             modalSire?.hide();
             // Reiniciar el formulario
@@ -206,8 +124,7 @@ function SireModal({
             setMonth("1");
             setYear(new Date().getFullYear().toString());
         } catch (error) {
-            console.error("💥 Error en handleDownload:", error);
-            console.error("📋 Stack trace:", (error as Error).stack);
+            console.error("Error en handleDownload:", error);
             toast.error("Error al descargar archivo SIRE");
         }
     };
