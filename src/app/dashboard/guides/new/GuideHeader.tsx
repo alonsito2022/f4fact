@@ -153,6 +153,24 @@ function GuideHeader({
                 return false;
             }
         }
+        // if (guide.guideReasonTransfer === "01") {
+        //     const companyDoc = auth?.user?.companyDoc; // 20611894067
+        //     if (clientIdentifier.includes(companyDoc)) {
+        //         if (!toast.isActive(toastId)) {
+        //             toast(
+        //                 "Cuando el motivo es VENTA. El cliente debe ser diferente al RUC del emisor. " +
+        //                     companyDoc,
+        //                 {
+        //                     hideProgressBar: true,
+        //                     autoClose: 2000,
+        //                     type: "error",
+        //                     toastId: toastId,
+        //                 }
+        //             );
+        //         }
+        //         return false;
+        //     }
+        // }
         return true;
     };
 
