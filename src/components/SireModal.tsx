@@ -239,12 +239,13 @@ function SireModal({
                                         </li>
                                         <li>
                                             • Usa estos archivos solo si NO
-                                            estás de acuerdo con la "propuesta"
-                                            de SUNAT.
+                                            estás de acuerdo con la
+                                            &quot;propuesta&quot; de SUNAT.
                                         </li>
                                         <li>
                                             • Tu razón social debe ser
-                                            "exactamente igual a Consulta RUC".
+                                            &quot;exactamente igual a Consulta
+                                            RUC&quot;.
                                         </li>
                                     </ul>
                                 </div>
@@ -272,17 +273,19 @@ function SireModal({
                                     <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
                                         <li>
                                             • <strong>Opción 1:</strong> SUNAT
-                                            en línea con Clave SOL → "Sistema
-                                            Integrado de Registros Electrónicos"
-                                            SIRE
+                                            en línea con Clave SOL →
+                                            &quot;Sistema Integrado de Registros
+                                            Electrónicos&quot; SIRE
                                         </li>
                                         <li>
                                             • <strong>Opción 2:</strong> Cliente
-                                            MIGE → opciones "RVIE" o "RCE"
+                                            MIGE → opciones &quot;RVIE&quot; o
+                                            &quot;RCE&quot;
                                         </li>
                                         <li>
-                                            • Sube el archivo usando "Comparar"
-                                            o "Reemplazar"
+                                            • Sube el archivo usando
+                                            &quot;Comparar&quot; o
+                                            &quot;Reemplazar&quot;
                                         </li>
                                         <li>
                                             • Confirma el preliminar y completa
