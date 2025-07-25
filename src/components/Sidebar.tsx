@@ -926,6 +926,30 @@ function Sidebar() {
                                 </button>
                             </li>
 
+                            <li>
+                                <Link
+                                    href="/dashboard/payment-balance"
+                                    className="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700"
+                                    onClick={toggleSidebar}
+                                >
+                                    <svg
+                                        className="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                        fill="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                    <span className="ml-3">
+                                        Balance de Pagos
+                                    </span>
+                                </Link>
+                            </li>
+
                             {/* <li>
                                 <a
                                     href="/"
