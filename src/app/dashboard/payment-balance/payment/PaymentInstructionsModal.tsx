@@ -127,14 +127,18 @@ export default function PaymentInstructionsModal({
                                 </p>
                                 <ul className="list-disc list-inside space-y-1 ml-4">
                                     <li>Ingresar a www.viabcp.com.pe</li>
-                                    <li>Ir a la opción "Pago de Servicios"</li>
                                     <li>
-                                        Buscar en el directorio a "nubefact" y
-                                        continuar
+                                        Ir a la opción &ldquo;Pago de
+                                        Servicios&rdquo;
                                     </li>
                                     <li>
-                                        En el campo "ruc de la empresa" ingresar
-                                        el RUC DE SU EMPRESA
+                                        Buscar en el directorio a
+                                        &ldquo;nubefact&rdquo; y continuar
+                                    </li>
+                                    <li>
+                                        En el campo &ldquo;ruc de la
+                                        empresa&rdquo; ingresar el RUC DE SU
+                                        EMPRESA
                                     </li>
                                     <li>Pagar usando su clave token</li>
                                 </ul>
