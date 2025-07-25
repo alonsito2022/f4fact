@@ -31,7 +31,7 @@ const BALANCE_PAYMENT_QUERY = gql`
 `;
 export default function PaymentBalancePage() {
     const auth = useAuth();
-    const subsidiaryId = Number(auth?.user?.subsidiaryId) || 1;
+    const subsidiaryId = Number(auth?.user?.subsidiaryId) || 0;
 
     // Si necesitas headers de autenticación:
     const context = {
@@ -66,10 +66,10 @@ export default function PaymentBalancePage() {
         <div className="min-h-screen bg-white dark:bg-gray-800">
             <div className="container mx-auto py-8 px-4">
                 <PaymentBalanceComponent
-                    totalPending={data.balancePayment.totalPending}
-                    lastUpdate={data.balancePayment.lastUpdate}
-                    documents={data.balancePayment.documents}
-                    payments={data.balancePayment.payments}
+                    totalPending={data?.balancePayment?.totalPending}
+                    lastUpdate={data?.balancePayment?.lastUpdate}
+                    documents={data?.balancePayment?.documents}
+                    payments={data?.balancePayment?.payments}
                 />
             </div>
         </div>
