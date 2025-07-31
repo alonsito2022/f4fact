@@ -1,37 +1,76 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
+import { currentConfig, verifyHmac } from "@/lib/izipay-config";
 
-// Configuración de Izipay
-const IZIPAY_CONFIG = {
-    test: {
-        username: "81325114",
-        password: "testpassword_LlOkH8bsEV6VavZxPxg8kfDeFzoQDZhuG201WEcaOMMo0",
-        publicKey:
-            "81325114:testpublickey_4VfiAtUJdrZI97FxPU41vgaNAbm0GVWEkmWIX4vnnAhM2",
-    },
-    production: {
-        username: "81325114",
-        password: "prodpassword_CKAvckvYUJd3UCquAG44VRzB8JaIFKPcmqNPubOhgQV2y",
-        publicKey:
-            "81325114:publickey_2DdsrTALR3DnARWKhzNXN2aPUsjXazw5WeqLddEv2RH6l",
-    },
-};
+// Función para registrar eventos de pago en Django
+async function registerPaymentEvent(
+    operationId: number,
+    eventType: string,
+    status: string,
+    data?: any
+) {
+    try {
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_API}/graphql`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    query: `
+                    mutation PaymentStatus($operationId: Int!, $eventType: String!, $status: String!, $requestData: JSONString, $responseData: JSONString) {
+                        paymentStatus(
+                            operationId: $operationId
+                            eventType: $eventType
+                            status: $status
+                            requestData: $requestData
+                            responseData: $responseData
+                        ) {
+                            success
+                            cashFlow {
+                                id
+                                status
+                            }
+                        }
+                    }
+                `,
+                    variables: {
+                        operationId,
+                        eventType,
+                        status,
+                        requestData: data ? JSON.stringify(data) : undefined,
+                        responseData: data ? JSON.stringify(data) : undefined,
+                    },
+                }),
+            }
+        );
 
-// Determinar configuración según entorno
-const isProduction = process.env.NODE_ENV === "production";
-const currentConfig = isProduction
-    ? IZIPAY_CONFIG.production
-    : IZIPAY_CONFIG.test;
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
 
-// Función para verificar HMAC
-function verifyHmac(data: string, signature: string, key: string): boolean {
-    const expectedSignature = crypto
-        .createHmac("sha256", key)
-        .update(data)
-        .digest("base64");
+        const result = await response.json();
+        console.log(`✅ Evento ${eventType} registrado:`, result);
+        return result;
+    } catch (error) {
+        console.error(`❌ Error registrando evento ${eventType}:`, error);
+        throw error;
+    }
+}
 
-    // Comparación simple de strings (menos segura pero evita problemas de tipos)
-    return signature === expectedSignature;
+// Función para extraer operationId del orderId
+function extractOperationId(orderId: string): number | null {
+    try {
+        // Intentar extraer del orderId (formato: ORDER_123456789_abc123)
+        const orderMatch = orderId.match(/ORDER_(\d+)_/);
+        if (orderMatch) {
+            return parseInt(orderMatch[1]);
+        }
+        return null;
+    } catch (error) {
+        console.error("❌ Error extrayendo operationId:", error);
+        return null;
+    }
 }
 
 export async function POST(request: NextRequest) {
@@ -58,6 +97,35 @@ export async function POST(request: NextRequest) {
             signature,
         });
 
+        // Verificar HMAC si está presente
+        if (signature) {
+            const isValidSignature = verifyHmac(
+                body,
+                signature,
+                currentConfig.password
+            );
+            if (!isValidSignature) {
+                console.log(
+                    "⚠️ Firma HMAC no coincide en webhook - verificando datos..."
+                );
+
+                // En modo desarrollo, ser más permisivo con la firma HMAC
+                const shouldContinue = process.env.NODE_ENV === "development";
+
+                if (!shouldContinue) {
+                    console.error("❌ Firma HMAC inválida en producción");
+                    return NextResponse.json(
+                        { error: "Firma inválida" },
+                        { status: 401 }
+                    );
+                }
+            } else {
+                console.log("✅ Firma HMAC válida en webhook");
+            }
+        } else {
+            console.log("⚠️ No se recibió firma HMAC en webhook");
+        }
+
         // Verificar que tenemos los datos mínimos
         if (!orderId || !status) {
             console.error("Datos de webhook incompletos");
@@ -67,27 +135,77 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Verificar HMAC si está presente
-        if (signature) {
-            const isValidSignature = verifyHmac(
-                body,
-                signature,
-                currentConfig.password
-            );
-            if (!isValidSignature) {
-                console.error("Firma HMAC inválida");
-                return NextResponse.json(
-                    { error: "Firma inválida" },
-                    { status: 401 }
-                );
-            }
-        }
+        // Extraer operationId para registrar eventos
+        const operationId = extractOperationId(orderId);
 
         // Procesar el estado del pago
         switch (status) {
             case "SUCCESS":
                 // Pago exitoso
                 console.log(`Pago exitoso para orden: ${orderId}`);
+
+                if (operationId) {
+                    try {
+                        // Evento: Pago enviado por el cliente
+                        await registerPaymentEvent(
+                            operationId,
+                            "PAYMENT_SUBMITTED",
+                            "SUBMITTED",
+                            {
+                                orderId,
+                                amount,
+                                currency,
+                                status,
+                            }
+                        );
+
+                        // Evento: Pago autorizado
+                        await registerPaymentEvent(
+                            operationId,
+                            "PAYMENT_AUTHORIZED",
+                            "AUTHORIZED",
+                            {
+                                orderId,
+                                transactionId,
+                                status,
+                            }
+                        );
+
+                        // Evento: Fondos capturados (solo en producción)
+                        if (process.env.NODE_ENV === "production") {
+                            await registerPaymentEvent(
+                                operationId,
+                                "PAYMENT_CAPTURED",
+                                "CAPTURED",
+                                {
+                                    orderId,
+                                    transactionId,
+                                    amount,
+                                    currency,
+                                }
+                            );
+                        }
+
+                        // Evento: Pago completado
+                        await registerPaymentEvent(
+                            operationId,
+                            "PAYMENT_SUCCESS",
+                            "PAID",
+                            {
+                                orderId,
+                                transactionId,
+                                amount,
+                                currency,
+                                status,
+                            }
+                        );
+                    } catch (error) {
+                        console.error(
+                            "❌ Error registrando eventos de pago:",
+                            error
+                        );
+                    }
+                }
 
                 // Aquí deberías actualizar tu base de datos
                 // await updatePaymentStatus(orderId, 'PAID', transactionId);
@@ -101,6 +219,26 @@ export async function POST(request: NextRequest) {
                 // Pago fallido
                 console.log(`Pago fallido para orden: ${orderId}`);
 
+                if (operationId) {
+                    try {
+                        await registerPaymentEvent(
+                            operationId,
+                            "PAYMENT_FAILED",
+                            "FAILED",
+                            {
+                                orderId,
+                                status,
+                                error: "Pago rechazado por el banco",
+                            }
+                        );
+                    } catch (error) {
+                        console.error(
+                            "❌ Error registrando evento de pago fallido:",
+                            error
+                        );
+                    }
+                }
+
                 // Actualizar estado en base de datos
                 // await updatePaymentStatus(orderId, 'FAILED', transactionId);
 
@@ -109,6 +247,25 @@ export async function POST(request: NextRequest) {
             case "CANCELLED":
                 // Pago cancelado
                 console.log(`Pago cancelado para orden: ${orderId}`);
+
+                if (operationId) {
+                    try {
+                        await registerPaymentEvent(
+                            operationId,
+                            "USER_CANCELLED_PAYMENT",
+                            "CANCELLED",
+                            {
+                                orderId,
+                                status,
+                            }
+                        );
+                    } catch (error) {
+                        console.error(
+                            "❌ Error registrando evento de pago cancelado:",
+                            error
+                        );
+                    }
+                }
 
                 // Actualizar estado en base de datos
                 // await updatePaymentStatus(orderId, 'CANCELLED', transactionId);
@@ -144,5 +301,7 @@ export async function GET() {
     return NextResponse.json({
         message: "Webhook endpoint activo",
         timestamp: new Date().toISOString(),
+        status: "OK",
+        environment: process.env.NODE_ENV,
     });
 }

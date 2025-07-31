@@ -5,43 +5,15 @@ import { toast } from "react-toastify";
 import { Modal, ModalOptions } from "flowbite";
 import PaymentInstructionsModal from "./PaymentInstructionsModal";
 import PaymentProofModal from "./PaymentProofModal";
+import { usePaymentEvents } from "@/hooks/usePaymentEvents";
+import { currentConfig, IZIPAY_URLS } from "@/lib/izipay-config";
+import "./izipay-form.css";
 
 interface PaymentPageProps {
     documentId?: string;
     amount?: string;
     orderNumber?: string;
 }
-
-// Configuración de Izipay
-const IZIPAY_CONFIG = {
-    // URLs
-    apiUrl: "https://api.micuentaweb.pe",
-    paymentUrl:
-        "https://api.micuentaweb.pe/api-payment/V4/Charge/CreatePayment",
-    jsUrl: "https://static.micuentaweb.pe/static/js/krypton-client/V4.0/stable/kr-payment-form.min.js",
-
-    // Credenciales de test
-    test: {
-        username: "81325114",
-        password: "testpassword_LlOkH8bsEV6VavZxPxg8kfDeFzoQDZhuG201WEcaOMMo0",
-        publicKey:
-            "81325114:testpublickey_4VfiAtUJdrZI97FxPU41vgaNAbm0GVWEkmWIX4vnnAhM2",
-    },
-
-    // Credenciales de producción
-    production: {
-        username: "81325114",
-        password: "prodpassword_CKAvckvYUJd3UCquAG44VRzB8JaIFKPcmqNPubOhgQV2y",
-        publicKey:
-            "81325114:publickey_2DdsrTALR3DnARWKhzNXN2aPUsjXazw5WeqLddEv2RH6l",
-    },
-};
-
-// Determinar si estamos en modo test o producción
-const isProduction = process.env.NODE_ENV === "production";
-const currentConfig = isProduction
-    ? IZIPAY_CONFIG.production
-    : IZIPAY_CONFIG.test;
 
 // Variables globales para controlar la carga de scripts
 let scriptLoaded = false;
@@ -55,6 +27,9 @@ export default function PaymentPage() {
     const orderNumber = searchParams.get("orderNumber") || "OP-269122";
     const description = searchParams.get("description") || "Factura";
 
+    // Hook para eventos de pago
+    const { events, loading: paymentEventLoading } = usePaymentEvents();
+
     const [instructionsModal, setInstructionsModal] = useState<Modal | null>(
         null
     );
@@ -62,6 +37,19 @@ export default function PaymentPage() {
     const [paymentModal, setPaymentModal] = useState<Modal | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [formToken, setFormToken] = useState<string>("");
+
+    // Función para formatear el monto correctamente
+    const formatAmount = (amount: string) => {
+        const numAmount = parseFloat(amount);
+
+        // El monto ya viene en soles desde la URL
+        return new Intl.NumberFormat("es-PE", {
+            style: "currency",
+            currency: "PEN",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(numAmount);
+    };
 
     // Función optimizada para cargar los scripts de Izipay
     const loadIzipayScripts = async (): Promise<boolean> => {
@@ -92,19 +80,19 @@ export default function PaymentPage() {
             // Cargar el script principal de Izipay
             const mainScript = document.createElement("script");
             mainScript.type = "text/javascript";
-            mainScript.src = IZIPAY_CONFIG.jsUrl;
+            mainScript.src = IZIPAY_URLS.jsUrl;
             mainScript.setAttribute("kr-public-key", currentConfig.publicKey);
             mainScript.setAttribute(
                 "kr-post-url-success",
-                "/api/payment/success"
+                `/api/payment/success`
             );
             mainScript.setAttribute(
                 "kr-post-url-cancel",
-                "/api/payment/cancel"
+                `/api/payment/cancel`
             );
             mainScript.setAttribute(
                 "kr-post-url-refused",
-                "/api/payment/refused"
+                `/api/payment/refused`
             );
             mainScript.setAttribute("kr-language", "es-ES");
 
@@ -127,20 +115,17 @@ export default function PaymentPage() {
 
             return new Promise((resolve, reject) => {
                 mainScript.onload = () => {
-                    console.log("✅ Scripts de Izipay cargados exitosamente");
                     scriptLoaded = true;
                     scriptLoading = false;
                     resolve(true);
                 };
 
                 mainScript.onerror = () => {
-                    console.error("❌ Error al cargar los scripts de Izipay");
                     scriptLoading = false;
                     reject(new Error("Error al cargar el formulario de pago"));
                 };
             });
         } catch (error) {
-            console.error("❌ Error al crear los scripts:", error);
             scriptLoading = false;
             throw error;
         }
@@ -148,19 +133,36 @@ export default function PaymentPage() {
 
     const handleCardPayment = async () => {
         setIsLoading(true);
-        console.log("🚀 Iniciando proceso de pago...");
 
         try {
             // Generar ID de orden único
             const orderId = `ORDER_${Date.now()}_${Math.random()
                 .toString(36)
                 .substr(2, 9)}`;
-            console.log("🆔 Order ID generado:", orderId);
+
+            // 1. Evento: Usuario inició pago
+            const operationId = Number(documentId) || 0;
+            await events.userInitiatedPayment(operationId, {
+                orderId,
+                amount: parseFloat(amount),
+                description,
+            });
+
+            // 2. Evento: Solicitud de pago creada
+            await events.createPaymentRequest(operationId, parseFloat(amount), {
+                orderId,
+                amount: parseFloat(amount),
+                currency: "PEN",
+                customer: {
+                    email: "cliente@ejemplo.com",
+                    reference: documentId || "DOC001",
+                },
+            });
 
             // Crear la transacción en Izipay
             const paymentData = {
                 orderId: orderId,
-                amount: parseFloat(amount) * 100, // Convertir a centavos
+                amount: parseFloat(amount), // Enviar en soles, no en centavos
                 currency: "PEN",
                 customer: {
                     email: "cliente@ejemplo.com",
@@ -175,8 +177,6 @@ export default function PaymentPage() {
                     },
                 },
             };
-
-            console.log("📤 Enviando datos a la API:", paymentData);
 
             // Crear la transacción
             const response = await fetch("/api/payment/create", {
@@ -195,13 +195,21 @@ export default function PaymentPage() {
             }
 
             const result = await response.json();
-            console.log("🎯 Resultado de la API:", result);
 
             if (result.success && result.formToken) {
-                console.log("✅ FormToken recibido:", result.formToken);
                 setFormToken(result.formToken);
 
-                // Cargar scripts y mostrar formulario
+                // 3. Evento: FormToken generado exitosamente
+                await events.createPaymentSuccess(
+                    operationId,
+                    result.formToken,
+                    result
+                );
+
+                // 4. Evento: Formulario de pago mostrado
+                await events.paymentFormDisplayed(operationId);
+
+                // Cargar scripts y mostrar formulario embebido
                 await loadIzipayScripts();
                 paymentModal?.show();
             } else {
@@ -211,6 +219,14 @@ export default function PaymentPage() {
             }
         } catch (error) {
             console.error("❌ Error en el pago:", error);
+
+            // Evento: Falló la creación del pago
+            const operationId = Number(documentId) || 0;
+            await events.createPaymentFailed(operationId, {
+                error: error instanceof Error ? error.message : String(error),
+                amount: parseFloat(amount),
+            });
+
             toast.error(
                 "Error al procesar el pago. Por favor, inténtalo de nuevo."
             );
@@ -338,21 +354,21 @@ export default function PaymentPage() {
 
                         <button
                             onClick={handleCardPayment}
-                            disabled={isLoading}
+                            disabled={isLoading || paymentEventLoading}
                             type="button"
                             className={`w-full font-bold py-3 px-6 rounded-lg text-lg transition-colors ${
-                                isLoading
+                                isLoading || paymentEventLoading
                                     ? "bg-gray-400 cursor-not-allowed text-white"
                                     : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
                             }`}
                         >
-                            {isLoading ? (
+                            {isLoading || paymentEventLoading ? (
                                 <div className="flex items-center justify-center">
                                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                                     Procesando...
                                 </div>
                             ) : (
-                                `PAGAR S/${amount}`
+                                `PAGAR ${formatAmount(amount)}`
                             )}
                         </button>
                     </div>
@@ -426,9 +442,9 @@ export default function PaymentPage() {
                 className="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
                 id="payment-form-modal"
             >
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full max-h-[90vh] overflow-y-auto mx-auto p-0 m-0">
                     <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                             Formulario de Pago
                         </h3>
                         <button
@@ -436,7 +452,7 @@ export default function PaymentPage() {
                             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                         >
                             <svg
-                                className="w-6 h-6"
+                                className="w-5 h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -450,8 +466,11 @@ export default function PaymentPage() {
                             </svg>
                         </button>
                     </div>
-                    <div className="p-6">
-                        <div id="micuentawebstd_rest_wrapper">
+                    <div className="p-0 m-0">
+                        <div
+                            id="micuentawebstd_rest_wrapper"
+                            className="flex flex-col items-center justify-center"
+                        >
                             <div
                                 className="kr-embedded"
                                 kr-form-token={formToken}
@@ -469,7 +488,12 @@ export default function PaymentPage() {
             />
 
             {/* Modal de constancia de pago */}
-            <PaymentProofModal modal={proofModal} setModal={setProofModal} />
+            <PaymentProofModal
+                modal={proofModal}
+                setModal={setProofModal}
+                operationId={Number(documentId)}
+                amount={parseFloat(amount)}
+            />
         </div>
     );
 }

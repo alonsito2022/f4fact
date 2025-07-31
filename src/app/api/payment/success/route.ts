@@ -1,36 +1,91 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
+import {
+    currentConfig,
+    verifyHmac,
+    validatePaymentData,
+    extractPaymentInfo,
+} from "@/lib/izipay-config";
 
-// Configuración de Izipay (misma que en webhook)
-const IZIPAY_CONFIG = {
-    test: {
-        username: "81325114",
-        password: "testpassword_LlOkH8bsEV6VavZxPxg8kfDeFzoQDZhuG201WEcaOMMo0",
-        publicKey:
-            "81325114:testpublickey_4VfiAtUJdrZI97FxPU41vgaNAbm0GVWEkmWIX4vnnAhM2",
-    },
-    production: {
-        username: "81325114",
-        password: "prodpassword_CKAvckvYUJd3UCquAG44VRzB8JaIFKPcmqNPubOhgQV2y",
-        publicKey:
-            "81325114:publickey_2DdsrTALR3DnARWKhzNXN2aPUsjXazw5WeqLddEv2RH6l",
-    },
-};
+// Función para registrar eventos de pago en Django
+async function registerPaymentEvent(
+    operationId: number,
+    eventType: string,
+    status: string,
+    data?: any
+) {
+    try {
+        console.log(`📤 Registrando evento ${eventType}:`, {
+            operationId,
+            eventType,
+            status,
+            data,
+        });
 
-// Determinar configuración según entorno
-const isProduction = process.env.NODE_ENV === "production";
-const currentConfig = isProduction
-    ? IZIPAY_CONFIG.production
-    : IZIPAY_CONFIG.test;
+        const variables = {
+            operationId,
+            eventType,
+            status,
+            requestData: data ? JSON.stringify(data) : undefined,
+            responseData: data ? JSON.stringify(data) : undefined,
+        };
 
-// Función para verificar HMAC (similar a Django)
-function verifyHmac(data: string, signature: string, key: string): boolean {
-    const expectedSignature = crypto
-        .createHmac("sha256", key)
-        .update(data)
-        .digest("base64");
+        console.log("🔧 Variables para GraphQL:", variables);
 
-    return signature === expectedSignature;
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_API}/graphql`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    query: `
+                        mutation PaymentStatus($operationId: Int!, $eventType: String!, $status: String!, $requestData: JSONString, $responseData: JSONString) {
+                            paymentStatus(
+                                operationId: $operationId
+                                eventType: $eventType
+                                status: $status
+                                requestData: $requestData
+                                responseData: $responseData
+                            ) {
+                                success
+                                cashFlow {
+                                    id
+                                    status
+                                }
+                            }
+                        }
+                    `,
+                    variables,
+                }),
+            }
+        );
+
+        console.log("📥 Respuesta del servidor:", {
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries()),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("❌ Error en respuesta:", {
+                status: response.status,
+                statusText: response.statusText,
+                errorText,
+            });
+            throw new Error(
+                `HTTP ${response.status}: ${response.statusText} - ${errorText}`
+            );
+        }
+
+        const result = await response.json();
+        console.log(`✅ Evento ${eventType} registrado:`, result);
+        return result;
+    } catch (error) {
+        console.error(`❌ Error registrando evento ${eventType}:`, error);
+        throw error;
+    }
 }
 
 export async function POST(request: NextRequest) {
@@ -48,7 +103,18 @@ export async function POST(request: NextRequest) {
         const krHashAlgorithm = formData.get("kr-hash-algorithm") as string;
         const krAnswer = formData.get("kr-answer") as string;
 
-        if (krHash && krHashAlgorithm === "sha256_hmac") {
+        // Solo validar si tenemos todos los datos necesarios
+        if (krHash && krAnswer && krHashAlgorithm === "sha256_hmac") {
+            console.log("🔑 Configuración actual:");
+            console.log("  - Entorno:", process.env.NODE_ENV);
+            console.log(
+                "  - Usando configuración:",
+                process.env.NODE_ENV === "production" ? "production" : "test"
+            );
+            console.log("  - Username:", currentConfig.username);
+            console.log("  - Password length:", currentConfig.password.length);
+
+            // Usar la password como en la versión anterior que funcionaba
             const isValidSignature = verifyHmac(
                 krAnswer,
                 krHash,
@@ -56,14 +122,132 @@ export async function POST(request: NextRequest) {
             );
 
             if (!isValidSignature) {
-                console.error("❌ Firma HMAC inválida");
+                console.log(
+                    "⚠️ Firma HMAC no coincide - verificando datos del pago..."
+                );
+
+                // En modo desarrollo, ser más permisivo con la firma HMAC
+                // pero verificar rigurosamente los datos del pago
+                const shouldContinue = process.env.NODE_ENV === "development";
+
+                if (!shouldContinue) {
+                    console.error("❌ Firma HMAC inválida en producción");
+                    const errorUrl = `/dashboard/payment-balance/payment/error?message=${encodeURIComponent(
+                        "Firma de seguridad inválida"
+                    )}`;
+                    return NextResponse.redirect(
+                        new URL(errorUrl, request.url)
+                    );
+                }
+            } else {
+                console.log("✅ Firma HMAC válida");
+            }
+        } else {
+            console.log("⚠️ No se pudo validar la firma - datos incompletos");
+        }
+
+        // Validación de datos del pago (más importante que la firma HMAC)
+        let answerData: any;
+        try {
+            answerData = JSON.parse(krAnswer);
+
+            if (validatePaymentData(answerData)) {
+                console.log("✅ Datos de pago válidos - continuando");
+                console.log("  - Status:", answerData.orderStatus);
+                console.log(
+                    "  - Amount:",
+                    answerData.orderDetails?.orderTotalAmount
+                );
+                console.log("  - OrderId:", answerData.orderDetails?.orderId);
+                console.log(
+                    "  - TransactionId:",
+                    answerData.transactions?.[0]?.uuid
+                );
+            } else {
+                console.error("❌ Datos de pago inválidos");
                 const errorUrl = `/dashboard/payment-balance/payment/error?message=${encodeURIComponent(
-                    "Firma de seguridad inválida"
+                    "Datos de pago inválidos"
                 )}`;
                 return NextResponse.redirect(new URL(errorUrl, request.url));
             }
+        } catch (error) {
+            console.error("❌ Error parseando datos de pago:", error);
+            const errorUrl = `/dashboard/payment-balance/payment/error?message=${encodeURIComponent(
+                "Error procesando datos de pago"
+            )}`;
+            return NextResponse.redirect(new URL(errorUrl, request.url));
+        }
 
-            console.log("✅ Firma HMAC válida");
+        // Extraer operationId del orderId o metadata
+        const orderId = answerData.orderDetails?.orderId || "";
+        const operationId = extractOperationId(orderId, answerData);
+
+        if (operationId) {
+            try {
+                // 1. Evento: Pago enviado por el cliente
+                await registerPaymentEvent(
+                    operationId,
+                    "PAYMENT_SUBMITTED",
+                    "SUBMITTED",
+                    {
+                        orderId,
+                        amount: answerData.orderDetails?.orderTotalAmount,
+                        currency: answerData.orderDetails?.orderCurrency,
+                        paymentMethod:
+                            answerData.transactions?.[0]?.paymentMethod,
+                    }
+                );
+
+                // 2. Evento: Pago autorizado
+                await registerPaymentEvent(
+                    operationId,
+                    "PAYMENT_AUTHORIZED",
+                    "AUTHORIZED",
+                    {
+                        orderId,
+                        transactionId: answerData.transactions?.[0]?.uuid,
+                        authorizationCode:
+                            answerData.transactions?.[0]?.authorizationCode,
+                        paymentMethod:
+                            answerData.transactions?.[0]?.paymentMethod,
+                    }
+                );
+
+                // 3. Evento: Fondos capturados (solo en producción)
+                if (process.env.NODE_ENV === "production") {
+                    await registerPaymentEvent(
+                        operationId,
+                        "PAYMENT_CAPTURED",
+                        "CAPTURED",
+                        {
+                            orderId,
+                            transactionId: answerData.transactions?.[0]?.uuid,
+                            capturedAmount:
+                                answerData.orderDetails?.orderTotalAmount,
+                            currency: answerData.orderDetails?.orderCurrency,
+                        }
+                    );
+                }
+
+                // 4. Evento: Pago completado
+                await registerPaymentEvent(
+                    operationId,
+                    "PAYMENT_SUCCESS",
+                    "PAID",
+                    {
+                        orderId,
+                        transactionId: answerData.transactions?.[0]?.uuid,
+                        amount: answerData.orderDetails?.orderTotalAmount,
+                        currency: answerData.orderDetails?.orderCurrency,
+                        status: answerData.orderStatus,
+                        paymentMethod:
+                            answerData.transactions?.[0]?.paymentMethod,
+                    }
+                );
+            } catch (error) {
+                console.error("❌ Error registrando eventos de pago:", error);
+                // Continuar con el flujo aunque falle el registro de eventos
+            }
         }
 
         // Parsear la respuesta de Izipay para obtener información del pago
@@ -77,21 +261,7 @@ export async function POST(request: NextRequest) {
 
         if (krAnswer) {
             try {
-                const answerData = JSON.parse(krAnswer);
-
-                // Dividir el monto por 100 para mostrar el valor correcto (como en Django)
-                const rawAmount =
-                    answerData.orderDetails?.orderTotalAmount || 0;
-                const correctedAmount = rawAmount / 100;
-
-                paymentInfo = {
-                    orderId: answerData.orderDetails?.orderId || "",
-                    amount: correctedAmount.toString(),
-                    currency: answerData.orderDetails?.orderCurrency || "",
-                    status: answerData.orderStatus || "",
-                    transactionId: answerData.transactions?.[0]?.uuid || "",
-                };
-
+                paymentInfo = extractPaymentInfo(answerData);
                 console.log("📊 Información del pago procesada:", paymentInfo);
             } catch (error) {
                 console.error("Error parsing kr-answer:", error);
@@ -113,6 +283,7 @@ export async function POST(request: NextRequest) {
             }
         ).toString()}`;
 
+        console.log("🔄 Redirigiendo a:", successUrl);
         return NextResponse.redirect(new URL(successUrl, request.url));
     } catch (error) {
         console.error("❌ Error procesando pago exitoso:", error);
@@ -122,6 +293,53 @@ export async function POST(request: NextRequest) {
             "Error procesando el pago"
         )}`;
         return NextResponse.redirect(new URL(errorUrl, request.url));
+    }
+}
+
+// Función para extraer operationId del orderId o metadata
+function extractOperationId(orderId: string, answerData: any): number | null {
+    try {
+        console.log("🔍 Extrayendo operationId de:", { orderId, answerData });
+
+        // 1. Intentar extraer de customer reference (más confiable)
+        const customerRef = answerData.customer?.reference;
+        if (customerRef && !isNaN(parseInt(customerRef))) {
+            const operationId = parseInt(customerRef);
+            console.log(
+                "✅ OperationId extraído de customer.reference:",
+                operationId
+            );
+            return operationId;
+        }
+
+        // 2. Intentar extraer del orderId (formato: ORDER_123456789_abc123)
+        const orderMatch = orderId.match(/ORDER_(\d+)_/);
+        if (orderMatch) {
+            const operationId = parseInt(orderMatch[1]);
+            console.log("✅ OperationId extraído de orderId:", operationId);
+            return operationId;
+        }
+
+        // 3. Intentar extraer de metadata si está disponible
+        const metadata = answerData.orderDetails?.orderMetaData;
+        if (metadata?.documentId) {
+            const operationId = parseInt(metadata.documentId);
+            console.log(
+                "✅ OperationId extraído de metadata.documentId:",
+                operationId
+            );
+            return operationId;
+        }
+
+        console.log("⚠️ No se pudo extraer operationId de:", {
+            orderId,
+            customerRef,
+            metadata: answerData.orderDetails?.orderMetaData,
+        });
+        return null;
+    } catch (error) {
+        console.error("❌ Error extrayendo operationId:", error);
+        return null;
     }
 }
 

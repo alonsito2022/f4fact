@@ -2,24 +2,52 @@
 import { Modal, ModalOptions } from "flowbite";
 import { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { usePaymentEvents } from "@/hooks/usePaymentEvents";
 
 interface PaymentProofModalProps {
     modal: Modal | null;
     setModal: (modal: Modal | null) => void;
+    operationId?: number;
+    amount?: number;
 }
 
 export default function PaymentProofModal({
     modal,
     setModal,
+    operationId,
+    amount,
 }: PaymentProofModalProps) {
+    const auth = useAuth();
+    const { events } = usePaymentEvents();
     const [files, setFiles] = useState<File[]>([]);
     const [isDragOver, setIsDragOver] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [paymentAmount, setPaymentAmount] = useState(amount || 0);
+    const [notes, setNotes] = useState("");
+    const [wayPay, setWayPay] = useState(2); // Default: Transferencia
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Opciones de forma de pago
+    const wayPayOptions = [
+        { value: 1, label: "Efectivo" },
+        { value: 2, label: "Transferencia" },
+        { value: 3, label: "Depósito" },
+        { value: 4, label: "Yape" },
+        { value: 5, label: "Plin" },
+        { value: 6, label: "Tarjeta" },
+        { value: 7, label: "Otro" },
+    ];
 
     const handleClose = () => {
         if (modal) {
             modal.hide();
         }
+        // Reset form
+        setFiles([]);
+        setPaymentAmount(amount || 0);
+        setNotes("");
+        setWayPay(2); // Reset to default
     };
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,20 +73,13 @@ export default function PaymentProofModal({
     };
 
     const handleFiles = (newFiles: File[]) => {
-        const allowedTypes = [
-            "image/png",
-            "image/jpeg",
-            "image/jpg",
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/vnd.ms-excel",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        ];
+        const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
 
         const validFiles = newFiles.filter((file) => {
             if (!allowedTypes.includes(file.type)) {
-                toast.error(`Tipo de archivo no soportado: ${file.name}`);
+                toast.error(
+                    `Solo se permiten imágenes PNG, JPG o JPEG: ${file.name}`
+                );
                 return false;
             }
             if (file.size > 5 * 1024 * 1024) {
@@ -69,8 +90,8 @@ export default function PaymentProofModal({
             return true;
         });
 
-        if (files.length + validFiles.length > 6) {
-            toast.error("Máximo 6 archivos permitidos");
+        if (files.length + validFiles.length > 1) {
+            toast.error("Solo se permite 1 archivo por constancia");
             return;
         }
 
@@ -82,17 +103,166 @@ export default function PaymentProofModal({
         setFiles((prev) => prev.filter((_, i) => i !== index));
     };
 
-    const handleUpload = () => {
+    const handleUpload = async () => {
         if (files.length === 0) {
-            toast.error("Por favor selecciona al menos un archivo");
+            toast.error("Por favor selecciona una imagen de la constancia");
             return;
         }
 
-        // Aquí iría la lógica para subir los archivos
-        console.log("Archivos a subir:", files);
-        toast.success("Constancia de pago enviada correctamente");
-        setFiles([]);
-        handleClose();
+        if (!operationId) {
+            toast.error("Error: No se encontró el ID de la operación");
+            return;
+        }
+
+        if (paymentAmount <= 0) {
+            toast.error("Por favor ingresa el monto pagado");
+            return;
+        }
+
+        if (!wayPay) {
+            toast.error("Por favor selecciona la forma de pago");
+            return;
+        }
+
+        if (!auth?.user?.id) {
+            toast.error("Error: No se encontró el ID del usuario");
+            return;
+        }
+
+        setIsUploading(true);
+
+        try {
+            const file = files[0]; // Solo un archivo por constancia
+
+            // Validar que el archivo tenga el tipo correcto
+            if (
+                !file.type ||
+                !["image/png", "image/jpeg", "image/jpg"].includes(file.type)
+            ) {
+                toast.error(
+                    "Tipo de archivo no válido. Solo se permiten imágenes PNG, JPG o JPEG."
+                );
+                return;
+            }
+
+            // Validar que el archivo tenga un nombre
+            if (!file.name) {
+                toast.error("El archivo debe tener un nombre válido");
+                return;
+            }
+
+            // Validar que el archivo no esté vacío
+            if (file.size === 0) {
+                toast.error("El archivo no puede estar vacío");
+                return;
+            }
+
+            console.log("📤 Enviando archivo:", {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                operationId,
+                total: paymentAmount,
+                wayPay,
+                notes,
+            });
+
+            console.log(
+                "🔗 URL del endpoint:",
+                `${process.env.NEXT_PUBLIC_BASE_API}/accounting/upload-payment-proof/`
+            );
+            console.log(
+                "👤 ID del usuario:",
+                auth?.user?.id ? auth.user.id : "No disponible"
+            );
+            console.log("📋 FormData creado con campos:", {
+                operation_id: operationId,
+                total: paymentAmount,
+                way_pay: wayPay,
+                currency: "PEN",
+                notes: notes || `Constancia de pago por S/ ${paymentAmount}`,
+                attachment: file.name,
+                user_id: auth?.user?.id,
+            });
+
+            // Crear FormData para el upload
+            const formData = new FormData();
+            formData.append("operation_id", operationId.toString());
+            formData.append("total", paymentAmount.toString());
+            formData.append("way_pay", wayPay.toString());
+            formData.append("currency", "PEN");
+            formData.append(
+                "notes",
+                notes || `Constancia de pago por S/ ${paymentAmount}`
+            );
+            formData.append("attachment", file);
+            formData.append("user_id", auth?.user?.id.toString());
+
+            // Llamada REST API
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_BASE_API}/accounting/upload-payment-proof/`,
+                {
+                    method: "POST",
+                    body: formData,
+                }
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                toast.success("✅ Constancia de pago enviada correctamente");
+                console.log("🎯 Constancia subida:", result);
+
+                // Evento: PAYMENT_PROOF_UPLOADED
+                await events.paymentProofUploaded(operationId, {
+                    total: paymentAmount,
+                    currency: "PEN",
+                    wayPay: wayPay,
+                    notes:
+                        notes || `Constancia de pago por S/ ${paymentAmount}`,
+                    filename: file.name,
+                    fileSize: file.size,
+                    status: "PENDING",
+                    cashFlowId: result.cashFlow?.id,
+                });
+
+                handleClose();
+            } else {
+                toast.error("Error al subir la constancia");
+            }
+        } catch (error) {
+            console.error("❌ Error al subir constancia:", error);
+
+            // Mostrar mensaje de error más específico
+            let errorMessage =
+                "Error al subir la constancia. Por favor, inténtalo de nuevo.";
+
+            const errorMessageStr =
+                error instanceof Error ? error.message : String(error);
+
+            if (errorMessageStr.includes("content_type")) {
+                errorMessage =
+                    "Error en el formato del archivo. Asegúrate de que sea una imagen válida.";
+            } else if (errorMessageStr.includes("network")) {
+                errorMessage =
+                    "Error de conexión. Verifica tu conexión a internet.";
+            } else if (errorMessageStr.includes("unauthorized")) {
+                errorMessage =
+                    "Error de autenticación. Por favor, inicia sesión nuevamente.";
+            } else if (errorMessageStr.includes("validation")) {
+                errorMessage =
+                    "Error de validación. Verifica los datos ingresados.";
+            }
+
+            toast.error(errorMessage);
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     return (
@@ -108,7 +278,7 @@ export default function PaymentProofModal({
                     {/* Modal header */}
                     <div className="flex items-start justify-between p-4 border-b border-gray-200 dark:border-gray-700 rounded-t">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex-1 text-center">
-                            CONSTANCIA DE PAGO
+                            📎 SUBIR CONSTANCIA DE PAGO
                         </h3>
                         <button
                             type="button"
@@ -135,17 +305,81 @@ export default function PaymentProofModal({
                     </div>
 
                     {/* Modal body */}
-                    <div className="p-6">
-                        {/* Instructions */}
-                        <div className="mb-6 text-center">
-                            <p className="text-gray-700 dark:text-gray-300 mb-2">
-                                Puedes subir o arrastrar{" "}
-                                <strong>CONSTANCIA DE PAGO</strong>.
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Soporta formatos PNG, JPG, JPEG, PDF, WORD,
-                                EXCEL. Hasta 6 archivos de 5MB cada uno.
-                            </p>
+                    <div className="p-6 space-y-6">
+                        {/* Información */}
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                            <h4 className="font-bold text-blue-900 dark:text-blue-100 mb-2">
+                                ℹ️ Información Importante
+                            </h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm text-blue-800 dark:text-blue-200">
+                                <li>
+                                    Solo se permiten imágenes PNG, JPG o JPEG
+                                </li>
+                                <li>Tamaño máximo: 5MB por archivo</li>
+                                <li>La constancia será revisada manualmente</li>
+                                <li>
+                                    Se registrará el evento
+                                    PAYMENT_PROOF_UPLOADED
+                                </li>
+                                <li>Selecciona la forma de pago utilizada</li>
+                            </ul>
+                        </div>
+
+                        {/* Monto */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                💰 Monto Pagado (S/)
+                            </label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={paymentAmount}
+                                onChange={(e) =>
+                                    setPaymentAmount(
+                                        parseFloat(e.target.value) || 0
+                                    )
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                placeholder="0.00"
+                            />
+                        </div>
+
+                        {/* Forma de Pago */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                💳 Forma de Pago
+                            </label>
+                            <select
+                                value={wayPay}
+                                onChange={(e) =>
+                                    setWayPay(parseInt(e.target.value))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                            >
+                                {wayPayOptions.map((option) => (
+                                    <option
+                                        key={option.value}
+                                        value={option.value}
+                                    >
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Notas */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                📝 Notas (Opcional)
+                            </label>
+                            <textarea
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                rows={3}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                placeholder="Información adicional sobre el pago..."
+                            />
                         </div>
 
                         {/* File Upload Area */}
@@ -176,14 +410,16 @@ export default function PaymentProofModal({
                                     />
                                 </svg>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    Subir o arrastrar archivo aquí
+                                    Subir o arrastrar imagen de constancia aquí
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                    Solo PNG, JPG, JPEG - Máximo 5MB
                                 </p>
                             </div>
                             <input
                                 ref={fileInputRef}
                                 type="file"
-                                multiple
-                                accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.xls,.xlsx"
+                                accept=".png,.jpg,.jpeg"
                                 onChange={handleFileSelect}
                                 className="hidden"
                             />
@@ -193,17 +429,36 @@ export default function PaymentProofModal({
                         {files.length > 0 && (
                             <div className="mt-4">
                                 <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                                    Archivos seleccionados ({files.length}/6):
+                                    📎 Archivo seleccionado:
                                 </h4>
                                 <div className="space-y-2">
                                     {files.map((file, index) => (
                                         <div
                                             key={index}
-                                            className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-600 rounded"
+                                            className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg"
                                         >
-                                            <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                                                {file.name}
-                                            </span>
+                                            <div className="flex items-center space-x-3">
+                                                <svg
+                                                    className="w-5 h-5 text-green-600 dark:text-green-400"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm2 1a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V4a1 1 0 00-1-1H6z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                                <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                                                    {file.name} (
+                                                    {(
+                                                        file.size /
+                                                        1024 /
+                                                        1024
+                                                    ).toFixed(2)}{" "}
+                                                    MB)
+                                                </span>
+                                            </div>
                                             <button
                                                 onClick={() =>
                                                     removeFile(index)
@@ -230,13 +485,33 @@ export default function PaymentProofModal({
                     </div>
 
                     {/* Modal footer */}
-                    <div className="flex justify-center p-6 border-t border-gray-200 dark:border-gray-700 rounded-b">
+                    <div className="flex justify-center p-6 border-t border-gray-200 dark:border-gray-700 rounded-b space-x-3">
                         <button
                             type="button"
                             onClick={handleUpload}
-                            className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-6 rounded-lg transition-colors mr-3"
+                            disabled={
+                                isUploading ||
+                                files.length === 0 ||
+                                paymentAmount <= 0 ||
+                                !wayPay
+                            }
+                            className={`font-medium py-2 px-6 rounded-lg transition-colors ${
+                                isUploading ||
+                                files.length === 0 ||
+                                paymentAmount <= 0 ||
+                                !wayPay
+                                    ? "bg-gray-400 cursor-not-allowed text-white"
+                                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                            }`}
                         >
-                            Subir
+                            {isUploading ? (
+                                <div className="flex items-center">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    Subiendo...
+                                </div>
+                            ) : (
+                                "📤 Subir Constancia"
+                            )}
                         </button>
                         <button
                             type="button"
