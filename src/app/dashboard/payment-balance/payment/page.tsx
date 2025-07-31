@@ -326,7 +326,7 @@ export default function PaymentPage() {
                     {/* Card/Yape Payment */}
                     <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-6">
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">
-                            Pagar con tarjeta o Yape
+                            Pagar con tarjeta
                         </h3>
 
                         {/* Payment Method Logos */}
@@ -342,9 +342,6 @@ export default function PaymentPage() {
                             </div>
                             <div className="text-gray-600 dark:text-gray-400 font-bold text-sm">
                                 Diners Club International
-                            </div>
-                            <div className="bg-purple-600 dark:bg-purple-500 text-white px-3 py-1 rounded-lg font-bold text-sm">
-                                S/ yape
                             </div>
                         </div>
 
@@ -376,7 +373,7 @@ export default function PaymentPage() {
                     {/* Bank Payment */}
                     <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-6">
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">
-                            Pagar en cuenta bancaria
+                            Pagar en cuenta bancaria o Yape
                         </h3>
 
                         {/* Bank Logos */}
@@ -384,14 +381,11 @@ export default function PaymentPage() {
                             <div className="text-blue-600 dark:text-blue-400 font-bold text-lg">
                                 BCP
                             </div>
-                            <div className="text-blue-800 dark:text-blue-300 font-bold text-lg">
-                                BBVA
-                            </div>
-                            <div className="text-red-600 dark:text-red-400 font-bold text-lg">
-                                Scotiabank
-                            </div>
                             <div className="text-orange-600 dark:text-orange-400 font-bold text-lg">
                                 Interbank
+                            </div>
+                            <div className="bg-purple-600 dark:bg-purple-500 text-white px-3 py-1 rounded-lg font-bold text-sm">
+                                S/ yape
                             </div>
                         </div>
 
