@@ -38,6 +38,7 @@ const TOKEN_AUTH_MUTATION = gql`
             app
             isProduction
             disableContinuePay
+            showUser
           }
         }
       }
@@ -70,6 +71,7 @@ interface ExtendedUser extends User {
   companyApp: boolean;
   companyDisableContinuePay: boolean;
   companyIsProduction: boolean;
+  companyShowUser: boolean;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -145,6 +147,7 @@ export const authOptions: NextAuthOptions = {
               companyIsProduction:
                 data.tokenAuth.user.subsidiary.company.isProduction,
 
+              companyShowUser: data.tokenAuth.user.subsidiary.company.showUser,
               exp: data.tokenAuth?.payload.exp,
               iat: data.tokenAuth?.payload.origIat,
             };
@@ -195,6 +198,7 @@ export const authOptions: NextAuthOptions = {
           user as ExtendedUser
         ).companyDisableContinuePay;
         token.companyIsProduction = (user as ExtendedUser).companyIsProduction;
+        token.companyShowUser = (user as ExtendedUser).companyShowUser;
       }
       return token;
     },
@@ -224,6 +228,7 @@ export const authOptions: NextAuthOptions = {
           companyApp: token.companyApp,
           companyDisableContinuePay: token.companyDisableContinuePay,
           companyIsProduction: token.companyIsProduction,
+          companyShowUser: token.companyShowUser,
         },
         accessToken: token.accessToken,
         expires: new Date((token.exp as number) * 1000).toISOString(),
