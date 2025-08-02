@@ -9,6 +9,15 @@ const PAYMENT_STATUS_MUTATION = gql`
         $status: String!
         $requestData: JSONString
         $responseData: JSONString
+        $formToken: String
+        $amount: Float
+        $currency: String
+        $cardType: String
+        $cardBrand: String
+        $cardLastFour: String
+        $installmentNumber: Int
+        $ipAddress: String
+        $userAgent: String
     ) {
         paymentStatus(
             operationId: $operationId
@@ -16,6 +25,15 @@ const PAYMENT_STATUS_MUTATION = gql`
             status: $status
             requestData: $requestData
             responseData: $responseData
+            formToken: $formToken
+            amount: $amount
+            currency: $currency
+            cardType: $cardType
+            cardBrand: $cardBrand
+            cardLastFour: $cardLastFour
+            installmentNumber: $installmentNumber
+            ipAddress: $ipAddress
+            userAgent: $userAgent
         ) {
             success
             cashFlow {
@@ -36,7 +54,16 @@ export const usePaymentEvents = () => {
         eventType: string,
         status: string,
         requestData?: any,
-        responseData?: any
+        responseData?: any,
+        formToken?: string,
+        amount?: number,
+        currency?: string,
+        cardType?: string,
+        cardBrand?: string,
+        cardLastFour?: string,
+        installmentNumber?: number,
+        ipAddress?: string,
+        userAgent?: string
     ) => {
         try {
             const graphqlVariables: any = {
@@ -50,6 +77,33 @@ export const usePaymentEvents = () => {
             }
             if (responseData !== undefined) {
                 graphqlVariables.responseData = JSON.stringify(responseData);
+            }
+            if (formToken !== undefined) {
+                graphqlVariables.formToken = formToken;
+            }
+            if (amount !== undefined) {
+                graphqlVariables.amount = amount;
+            }
+            if (currency !== undefined) {
+                graphqlVariables.currency = currency;
+            }
+            if (cardType !== undefined) {
+                graphqlVariables.cardType = cardType;
+            }
+            if (cardBrand !== undefined) {
+                graphqlVariables.cardBrand = cardBrand;
+            }
+            if (cardLastFour !== undefined) {
+                graphqlVariables.cardLastFour = cardLastFour;
+            }
+            if (installmentNumber !== undefined) {
+                graphqlVariables.installmentNumber = installmentNumber;
+            }
+            if (ipAddress !== undefined) {
+                graphqlVariables.ipAddress = ipAddress;
+            }
+            if (userAgent !== undefined) {
+                graphqlVariables.userAgent = userAgent;
             }
 
             const result = await paymentStatusMutation({
@@ -421,6 +475,58 @@ export const usePaymentEvents = () => {
                     "PAYMENT_EXPIRED",
                     "EXPIRED",
                     data
+                );
+            },
+            // Eventos específicos para pagos con tarjeta
+            cardPaymentSuccess: async (operationId: number, cardData: any) => {
+                // Extraer información del cliente desde la respuesta de Izipay
+                const krAnswer = cardData["kr-answer"];
+                const customerExtraDetails = krAnswer?.customer?.extraDetails;
+
+                await handlePaymentEvent(
+                    operationId,
+                    "CARD_PAYMENT_SUCCESS",
+                    "PAID",
+                    {
+                        cardType: cardData.cardType,
+                        cardBrand: cardData.cardBrand,
+                        lastFourDigits: cardData.lastFourDigits,
+                        installments: cardData.installments,
+                        totalAmount: cardData.totalAmount,
+                        ...cardData,
+                    },
+                    cardData,
+                    cardData.formToken,
+                    cardData.amount,
+                    cardData.currency || "PEN",
+                    cardData.cardType,
+                    cardData.cardBrand,
+                    cardData.lastFourDigits,
+                    cardData.installments,
+                    customerExtraDetails?.ipAddress,
+                    customerExtraDetails?.browserUserAgent
+                );
+            },
+            cardPaymentError: async (operationId: number, errorData: any) => {
+                // Extraer información del cliente desde la respuesta de Izipay
+                const krAnswer = errorData["kr-answer"];
+                const customerExtraDetails = krAnswer?.customer?.extraDetails;
+
+                await handlePaymentEvent(
+                    operationId,
+                    "CARD_PAYMENT_ERROR",
+                    "FAILED",
+                    errorData,
+                    errorData,
+                    errorData.formToken,
+                    errorData.amount,
+                    errorData.currency || "PEN",
+                    errorData.cardType,
+                    errorData.cardBrand,
+                    errorData.lastFourDigits,
+                    errorData.installments,
+                    customerExtraDetails?.ipAddress,
+                    customerExtraDetails?.browserUserAgent
                 );
             },
         },

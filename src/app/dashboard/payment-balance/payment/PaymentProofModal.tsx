@@ -25,18 +25,20 @@ export default function PaymentProofModal({
     const [isUploading, setIsUploading] = useState(false);
     const [paymentAmount, setPaymentAmount] = useState(amount || 0);
     const [notes, setNotes] = useState("");
-    const [wayPay, setWayPay] = useState(2); // Default: Transferencia
+    const [wayPay, setWayPay] = useState(4); // Default: TRANSFERENCIA
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Opciones de forma de pago
     const wayPayOptions = [
-        { value: 1, label: "Efectivo" },
-        { value: 2, label: "Transferencia" },
-        { value: 3, label: "Depósito" },
-        { value: 4, label: "Yape" },
-        { value: 5, label: "Plin" },
-        { value: 6, label: "Tarjeta" },
-        { value: 7, label: "Otro" },
+        // { value: 1, label: "EFECTIVO" },
+        // { value: 2, label: "TARJETA DÉBITO" },
+        // { value: 3, label: "TARJETA CRÉDITO" },
+        { value: 4, label: "TRANSFERENCIA" },
+        { value: 5, label: "GIRO" },
+        { value: 6, label: "CHEQUE" },
+        { value: 7, label: "CUPÓN" },
+        { value: 8, label: "YAPE" },
+        { value: 10, label: "OTROS" },
     ];
 
     const handleClose = () => {
@@ -47,7 +49,7 @@ export default function PaymentProofModal({
         setFiles([]);
         setPaymentAmount(amount || 0);
         setNotes("");
-        setWayPay(2); // Reset to default
+        setWayPay(4); // Reset to default
     };
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {

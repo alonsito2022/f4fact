@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { Modal, ModalOptions } from "flowbite";
 import PaymentInstructionsModal from "./PaymentInstructionsModal";
 import PaymentProofModal from "./PaymentProofModal";
+import IzipayPaymentModal from "./IzipayPaymentModal";
 import { usePaymentEvents } from "@/hooks/usePaymentEvents";
 import { currentConfig, IZIPAY_URLS } from "@/lib/izipay-config";
 import "./izipay-form.css";
@@ -208,9 +209,9 @@ export default function PaymentPage() {
 
                 // 4. Evento: Formulario de pago mostrado
                 await events.paymentFormDisplayed(operationId);
-
                 // Cargar scripts y mostrar formulario embebido
                 await loadIzipayScripts();
+                // Mostrar modal de pago con Izipay
                 paymentModal?.show();
             } else {
                 throw new Error(
@@ -265,7 +266,7 @@ export default function PaymentPage() {
 
         if (!paymentModal) {
             const $targetEl = document.getElementById(
-                "payment-form-modal"
+                "izipay-payment-modal"
             ) as HTMLElement;
             const options: ModalOptions = {
                 placement: "top-center" as const,
@@ -280,6 +281,7 @@ export default function PaymentPage() {
     }, [instructionsModal, proofModal, paymentModal]);
 
     const handleClosePaymentForm = () => {
+        // El modal se maneja internamente en IzipayPaymentModal
         paymentModal?.hide();
     };
 
@@ -431,48 +433,22 @@ export default function PaymentPage() {
             </div>
 
             {/* Modal de formulario de pago embebido */}
-            <div
-                tabIndex={-1}
-                className="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
-                id="payment-form-modal"
-            >
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full max-h-[90vh] overflow-y-auto mx-auto p-0 m-0">
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            Formulario de Pago
-                        </h3>
-                        <button
-                            onClick={handleClosePaymentForm}
-                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                        >
-                            <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-                    <div className="p-0 m-0">
-                        <div
-                            id="micuentawebstd_rest_wrapper"
-                            className="flex flex-col items-center justify-center"
-                        >
-                            <div
-                                className="kr-embedded"
-                                kr-form-token={formToken}
-                            ></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <IzipayPaymentModal
+                modal={paymentModal}
+                setModal={setPaymentModal}
+                formToken={formToken}
+                operationId={Number(documentId)}
+                amount={parseFloat(amount)}
+                description={description}
+                onPaymentSuccess={(paymentData) => {
+                    console.log("✅ Pago exitoso:", paymentData);
+                    toast.success("Pago procesado correctamente");
+                }}
+                onPaymentError={(error) => {
+                    console.error("❌ Error en pago:", error);
+                    toast.error("Error al procesar el pago");
+                }}
+            />
 
             {/* Modal de instrucciones de pago */}
             <PaymentInstructionsModal
