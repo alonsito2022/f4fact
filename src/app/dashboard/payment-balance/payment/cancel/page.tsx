@@ -18,6 +18,8 @@ interface PaymentCancelData {
     clientInfo: {
         ipAddress?: string;
         userAgent?: string;
+        email?: string;
+        reference?: string;
     };
     paymentData: any;
     timestamp: string;

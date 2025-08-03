@@ -493,6 +493,10 @@ export const usePaymentEvents = () => {
                         lastFourDigits: cardData.lastFourDigits,
                         installments: cardData.installments,
                         totalAmount: cardData.totalAmount,
+                        transactionId: cardData.transactionId,
+                        orderId: cardData.orderId,
+                        email: cardData.email,
+                        reference: cardData.reference,
                         ...cardData,
                     },
                     cardData,
@@ -503,8 +507,8 @@ export const usePaymentEvents = () => {
                     cardData.cardBrand,
                     cardData.lastFourDigits,
                     cardData.installments,
-                    customerExtraDetails?.ipAddress,
-                    customerExtraDetails?.browserUserAgent
+                    cardData.ipAddress || customerExtraDetails?.ipAddress,
+                    cardData.userAgent || customerExtraDetails?.browserUserAgent
                 );
             },
             cardPaymentError: async (operationId: number, errorData: any) => {
@@ -525,8 +529,9 @@ export const usePaymentEvents = () => {
                     errorData.cardBrand,
                     errorData.lastFourDigits,
                     errorData.installments,
-                    customerExtraDetails?.ipAddress,
-                    customerExtraDetails?.browserUserAgent
+                    errorData.ipAddress || customerExtraDetails?.ipAddress,
+                    errorData.userAgent ||
+                        customerExtraDetails?.browserUserAgent
                 );
             },
         },

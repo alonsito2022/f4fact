@@ -11,7 +11,9 @@ async function registerPaymentEvent(
     operationId: number,
     eventType: string,
     status: string,
-    data?: any
+    data?: any,
+    cardInfo?: any,
+    clientInfo?: any
 ) {
     try {
         console.log(`📤 Registrando evento ${eventType}:`, {
@@ -19,7 +21,13 @@ async function registerPaymentEvent(
             eventType,
             status,
             data,
+            cardInfo,
+            clientInfo,
         });
+
+        // Extraer información de tarjeta y cliente
+        const cardDetails = cardInfo?.cardDetails || cardInfo;
+        const extraDetails = clientInfo?.extraDetails || clientInfo;
 
         const variables = {
             operationId,
@@ -27,9 +35,40 @@ async function registerPaymentEvent(
             status,
             requestData: data ? JSON.stringify(data) : undefined,
             responseData: data ? JSON.stringify(data) : undefined,
+            formToken: data?.formToken,
+            amount: data?.amount,
+            currency: data?.currency || "PEN",
+            cardType: cardDetails?.productCategory,
+            cardBrand: cardDetails?.effectiveBrand,
+            cardLastFour: cardDetails?.pan?.replace(/.*XXXXXX/, ""),
+            installmentNumber: cardDetails?.installmentNumber || 0,
+            ipAddress: extraDetails?.ipAddress,
+            userAgent: extraDetails?.browserUserAgent,
+            // Información adicional de captura
+            // captureDate: cardDetails?.captureResponse?.captureDate,
+            // captureFileNumber: cardDetails?.captureResponse?.captureFileNumber,
+            // authorizationNumber:
+            //     cardDetails?.authorizationResponse?.authorizationNumber,
+            // authorizationDate:
+            //     cardDetails?.authorizationResponse?.authorizationDate,
+            // transactionStatus: cardInfo?.status,
+            // detailedStatus: cardInfo?.detailedStatus,
         };
 
         console.log("🔧 Variables para GraphQL:", variables);
+
+        // Log adicional para verificar datos de tarjeta
+        console.log("💳 Datos de tarjeta para GraphQL:", {
+            cardType: cardDetails?.productCategory,
+            cardBrand: cardDetails?.effectiveBrand,
+            cardLastFour: cardDetails?.pan?.replace(/.*XXXXXX/, ""),
+            installmentNumber: cardDetails?.installmentNumber || 0,
+        });
+
+        console.log("👤 Datos de cliente para GraphQL:", {
+            ipAddress: extraDetails?.ipAddress,
+            userAgent: extraDetails?.browserUserAgent,
+        });
 
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_BASE_API}/graphql`,
@@ -40,13 +79,37 @@ async function registerPaymentEvent(
                 },
                 body: JSON.stringify({
                     query: `
-                        mutation PaymentStatus($operationId: Int!, $eventType: String!, $status: String!, $requestData: JSONString, $responseData: JSONString) {
+                        mutation PaymentStatus(
+                            $operationId: Int!
+                            $eventType: String!
+                            $status: String!
+                            $requestData: JSONString
+                            $responseData: JSONString
+                            $formToken: String
+                            $amount: Float
+                            $currency: String
+                            $cardType: String
+                            $cardBrand: String
+                            $cardLastFour: String
+                            $installmentNumber: Int
+                            $ipAddress: String
+                            $userAgent: String
+                        ) {
                             paymentStatus(
                                 operationId: $operationId
                                 eventType: $eventType
                                 status: $status
                                 requestData: $requestData
                                 responseData: $responseData
+                                formToken: $formToken
+                                amount: $amount
+                                currency: $currency
+                                cardType: $cardType
+                                cardBrand: $cardBrand
+                                cardLastFour: $cardLastFour
+                                installmentNumber: $installmentNumber
+                                ipAddress: $ipAddress
+                                userAgent: $userAgent
                             ) {
                                 success
                                 cashFlow {
@@ -112,13 +175,16 @@ export async function POST(request: NextRequest) {
                 process.env.NODE_ENV === "production" ? "production" : "test"
             );
             console.log("  - Username:", currentConfig.username);
-            console.log("  - Password length:", currentConfig.password.length);
+            console.log(
+                "  - HMACSHA256 length:",
+                currentConfig.HMACSHA256.length
+            );
 
-            // Usar la password como en la versión anterior que funcionaba
+            // Usar HMACSHA256 como en Django
             const isValidSignature = verifyHmac(
                 krAnswer,
                 krHash,
-                currentConfig.password
+                currentConfig.HMACSHA256
             );
 
             if (!isValidSignature) {
@@ -184,6 +250,38 @@ export async function POST(request: NextRequest) {
 
         if (operationId) {
             try {
+                // Extraer información de tarjeta y cliente
+                const transaction = answerData.transactions?.[0];
+                const cardDetails =
+                    transaction?.transactionDetails?.cardDetails;
+                const customer = answerData.customer;
+                const extraDetails = customer?.extraDetails;
+
+                console.log("💳 Información de tarjeta extraída:", {
+                    cardType: cardDetails?.productCategory,
+                    cardBrand: cardDetails?.effectiveBrand,
+                    lastFourDigits: cardDetails?.pan?.replace(/.*XXXXXX/, ""),
+                    installments: cardDetails?.installmentNumber || 0,
+                });
+
+                console.log("👤 Información del cliente extraída:", {
+                    ipAddress: extraDetails?.ipAddress,
+                    userAgent: extraDetails?.browserUserAgent,
+                    email: customer?.email,
+                    reference: customer?.reference,
+                });
+
+                // Log adicional para información de captura
+                console.log("📋 Información de captura disponible:", {
+                    captureResponse: cardDetails?.captureResponse,
+                    authorizationResponse: cardDetails?.authorizationResponse,
+                    transactionStatus: transaction?.status,
+                    detailedStatus: transaction?.detailedStatus,
+                    operationType: transaction?.operationType,
+                    effectiveStrongAuthentication:
+                        transaction?.effectiveStrongAuthentication,
+                });
+
                 // 1. Evento: Pago enviado por el cliente
                 await registerPaymentEvent(
                     operationId,
@@ -193,9 +291,11 @@ export async function POST(request: NextRequest) {
                         orderId,
                         amount: answerData.orderDetails?.orderTotalAmount,
                         currency: answerData.orderDetails?.orderCurrency,
-                        paymentMethod:
-                            answerData.transactions?.[0]?.paymentMethod,
-                    }
+                        paymentMethod: transaction?.paymentMethodType,
+                        formToken: answerData.formToken,
+                    },
+                    cardDetails,
+                    customer
                 );
 
                 // 2. Evento: Pago autorizado
@@ -205,44 +305,35 @@ export async function POST(request: NextRequest) {
                     "AUTHORIZED",
                     {
                         orderId,
-                        transactionId: answerData.transactions?.[0]?.uuid,
+                        transactionId: transaction?.uuid,
                         authorizationCode:
-                            answerData.transactions?.[0]?.authorizationCode,
-                        paymentMethod:
-                            answerData.transactions?.[0]?.paymentMethod,
-                    }
+                            cardDetails?.authorizationResponse
+                                ?.authorizationNumber,
+                        paymentMethod: transaction?.paymentMethodType,
+                        formToken: answerData.formToken,
+                        amount: answerData.orderDetails?.orderTotalAmount,
+                        currency: answerData.orderDetails?.orderCurrency,
+                    },
+                    cardDetails,
+                    customer
                 );
 
-                // 3. Evento: Fondos capturados (solo en producción)
-                if (process.env.NODE_ENV === "production") {
-                    await registerPaymentEvent(
-                        operationId,
-                        "PAYMENT_CAPTURED",
-                        "CAPTURED",
-                        {
-                            orderId,
-                            transactionId: answerData.transactions?.[0]?.uuid,
-                            capturedAmount:
-                                answerData.orderDetails?.orderTotalAmount,
-                            currency: answerData.orderDetails?.orderCurrency,
-                        }
-                    );
-                }
-
-                // 4. Evento: Pago completado
+                // 3. Evento: Pago exitoso
                 await registerPaymentEvent(
                     operationId,
                     "PAYMENT_SUCCESS",
                     "PAID",
                     {
                         orderId,
-                        transactionId: answerData.transactions?.[0]?.uuid,
+                        transactionId: transaction?.uuid,
                         amount: answerData.orderDetails?.orderTotalAmount,
                         currency: answerData.orderDetails?.orderCurrency,
                         status: answerData.orderStatus,
-                        paymentMethod:
-                            answerData.transactions?.[0]?.paymentMethod,
-                    }
+                        paymentMethod: transaction?.paymentMethodType,
+                        formToken: answerData.formToken,
+                    },
+                    cardDetails,
+                    customer
                 );
             } catch (error) {
                 console.error("❌ Error registrando eventos de pago:", error);

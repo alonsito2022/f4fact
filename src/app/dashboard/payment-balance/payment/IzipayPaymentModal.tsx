@@ -38,49 +38,61 @@ export default function IzipayPaymentModal({
     const [cardInfo, setCardInfo] = useState<CardInfo>({});
 
     // Función para extraer información de la tarjeta del formulario
-    const extractCardInfo = (): CardInfo => {
+    const extractCardInfo = (paymentData: any): CardInfo => {
         try {
-            // Buscar elementos del formulario de Izipay
-            const cardTypeElement = document.querySelector(
-                "[data-kr-card-type]"
-            ) as HTMLElement;
-            const cardBrandElement = document.querySelector(
-                "[data-kr-card-brand]"
-            ) as HTMLElement;
-            const lastDigitsElement = document.querySelector(
-                "[data-kr-last-digits]"
-            ) as HTMLElement;
-            const installmentsElement = document.querySelector(
-                "[data-kr-installments]"
-            ) as HTMLElement;
+            // Intentar extraer información de la respuesta de Izipay
+            const krAnswer = paymentData["kr-answer"];
+            const transactions = krAnswer?.transactions?.[0];
+            const cardDetails = transactions?.transactionDetails?.cardDetails;
 
             const cardInfo: CardInfo = {};
 
-            if (cardTypeElement) {
-                cardInfo.cardType =
-                    cardTypeElement.getAttribute("data-kr-card-type") ||
-                    undefined;
+            // Extraer información de la tarjeta desde la respuesta de Izipay
+            if (cardDetails) {
+                cardInfo.cardBrand = cardDetails.effectiveBrand; // VISA, MASTERCARD, AMEX, etc.
+                cardInfo.lastFourDigits = cardDetails.pan?.replace(
+                    /.*XXXXXX/,
+                    ""
+                ); // Extraer últimos 4 dígitos
+                cardInfo.installments = cardDetails.installmentNumber || 1;
+                cardInfo.cardType = cardDetails.productCategory; // CREDIT, DEBIT, etc.
             }
 
-            if (cardBrandElement) {
-                cardInfo.cardBrand =
-                    cardBrandElement.getAttribute("data-kr-card-brand") ||
-                    undefined;
+            // Si no hay información en la respuesta, intentar extraer del formulario
+            if (!cardInfo.cardBrand) {
+                const cardBrandElement = document.querySelector(
+                    "[data-kr-card-brand]"
+                ) as HTMLElement;
+                if (cardBrandElement) {
+                    cardInfo.cardBrand =
+                        cardBrandElement.getAttribute("data-kr-card-brand") ||
+                        undefined;
+                }
             }
 
-            if (lastDigitsElement) {
-                cardInfo.lastFourDigits =
-                    lastDigitsElement.getAttribute("data-kr-last-digits") ||
-                    undefined;
+            if (!cardInfo.lastFourDigits) {
+                const lastDigitsElement = document.querySelector(
+                    "[data-kr-last-digits]"
+                ) as HTMLElement;
+                if (lastDigitsElement) {
+                    cardInfo.lastFourDigits =
+                        lastDigitsElement.getAttribute("data-kr-last-digits") ||
+                        undefined;
+                }
             }
 
-            if (installmentsElement) {
-                const installments = installmentsElement.getAttribute(
-                    "data-kr-installments"
-                );
-                cardInfo.installments = installments
-                    ? parseInt(installments)
-                    : undefined;
+            if (!cardInfo.installments) {
+                const installmentsElement = document.querySelector(
+                    "[data-kr-installments]"
+                ) as HTMLElement;
+                if (installmentsElement) {
+                    const installments = installmentsElement.getAttribute(
+                        "data-kr-installments"
+                    );
+                    cardInfo.installments = installments
+                        ? parseInt(installments)
+                        : 1;
+                }
             }
 
             // Calcular monto total con cuotas si aplica
@@ -90,6 +102,7 @@ export default function IzipayPaymentModal({
                 cardInfo.totalAmount = amount;
             }
 
+            console.log("💳 Información de tarjeta extraída:", cardInfo);
             return cardInfo;
         } catch (error) {
             console.warn(
@@ -104,17 +117,25 @@ export default function IzipayPaymentModal({
     const extractClientInfo = (paymentData: any) => {
         try {
             const krAnswer = paymentData["kr-answer"];
-            const customerExtraDetails = krAnswer?.customer?.extraDetails;
+            const customer = krAnswer?.customer;
+            const extraDetails = customer?.extraDetails;
 
-            return {
-                ipAddress: customerExtraDetails?.ipAddress,
-                userAgent: customerExtraDetails?.browserUserAgent,
+            const clientInfo = {
+                ipAddress: extraDetails?.ipAddress,
+                userAgent: extraDetails?.browserUserAgent,
+                email: customer?.email,
+                reference: customer?.reference,
             };
+
+            console.log("👤 Información del cliente extraída:", clientInfo);
+            return clientInfo;
         } catch (error) {
             console.warn("No se pudo extraer información del cliente:", error);
             return {
                 ipAddress: undefined,
                 userAgent: undefined,
+                email: undefined,
+                reference: undefined,
             };
         }
     };
@@ -171,7 +192,7 @@ export default function IzipayPaymentModal({
         setIsProcessing(true);
 
         // Extraer información de la tarjeta al inicio
-        const extractedCardInfo = extractCardInfo();
+        const extractedCardInfo = extractCardInfo(paymentData);
         setCardInfo(extractedCardInfo);
 
         // Extraer información del cliente
@@ -201,7 +222,7 @@ export default function IzipayPaymentModal({
                 description: description,
             });
 
-            // Evento: Pago exitoso con información de tarjeta
+            // Evento: Pago exitoso con información completa de tarjeta
             await events.cardPaymentSuccess(operationId, {
                 ...paymentData,
                 cardInfo: extractedCardInfo,
@@ -215,6 +236,10 @@ export default function IzipayPaymentModal({
                 totalAmount: extractedCardInfo.totalAmount,
                 ipAddress: clientInfo.ipAddress,
                 userAgent: clientInfo.userAgent,
+                email: clientInfo.email,
+                reference: clientInfo.reference,
+                transactionId: paymentData.transactionId || paymentData.id,
+                orderId: paymentData.orderId,
             });
 
             toast.success("✅ Pago procesado exitosamente");
@@ -249,6 +274,8 @@ export default function IzipayPaymentModal({
                 installments: extractedCardInfo.installments,
                 ipAddress: clientInfo.ipAddress,
                 userAgent: clientInfo.userAgent,
+                email: clientInfo.email,
+                reference: clientInfo.reference,
             });
 
             toast.error("Error al procesar el pago");

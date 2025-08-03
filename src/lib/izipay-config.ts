@@ -8,8 +8,7 @@ export const IZIPAY_CONFIG = {
         publicKey:
             "81325114:testpublickey_4VfiAtUJdrZI97FxPU41vgaNAbm0GVWEkmWIX4vnnAhM2",
         // Clave HMACSHA256 para validación de firma (según documentación de Izipay)
-        HMACSHA256:
-            "testpassword_LlOkH8bsEV6VavZxPxg8kfDeFzoQDZhuG201WEcaOMMo0",
+        HMACSHA256: "QRvv0G8LRO0hwiGU5SsCoFy540g8vEjGu3EnsNXx5GQW4",
     },
     production: {
         username: "81325114",
@@ -17,8 +16,7 @@ export const IZIPAY_CONFIG = {
         publicKey:
             "81325114:publickey_2DdsrTALR3DnARWKhzNXN2aPUsjXazw5WeqLddEv2RH6l",
         // Clave HMACSHA256 para validación de firma (según documentación de Izipay)
-        HMACSHA256:
-            "prodpassword_CKAvckvYUJd3UCquAG44VRzB8JaIFKPcmqNPubOhgQV2y",
+        HMACSHA256: "gATgd7wWlfpKygEJdLh7QPR28pM7wu2dUOYEgayd0zY0L",
     },
 };
 
@@ -37,23 +35,23 @@ export const IZIPAY_URLS = {
     redirectUrl: "https://secure.micuentaweb.pe/payment/init-payment",
 };
 
-// Función para verificar HMAC (según versión anterior que funcionaba)
+// Función para verificar HMAC (coincide con implementación de Django)
 export function verifyHmac(
     data: string,
     signature: string,
     key: string
 ): boolean {
     try {
-        console.log("🔍 Verificación HMAC (versión anterior que funcionaba):");
+        console.log("🔍 Verificación HMAC (coincide con Django):");
         console.log("  - Key length:", key.length);
         console.log("  - Key (first 10 chars):", key.substring(0, 10) + "...");
         console.log("  - Data length:", data.length);
 
-        // Usar base64 como en la versión anterior que funcionaba
+        // Usar HMACSHA256 como en Django
         const expectedSignature = crypto
             .createHmac("sha256", key)
-            .update(data)
-            .digest("base64");
+            .update(data, "utf-8")
+            .digest("hex");
 
         console.log("  - Firma recibida:", signature);
         console.log("  - Firma calculada:", expectedSignature);
