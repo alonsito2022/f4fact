@@ -3,12 +3,21 @@ import { currentConfig, verifyHmac } from "@/lib/izipay-config";
 
 // Función para registrar eventos de pago en Django
 async function registerPaymentEvent(
-    operationId: number,
+    operationId: number | null,
     eventType: string,
     status: string,
     data?: any
 ) {
     try {
+        // Validar que operationId no sea null (permitir 0 para webhooks)
+        if (operationId === null || (operationId !== 0 && isNaN(operationId))) {
+            console.warn(
+                `⚠️ No se puede registrar evento ${eventType} - operationId inválido:`,
+                operationId
+            );
+            return null;
+        }
+
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_BASE_API}/graphql`,
             {
@@ -35,7 +44,7 @@ async function registerPaymentEvent(
                     }
                 `,
                     variables: {
-                        operationId,
+                        operationId: parseInt(operationId.toString()),
                         eventType,
                         status,
                         requestData: data ? JSON.stringify(data) : undefined,
@@ -55,6 +64,51 @@ async function registerPaymentEvent(
     } catch (error) {
         console.error(`❌ Error registrando evento ${eventType}:`, error);
         throw error;
+    }
+}
+
+// Función para extraer información detallada de la tarjeta y cliente
+function extractDetailedInfo(answerData: any) {
+    try {
+        const transaction = answerData.transactions?.[0];
+        const cardDetails = transaction?.transactionDetails?.cardDetails;
+        const customer = answerData.customer;
+        const extraDetails = customer?.extraDetails;
+
+        return {
+            cardInfo: {
+                brand: cardDetails?.effectiveBrand,
+                lastFourDigits: cardDetails?.pan?.replace(/.*XXXXXX/, ""),
+                cardType: cardDetails?.productCategory,
+                nature: cardDetails?.nature,
+                installments: cardDetails?.installmentNumber || 1,
+                expiryMonth: cardDetails?.expiryMonth,
+                expiryYear: cardDetails?.expiryYear,
+                issuerName: cardDetails?.issuerName,
+                issuerCode: cardDetails?.issuerCode,
+            },
+            clientInfo: {
+                ipAddress: extraDetails?.ipAddress,
+                userAgent: extraDetails?.browserUserAgent,
+                email: customer?.email,
+                reference: customer?.reference,
+            },
+            transactionInfo: {
+                authorizationNumber:
+                    cardDetails?.authorizationResponse?.authorizationNumber,
+                authorizationDate:
+                    cardDetails?.authorizationResponse?.authorizationDate,
+                captureDate: cardDetails?.captureResponse?.captureDate,
+                captureFileNumber:
+                    cardDetails?.captureResponse?.captureFileNumber,
+                detailedStatus: transaction?.detailedStatus,
+                externalTransactionId:
+                    transaction?.transactionDetails?.externalTransactionId,
+            },
+        };
+    } catch (error) {
+        console.error("❌ Error extrayendo información detallada:", error);
+        return { cardInfo: {}, clientInfo: {}, transactionInfo: {} };
     }
 }
 
@@ -93,6 +147,15 @@ function extractOperationId(orderId: string, answerData: any): number | null {
             return operationId;
         }
 
+        // 4. Intentar extraer del timestamp en el orderId
+        const timestampMatch = orderId.match(/ORDER_(\d+)_/);
+        if (timestampMatch) {
+            const timestamp = parseInt(timestampMatch[1]);
+            // Usar timestamp como fallback (no ideal pero funcional)
+            console.log("⚠️ Usando timestamp como operationId:", timestamp);
+            return timestamp;
+        }
+
         console.log("⚠️ No se pudo extraer operationId de:", {
             orderId,
             customerRef,
@@ -114,6 +177,24 @@ export async function POST(request: NextRequest) {
             krHash: formData.get("kr-hash"),
             krHashAlgorithm: formData.get("kr-hash-algorithm"),
         });
+
+        // Registrar evento WEBHOOK_RECEIVED
+        try {
+            // Crear un operationId temporal para webhook recibido
+            const webhookOperationId = 0; // Usar 0 como valor especial para webhooks
+            await registerPaymentEvent(
+                webhookOperationId,
+                "WEBHOOK_RECEIVED",
+                "RECEIVED",
+                {
+                    timestamp: new Date().toISOString(),
+                    source: "IZIPAY_IPN",
+                    headers: Object.fromEntries(request.headers.entries()),
+                }
+            );
+        } catch (error) {
+            console.warn("⚠️ No se pudo registrar WEBHOOK_RECEIVED:", error);
+        }
 
         // Validación de firma HMAC (como en Django)
         const krHash = formData.get("kr-hash") as string;
@@ -190,6 +271,19 @@ export async function POST(request: NextRequest) {
         // Extraer operationId para registrar eventos
         const operationId = extractOperationId(orderId, answerData);
 
+        // Extraer información detallada
+        const detailedInfo = extractDetailedInfo(answerData);
+        console.log("📊 Información detallada extraída:", detailedInfo);
+
+        // Validar operationId antes de procesar
+        if (!operationId) {
+            console.warn(
+                "⚠️ No se pudo extraer operationId válido, continuando sin registrar eventos"
+            );
+        } else {
+            console.log("✅ OperationId válido encontrado:", operationId);
+        }
+
         // Procesar el estado del pago según orderStatus
         switch (orderStatus) {
             case "PAID":
@@ -210,6 +304,8 @@ export async function POST(request: NextRequest) {
                                 currency:
                                     answerData.orderDetails?.orderCurrency,
                                 status: orderStatus,
+                                cardInfo: detailedInfo.cardInfo,
+                                clientInfo: detailedInfo.clientInfo,
                             }
                         );
 
@@ -222,8 +318,41 @@ export async function POST(request: NextRequest) {
                                 orderId,
                                 transactionId: transactionUuid,
                                 status: orderStatus,
+                                authorizationNumber:
+                                    detailedInfo.transactionInfo
+                                        .authorizationNumber,
+                                authorizationDate:
+                                    detailedInfo.transactionInfo
+                                        .authorizationDate,
+                                cardInfo: detailedInfo.cardInfo,
+                                clientInfo: detailedInfo.clientInfo,
                             }
                         );
+
+                        // Verificar si los fondos fueron capturados
+                        const detailedStatus =
+                            detailedInfo.transactionInfo.detailedStatus;
+                        if (detailedStatus === "CAPTURED") {
+                            console.log("💰 Fondos capturados detectados");
+                            await registerPaymentEvent(
+                                operationId,
+                                "PAYMENT_CAPTURED",
+                                "CAPTURED",
+                                {
+                                    orderId,
+                                    transactionId: transactionUuid,
+                                    captureDate:
+                                        detailedInfo.transactionInfo
+                                            .captureDate,
+                                    captureFileNumber:
+                                        detailedInfo.transactionInfo
+                                            .captureFileNumber,
+                                    status: detailedStatus,
+                                    cardInfo: detailedInfo.cardInfo,
+                                    clientInfo: detailedInfo.clientInfo,
+                                }
+                            );
+                        }
 
                         // Evento: Pago exitoso
                         await registerPaymentEvent(
@@ -238,6 +367,9 @@ export async function POST(request: NextRequest) {
                                 currency:
                                     answerData.orderDetails?.orderCurrency,
                                 status: orderStatus,
+                                cardInfo: detailedInfo.cardInfo,
+                                clientInfo: detailedInfo.clientInfo,
+                                transactionInfo: detailedInfo.transactionInfo,
                             }
                         );
                     } catch (error) {
@@ -282,6 +414,23 @@ export async function POST(request: NextRequest) {
                 );
         }
 
+        // Registrar evento WEBHOOK_PROCESSED
+        try {
+            await registerPaymentEvent(
+                operationId,
+                "WEBHOOK_PROCESSED",
+                "PROCESSED",
+                {
+                    orderStatus,
+                    orderId,
+                    transactionUuid,
+                    timestamp: new Date().toISOString(),
+                }
+            );
+        } catch (error) {
+            console.warn("⚠️ No se pudo registrar WEBHOOK_PROCESSED:", error);
+        }
+
         // Responder con éxito como en Django
         return NextResponse.json({
             success: true,
@@ -289,6 +438,18 @@ export async function POST(request: NextRequest) {
         });
     } catch (error) {
         console.error("❌ Error procesando IPN:", error);
+
+        // Registrar evento WEBHOOK_ERROR
+        try {
+            await registerPaymentEvent(null, "WEBHOOK_ERROR", "ERROR", {
+                error: error instanceof Error ? error.message : "Error interno",
+                timestamp: new Date().toISOString(),
+                stack: error instanceof Error ? error.stack : undefined,
+            });
+        } catch (logError) {
+            console.error("❌ Error registrando WEBHOOK_ERROR:", logError);
+        }
+
         return NextResponse.json(
             {
                 success: false,
