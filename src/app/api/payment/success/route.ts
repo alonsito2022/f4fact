@@ -371,6 +371,10 @@ export async function POST(request: NextRequest) {
                 currency: paymentInfo.currency,
                 status: paymentInfo.status,
                 transactionId: paymentInfo.transactionId,
+                reference:
+                    answerData.customer?.reference ||
+                    operationId?.toString() ||
+                    "",
             }
         ).toString()}`;
 

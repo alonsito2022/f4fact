@@ -36,6 +36,7 @@ export default function PaymentSuccessPage() {
     const currency = searchParams.get("currency");
     const status = searchParams.get("status");
     const transactionId = searchParams.get("transactionId");
+    const reference = searchParams.get("reference");
 
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -52,8 +53,39 @@ export default function PaymentSuccessPage() {
                 transactionId,
             });
 
-            // Extraer operationId del orderId
-            const operationId = orderId ? parseInt(orderId.split("_")[2]) : 0;
+            // Extraer operationId del orderId (formato: ORDER_1754333539106_rtyfvdrtd)
+            let operationId = 0;
+
+            if (orderId) {
+                // Intentar extraer de customer.reference primero (más confiable)
+                if (reference && !isNaN(parseInt(reference))) {
+                    operationId = parseInt(reference);
+                    console.log(
+                        "✅ OperationId extraído de reference:",
+                        operationId
+                    );
+                } else {
+                    // Intentar extraer del orderId usando regex
+                    const orderMatch = orderId.match(/ORDER_(\d+)_/);
+                    if (orderMatch) {
+                        operationId = parseInt(orderMatch[1]);
+                        console.log(
+                            "✅ OperationId extraído de orderId:",
+                            operationId
+                        );
+                    } else {
+                        // Fallback: usar el timestamp del orderId
+                        const timestampMatch = orderId.match(/ORDER_(\d+)_/);
+                        if (timestampMatch) {
+                            operationId = parseInt(timestampMatch[1]);
+                            console.log(
+                                "⚠️ Usando timestamp como operationId:",
+                                operationId
+                            );
+                        }
+                    }
+                }
+            }
 
             if (!operationId) {
                 console.error("❌ No se pudo extraer operationId del orderId");
