@@ -281,6 +281,41 @@ function WayPayForm({
             });
             return;
         }
+
+        // Validar que los wayPays de tipo 9 (POR PAGAR [CRÉDITO]) tengan fecha de transacción mayor a la fecha de emisión
+        const creditWayPays = invoice.cashflowSet.filter(
+            (item: any) => item.wayPay === 9
+        );
+        if (creditWayPays.length > 0) {
+            const emitDate = new Date(invoice.emitDate);
+
+            for (const wayPay of creditWayPays) {
+                if (!wayPay.transactionDate) {
+                    toast(
+                        "Los pagos de tipo 'POR PAGAR [CRÉDITO]' deben tener una fecha de pago",
+                        {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                        }
+                    );
+                    return;
+                }
+
+                const transactionDate = new Date(wayPay.transactionDate);
+                if (transactionDate <= emitDate) {
+                    toast(
+                        "La fecha de pago de los pagos de tipo 'POR PAGAR [CRÉDITO]' debe ser mayor a la fecha de emisión",
+                        {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                        }
+                    );
+                    return;
+                }
+            }
+        }
         try {
             setIsProcessing(true);
             const variables = {
