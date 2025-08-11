@@ -4,6 +4,7 @@ import { gql, useQuery } from "@apollo/client";
 
 import Add from "@/components/icons/Add";
 import Filter from "@/components/icons/Filter";
+import Excel from "@/components/icons/Excel";
 import { ISubsidiary } from "@/app/types";
 
 const SUBSIDIARIES_QUERY = gql`
@@ -32,6 +33,7 @@ function ProductFilter({
     fetchProducts,
     authContext,
     jwtToken,
+    filteredProducts,
 }: any) {
     const handleInputSearchChange = (
         event: React.ChangeEvent<HTMLInputElement>
@@ -130,7 +132,7 @@ function ProductFilter({
                 </>
             ) : null}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 col-span-full lg:col-span-2 xl:col-span-5 mt-4 xl:flex xl:flex-wrap">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 col-span-full lg:col-span-3 xl:col-span-5 mt-4 xl:flex xl:flex-wrap">
                 <button
                     id="btn-search"
                     type="button"
@@ -152,6 +154,22 @@ function ProductFilter({
                     <Add />
                     Crear producto
                 </button>
+                {filteredProducts && filteredProducts.length > 0 && (
+                    <button
+                        id="exportExcelButton"
+                        type="button"
+                        onClick={() => {
+                            const baseUrl = process.env.NEXT_PUBLIC_BASE_API;
+                            const subsidiaryId = productFilterObj.subsidiaryId;
+                            const exportUrl = `${baseUrl}/logistics/export_products_by_subsidiary/${subsidiaryId}/`;
+                            window.open(exportUrl, "_blank");
+                        }}
+                        className="btn-orange px-5 py-3 flex items-center justify-center gap-2 w-full bg-orange-500 text-white rounded-md hover:bg-orange-600 m-0"
+                    >
+                        <Excel />
+                        Exportar Excel
+                    </button>
+                )}
             </div>
         </div>
     );

@@ -215,6 +215,7 @@ function ProductPage() {
                         fetchProducts={fetchProducts}
                         authContext={authContext}
                         jwtToken={auth?.jwtToken}
+                        filteredProducts={filteredProducts}
                     />
                 </div>
             </div>
