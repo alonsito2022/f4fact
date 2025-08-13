@@ -220,7 +220,7 @@ export default function PaymentBalanceComponent({
                                                 S/{doc.total.toFixed(2)}
                                             </td>
                                             <td className="py-3 px-2 text-center">
-                                                {doc.status === "PAGAR" ? (
+                                                {doc.status === "PENDIENTE" ? (
                                                     <button
                                                         onClick={() =>
                                                             handlePayDocument(
@@ -233,11 +233,20 @@ export default function PaymentBalanceComponent({
                                                         }
                                                         className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1 rounded transition-colors"
                                                     >
-                                                        PAGAR
+                                                        PENDIENTE
                                                     </button>
-                                                ) : (
-                                                    <span className="bg-green-600 text-white text-xs font-medium px-3 py-1 rounded">
+                                                ) : doc.status ===
+                                                  "EN VALIDACIÓN" ? (
+                                                    <span className="bg-green-600 text-white text-xs font-medium px-3 py-1 rounded whitespace-nowrap">
+                                                        EN VALIDACIÓN
+                                                    </span>
+                                                ) : doc.status === "PAGADO" ? (
+                                                    <span className="bg-red-600 text-white text-xs font-medium px-3 py-1 rounded">
                                                         PAGADO
+                                                    </span>
+                                                ) : (
+                                                    <span className="bg-red-600 text-white text-xs font-medium px-3 py-1 rounded">
+                                                        CANCELADO
                                                     </span>
                                                 )}
                                             </td>

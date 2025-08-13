@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { usePaymentEvents } from "@/hooks/usePaymentEvents";
+import { useRouter } from "next/navigation";
 
 interface PaymentProofModalProps {
     modal: Modal | null;
@@ -27,7 +28,7 @@ export default function PaymentProofModal({
     const [notes, setNotes] = useState("");
     const [wayPay, setWayPay] = useState(4); // Default: TRANSFERENCIA
     const fileInputRef = useRef<HTMLInputElement>(null);
-
+    const router = useRouter();
     // Opciones de forma de pago
     const wayPayOptions = [
         // { value: 1, label: "EFECTIVO" },
@@ -50,6 +51,7 @@ export default function PaymentProofModal({
         setPaymentAmount(amount || 0);
         setNotes("");
         setWayPay(4); // Reset to default
+        router.push("/dashboard/payment-balance");
     };
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -344,6 +346,7 @@ export default function PaymentProofModal({
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                                 placeholder="0.00"
+                                disabled={true}
                             />
                         </div>
 
