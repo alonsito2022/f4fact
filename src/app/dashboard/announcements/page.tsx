@@ -4,7 +4,7 @@ import { gql, useQuery } from "@apollo/client";
 import AnnouncementForm from "./AnnouncementForm";
 import AnnouncementList from "./AnnouncementList";
 
-export const GET_ALL_ANNOUNCEMENTS = gql`
+const GET_ALL_ANNOUNCEMENTS = gql`
     query GetAllAnnouncements {
         allAnnouncements {
             id
@@ -13,6 +13,29 @@ export const GET_ALL_ANNOUNCEMENTS = gql`
             startDate
             endDate
             isActive
+        }
+    }
+`;
+
+const UPDATE_ANNOUNCEMENT = gql`
+    mutation UpdateAnnouncement(
+        $id: ID!
+        $message: String
+        $messageType: String
+        $endDate: DateTime
+        $isActive: Boolean
+    ) {
+        updateAnnouncement(
+            id: $id
+            message: $message
+            messageType: $messageType
+            endDate: $endDate
+            isActive: $isActive
+        ) {
+            announcement {
+                id
+                message
+            }
         }
     }
 `;
@@ -161,6 +184,7 @@ export default function AnnouncementsPage() {
                                     GET_ALL_ANNOUNCEMENTS={
                                         GET_ALL_ANNOUNCEMENTS
                                     }
+                                    UPDATE_ANNOUNCEMENT={UPDATE_ANNOUNCEMENT}
                                     announcementToEdit={announcementToEdit}
                                     onCancelEdit={handleCancelEdit}
                                 />
@@ -180,6 +204,7 @@ export default function AnnouncementsPage() {
                     <div className="p-6">
                         <AnnouncementList
                             GET_ALL_ANNOUNCEMENTS={GET_ALL_ANNOUNCEMENTS}
+                            UPDATE_ANNOUNCEMENT={UPDATE_ANNOUNCEMENT}
                             onEditAnnouncement={handleEditAnnouncement}
                         />
                     </div>

@@ -1,14 +1,15 @@
 import { useQuery, useMutation } from "@apollo/client";
 import React, { useState } from "react";
-import { UPDATE_ANNOUNCEMENT } from "./AnnouncementForm";
 
 interface AnnouncementListProps {
     GET_ALL_ANNOUNCEMENTS: any;
+    UPDATE_ANNOUNCEMENT: any;
     onEditAnnouncement?: (announcement: any) => void;
 }
 
 function AnnouncementList({
     GET_ALL_ANNOUNCEMENTS,
+    UPDATE_ANNOUNCEMENT,
     onEditAnnouncement,
 }: AnnouncementListProps) {
     const { data, loading, error } = useQuery(GET_ALL_ANNOUNCEMENTS);

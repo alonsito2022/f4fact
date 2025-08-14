@@ -55,37 +55,16 @@ const CREATE_ANNOUNCEMENT = gql`
     }
 `;
 
-export const UPDATE_ANNOUNCEMENT = gql`
-    mutation UpdateAnnouncement(
-        $id: ID!
-        $message: String
-        $messageType: String
-        $endDate: DateTime
-        $isActive: Boolean
-    ) {
-        updateAnnouncement(
-            id: $id
-            message: $message
-            messageType: $messageType
-            endDate: $endDate
-            isActive: $isActive
-        ) {
-            announcement {
-                id
-                message
-            }
-        }
-    }
-`;
-
 interface AnnouncementFormProps {
     GET_ALL_ANNOUNCEMENTS: any;
+    UPDATE_ANNOUNCEMENT: any;
     announcementToEdit?: any;
     onCancelEdit?: () => void;
 }
 
 function AnnouncementForm({
     GET_ALL_ANNOUNCEMENTS,
+    UPDATE_ANNOUNCEMENT,
     announcementToEdit,
     onCancelEdit,
 }: AnnouncementFormProps) {
