@@ -170,12 +170,12 @@ export default function AnnouncementsPage() {
                                 </h2>
                                 {announcementToEdit && (
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                        Editando anuncio: "
+                                        Editando anuncio: &ldquo;
                                         {announcementToEdit.message.substring(
                                             0,
                                             50
                                         )}
-                                        ..."
+                                        &hellip;&rdquo;
                                     </p>
                                 )}
                             </div>
