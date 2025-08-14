@@ -42,7 +42,7 @@ input[type="number"] {
 }
 @layer components {
     body {
-        @apply bg-gray-100;
+        @apply bg-gray-100 dark:bg-gray-900 transition-colors duration-200;
     }
     .btn-light-xs {
         @apply px-2.5 py-2.5 text-xs font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-md  hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100  dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700;
@@ -251,4 +251,24 @@ input[type="number"] {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 5;
+}
+
+/* Animaciones personalizadas para el formulario */
+@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-in {
+    animation: slideInFromTop 0.3s ease-out;
+}
+
+.slide-in-from-top-4 {
+    animation: slideInFromTop 0.3s ease-out;
 }
