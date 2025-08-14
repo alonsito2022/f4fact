@@ -6,7 +6,7 @@ import {
     IRetentionType,
 } from "@/app/types";
 import { loadGetInitialProps } from "next/dist/shared/lib/utils";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 function SaleTotalList({
     invoice,
@@ -17,6 +17,19 @@ function SaleTotalList({
     detractionTypesData,
     detractionPaymentMethodsData,
 }: any) {
+    // Estados locales para los inputs de descuento global
+    const [localDiscountPercentage, setLocalDiscountPercentage] =
+        React.useState(invoice.discountPercentageGlobal || "");
+    const [localDiscountGlobal, setLocalDiscountGlobal] = React.useState(
+        invoice.discountGlobal || ""
+    );
+
+    // Sincronizar estados locales cuando cambie el invoice
+    React.useEffect(() => {
+        setLocalDiscountPercentage(invoice.discountPercentageGlobal || "");
+        setLocalDiscountGlobal(invoice.discountGlobal || "");
+    }, [invoice.discountPercentageGlobal, invoice.discountGlobal]);
+
     useEffect(() => {
         if (invoice?.perceptionType) {
             let perceptionPercentage = 0;
@@ -111,11 +124,72 @@ function SaleTotalList({
                         <div className="col-span-8 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 transition-colors">
                             % Descuento Global
                         </div>
-                        <div
-                            className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
-                            style={{ border: "1px solid rgb(179, 178, 173)" }}
-                        >
-                            0.00
+                        <div className="col-span-4">
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    value={localDiscountPercentage}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Permitir valores vacíos y números
+                                        if (
+                                            value === "" ||
+                                            /^\d*\.?\d*$/.test(value)
+                                        ) {
+                                            setLocalDiscountPercentage(value);
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            const value =
+                                                Number(
+                                                    localDiscountPercentage
+                                                ) || 0;
+                                            const oldTotalTaxed = Number(
+                                                invoice.totalTaxed
+                                            );
+                                            const discountGlobal =
+                                                oldTotalTaxed * (value / 100);
+
+                                            setSale((prevSale: any) => ({
+                                                ...prevSale,
+                                                discountPercentageGlobal: value,
+                                                discountGlobal: 0, // Limpiar el monto directo para evitar conflictos
+                                            }));
+
+                                            setLocalDiscountGlobal("0");
+                                        }
+                                    }}
+                                    onFocus={(e) => e.target.select()}
+                                    placeholder="0.00"
+                                    className="flex-1 rounded-full text-right font-medium bg-white dark:bg-gray-700 text-black-800 dark:text-white border border-gray-300 dark:border-gray-600 py-1 px-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 dark:hover:border-blue-500 cursor-text transition-all duration-200"
+                                />
+                                <button
+                                    onClick={() => {
+                                        const value =
+                                            Number(localDiscountPercentage) ||
+                                            0;
+                                        // Calcular el descuento global basado en el porcentaje
+                                        const oldTotalTaxed = Number(
+                                            invoice.totalTaxed
+                                        );
+                                        const discountGlobal =
+                                            oldTotalTaxed * (value / 100);
+
+                                        setSale((prevSale: any) => ({
+                                            ...prevSale,
+                                            discountPercentageGlobal: value,
+                                            discountGlobal: 0, // Limpiar el monto directo para evitar conflictos
+                                        }));
+
+                                        // Actualizar también el estado local del descuento global
+                                        setLocalDiscountGlobal("0");
+                                    }}
+                                    className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                >
+                                    ✓
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div className="grid grid-cols-12 gap-4">
@@ -132,11 +206,59 @@ function SaleTotalList({
                                 ? "£"
                                 : null}
                         </div>
-                        <div
-                            className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
-                            style={{ border: "1px solid rgb(179, 178, 173)" }}
-                        >
-                            {invoice.discountGlobal}
+                        <div className="col-span-4">
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    value={localDiscountGlobal}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Permitir valores vacíos y números
+                                        if (
+                                            value === "" ||
+                                            /^\d*\.?\d*$/.test(value)
+                                        ) {
+                                            setLocalDiscountGlobal(value);
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            const value =
+                                                Number(localDiscountGlobal) ||
+                                                0;
+
+                                            setSale((prevSale: any) => ({
+                                                ...prevSale,
+                                                discountGlobal: value,
+                                                discountPercentageGlobal: 0, // Limpiar el porcentaje para evitar conflictos
+                                            }));
+
+                                            setLocalDiscountPercentage("0");
+                                        }
+                                    }}
+                                    onFocus={(e) => e.target.select()}
+                                    placeholder="0.00"
+                                    className="flex-1 rounded-full text-right font-medium bg-white dark:bg-gray-700 text-black-800 dark:text-white border border-gray-300 dark:border-gray-600 py-1 px-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 dark:hover:border-blue-500 cursor-text transition-all duration-200"
+                                />
+                                <button
+                                    onClick={() => {
+                                        const value =
+                                            Number(localDiscountGlobal) || 0;
+
+                                        setSale((prevSale: any) => ({
+                                            ...prevSale,
+                                            discountGlobal: value,
+                                            discountPercentageGlobal: 0, // Limpiar el porcentaje para evitar conflictos
+                                        }));
+
+                                        // Actualizar también el estado local del porcentaje
+                                        setLocalDiscountPercentage("0");
+                                    }}
+                                    className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                >
+                                    ✓
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div className="grid grid-cols-12 gap-4">

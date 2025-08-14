@@ -24,9 +24,19 @@ function SaleDetailList({
     useEffect(() => {
         calculateTotal();
         console.log("calculateTotal");
-    }, [invoice.operationdetailSet]);
+    }, [
+        invoice.operationdetailSet,
+        invoice.discountPercentageGlobal,
+        invoice.discountGlobal,
+        invoice.igvPercentage,
+    ]);
 
     function calculateTotal() {
+        // Función de redondeo más precisa
+        const roundToTwoDecimals = (value: number) => {
+            return Math.round(value * 100) / 100;
+        };
+
         const discountForItem = invoice?.operationdetailSet?.reduce(
             (total: number, detail: IOperationDetail) => {
                 return total + Number(detail.totalDiscount);
@@ -34,8 +44,37 @@ function SaleDetailList({
             0
         );
 
-        const discountGlobal = 0;
-        const totalDiscount = discountForItem + discountGlobal;
+        // Calcular descuento global
+        let discountGlobal = 0;
+        let discountPercentageGlobal =
+            Number(invoice.discountPercentageGlobal) || 0;
+
+        const oldTotalTaxed =
+            invoice?.operationdetailSet
+                ?.filter(
+                    (detail: IOperationDetail) => detail.typeAffectationId == 1
+                )
+                .reduce((total: number, detail: IOperationDetail) => {
+                    return total + Number(detail.totalValue);
+                }, 0) || 0;
+
+        // Si hay un monto directo de descuento global, usarlo y calcular el porcentaje
+        if (Number(invoice.discountGlobal) > 0) {
+            discountGlobal = Number(invoice.discountGlobal);
+            discountPercentageGlobal =
+                oldTotalTaxed > 0
+                    ? roundToTwoDecimals((discountGlobal / oldTotalTaxed) * 100)
+                    : 0;
+        } else if (discountPercentageGlobal > 0) {
+            // Solo si no hay monto directo, calcular basado en el porcentaje
+            discountGlobal = roundToTwoDecimals(
+                oldTotalTaxed * (discountPercentageGlobal / 100)
+            );
+        }
+
+        const totalDiscount = roundToTwoDecimals(
+            discountForItem + discountGlobal
+        );
 
         const totalUnaffected = invoice?.operationdetailSet
             ?.filter(
@@ -61,38 +100,46 @@ function SaleDetailList({
                 return total + Number(detail.totalValue);
             }, 0);
 
-        const totalIgv = invoice?.operationdetailSet?.reduce(
-            (total: number, detail: IOperationDetail) => {
-                return total + Number(detail.totalIgv);
-            },
-            0
+        // Aplicar descuento global al total gravado
+        const newTotalTaxed = roundToTwoDecimals(totalTaxed - totalDiscount);
+
+        // Calcular IGV basado en el nuevo total gravado (después del descuento)
+        const igvPercentage = Number(invoice.igvPercentage) || 0.18;
+        const totalIgv = roundToTwoDecimals(newTotalTaxed * igvPercentage);
+
+        // Calcular total general
+        const totalAmount = roundToTwoDecimals(
+            totalExonerated + totalUnaffected + newTotalTaxed + totalIgv
         );
-
-        const totalAmount =
-            totalExonerated + totalUnaffected + totalTaxed + totalIgv;
         const totalPerception = Number(invoice?.totalPerception || 0);
-        const totalToPay = totalAmount + totalPerception;
+        const totalToPay = roundToTwoDecimals(totalAmount + totalPerception);
 
-        // quantity: "",
-        // unitValue: "",
-        // unitPrice: "",
-        // igvPercentage: "",
-        // discountPercentage: "",
-        // totalDiscount: "",
-        // totalValue: "",
-        // totalIgv: "",
-        // totalAmount: "",
-        // totalPerception: "",
-        // totalToPay: "",
+        // Logs de debug para verificar cálculos
+        console.log("=== DEBUG CALCULOS ===");
+        console.log("Total Taxed original:", totalTaxed);
+        console.log("Descuento Global del invoice:", invoice.discountGlobal);
+        console.log(
+            "% Descuento Global del invoice:",
+            invoice.discountPercentageGlobal
+        );
+        console.log("Descuento Global calculado:", discountGlobal);
+        console.log("% Descuento Global calculado:", discountPercentageGlobal);
+        console.log("Total Taxed después descuento:", newTotalTaxed);
+        console.log("IGV calculado:", totalIgv);
+        console.log("Total General:", totalAmount);
+        console.log("======================");
 
         setInvoice((prevEntry: any) => ({
             ...prevEntry,
             discountForItem: Number(discountForItem).toFixed(2),
             discountGlobal: Number(discountGlobal).toFixed(2),
+            discountPercentageGlobal: Number(discountPercentageGlobal).toFixed(
+                2
+            ),
             totalDiscount: Number(totalDiscount).toFixed(2),
             totalUnaffected: Number(totalUnaffected).toFixed(2),
             totalExonerated: Number(totalExonerated).toFixed(2),
-            totalTaxed: Number(totalTaxed).toFixed(2),
+            totalTaxed: Number(newTotalTaxed).toFixed(2),
             totalIgv: Number(totalIgv).toFixed(2),
             totalAmount: Number(totalAmount).toFixed(2),
             totalPerception: Number(totalPerception).toFixed(2),
