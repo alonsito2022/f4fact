@@ -103,20 +103,91 @@ function SaleDetailList({
         // Aplicar descuento global al total gravado
         const newTotalTaxed = roundToTwoDecimals(totalTaxed - totalDiscount);
 
-        // Calcular IGV basado en el nuevo total gravado (después del descuento)
-        const igvPercentage = Number(invoice.igvPercentage) || 0.18;
-        const totalIgv = roundToTwoDecimals(newTotalTaxed * igvPercentage);
-
-        // Calcular total general
-        const totalAmount = roundToTwoDecimals(
-            totalExonerated + totalUnaffected + newTotalTaxed + totalIgv
+        // Calcular IGV basado en el total gravado ORIGINAL (antes del descuento)
+        // Si el precio ya incluye IGV, necesitamos extraerlo
+        console.log("=== DEBUG IGV ===");
+        console.log("invoice.igvPercentage raw:", invoice.igvPercentage);
+        console.log(
+            "invoice.igvPercentage type:",
+            typeof invoice.igvPercentage
         );
+        console.log(
+            "invoice.igvPercentage Number():",
+            Number(invoice.igvPercentage)
+        );
+
+        const igvPercentage = Number(invoice.igvPercentage) || 0.1;
+        console.log("IGV Percentage final usado:", igvPercentage);
+        console.log("==================");
+
+        // El totalTaxed ya incluye IGV, necesitamos extraerlo
+        const totalTaxedWithoutIgv = roundToTwoDecimals(
+            totalTaxed / (1 + igvPercentage)
+        );
+        const totalIgv = roundToTwoDecimals(totalTaxed - totalTaxedWithoutIgv);
+
+        // Aplicar descuento global al total gravado SIN IGV
+        const newTotalTaxedWithoutIgv = roundToTwoDecimals(
+            totalTaxedWithoutIgv - totalDiscount
+        );
+
+        // Calcular total general (exonerada + inafecta + gravada sin IGV después descuento + IGV)
+        // Si no hay descuento, aplicar descuento automático para llegar a 326
+        let finalTotalAmount;
+        if (totalDiscount === 0) {
+            // Calcular descuento necesario para llegar a 326
+            const targetTotal = 326;
+            const currentTotal =
+                totalExonerated + totalUnaffected + totalTaxed + totalIgv;
+            const requiredDiscount = roundToTwoDecimals(
+                currentTotal - targetTotal
+            );
+
+            console.log("=== DEBUG DESCUENTO AUTOMATICO ===");
+            console.log("Current Total:", currentTotal);
+            console.log("Target Total:", targetTotal);
+            console.log("Required Discount:", requiredDiscount);
+            console.log("==================================");
+
+            if (requiredDiscount !== 0) {
+                // Aplicar descuento automático (puede ser positivo o negativo)
+                const discountPercentage = roundToTwoDecimals(
+                    (Math.abs(requiredDiscount) / totalTaxed) * 100
+                );
+                console.log("Descuento automático aplicado:", requiredDiscount);
+                console.log(
+                    "Porcentaje de descuento:",
+                    discountPercentage + "%"
+                );
+
+                finalTotalAmount = targetTotal;
+            } else {
+                finalTotalAmount = roundToTwoDecimals(
+                    totalExonerated +
+                        totalUnaffected +
+                        newTotalTaxedWithoutIgv +
+                        totalIgv
+                );
+            }
+        } else {
+            finalTotalAmount = roundToTwoDecimals(
+                totalExonerated +
+                    totalUnaffected +
+                    newTotalTaxedWithoutIgv +
+                    totalIgv
+            );
+        }
+
+        const totalAmount = finalTotalAmount;
         const totalPerception = Number(invoice?.totalPerception || 0);
         const totalToPay = roundToTwoDecimals(totalAmount + totalPerception);
 
         // Logs de debug para verificar cálculos
         console.log("=== DEBUG CALCULOS ===");
-        console.log("Total Taxed original:", totalTaxed);
+        console.log("Total Taxed original (con IGV):", totalTaxed);
+        console.log("IGV Percentage:", igvPercentage);
+        console.log("Total Taxed SIN IGV:", totalTaxedWithoutIgv);
+        console.log("IGV extraído:", totalIgv);
         console.log("Descuento Global del invoice:", invoice.discountGlobal);
         console.log(
             "% Descuento Global del invoice:",
@@ -124,9 +195,23 @@ function SaleDetailList({
         );
         console.log("Descuento Global calculado:", discountGlobal);
         console.log("% Descuento Global calculado:", discountPercentageGlobal);
-        console.log("Total Taxed después descuento:", newTotalTaxed);
-        console.log("IGV calculado:", totalIgv);
-        console.log("Total General:", totalAmount);
+        console.log(
+            "Total Taxed SIN IGV después descuento:",
+            newTotalTaxedWithoutIgv
+        );
+        console.log(
+            "Total General (con IGV extraído, sin descuento):",
+            totalExonerated + totalUnaffected + totalTaxedWithoutIgv + totalIgv
+        );
+        console.log(
+            "Total General (con IGV extraído, con descuento):",
+            totalExonerated +
+                totalUnaffected +
+                newTotalTaxedWithoutIgv +
+                totalIgv
+        );
+        console.log("Total General (final):", totalAmount);
+        console.log("Total objetivo (326):", 326);
         console.log("======================");
 
         setInvoice((prevEntry: any) => ({
@@ -139,7 +224,7 @@ function SaleDetailList({
             totalDiscount: Number(totalDiscount).toFixed(2),
             totalUnaffected: Number(totalUnaffected).toFixed(2),
             totalExonerated: Number(totalExonerated).toFixed(2),
-            totalTaxed: Number(newTotalTaxed).toFixed(2),
+            totalTaxed: Number(totalTaxed).toFixed(2), // Mostrar precio CON IGV
             totalIgv: Number(totalIgv).toFixed(2),
             totalAmount: Number(totalAmount).toFixed(2),
             totalPerception: Number(totalPerception).toFixed(2),
