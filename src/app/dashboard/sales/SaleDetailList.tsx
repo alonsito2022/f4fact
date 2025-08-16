@@ -28,19 +28,14 @@ function SaleDetailList({
         invoice.operationdetailSet,
         invoice.discountPercentageGlobal,
         invoice.discountGlobal,
-        invoice.igvPercentage,
+        invoice.igvType,
     ]);
 
     function calculateTotal() {
-        const discountForItem = invoice?.operationdetailSet?.reduce(
-            (total: number, detail: IOperationDetail) => {
-                return total + Number(detail.totalDiscount);
-            },
-            0
-        );
-        const discountGlobal = 0;
-        const totalDiscount = discountForItem + discountGlobal;
-
+        // Función de redondeo más precisa
+        const roundToTwoDecimals = (value: number) => {
+            return Math.round(value * 100) / 100;
+        };
         const totalUnaffected = invoice?.operationdetailSet
             ?.filter(
                 (detail: IOperationDetail) => detail.typeAffectationId == 3
@@ -71,10 +66,41 @@ function SaleDetailList({
             },
             0
         );
+        const oldTotalTaxed = totalTaxed;
+
+        const discountForItem = invoice?.operationdetailSet?.reduce(
+            (total: number, detail: IOperationDetail) => {
+                return total + Number(detail.totalDiscount);
+            },
+            0
+        );
+        let discountGlobal = 0;
+        let discountPercentageGlobal =
+            Number(invoice.discountPercentageGlobal) || 0;
+        // Si hay un monto directo de descuento global, usarlo y calcular el porcentaje
+        if (Number(invoice.discountGlobal) > 0) {
+            discountGlobal = Number(invoice.discountGlobal);
+            discountPercentageGlobal =
+                oldTotalTaxed > 0
+                    ? roundToTwoDecimals((discountGlobal / oldTotalTaxed) * 100)
+                    : 0;
+        } else if (discountPercentageGlobal > 0) {
+            // Solo si no hay monto directo, calcular basado en el porcentaje
+            discountGlobal = roundToTwoDecimals(
+                oldTotalTaxed * (discountPercentageGlobal / 100)
+            );
+        }
+        const totalDiscount = roundToTwoDecimals(
+            discountForItem + discountGlobal
+        );
+        // Aplicar descuento global al total gravado
+        const newTotalTaxed = roundToTwoDecimals(oldTotalTaxed - totalDiscount);
+        const newTotalIgv = roundToTwoDecimals(
+            newTotalTaxed * Number(invoice?.igvType || 0) * 0.01
+        );
 
         const totalAmount =
-            totalExonerated + totalUnaffected + totalTaxed + totalIgv;
-
+            totalExonerated + totalUnaffected + newTotalTaxed + newTotalIgv;
         const totalPerception = Number(invoice?.totalPerception || 0);
         const totalToPay = totalAmount + totalPerception;
 
@@ -97,8 +123,8 @@ function SaleDetailList({
             totalDiscount: Number(totalDiscount).toFixed(2),
             totalUnaffected: Number(totalUnaffected).toFixed(2),
             totalExonerated: Number(totalExonerated).toFixed(2),
-            totalTaxed: Number(totalTaxed).toFixed(2),
-            totalIgv: Number(totalIgv).toFixed(2),
+            totalTaxed: Number(newTotalTaxed).toFixed(2),
+            totalIgv: Number(newTotalIgv).toFixed(2),
             totalAmount: Number(totalAmount).toFixed(2),
             totalPerception: Number(totalPerception).toFixed(2),
             totalToPay: Number(totalToPay).toFixed(2),
