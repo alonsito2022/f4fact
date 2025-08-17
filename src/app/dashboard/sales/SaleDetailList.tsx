@@ -93,11 +93,18 @@ function SaleDetailList({
         const totalDiscount = roundToTwoDecimals(
             discountForItem + discountGlobal
         );
-        // Aplicar descuento global al total gravado
-        const newTotalTaxed = roundToTwoDecimals(oldTotalTaxed - totalDiscount);
-        const newTotalIgv = roundToTwoDecimals(
-            newTotalTaxed * Number(invoice?.igvType || 0) * 0.01
-        );
+        let newTotalTaxed = 0;
+        let newTotalIgv = 0;
+        if (discountGlobal > 0) {
+            // Aplicar descuento global al total gravado
+            newTotalTaxed = roundToTwoDecimals(oldTotalTaxed - totalDiscount);
+            newTotalIgv = roundToTwoDecimals(
+                newTotalTaxed * Number(invoice?.igvType || 0) * 0.01
+            );
+        } else {
+            newTotalTaxed = oldTotalTaxed;
+            newTotalIgv = totalIgv;
+        }
 
         const totalAmount =
             totalExonerated + totalUnaffected + newTotalTaxed + newTotalIgv;
