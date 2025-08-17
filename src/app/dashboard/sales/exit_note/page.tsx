@@ -150,6 +150,12 @@ function ExitNotePage() {
                     pageSize: Number(filterObj.pageSize),
                 },
             });
+            setFilterObj({
+                ...filterObj,
+                subsidiaryId: auth?.user?.isSuperuser
+                    ? String(filterObj.subsidiaryId)
+                    : String(auth?.user?.subsidiaryId),
+            });
         }
     }, [auth?.status, auth?.jwtToken]);
 
