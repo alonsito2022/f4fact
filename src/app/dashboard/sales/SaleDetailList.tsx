@@ -23,7 +23,6 @@ function SaleDetailList({
     };
     useEffect(() => {
         calculateTotal();
-        console.log("calculateTotal");
     }, [
         invoice.operationdetailSet,
         invoice.discountPercentageGlobal,
@@ -32,109 +31,95 @@ function SaleDetailList({
     ]);
 
     function calculateTotal() {
-        // Función de redondeo más precisa
-        const roundToTwoDecimals = (value: number) => {
-            return Math.round(value * 100) / 100;
+        // 1. Función auxiliar para cálculos seguros
+        const safeNumber = (value: any, defaultValue = 0) =>
+            Math.round((Number(value) || defaultValue) * 100) / 100;
+
+        // 2. Clasificación y suma de detalles
+        const {
+            totalUnaffected,
+            totalExonerated,
+            totalTaxed,
+            totalIgv,
+            discountForItem,
+        } = invoice?.operationdetailSet?.reduce(
+            (acc: any, detail: IOperationDetail) => {
+                const value = Number(detail.totalValue);
+                const igv = Number(detail.totalIgv);
+                const discount = Number(detail.totalDiscount);
+
+                if (detail.typeAffectationId === 3)
+                    acc.totalUnaffected += value;
+                else if (detail.typeAffectationId === 2)
+                    acc.totalExonerated += value;
+                else if (detail.typeAffectationId === 1)
+                    acc.totalTaxed += value;
+
+                acc.totalIgv += igv;
+                acc.discountForItem += discount;
+                return acc;
+            },
+            {
+                totalUnaffected: 0,
+                totalExonerated: 0,
+                totalTaxed: 0,
+                totalIgv: 0,
+                discountForItem: 0,
+            }
+        ) || {
+            totalUnaffected: 0,
+            totalExonerated: 0,
+            totalTaxed: 0,
+            totalIgv: 0,
+            discountForItem: 0,
         };
-        const totalUnaffected = invoice?.operationdetailSet
-            ?.filter(
-                (detail: IOperationDetail) => detail.typeAffectationId == 3
-            )
-            .reduce((total: number, detail: IOperationDetail) => {
-                return total + Number(detail.totalValue);
-            }, 0);
 
-        const totalExonerated = invoice?.operationdetailSet
-            ?.filter(
-                (detail: IOperationDetail) => detail.typeAffectationId == 2
-            )
-            .reduce((total: number, detail: IOperationDetail) => {
-                return total + Number(detail.totalValue);
-            }, 0);
-
-        const totalTaxed = invoice?.operationdetailSet
-            ?.filter(
-                (detail: IOperationDetail) => detail.typeAffectationId == 1
-            )
-            .reduce((total: number, detail: IOperationDetail) => {
-                return total + Number(detail.totalValue);
-            }, 0);
-
-        const totalIgv = invoice?.operationdetailSet?.reduce(
-            (total: number, detail: IOperationDetail) => {
-                return total + Number(detail.totalIgv);
-            },
-            0
-        );
+        // 3. Cálculo de descuentos globales
         const oldTotalTaxed = totalTaxed;
-
-        const discountForItem = invoice?.operationdetailSet?.reduce(
-            (total: number, detail: IOperationDetail) => {
-                return total + Number(detail.totalDiscount);
-            },
-            0
+        let discountGlobal = safeNumber(invoice?.discountGlobal);
+        let discountPercentageGlobal = safeNumber(
+            invoice?.discountPercentageGlobal
         );
-        let discountGlobal = 0;
-        let discountPercentageGlobal =
-            Number(invoice.discountPercentageGlobal) || 0;
-        // Si hay un monto directo de descuento global, usarlo y calcular el porcentaje
-        if (Number(invoice.discountGlobal) > 0) {
-            discountGlobal = Number(invoice.discountGlobal);
-            discountPercentageGlobal =
-                oldTotalTaxed > 0
-                    ? roundToTwoDecimals((discountGlobal / oldTotalTaxed) * 100)
-                    : 0;
-        } else if (discountPercentageGlobal > 0) {
-            // Solo si no hay monto directo, calcular basado en el porcentaje
-            discountGlobal = roundToTwoDecimals(
+        if (discountGlobal > 0 && discountPercentageGlobal === 0) {
+            discountPercentageGlobal = safeNumber(
+                (discountGlobal / oldTotalTaxed) * 100
+            );
+        } else if (discountPercentageGlobal > 0 && discountGlobal === 0) {
+            discountGlobal = safeNumber(
                 oldTotalTaxed * (discountPercentageGlobal / 100)
             );
         }
-        const totalDiscount = roundToTwoDecimals(
-            discountForItem + discountGlobal
+
+        const totalDiscount = safeNumber(discountForItem + discountGlobal);
+        const newTotalTaxed = safeNumber(oldTotalTaxed - totalDiscount);
+        // const newTotalIgv = safeNumber(
+        //     newTotalTaxed * (Number(invoice?.igvType) || 0) * 0.01
+        // );
+        const newTotalIgv = safeNumber(
+            totalIgv * (newTotalTaxed / oldTotalTaxed) // ← Proporción exacta
         );
-        let newTotalTaxed = 0;
-        let newTotalIgv = 0;
-        if (discountGlobal > 0) {
-            // Aplicar descuento global al total gravado
-            newTotalTaxed = roundToTwoDecimals(oldTotalTaxed - totalDiscount);
-            newTotalIgv = roundToTwoDecimals(
-                newTotalTaxed * Number(invoice?.igvType || 0) * 0.01
-            );
-        } else {
-            newTotalTaxed = oldTotalTaxed;
-            newTotalIgv = totalIgv;
-        }
 
-        const totalAmount =
-            totalExonerated + totalUnaffected + newTotalTaxed + newTotalIgv;
-        const totalPerception = Number(invoice?.totalPerception || 0);
-        const totalToPay = totalAmount + totalPerception;
+        // 4. Totales finales
+        const totalAmount = safeNumber(
+            totalExonerated + totalUnaffected + newTotalTaxed + newTotalIgv
+        );
+        const totalPerception = safeNumber(invoice?.totalPerception);
+        const totalToPay = safeNumber(totalAmount + totalPerception);
 
-        // quantity: "",
-        // unitValue: "",
-        // unitPrice: "",
-        // igvPercentage: "",
-        // discountPercentage: "",
-        // totalDiscount: "",
-        // totalValue: "",
-        // totalIgv: "",
-        // totalAmount: "",
-        // totalPerception: "",
-        // totalToPay: "",
-
-        setInvoice((prevEntry: any) => ({
-            ...prevEntry,
-            discountForItem: Number(discountForItem).toFixed(2),
-            discountGlobal: Number(discountGlobal).toFixed(2),
-            totalDiscount: Number(totalDiscount).toFixed(2),
-            totalUnaffected: Number(totalUnaffected).toFixed(2),
-            totalExonerated: Number(totalExonerated).toFixed(2),
-            totalTaxed: Number(newTotalTaxed).toFixed(2),
-            totalIgv: Number(newTotalIgv).toFixed(2),
-            totalAmount: Number(totalAmount).toFixed(2),
-            totalPerception: Number(totalPerception).toFixed(2),
-            totalToPay: Number(totalToPay).toFixed(2),
+        // 5. Actualización del estado
+        setInvoice((prev: any) => ({
+            ...prev,
+            discountForItem: discountForItem.toFixed(2),
+            discountGlobal: discountGlobal.toFixed(2),
+            totalDiscount: totalDiscount.toFixed(2),
+            totalUnaffected: totalUnaffected.toFixed(2),
+            totalExonerated: totalExonerated.toFixed(2),
+            totalTaxed: newTotalTaxed.toFixed(2),
+            totalIgv: newTotalIgv.toFixed(2),
+            totalAmount: totalAmount.toFixed(2),
+            totalPerception: totalPerception.toFixed(2),
+            totalToPay: totalToPay.toFixed(2),
+            discountPercentageGlobal: discountPercentageGlobal.toFixed(2),
         }));
     }
     return (

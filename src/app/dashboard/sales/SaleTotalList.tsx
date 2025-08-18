@@ -145,11 +145,6 @@ function SaleTotalList({
                                                 Number(
                                                     localDiscountPercentage
                                                 ) || 0;
-                                            const oldTotalTaxed = Number(
-                                                invoice.totalTaxed
-                                            );
-                                            const discountGlobal =
-                                                oldTotalTaxed * (value / 100);
 
                                             setSale((prevSale: any) => ({
                                                 ...prevSale,
@@ -169,12 +164,6 @@ function SaleTotalList({
                                         const value =
                                             Number(localDiscountPercentage) ||
                                             0;
-                                        // Calcular el descuento global basado en el porcentaje
-                                        const oldTotalTaxed = Number(
-                                            invoice.totalTaxed
-                                        );
-                                        const discountGlobal =
-                                            oldTotalTaxed * (value / 100);
 
                                         setSale((prevSale: any) => ({
                                             ...prevSale,
