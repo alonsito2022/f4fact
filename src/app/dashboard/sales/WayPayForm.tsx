@@ -50,6 +50,7 @@ const CREATE_SALE_MUTATION = gql`
         $igvType: Int!
         $totalDiscount: Float!
         $totalTaxed: Float!
+        $totalAnticipation: Float!
         $totalUnaffected: Float!
         $totalExonerated: Float!
         $totalIgv: Float!
@@ -74,6 +75,9 @@ const CREATE_SALE_MUTATION = gql`
         $totalDetraction: Float
         $detractionPercentage: Float
         $observation: String
+        $isAnticipationSet: [Boolean!]!
+        $relatedDocumentSerialSet: [String!]!
+        $relatedDocumentCorrelativeSet: [Int!]!
     ) {
         createSale(
             serial: $serial
@@ -110,6 +114,7 @@ const CREATE_SALE_MUTATION = gql`
             igvType: $igvType
             totalDiscount: $totalDiscount
             totalTaxed: $totalTaxed
+            totalAnticipation: $totalAnticipation
             totalUnaffected: $totalUnaffected
             totalExonerated: $totalExonerated
             totalIgv: $totalIgv
@@ -134,6 +139,9 @@ const CREATE_SALE_MUTATION = gql`
             totalDetraction: $totalDetraction
             detractionPercentage: $detractionPercentage
             observation: $observation
+            isAnticipationSet: $isAnticipationSet
+            relatedDocumentSerialSet: $relatedDocumentSerialSet
+            relatedDocumentCorrelativeSet: $relatedDocumentCorrelativeSet
         ) {
             message
             error
@@ -392,6 +400,7 @@ function WayPayForm({
                 igvType: Number(invoice.igvType),
                 totalDiscount: parseFloat(invoice.totalDiscount) || 0,
                 totalTaxed: parseFloat(invoice.totalTaxed),
+                totalAnticipation: parseFloat(invoice.totalAnticipation) || 0,
                 totalUnaffected: parseFloat(invoice.totalUnaffected),
                 totalExonerated: parseFloat(invoice.totalExonerated),
                 totalIgv: parseFloat(invoice.totalIgv),
@@ -423,7 +432,17 @@ function WayPayForm({
                 detractionPercentage: Number(invoice.detractionPercentage),
 
                 observation: invoice.observation || "",
+                isAnticipationSet: invoice.operationdetailSet.map(
+                    (item: any) => item.isAnticipation || false
+                ),
+                relatedDocumentSerialSet: invoice.operationdetailSet.map(
+                    (item: any) => String(item.relatedDocumentSerial) || ""
+                ),
+                relatedDocumentCorrelativeSet: invoice.operationdetailSet.map(
+                    (item: any) => Number(item.relatedDocumentCorrelative) || 0
+                ),
             };
+            console.log("variables", variables);
             const { data, errors } = await createSale({
                 variables: variables,
             });

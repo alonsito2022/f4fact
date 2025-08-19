@@ -24,6 +24,7 @@ const PRODUCT_DETAIL_QUERY = gql`
             priceWithIgv3
             productTariffId3
             typeAffectationId
+            activeType
         }
     }
 `;
@@ -82,6 +83,18 @@ function SaleDetailForm({
     // Add ref for the close button
     const closeButtonRef = useRef<HTMLButtonElement>(null);
 
+    // Limpiar campos de anticipo cuando se desactive
+    useEffect(() => {
+        if (!invoiceDetail.isAnticipation) {
+            // Limpiar los campos relacionados cuando se desactive el anticipo
+            setInvoiceDetail({
+                ...invoiceDetail,
+                relatedDocumentSerial: "",
+                relatedDocumentCorrelative: "",
+            });
+        }
+    }, [invoiceDetail.isAnticipation]);
+
     useEffect(() => {
         if (modalAddDetail == null) {
             const $targetEl = document.getElementById("modalAddDetail");
@@ -132,6 +145,11 @@ function SaleDetailForm({
                         let totalAmount = totalValue + totalIgv;
                         setInvoiceDetail({
                             ...invoiceDetail,
+                            activeType:
+                                String(productDetail.activeType).replace(
+                                    "A_",
+                                    ""
+                                ) || "NA",
                             productTariffId: Number(
                                 productDetail.productTariffId3
                             ),
@@ -185,6 +203,59 @@ function SaleDetailForm({
         totalIgv = totalAmount - totalValue;
 
         return { totalValue, totalAmount, totalIgv };
+    };
+
+    // Toggle switch functionality for anticipation
+    useEffect(() => {
+        const checkbox = document.getElementById(
+            "isAnticipation"
+        ) as HTMLInputElement;
+        const toggleLabel = checkbox?.nextElementSibling as HTMLLabelElement;
+        const toggleCircle = toggleLabel?.querySelector(
+            "span"
+        ) as HTMLSpanElement;
+
+        if (checkbox && toggleLabel && toggleCircle) {
+            const updateToggleState = () => {
+                if (invoiceDetail.isAnticipation) {
+                    toggleLabel.classList.remove(
+                        "bg-gray-300",
+                        "dark:bg-gray-600"
+                    );
+                    toggleLabel.classList.add(
+                        "bg-blue-600",
+                        "dark:bg-blue-500"
+                    );
+                    toggleCircle.classList.remove("translate-x-0.5");
+                    toggleCircle.classList.add("translate-x-6");
+                } else {
+                    toggleLabel.classList.remove(
+                        "bg-blue-600",
+                        "dark:bg-blue-500"
+                    );
+                    toggleLabel.classList.add(
+                        "bg-gray-300",
+                        "dark:bg-gray-600"
+                    );
+                    toggleCircle.classList.remove("translate-x-6");
+                    toggleCircle.classList.add("translate-x-0.5");
+                }
+            };
+
+            updateToggleState(); // Update toggle state when invoiceDetail.isAnticipation changes
+        }
+    }, [invoiceDetail.isAnticipation]);
+    const handleCheckboxChangeAnticipation = ({
+        target: { name, checked },
+    }: ChangeEvent<HTMLInputElement>) => {
+        setInvoiceDetail({ ...invoiceDetail, [name]: checked });
+    };
+
+    const handleAnticipationFieldChange = (
+        event: ChangeEvent<HTMLInputElement>
+    ) => {
+        const { name, value } = event.target;
+        setInvoiceDetail({ ...invoiceDetail, [name]: value });
     };
 
     const handleInputChangeSaleDetail = async (
@@ -364,7 +435,9 @@ function SaleDetailForm({
     const validateQuantity = (value: string): boolean => {
         if (
             invoice?.documentType === "07" &&
-            Number(value) > Number(invoiceDetail?.quantityAvailable)
+            Number(value) > Number(invoiceDetail?.quantityAvailable) &&
+            (invoiceDetail.activeType == "01" ||
+                invoiceDetail.activeType == "02")
         ) {
             // only for credit note
             toast.warning(
@@ -375,7 +448,9 @@ function SaleDetailForm({
         if (
             auth?.user?.companyWithStock &&
             Number(value) > Number(invoiceDetail?.stock) &&
-            invoice?.parentOperationDocumentType !== "NS"
+            invoice?.parentOperationDocumentType !== "NS" &&
+            (invoiceDetail.activeType == "01" ||
+                invoiceDetail.activeType == "02")
         ) {
             toast.warning(
                 "La cantidad no puede ser mayor al stock disponible."
@@ -478,7 +553,9 @@ function SaleDetailForm({
         }
         if (
             auth?.user?.companyWithStock &&
-            Number(invoiceDetail?.quantity) > Number(invoiceDetail?.stock)
+            Number(invoiceDetail?.quantity) > Number(invoiceDetail?.stock) &&
+            (invoiceDetail.activeType == "01" ||
+                invoiceDetail.activeType == "02")
         ) {
             toast.warning(
                 "La cantidad no puede ser mayor al stock disponible."
@@ -881,6 +958,170 @@ function SaleDetailForm({
                                         />
                                     </div>
                                 </div>
+                                {/* Sección de Anticipos */}
+                                {invoice.operationType === "0502" && (
+                                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-sm p-6 space-y-4">
+                                        <div className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed text-center">
+                                            Si es el{" "}
+                                            <span className="font-semibold">
+                                                PRIMER ANTICIPO
+                                            </span>{" "}
+                                            dejar estos datos en blanco.
+                                        </div>
+                                        <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                            Si es una{" "}
+                                            <span className="font-semibold">
+                                                DEDUCCIÓN DE ANTICIPO
+                                            </span>{" "}
+                                            el importe de este ITEM o LINEA es
+                                            el total del pago anticipado y
+                                            restará a los totales del documento.
+                                        </div>
+
+                                        <div className="flex flex-col gap-4">
+                                            <div className="flex items-center justify-between">
+                                                <label
+                                                    htmlFor="isAnticipation"
+                                                    className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                                                >
+                                                    ¿Deducción de Anticipo?
+                                                </label>
+                                                {invoiceDetail.isAnticipation && (
+                                                    <div className="flex items-center space-x-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full text-xs font-medium">
+                                                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                        <span>
+                                                            Anticipo Activo
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center space-x-3">
+                                                <span
+                                                    className={`text-sm transition-colors duration-200 ${
+                                                        !invoiceDetail.isAnticipation
+                                                            ? "text-gray-600 dark:text-gray-400"
+                                                            : "text-gray-400 dark:text-gray-500"
+                                                    }`}
+                                                >
+                                                    No
+                                                </span>
+                                                <div className="relative">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="isAnticipation"
+                                                        id="isAnticipation"
+                                                        className="sr-only"
+                                                        checked={
+                                                            invoiceDetail.isAnticipation
+                                                        }
+                                                        onChange={
+                                                            handleCheckboxChangeAnticipation
+                                                        }
+                                                    />
+                                                    <label
+                                                        htmlFor="isAnticipation"
+                                                        className={`block w-12 h-6 rounded-full cursor-pointer transition-all duration-200 ease-in-out hover:scale-105 ${
+                                                            invoiceDetail.isAnticipation
+                                                                ? "bg-blue-600 dark:bg-blue-500 shadow-lg shadow-blue-200 dark:shadow-blue-900/30"
+                                                                : "bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500"
+                                                        }`}
+                                                    >
+                                                        <span
+                                                            className={`block w-5 h-5 bg-white rounded-full shadow transform transition-all duration-200 ease-in-out ${
+                                                                invoiceDetail.isAnticipation
+                                                                    ? "translate-x-6"
+                                                                    : "translate-x-0.5"
+                                                            } translate-y-0.5`}
+                                                        ></span>
+                                                    </label>
+                                                </div>
+                                                <span
+                                                    className={`text-sm transition-colors duration-200 ${
+                                                        invoiceDetail.isAnticipation
+                                                            ? "text-blue-600 dark:text-blue-400 font-medium"
+                                                            : "text-gray-400 dark:text-gray-500"
+                                                    }`}
+                                                >
+                                                    Sí
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Sección de Anticipos - Solo visible cuando invoiceDetail.isAnticipation es true */}
+                                        {invoiceDetail.isAnticipation && (
+                                            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-4">
+                                                <div className="flex items-center space-x-2">
+                                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                    <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-200">
+                                                        Datos del Documento de
+                                                        Anticipo
+                                                    </h4>
+                                                </div>
+
+                                                <div className="text-sm text-blue-700 dark:text-blue-300">
+                                                    Ingrese la información del
+                                                    documento que contenía el
+                                                    anticipo anterior:
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label
+                                                            htmlFor="relatedDocumentSerial"
+                                                            className="block text-sm font-medium text-blue-800 dark:text-blue-200 mb-2"
+                                                        >
+                                                            Serie
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            name="relatedDocumentSerial"
+                                                            id="relatedDocumentSerial"
+                                                            value={
+                                                                invoiceDetail.relatedDocumentSerial ||
+                                                                ""
+                                                            }
+                                                            onChange={
+                                                                handleAnticipationFieldChange
+                                                            }
+                                                            className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                                                            placeholder="Ej: F001"
+                                                            disabled={
+                                                                !invoiceDetail.isAnticipation
+                                                            }
+                                                            maxLength={4}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            htmlFor="relatedDocumentCorrelative"
+                                                            className="block text-sm font-medium text-blue-800 dark:text-blue-200 mb-2"
+                                                        >
+                                                            Número
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            name="relatedDocumentCorrelative"
+                                                            id="relatedDocumentCorrelative"
+                                                            value={
+                                                                invoiceDetail.relatedDocumentCorrelative ||
+                                                                ""
+                                                            }
+                                                            onChange={
+                                                                handleAnticipationFieldChange
+                                                            }
+                                                            className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                                                            placeholder="Ej: 00000001"
+                                                            disabled={
+                                                                !invoiceDetail.isAnticipation
+                                                            }
+                                                            maxLength={8}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Modal footer */}

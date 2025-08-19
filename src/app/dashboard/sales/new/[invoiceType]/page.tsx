@@ -218,7 +218,7 @@ const initialStateSale = {
     totalIgv: "",
     totalFree: "",
     totalAmount: "",
-
+    totalAnticipation: "",
     totalToPay: "",
     totalPayed: "",
     totalTurned: "",
@@ -272,6 +272,10 @@ const initialStateSaleDetail = {
     stock: 0,
 
     temporaryId: 0,
+    isAnticipation: false,
+    relatedDocumentSerial: "",
+    relatedDocumentCorrelative: "",
+    activeType: "NA",
 };
 const initialStatePerson = {
     id: 0,
@@ -1236,7 +1240,7 @@ function NewSalePage() {
                                                                                 [
                                                                                     "0101", // Venta interna
                                                                                     // "0200", // Exportación
-                                                                                    // "0502", // Anticipos
+                                                                                    "0502", // Anticipos
                                                                                     // "0401", // Ventas no domiciliados
                                                                                     "1001", // Operación Sujeta a Detracción
                                                                                     // "1002", // Operación Sujeta a Detracción- Recursos Hidrobiológicos
@@ -1780,7 +1784,7 @@ function NewSalePage() {
                                                         <input
                                                             type="text"
                                                             className="mt-1 px-3 py-2 block w-full rounded-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                            maxLength={100}
+                                                            maxLength={500}
                                                             value={product.name}
                                                             name="name"
                                                             onChange={

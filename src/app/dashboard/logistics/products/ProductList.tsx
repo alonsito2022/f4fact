@@ -132,7 +132,7 @@ function ProductList({
     );
 
     const getCellClassName = useCallback((available: boolean) => {
-        return `px-6 py-4 font-medium  ${
+        return `px-6 py-4 font-medium text-right ${
             !available
                 ? "text-red-500 line-through"
                 : "text-gray-900 dark:text-white"
@@ -162,7 +162,7 @@ function ProductList({
         return new Intl.NumberFormat("es-PE", {
             style: "currency",
             currency: "PEN",
-            minimumFractionDigits: 2,
+            minimumFractionDigits: 6,
         }).format(price);
     };
 
@@ -645,10 +645,10 @@ function ProductList({
                                             <span
                                                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                                     Number(item.stock) > 10
-                                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 whitespace-nowrap"
                                                         : Number(item.stock) > 0
-                                                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                                                        : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                                                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 whitespace-nowrap"
+                                                        : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 whitespace-nowrap"
                                                 }`}
                                             >
                                                 {item.stock} unidades

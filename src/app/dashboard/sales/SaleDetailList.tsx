@@ -23,6 +23,7 @@ function SaleDetailList({
     };
     useEffect(() => {
         calculateTotal();
+        console.log(invoice);
     }, [
         invoice.operationdetailSet,
         invoice.discountPercentageGlobal,
@@ -42,21 +43,28 @@ function SaleDetailList({
             totalTaxed,
             totalIgv,
             discountForItem,
+            totalAnticipation,
+            anticipationIgv, // ← IGV del anticipo separado
         } = invoice?.operationdetailSet?.reduce(
             (acc: any, detail: IOperationDetail) => {
                 const value = Number(detail.totalValue);
                 const igv = Number(detail.totalIgv);
                 const discount = Number(detail.totalDiscount);
 
-                if (detail.typeAffectationId === 3)
-                    acc.totalUnaffected += value;
-                else if (detail.typeAffectationId === 2)
-                    acc.totalExonerated += value;
-                else if (detail.typeAffectationId === 1)
-                    acc.totalTaxed += value;
-
-                acc.totalIgv += igv;
-                acc.discountForItem += discount;
+                if (detail.isAnticipation) {
+                    acc.totalAnticipation += value;
+                    acc.anticipationIgv += igv; // ← IGV del anticipo
+                } else {
+                    if (detail.typeAffectationId === 3)
+                        acc.totalUnaffected += value;
+                    else if (detail.typeAffectationId === 2)
+                        acc.totalExonerated += value;
+                    else if (detail.typeAffectationId === 1) {
+                        acc.totalTaxed += value;
+                        acc.totalIgv += igv;
+                    }
+                    acc.discountForItem += discount;
+                }
                 return acc;
             },
             {
@@ -65,6 +73,8 @@ function SaleDetailList({
                 totalTaxed: 0,
                 totalIgv: 0,
                 discountForItem: 0,
+                totalAnticipation: 0,
+                anticipationIgv: 0, // ← Nuevo campo
             }
         ) || {
             totalUnaffected: 0,
@@ -72,6 +82,8 @@ function SaleDetailList({
             totalTaxed: 0,
             totalIgv: 0,
             discountForItem: 0,
+            totalAnticipation: 0,
+            anticipationIgv: 0,
         };
 
         // 3. Cálculo de descuentos globales
@@ -91,18 +103,23 @@ function SaleDetailList({
         }
 
         const totalDiscount = safeNumber(discountForItem + discountGlobal);
-        const newTotalTaxed = safeNumber(oldTotalTaxed - totalDiscount);
+        const newTotalTaxed = safeNumber(
+            oldTotalTaxed - totalDiscount - totalAnticipation
+        );
         // const newTotalIgv = safeNumber(
         //     newTotalTaxed * (Number(invoice?.igvType) || 0) * 0.01
         // );
+
+        // 4. Cálculo de IGV (proporcional solo para items no anticipo)
         const newTotalIgv = safeNumber(
             totalIgv * (newTotalTaxed / oldTotalTaxed) // ← Proporción exacta
         );
 
-        // 4. Totales finales
-        const totalAmount = safeNumber(
+        // 5. Totales finales (el anticipo se resta al final)
+        const subtotal = safeNumber(
             totalExonerated + totalUnaffected + newTotalTaxed + newTotalIgv
         );
+        const totalAmount = safeNumber(subtotal); // ← Anticipo se resta aquí
         const totalPerception = safeNumber(invoice?.totalPerception);
         const totalToPay = safeNumber(totalAmount + totalPerception);
 
@@ -112,6 +129,7 @@ function SaleDetailList({
             discountForItem: discountForItem.toFixed(2),
             discountGlobal: discountGlobal.toFixed(2),
             totalDiscount: totalDiscount.toFixed(2),
+            totalAnticipation: totalAnticipation.toFixed(2),
             totalUnaffected: totalUnaffected.toFixed(2),
             totalExonerated: totalExonerated.toFixed(2),
             totalTaxed: newTotalTaxed.toFixed(2),

@@ -299,6 +299,27 @@ function SaleTotalList({
                     <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-4"></div>
                         <div className="col-span-4 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 transition-colors">
+                            Anticipo (-){" "}
+                            {invoice.currencyType === "PEN"
+                                ? "S/"
+                                : invoice.currencyType === "USD"
+                                ? "US$"
+                                : invoice.currencyType === "EUR"
+                                ? "€"
+                                : invoice.currencyType === "GBP"
+                                ? "£"
+                                : null}
+                        </div>
+                        <div
+                            className="col-span-4 rounded-full text-right font-medium bg-gray-300 text-black-800 dark:text-black group-hover:text-blue-600 dark:group-hover:text-blue-400 py-1 px-2"
+                            style={{ border: "1px solid rgb(179, 178, 173)" }}
+                        >
+                            {invoice.totalAnticipation}
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-4">
+                        <div className="col-span-4"></div>
+                        <div className="col-span-4 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 transition-colors">
                             Exonerada{" "}
                             {invoice.currencyType === "PEN"
                                 ? "S/"
