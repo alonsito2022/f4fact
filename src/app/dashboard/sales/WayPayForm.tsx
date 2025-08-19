@@ -442,7 +442,6 @@ function WayPayForm({
                     (item: any) => Number(item.relatedDocumentCorrelative) || 0
                 ),
             };
-            console.log("variables", variables);
             const { data, errors } = await createSale({
                 variables: variables,
             });
