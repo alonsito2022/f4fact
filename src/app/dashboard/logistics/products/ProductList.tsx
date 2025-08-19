@@ -112,18 +112,18 @@ function ProductList({
                 typeAffectationId: productFound?.typeAffectationId ?? 0,
                 maximumUnitId: productFound?.maximumUnitId ?? 0,
                 activeType: String(productFound?.activeType).replace("A_", ""),
-                priceWithIgv1: Number(productFound?.priceWithIgv1).toFixed(2),
+                priceWithIgv1: Number(productFound?.priceWithIgv1).toFixed(6),
                 priceWithoutIgv1: Number(
                     productFound?.priceWithoutIgv1
-                ).toFixed(2),
-                priceWithIgv3: Number(productFound?.priceWithIgv3).toFixed(2),
+                ).toFixed(6),
+                priceWithIgv3: Number(productFound?.priceWithIgv3).toFixed(6),
                 priceWithoutIgv3: Number(
                     productFound?.priceWithoutIgv3
-                ).toFixed(2),
-                priceWithIgv4: Number(productFound?.priceWithIgv4).toFixed(2),
+                ).toFixed(6),
+                priceWithIgv4: Number(productFound?.priceWithIgv4).toFixed(6),
                 priceWithoutIgv4: Number(
                     productFound?.priceWithoutIgv4
-                ).toFixed(2),
+                ).toFixed(6),
             };
             setProduct(updatedProduct);
             modalProduct.show();
