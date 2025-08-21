@@ -1,5 +1,6 @@
 import { gql, useQuery } from "@apollo/client";
 import React from "react";
+import { useAuth } from "./providers/AuthProvider";
 const GET_ACTIVE_ANNOUNCEMENTS = gql`
     query GetActiveAnnouncements {
         activeAnnouncements {
@@ -12,8 +13,20 @@ const GET_ACTIVE_ANNOUNCEMENTS = gql`
     }
 `;
 function HeaderAnnouncement() {
+    const auth = useAuth();
     const { data, loading, error } = useQuery(GET_ACTIVE_ANNOUNCEMENTS, {
+        context: {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
+            },
+        },
+        skip: !auth?.jwtToken,
         pollInterval: 60000, // Actualiza cada 60 segundos
+        fetchPolicy: "network-only",
+        onCompleted: (data) => {
+            console.log("data", data);
+        },
     });
 
     if (loading) return <div>Cargando mensajes...</div>;
