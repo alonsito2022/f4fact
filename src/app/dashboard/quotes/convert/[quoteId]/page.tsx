@@ -614,6 +614,7 @@ function ConvertToInvoicePage() {
                         s.documentType === `A_${clientDocType}` &&
                         !s.isGeneratedViaApi
                 )?.serial || "";
+            console.log(appropriateSerial);
             setSale((prevSale) => ({
                 ...prevSale,
                 id: Number(dataQuote?.id),

@@ -436,10 +436,10 @@ function WayPayForm({
                     (item: any) => item.isAnticipation || false
                 ),
                 relatedDocumentSerialSet: invoice.operationdetailSet.map(
-                    (item: any) => String(item.relatedDocumentSerial) || ""
+                    (item: any) => String(item.relatedDocumentSerial || "")
                 ),
                 relatedDocumentCorrelativeSet: invoice.operationdetailSet.map(
-                    (item: any) => Number(item.relatedDocumentCorrelative) || 0
+                    (item: any) => Number(item.relatedDocumentCorrelative || 0)
                 ),
             };
             const { data, errors } = await createSale({
