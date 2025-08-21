@@ -608,13 +608,22 @@ function ConvertToInvoicePage() {
                 dataQuote?.client.documentNumber.length === 11 ? "01" : "03";
 
             // Find appropriate serial based on document type
+            console.log("clientDocType", clientDocType);
+            console.log("searching for documentType", `A_${clientDocType}`);
+
             const appropriateSerial =
-                serialsAssignedData?.allSerials?.find(
-                    (s: ISerialAssigned) =>
+                serialsAssignedData?.allSerials?.find((s: ISerialAssigned) => {
+                    const matches =
                         s.documentType === `A_${clientDocType}` &&
-                        !s.isGeneratedViaApi
-                )?.serial || "";
-            console.log(appropriateSerial);
+                        !s.isGeneratedViaApi;
+                    console.log(
+                        `Serial ${s.serial}: documentType=${s.documentType}, isGeneratedViaApi=${s.isGeneratedViaApi}, matches=${matches}`
+                    );
+                    return matches;
+                })?.serial || "";
+
+            console.log("allSerials", serialsAssignedData?.allSerials);
+            console.log("appropriateSerial", appropriateSerial);
             setSale((prevSale) => ({
                 ...prevSale,
                 id: Number(dataQuote?.id),
