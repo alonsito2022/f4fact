@@ -24,9 +24,6 @@ function HeaderAnnouncement() {
         skip: !auth?.jwtToken,
         pollInterval: 60000, // Actualiza cada 60 segundos
         fetchPolicy: "network-only",
-        onCompleted: (data) => {
-            console.log("data", data);
-        },
     });
 
     if (loading) return <div>Cargando mensajes...</div>;

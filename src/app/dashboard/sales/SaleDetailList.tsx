@@ -23,7 +23,6 @@ function SaleDetailList({
     };
     useEffect(() => {
         calculateTotal();
-        console.log(invoice);
     }, [
         invoice.operationdetailSet,
         invoice.discountPercentageGlobal,

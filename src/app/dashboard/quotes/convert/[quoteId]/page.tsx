@@ -400,6 +400,9 @@ const PRODUCT_DETAIL_QUERY = gql`
 function ConvertToInvoicePage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Estado para mostrar cuando se están cargando los datos de configuración
+    const [isConfigDataLoading, setIsConfigDataLoading] = useState(true);
     const [sale, setSale] = useState(initialStateSale);
     const [saleDetail, setSaleDetail] = useState(initialStateSaleDetail);
 
@@ -445,7 +448,10 @@ function ConvertToInvoicePage() {
         context: authContext,
         variables: getVariables(),
         fetchPolicy: "network-only",
-        onError: (err) => console.error("Error in products:", err),
+
+        onError: (err) => {
+            console.error("Error in products:", err);
+        },
         skip: !auth?.jwtToken,
     });
 
@@ -458,6 +464,10 @@ function ConvertToInvoicePage() {
     } = useQuery(TYPE_OPERATION_QUERY, {
         context: authContext,
         skip: !auth?.jwtToken,
+
+        onError: (error) => {
+            console.error("TYPE_OPERATION_QUERY error:", error);
+        },
     });
 
     const {
@@ -469,6 +479,10 @@ function ConvertToInvoicePage() {
         fetchPolicy: "network-only",
         variables: {
             subsidiaryId: Number(auth?.user?.subsidiaryId),
+        },
+
+        onError: (error) => {
+            console.error("SERIALS_QUERY error:", error);
         },
         skip: !auth?.jwtToken,
     });
@@ -491,6 +505,10 @@ function ConvertToInvoicePage() {
         data: typeAffectationsData,
     } = useQuery(TYPE_AFFECTATION_QUERY, {
         context: authContext,
+
+        onError: (error) => {
+            console.error("TYPE_AFFECTATION_QUERY error:", error);
+        },
         skip: !auth?.jwtToken,
     });
     const {
@@ -540,7 +558,6 @@ function ConvertToInvoicePage() {
         context: authContext,
         fetchPolicy: "network-only",
         onCompleted: (data) => {
-            console.log(auth?.jwtToken);
             const dataQuote = data.getSaleById;
             const igv = Number(dataQuote?.igvPercentage) / 100;
             const formattedOperationdetailSet =
@@ -608,22 +625,14 @@ function ConvertToInvoicePage() {
                 dataQuote?.client.documentNumber.length === 11 ? "01" : "03";
 
             // Find appropriate serial based on document type
-            console.log("clientDocType", clientDocType);
-            console.log("searching for documentType", `A_${clientDocType}`);
 
             const appropriateSerial =
                 serialsAssignedData?.allSerials?.find((s: ISerialAssigned) => {
                     const matches =
                         s.documentType === `A_${clientDocType}` &&
                         !s.isGeneratedViaApi;
-                    console.log(
-                        `Serial ${s.serial}: documentType=${s.documentType}, isGeneratedViaApi=${s.isGeneratedViaApi}, matches=${matches}`
-                    );
                     return matches;
                 })?.serial || "";
-
-            console.log("allSerials", serialsAssignedData?.allSerials);
-            console.log("appropriateSerial", appropriateSerial);
             setSale((prevSale) => ({
                 ...prevSale,
                 id: Number(dataQuote?.id),
@@ -851,16 +860,128 @@ function ConvertToInvoicePage() {
         }
     };
 
+    // Función para validar que todos los datos necesarios estén disponibles
+    // Esto asegura que saleQuery solo se ejecute cuando todos los datos de configuración
+    // (tipos de operación, series, tipos de afectación, etc.) estén cargados
+    const areAllDataReady = useMemo(() => {
+        // Verificar si los datos críticos están disponibles
+        const criticalDataReady =
+            !productsLoading &&
+            !serialsAssignedLoading &&
+            !typeAffectationsLoading &&
+            productsData?.allProducts &&
+            serialsAssignedData?.allSerials &&
+            typeAffectationsData?.allTypeAffectations;
+
+        // Verificar si los datos opcionales están disponibles (no críticos para la funcionalidad básica)
+        const optionalDataReady =
+            !operationTypesLoading &&
+            !wayPaysLoading &&
+            !perceptionTypesLoading &&
+            !retentionTypesLoading &&
+            !detractionTypesLoading &&
+            !detractionPaymentMethodsLoading &&
+            operationTypesData?.allTypeOperations &&
+            wayPaysData?.allWayPays &&
+            perceptionTypesData?.allPerceptionTypes &&
+            retentionTypesData?.allRetentionTypes &&
+            detractionTypesData?.allDetractionTypes &&
+            detractionPaymentMethodsData?.allDetractionPaymentMethods;
+
+        return criticalDataReady;
+    }, [
+        productsLoading,
+        operationTypesLoading,
+        serialsAssignedLoading,
+        typeAffectationsLoading,
+        wayPaysLoading,
+        perceptionTypesLoading,
+        retentionTypesLoading,
+        detractionTypesLoading,
+        detractionPaymentMethodsLoading,
+        productsData?.allProducts,
+        operationTypesData?.allTypeOperations,
+        serialsAssignedData?.allSerials,
+        typeAffectationsData?.allTypeAffectations,
+        wayPaysData?.allWayPays,
+        perceptionTypesData?.allPerceptionTypes,
+        retentionTypesData?.allRetentionTypes,
+        detractionTypesData?.allDetractionTypes,
+        detractionPaymentMethodsData?.allDetractionPaymentMethods,
+    ]);
+
+    // Función para obtener el estado de carga detallado
+    const getLoadingStatus = () => {
+        const loadingStates = [
+            {
+                name: "Productos",
+                loading: productsLoading,
+                data: productsData?.allProducts,
+            },
+            {
+                name: "Tipos de Operación",
+                loading: operationTypesLoading,
+                data: operationTypesData?.allTypeOperations,
+            },
+            {
+                name: "Series Asignadas",
+                loading: serialsAssignedLoading,
+                data: serialsAssignedData?.allSerials,
+            },
+            {
+                name: "Tipos de Afectación",
+                loading: typeAffectationsLoading,
+                data: typeAffectationsData?.allTypeAffectations,
+            },
+            {
+                name: "Formas de Pago",
+                loading: wayPaysLoading,
+                data: wayPaysData?.allWayPays,
+            },
+            {
+                name: "Tipos de Percepción",
+                loading: perceptionTypesLoading,
+                data: perceptionTypesData?.allPerceptionTypes,
+            },
+            {
+                name: "Tipos de Retención",
+                loading: retentionTypesLoading,
+                data: retentionTypesData?.allRetentionTypes,
+            },
+            {
+                name: "Tipos de Detracción",
+                loading: detractionTypesLoading,
+                data: detractionTypesData?.allDetractionTypes,
+            },
+            {
+                name: "Métodos de Pago de Detracción",
+                loading: detractionPaymentMethodsLoading,
+                data: detractionPaymentMethodsData?.allDetractionPaymentMethods,
+            },
+        ];
+
+        const completed = loadingStates.filter(
+            (state) => !state.loading && state.data
+        ).length;
+        const total = loadingStates.length;
+
+        return { completed, total, loadingStates };
+    };
+
     useEffect(() => {
-        if (quoteId) {
-            // Aquí puedes manejar el parámetro quoteId
+        if (quoteId && areAllDataReady) {
             saleQuery({
                 variables: {
                     pk: Number(quoteId),
                 },
             });
         }
-    }, [quoteId]);
+    }, [quoteId, areAllDataReady]);
+
+    // Actualizar el estado de carga de configuración
+    useEffect(() => {
+        setIsConfigDataLoading(!areAllDataReady);
+    }, [areAllDataReady]);
     useEffect(() => {
         if (auth?.user?.companyPercentageIgv) {
             setSale((prevSale) => ({
@@ -1098,6 +1219,65 @@ function ConvertToInvoicePage() {
             {isLoading ? (
                 <div className="flex items-center justify-center min-h-screen">
                     <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+            ) : isConfigDataLoading ? (
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="text-center max-w-md">
+                        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                        <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
+                            Cargando configuración del sistema...
+                        </p>
+
+                        {/* Barra de progreso */}
+                        {(() => {
+                            const { completed, total } = getLoadingStatus();
+                            const percentage = Math.round(
+                                (completed / total) * 100
+                            );
+                            return (
+                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-4">
+                                    <div
+                                        className="bg-blue-600 h-3 rounded-full transition-all duration-500 ease-out"
+                                        style={{ width: `${percentage}%` }}
+                                    ></div>
+                                </div>
+                            );
+                        })()}
+
+                        {/* Estado detallado */}
+                        <div className="text-sm text-gray-500 dark:text-gray-500 space-y-1">
+                            {getLoadingStatus().loadingStates.map(
+                                (state, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-center justify-between"
+                                    >
+                                        <span>{state.name}:</span>
+                                        <span
+                                            className={`ml-2 ${
+                                                state.loading
+                                                    ? "text-yellow-500"
+                                                    : state.data
+                                                    ? "text-green-500"
+                                                    : "text-red-500"
+                                            }`}
+                                        >
+                                            {state.loading
+                                                ? "⏳ Cargando..."
+                                                : state.data
+                                                ? "✅ Listo"
+                                                : "❌ Error"}
+                                        </span>
+                                    </div>
+                                )
+                            )}
+                        </div>
+
+                        <p className="text-xs text-gray-400 dark:text-gray-600 mt-4">
+                            {getLoadingStatus().completed} de{" "}
+                            {getLoadingStatus().total} configuraciones cargadas
+                        </p>
+                    </div>
                 </div>
             ) : (
                 <>
