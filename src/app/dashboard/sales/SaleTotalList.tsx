@@ -88,11 +88,11 @@ function SaleTotalList({
             let totalDetraction = Math.round(
                 Number(invoice?.totalAmount) * detractionPercentage * 0.01
             );
-            let totalToPay = Number(invoice?.totalAmount) - totalDetraction;
+            // let totalToPay = Number(invoice?.totalAmount) - totalDetraction;
             setSale((prevSale: IOperation) => ({
                 ...prevSale,
                 totalDetraction: totalDetraction,
-                totalToPay: totalToPay.toFixed(2),
+                // totalToPay: totalToPay.toFixed(2),
             }));
         } else if (invoice?.totalDetraction && invoice?.totalAmount) {
             // Calcular el porcentaje cuando cambia totalDetraction
@@ -100,12 +100,12 @@ function SaleTotalList({
                 (Number(invoice.totalDetraction) /
                     Number(invoice.totalAmount)) *
                 100;
-            let totalToPay =
-                Number(invoice?.totalAmount) - invoice?.totalDetraction;
+            // let totalToPay =
+            //     Number(invoice?.totalAmount) - invoice?.totalDetraction;
             setSale((prevSale: IOperation) => ({
                 ...prevSale,
                 detractionPercentage: calculatedPercentage.toFixed(3),
-                totalToPay: totalToPay.toFixed(2),
+                // totalToPay: totalToPay.toFixed(2),
             }));
         }
     }, [
