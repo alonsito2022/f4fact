@@ -730,8 +730,14 @@ function NewSalePage() {
             clientInputRef.current?.focus();
             return false;
         }
-        if (sale.operationdetailSet.length === 0) {
-            toast("Por favor ingrese al menos un item.", {
+        // Validar que haya al menos un ítem válido
+        const validItems = Array.isArray(sale.operationdetailSet)
+            ? sale.operationdetailSet.filter(
+                  (item) => item && item.productId && Number(item.quantity) > 0
+              )
+            : [];
+        if (validItems.length === 0) {
+            toast("Por favor ingrese al menos un item válido.", {
                 hideProgressBar: true,
                 autoClose: 2000,
                 type: "warning",
