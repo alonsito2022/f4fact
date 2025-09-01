@@ -934,7 +934,7 @@ function NewSalePage() {
         threeDaysAgo.setDate(currentDate.getDate() - 4);
 
         // Calcular días máximos permitidos según tipo de documento
-        const maxDaysBack = sale.documentType === "01" ? 4 : 5; // 3 días para facturas, 5 para boletas
+        const maxDaysBack = sale.documentType === "01" ? 4 : 6; // 3 días para facturas, 5 para boletas
         // Calcular fecha mínima permitida
         const minAllowedDate = new Date(currentDate);
         minAllowedDate.setDate(currentDate.getDate() - maxDaysBack);
