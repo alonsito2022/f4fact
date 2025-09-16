@@ -35,56 +35,56 @@ function ProductTariffForm({ setProduct, product }: any) {
                 ...product,
                 priceWithIgv1: formattedValue,
                 priceWithoutIgv1: Number(Number(formattedValue) / 1.18).toFixed(
-                    3
+                    6
                 ),
             });
         else if (name === "priceWithoutIgv1")
             setProduct({
                 ...product,
                 priceWithoutIgv1: formattedValue,
-                priceWithIgv1: Number(Number(formattedValue) * 1.18).toFixed(3),
+                priceWithIgv1: Number(Number(formattedValue) * 1.18).toFixed(6),
             });
         else if (name === "priceWithIgv2")
             setProduct({
                 ...product,
                 priceWithIgv2: formattedValue,
                 priceWithoutIgv2: Number(Number(formattedValue) / 1.18).toFixed(
-                    3
+                    6
                 ),
             });
         else if (name === "priceWithoutIgv2")
             setProduct({
                 ...product,
                 priceWithoutIgv2: formattedValue,
-                priceWithIgv2: Number(Number(formattedValue) * 1.18).toFixed(3),
+                priceWithIgv2: Number(Number(formattedValue) * 1.18).toFixed(6),
             });
         else if (name === "priceWithIgv3")
             setProduct({
                 ...product,
                 priceWithIgv3: formattedValue,
                 priceWithoutIgv3: Number(Number(formattedValue) / 1.18).toFixed(
-                    3
+                    6
                 ),
             });
         else if (name === "priceWithoutIgv3")
             setProduct({
                 ...product,
                 priceWithoutIgv3: formattedValue,
-                priceWithIgv3: Number(Number(formattedValue) * 1.18).toFixed(3),
+                priceWithIgv3: Number(Number(formattedValue) * 1.18).toFixed(6),
             });
         else if (name === "priceWithIgv4")
             setProduct({
                 ...product,
                 priceWithIgv4: formattedValue,
                 priceWithoutIgv4: Number(Number(formattedValue) / 1.18).toFixed(
-                    3
+                    6
                 ),
             });
         else if (name === "priceWithoutIgv4")
             setProduct({
                 ...product,
                 priceWithoutIgv4: formattedValue,
-                priceWithIgv4: Number(Number(formattedValue) * 1.18).toFixed(3),
+                priceWithIgv4: Number(Number(formattedValue) * 1.18).toFixed(6),
             });
         else setProduct({ ...product, [name]: formattedValue });
     };
