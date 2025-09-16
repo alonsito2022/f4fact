@@ -38,6 +38,12 @@ function BulkPdfDownloadModal({
             toast.error("No hay documentos para descargar");
             return;
         }
+        // Limpiar los atributos "A_" en documentType y operationStatus
+        const cleanSalesData = salesData.map((sale) => ({
+            ...sale,
+            documentType: sale.documentType?.replace("A_", ""),
+            operationStatus: sale.operationStatus?.replace("A_", ""),
+        }));
 
         setDownloading(true);
         const zip = new JSZip();
@@ -45,7 +51,7 @@ function BulkPdfDownloadModal({
 
         try {
             // Crear un array de promesas para las descargas
-            const downloadPromises = salesData.map(async (item) => {
+            const downloadPromises = cleanSalesData.map(async (item) => {
                 if (!item.documentType || !item.id) return;
 
                 const baseUrl = process.env.NEXT_PUBLIC_BASE_API || "";
@@ -77,7 +83,7 @@ function BulkPdfDownloadModal({
 
                     completed++;
                     setProgress(
-                        Math.round((completed / salesData.length) * 100)
+                        Math.round((completed / cleanSalesData.length) * 100)
                     );
                 } catch (error) {
                     console.error(`Error descargando ${item.id}:`, error);
