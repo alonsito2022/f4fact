@@ -779,9 +779,7 @@ function SaleList({
                                 <td
                                     colSpan={3}
                                     className="p-1 text-sm font-bold text-nowrap text-right"
-                                >
-                                    Total de FACTURAS:
-                                </td>
+                                ></td>
                             )}
                             <td
                                 colSpan={7}
@@ -813,9 +811,7 @@ function SaleList({
                                 <td
                                     colSpan={3}
                                     className="p-1 text-sm font-bold text-nowrap text-right"
-                                >
-                                    Total de FACTURAS:
-                                </td>
+                                ></td>
                             )}
                             <td
                                 colSpan={7}
@@ -847,9 +843,7 @@ function SaleList({
                                 <td
                                     colSpan={3}
                                     className="p-1 text-sm font-bold text-nowrap text-right"
-                                >
-                                    Total de FACTURAS:
-                                </td>
+                                ></td>
                             )}
                             <td
                                 colSpan={7}
