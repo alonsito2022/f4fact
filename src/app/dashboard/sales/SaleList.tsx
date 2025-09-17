@@ -863,20 +863,19 @@ function SaleList({
                             >
                                 {" S/ "}
                             </td>
-                            {hasCreditNote && (
-                                <td
-                                    colSpan={1}
-                                    className="p-1 text-sm font-bold text-nowrap text-right"
-                                >
-                                    {filteredSalesData?.allSales
-                                        ?.totalCreditNotes
-                                        ? Number(
-                                              filteredSalesData?.allSales
-                                                  ?.totalCreditNotes
-                                          ).toFixed(2)
-                                        : "0.00"}
-                                </td>
-                            )}
+
+                            <td
+                                colSpan={1}
+                                className="p-1 text-sm font-bold text-nowrap text-right"
+                            >
+                                {filteredSalesData?.allSales?.totalCreditNotes
+                                    ? Number(
+                                          filteredSalesData?.allSales
+                                              ?.totalCreditNotes
+                                      ).toFixed(2)
+                                    : "0.00"}
+                            </td>
+
                             <td colSpan={11}></td>
                         </tr>
                         {/* <tr>
