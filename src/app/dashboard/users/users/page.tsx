@@ -93,11 +93,21 @@ function UserPage() {
                         searchUsers(search: "${searchTerm}") {
                             id
                             document
+                            fullName
                             firstName
                             lastName
                             phone
                             email
                             roleName
+                            avatar
+                            avatarUrl
+                            subsidiary{
+                                id
+                                companyName
+                                serial
+                            }
+                            isActive
+                            isSuperuser
                         }
                     }
                 `,
@@ -114,12 +124,29 @@ function UserPage() {
     }, []);
 
     useEffect(() => {
-        if (searchTerm.length >= 3) {
-            fetchUsersbyName(); // Realizar la llamada a la API cuando el término de búsqueda tiene al menos 3 caracteres
-        } else {
+        // Solo hacer llamada al backend si no hay usuarios cargados o si el término de búsqueda es muy específico
+        if (users.length === 0) {
             fetchUsers();
         }
+        // El filtrado local se encarga del resto
     }, [searchTerm]);
+
+    // Función para filtrar usuarios localmente por companyName y email
+    const filteredUsers = users.filter((user: IUser) => {
+        if (searchTerm.length < 3) return true; // Si el término de búsqueda es muy corto, mostrar todos
+
+        const searchLower = searchTerm.toLowerCase();
+        return (
+            user.fullName?.toLowerCase().includes(searchLower) ||
+            user.firstName?.toLowerCase().includes(searchLower) ||
+            user.lastName?.toLowerCase().includes(searchLower) ||
+            user.email?.toLowerCase().includes(searchLower) ||
+            user.subsidiary?.companyName?.toLowerCase().includes(searchLower) ||
+            user.document?.toLowerCase().includes(searchLower) ||
+            user.phone?.toLowerCase().includes(searchLower) ||
+            user.roleName?.toLowerCase().includes(searchLower)
+        );
+    });
 
     useEffect(() => {
         if (session?.user) {
@@ -154,7 +181,7 @@ function UserPage() {
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden shadow">
                             <UserList
-                                users={users}
+                                users={filteredUsers}
                                 modal={modal}
                                 setModal={setModal}
                                 user={user}
@@ -173,6 +200,7 @@ function UserPage() {
                 setUser={setUser}
                 initialState={initialState}
                 fetchUsers={fetchUsers}
+                userLogged={userLogged}
             />
         </>
     );

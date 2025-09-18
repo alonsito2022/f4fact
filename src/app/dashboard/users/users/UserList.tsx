@@ -102,14 +102,12 @@ function UserList({ users, modal, setModal, user, setUser, userLogged }: any) {
                         >
                             Estado
                         </th>
-                        {userLogged.isSuperuser ? (
-                            <th
-                                scope="col"
-                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
-                            >
-                                Acción {userLogged.subsidiaryId}
-                            </th>
-                        ) : null}
+                        <th
+                            scope="col"
+                            className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                        >
+                            Acción
+                        </th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
@@ -185,18 +183,20 @@ function UserList({ users, modal, setModal, user, setUser, userLogged }: any) {
                                         </>
                                     )}
                                 </td>
-                                {userLogged.isSuperuser ? (
-                                    <td className="flex items-center justify-center">
-                                        <a
-                                            href="#"
-                                            className="hover:underline"
-                                            onClick={async () => {
-                                                await fetchUserByID(item.id!);
-                                                modal.show();
-                                            }}
-                                        >
-                                            <Edit />
-                                        </a>
+                                {/* Permitir editar a todos los usuarios logueados */}
+                                <td className="flex items-center justify-center">
+                                    <a
+                                        href="#"
+                                        className="hover:underline"
+                                        onClick={async () => {
+                                            await fetchUserByID(item.id!);
+                                            modal.show();
+                                        }}
+                                    >
+                                        <Edit />
+                                    </a>
+                                    {/* Solo superusuarios pueden eliminar */}
+                                    {userLogged.isSuperuser && (
                                         <a
                                             href="#"
                                             className="hover:underline"
@@ -206,8 +206,8 @@ function UserList({ users, modal, setModal, user, setUser, userLogged }: any) {
                                         >
                                             <Delete />
                                         </a>
-                                    </td>
-                                ) : null}
+                                    )}
+                                </td>
                             </tr>
                         ))}
                 </tbody>
