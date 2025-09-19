@@ -146,7 +146,7 @@ function SaleDetailList({
                     <tr>
                         <th
                             scope="col"
-                            className="p-3 w-[65%] text-sm font-bold text-left text-dark-600 dark:text-gray-800"
+                            className="p-3 w-[57%] text-sm font-bold text-left text-dark-600 dark:text-gray-800"
                         >
                             Descripción
                         </th>
@@ -164,13 +164,19 @@ function SaleDetailList({
                         </th>
                         <th
                             scope="col"
-                            className="p-3 w-[10%] text-sm font-bold text-center text-dark-600 dark:text-gray-800"
+                            className="p-3 w-[8%] text-sm font-bold text-center text-dark-600 dark:text-gray-800"
                         >
                             Subtotal
                         </th>
                         <th
                             scope="col"
-                            className="p-3 w-[5%] text-sm font-bold text-center text-dark-600 dark:text-gray-800"
+                            className="p-3 w-[8%] text-sm font-bold text-center text-dark-600 dark:text-gray-800"
+                        >
+                            Total
+                        </th>
+                        <th
+                            scope="col"
+                            className="p-3 w-[4%] text-sm font-bold text-center text-dark-600 dark:text-gray-800"
                         ></th>
                     </tr>
                 </thead>
@@ -193,6 +199,12 @@ function SaleDetailList({
                                 </td>
                                 <td className="px-3 py-0 text-gray-700 dark:text-gray-300 text-center">
                                     {item.totalValue}
+                                </td>
+                                <td className="px-3 py-0 text-gray-700 dark:text-gray-300 text-center">
+                                    {(
+                                        Number(item.totalValue) +
+                                        Number(item.totalIgv)
+                                    ).toFixed(2)}
                                 </td>
                                 <td className="px-3 py-0">
                                     <div className="flex justify-end py-2 space-x-1">
