@@ -313,6 +313,7 @@ function CreditPage() {
     const { invoiceId } = params;
     const [creditNote, setCreditNote] = useState(initialStateCreditNote);
     const [sale, setSale] = useState(initialStateSale);
+    const [serialError, setSerialError] = useState("");
     const [CreditNoteDetail, setCreditNoteDetail] = useState(
         initialStateSaleDetail
     );
@@ -320,7 +321,9 @@ function CreditPage() {
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
     const [modalWayPay, setModalWayPay] = useState<Modal | any>(null);
     const [cashFlow, setCashFlow] = useState(initialStateCashFlow);
-
+    const [serialsAssigned, setSerialsAssigned] = useState<ISerialAssigned[]>(
+        []
+    );
     const auth = useAuth();
 
     const authContext = useMemo(
@@ -376,6 +379,28 @@ function CreditPage() {
             subsidiaryId: Number(auth?.user?.subsidiaryId),
         },
         skip: !auth?.jwtToken,
+        onCompleted: (data) => {
+            // Filtrar solo series de notas de crédito (A_07)
+            const creditNoteSerials = data.allSerials.filter(
+                (s: ISerialAssigned) => s.documentType === "A_07"
+            );
+
+            const cleanSerialsAssigned = creditNoteSerials.map(
+                (s: ISerialAssigned) => {
+                    // Determinar el tipo de documento de referencia basándose en el prefijo del serial
+                    const referenceDocumentType = s.serial.startsWith("B")
+                        ? "03"
+                        : "01";
+
+                    return {
+                        ...s,
+                        documentType: s.documentType.replace("A_", ""), // "07"
+                        referenceDocumentType,
+                    };
+                }
+            );
+            setSerialsAssigned(cleanSerialsAssigned);
+        },
     });
     const getVariables = () => ({
         subsidiaryId: Number(auth?.user?.subsidiaryId),
@@ -402,8 +427,14 @@ function CreditPage() {
         onCompleted: (data) => {
             const dataSale = data.getSaleById;
             const igv = Number(dataSale?.igvPercentage) / 100;
-            setSale(dataSale);
-            const formattedOperationdetailSet = dataSale.operationdetailSet
+
+            // Crear una copia del objeto para poder modificarlo
+            const dataSaleCopy = {
+                ...dataSale,
+                documentType: dataSale?.documentType?.replace("A_", ""),
+            };
+            setSale(dataSaleCopy);
+            const formattedOperationdetailSet = dataSaleCopy.operationdetailSet
                 .filter(
                     (detail: IOperationDetail) =>
                         Number(detail.quantityAvailable) > 0
@@ -481,27 +512,86 @@ function CreditPage() {
             setIsLoading(false);
         },
     });
-    useEffect(() => {
-        if (serialsAssignedData?.allSerials?.length > 0) {
-            const filteredSeries = serialsAssignedData.allSerials.filter(
-                (s: ISerialAssigned) =>
-                    s.documentType === `A_${creditNote.documentType}` &&
-                    !s.isGeneratedViaApi
-            );
+    // Función para determinar la serie de nota de crédito basándose en el tipo de documento de la venta
+    const getCreditNoteSerial = (saleDocumentType: string) => {
+        if (!serialsAssigned?.length) return null;
 
-            if (filteredSeries.length > 0) {
+        // Si el saleDocumentType es 07, significa que estoy editando una nota de crédito existente
+        // En este caso, no puedo determinar automáticamente la serie basándome en el tipo de venta original
+        if (saleDocumentType === "07") {
+            return null;
+        }
+
+        // Determinar el prefijo basándose en el tipo de documento de la venta original
+        let prefix = "";
+        switch (saleDocumentType) {
+            case "01": // Factura
+                prefix = "F";
+                break;
+            case "03": // Boleta
+                prefix = "B";
+                break;
+            default:
+                return null;
+        }
+
+        // Buscar series de nota de crédito que coincidan con el prefijo
+        const creditNoteSeries = serialsAssigned.filter(
+            (s: ISerialAssigned) => {
+                const isCreditNote = s.documentType === "07"; // Nota de crédito
+                const hasCorrectPrefix = s.serial.startsWith(prefix);
+                const isNotApiGenerated = !s.isGeneratedViaApi;
+
+                return isCreditNote && hasCorrectPrefix && isNotApiGenerated;
+            }
+        );
+
+        // Si no se encuentra serie con el prefijo correcto, devolver null para mostrar error
+        if (creditNoteSeries.length === 0) {
+            return null;
+        }
+
+        return creditNoteSeries[0];
+    };
+
+    useEffect(() => {
+        if (serialsAssigned?.length > 0 && sale?.documentType) {
+            // Si es una nota de crédito existente (07), establecer la serie actual
+            if (sale.documentType === "07") {
                 setCreditNote((prev: any) => ({
                     ...prev,
-                    serial: filteredSeries[0].serial,
+                    serial: sale.serial, // Establecer la serie actual de la nota de crédito
                 }));
+                setSerialError(""); // Limpiar cualquier error
+                return;
+            }
+
+            // Solo aplicar lógica automática para ventas originales (factura/boleta)
+            const creditNoteSerial = getCreditNoteSerial(sale.documentType);
+            if (creditNoteSerial) {
+                setCreditNote((prev: any) => ({
+                    ...prev,
+                    serial: creditNoteSerial.serial,
+                }));
+                setSerialError(""); // Limpiar error si se encuentra serie
             } else {
+                // Establecer mensaje de error si no hay serie adecuada
+                const saleType =
+                    sale.documentType === "01" ? "factura" : "boleta";
+                const expectedPrefix = sale.documentType === "01" ? "F" : "B";
+
+                setSerialError(
+                    `No se encontró una serie de nota de crédito para ${saleType}. ` +
+                        `Por favor, registre una serie que comience con "${expectedPrefix}" para notas de crédito.`
+                );
+
                 setCreditNote((prev: any) => ({
                     ...prev,
                     serial: "",
                 }));
             }
         }
-    }, [serialsAssignedData, creditNote.documentType]);
+    }, [serialsAssigned, sale?.documentType]);
     useEffect(() => {
         if (invoiceId) {
             // Aquí puedes manejar el parámetro invoiceId
@@ -512,29 +602,6 @@ function CreditPage() {
             });
         }
     }, [invoiceId]);
-
-    // useEffect(() => {
-    //     const subsidiarySerial = auth?.user?.subsidiarySerial;
-    //     if (subsidiarySerial && sale.documentType) {
-    //         const lastTwoDigits = subsidiarySerial.slice(-2);
-    //         let prefix = "";
-    //         switch (sale.documentType.replace("A_", "")) {
-    //             case "01":
-    //                 prefix = "FN";
-    //                 break;
-    //             case "03":
-    //                 prefix = "BN";
-    //                 break;
-    //             default:
-    //                 prefix = "";
-    //         }
-    //         const customSerial = `${prefix}${lastTwoDigits}`;
-    //         setCreditNote((prevSale) => ({
-    //             ...prevSale,
-    //             serial: customSerial,
-    //         }));
-    //     }
-    // }, [auth?.user?.subsidiarySerial, sale.documentType]);
 
     const handleCreditNote = (
         event: ChangeEvent<
@@ -704,13 +771,18 @@ function CreditPage() {
                                                                 className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                                 required
                                                             >
-                                                                {serialsAssignedData?.allSerials
+                                                                <option value="">
+                                                                    No hay
+                                                                    series
+                                                                    disponibles
+                                                                </option>
+                                                                {serialsAssigned
                                                                     ?.filter(
                                                                         (
                                                                             s: ISerialAssigned
                                                                         ) =>
-                                                                            s.documentType ===
-                                                                                `A_${creditNote.documentType}` &&
+                                                                            s.referenceDocumentType ===
+                                                                                sale.documentType &&
                                                                             !s.isGeneratedViaApi
                                                                     )
                                                                     .map(
@@ -730,20 +802,14 @@ function CreditPage() {
                                                                                 }
                                                                             </option>
                                                                         )
-                                                                    ) || (
-                                                                    <option value="">
-                                                                        No hay
-                                                                        series
-                                                                        disponibles
-                                                                    </option>
-                                                                )}
+                                                                    )}
                                                             </select>
-                                                            {serialsAssignedData?.allSerials?.filter(
+                                                            {serialsAssigned?.filter(
                                                                 (
                                                                     s: ISerialAssigned
                                                                 ) =>
-                                                                    s.documentType ===
-                                                                        `A_${creditNote.documentType}` &&
+                                                                    s.referenceDocumentType ===
+                                                                        sale.documentType &&
                                                                     !s.isGeneratedViaApi
                                                             ).length === 0 && (
                                                                 <p className="mt-1 text-sm text-red-600 dark:text-red-500">
@@ -753,6 +819,13 @@ function CreditPage() {
                                                                     para este
                                                                     tipo de
                                                                     documento
+                                                                </p>
+                                                            )}
+                                                            {serialError && (
+                                                                <p className="mt-1 text-sm text-red-600 dark:text-red-500">
+                                                                    {
+                                                                        serialError
+                                                                    }
                                                                 </p>
                                                             )}
                                                         </div>
@@ -800,10 +873,9 @@ function CreditPage() {
                                                                 Tipo documento
                                                             </label>
                                                             <select
-                                                                value={sale?.documentType.replace(
-                                                                    "A_",
-                                                                    ""
-                                                                )}
+                                                                value={
+                                                                    sale?.documentType
+                                                                }
                                                                 onChange={
                                                                     handleSale
                                                                 }
