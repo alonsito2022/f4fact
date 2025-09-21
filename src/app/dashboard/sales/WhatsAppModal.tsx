@@ -39,7 +39,7 @@ function WhatsAppModal({
     }, [modalWhatsApp, setModalWhatsApp]);
 
     const padCorrelative = (correlative: string | number) => {
-        return correlative.toString().padStart(6, "0");
+        return correlative?.toString().padStart(6, "0");
     };
 
     function useCustomMutation(mutation: DocumentNode) {
@@ -77,9 +77,9 @@ function WhatsAppModal({
         });
 
         const message = `Estimado cliente,\nSe envía la ${
-            cpe.documentTypeDisplay
-        } ELECTRÓNICA ${cpe.serial}-${padCorrelative(
-            cpe.correlative
+            cpe?.documentTypeDisplay
+        } ELECTRÓNICA ${cpe?.serial}-${padCorrelative(
+            cpe?.correlative
         )}.\nPara ver, haga clic en el siguiente enlace:\n\n${
             process.env.NEXT_PUBLIC_BASE_API
         }/operations/print_invoice/${cpe.id}/`;
@@ -122,11 +122,11 @@ function WhatsAppModal({
                     {/* Modal body */}
                     <div className="p-5 space-y-2">
                         <h2 className="text-md font-semibold text-center text-gray-900 dark:text-white">
-                            {cpe.documentTypeDisplay} ELECTRÓNICA {cpe.serial}-
-                            {padCorrelative(cpe.correlative)}
+                            {cpe?.documentTypeDisplay} ELECTRÓNICA {cpe?.serial}
+                            -{padCorrelative(cpe?.correlative)}
                         </h2>
                         <h4 className="text-sm text-center text-gray-500 dark:text-gray-300">
-                            {cpe.clientDoc} - {cpe.clientName}
+                            {cpe?.clientDoc} - {cpe?.clientName}
                         </h4>
 
                         {/* Código de país */}

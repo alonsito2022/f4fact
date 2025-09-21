@@ -1,7 +1,8 @@
 import { Modal, ModalOptions } from "flowbite";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
+    const iframeRef = useRef<HTMLIFrameElement>(null);
     useEffect(() => {
         if (pdfModal == null) {
             const $targetEl = document.getElementById("pdf-preview-modal");
@@ -13,6 +14,22 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
             setPdfModal(new Modal($targetEl, options));
         }
     }, []);
+
+    const handlePrint = () => {
+        if (iframeRef.current && iframeRef.current.contentWindow) {
+            try {
+                // Activar la impresión del iframe
+                iframeRef.current.contentWindow.print();
+            } catch (error) {
+                console.log("Error al imprimir desde iframe:", error);
+                // Fallback: abrir en nueva ventana
+                window.open(pdfUrl, "_blank");
+            }
+        } else {
+            // Fallback si no hay iframe
+            window.open(pdfUrl, "_blank");
+        }
+    };
 
     return (
         <div
@@ -54,6 +71,7 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
                     </div>
                     <div className="p-4 md:p-5">
                         <iframe
+                            ref={iframeRef}
                             src={
                                 pdfUrl
                                     ? `/api/pdf?url=${encodeURIComponent(
@@ -65,7 +83,24 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
                             title="PDF Preview"
                         />
                     </div>
-                    <div className="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                    <div className="flex items-center justify-between p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                        <button
+                            onClick={handlePrint}
+                            className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 flex items-center"
+                        >
+                            <svg
+                                className="w-4 h-4 mr-2"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                            Imprimir
+                        </button>
                         <a
                             href={pdfUrl}
                             target="_blank"

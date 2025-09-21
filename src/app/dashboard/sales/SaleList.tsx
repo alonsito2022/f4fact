@@ -380,6 +380,9 @@ function SaleList({
                                 PDF
                             </th>
                             <th className="pr-2 w-8 dark:border-gray-600">
+                                VER
+                            </th>
+                            <th className="pr-2 w-8 dark:border-gray-600">
                                 XML
                             </th>
                             <th className="pr-2 w-8 dark:border-gray-600">
@@ -510,6 +513,16 @@ function SaleList({
                                                 </span>
                                             </a>
                                         )}
+                                    </td>
+                                    <td className="p-0.5 text-center">
+                                        <Link
+                                            href={`/dashboard/sales/view/${item.id}`}
+                                            className="hover:underline"
+                                        >
+                                            <span className="bg-blue-600 text-white text-[11px] font-semibold me-2 px-1.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300 text-nowrap">
+                                                VER
+                                            </span>
+                                        </Link>
                                     </td>
                                     <td className="p-0.5 text-center">
                                         {(() => {
