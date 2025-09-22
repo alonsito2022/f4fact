@@ -171,6 +171,25 @@ function UserModal({
     }: ChangeEvent<
         HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >) => {
+        // Validaciones de longitud basadas en el modelo Django
+        const maxLengths: { [key: string]: number } = {
+            firstName: 150,
+            lastName: 150,
+            document: 15,
+            phone: 15,
+            email: 254,
+            password: 128,
+            repeatPassword: 128,
+        };
+
+        // Verificar si el campo tiene una longitud máxima definida
+        if (maxLengths[name] && value.length > maxLengths[name]) {
+            toast.warning(
+                `El campo ${name} no puede exceder ${maxLengths[name]} caracteres`
+            );
+            return;
+        }
+
         if (name === "companyId") {
             // Reset subsidiaryId when company changes
             setUser({
@@ -226,8 +245,44 @@ function UserModal({
                 return;
             }
 
+            if (user.firstName && user.firstName.length > 150) {
+                toast("El nombre no puede exceder 150 caracteres", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "error",
+                });
+                return;
+            }
+
             if (!user.document?.trim()) {
                 toast("El documento es requerido", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "error",
+                });
+                return;
+            }
+
+            if (user.document && user.document.length > 15) {
+                toast("El documento no puede exceder 15 caracteres", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "error",
+                });
+                return;
+            }
+
+            if (user.lastName && user.lastName.length > 150) {
+                toast("Los apellidos no pueden exceder 150 caracteres", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "error",
+                });
+                return;
+            }
+
+            if (user.phone && user.phone.length > 15) {
+                toast("El teléfono no puede exceder 15 caracteres", {
                     hideProgressBar: true,
                     autoClose: 2000,
                     type: "error",
@@ -253,6 +308,38 @@ function UserModal({
                 return;
             }
         }
+
+        // Validaciones adicionales de longitud para todos los usuarios
+        if (user.email && user.email.length > 254) {
+            toast("El email no puede exceder 254 caracteres", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "error",
+            });
+            return;
+        }
+
+        if (user.password && user.password.length > 128) {
+            toast("La contraseña no puede exceder 128 caracteres", {
+                hideProgressBar: true,
+                autoClose: 2000,
+                type: "error",
+            });
+            return;
+        }
+
+        if (user.repeatPassword && user.repeatPassword.length > 128) {
+            toast(
+                "La confirmación de contraseña no puede exceder 128 caracteres",
+                {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "error",
+                }
+            );
+            return;
+        }
+
         if (Number(user.id) !== 0) {
             try {
                 let data;
@@ -274,10 +361,6 @@ function UserModal({
                         avatarUrl: user.avatarUrl || "",
                         subsidiaryId: Number(user.subsidiaryId || 0),
                     };
-                    console.log(
-                        "Superusuario - Variables completas:",
-                        updateVariables
-                    );
 
                     data = await updateUser({
                         variables: updateVariables,
@@ -289,10 +372,6 @@ function UserModal({
                         password: user.password,
                         repeatPassword: user.repeatPassword,
                     };
-                    console.log(
-                        "Usuario normal - Solo contraseña:",
-                        passwordVariables
-                    );
 
                     data = await updateUserPassword({
                         variables: passwordVariables,
@@ -366,7 +445,6 @@ function UserModal({
             // Cuando se carga el archivo, muestra la imagen en el componente
             reader.onload = (e: ProgressEvent<FileReader>) => {
                 if (e.target?.result) {
-                    // console.log(e.target?.result)
                     //   setUser({...user, avatar:e.target.result});
                     setUser((prevUser: any) => ({
                         ...prevUser,
@@ -483,6 +561,7 @@ function UserModal({
                                                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                                                     autoComplete="off"
                                                     required
+                                                    maxLength={150}
                                                 />
                                             </div>
                                             <div className="relative z-0 w-full mb-3 group">
@@ -504,6 +583,7 @@ function UserModal({
                                                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                                                     autoComplete="off"
                                                     required
+                                                    maxLength={150}
                                                 />
                                             </div>
                                         </div>
@@ -527,6 +607,7 @@ function UserModal({
                                                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                                                     autoComplete="off"
                                                     required
+                                                    maxLength={15}
                                                 />
                                             </div>
                                             <div className="relative z-0 w-full mb-3 group">
@@ -551,6 +632,7 @@ function UserModal({
                                                     }
                                                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                                                     autoComplete="off"
+                                                    maxLength={15}
                                                 />
                                             </div>
                                         </div>
@@ -580,6 +662,7 @@ function UserModal({
                                             autoComplete="off"
                                             required
                                             disabled={Number(user.id) !== 0}
+                                            maxLength={254}
                                         />
                                     </div>
                                     <div className="grid md:grid-cols-2 md:gap-6">
@@ -601,6 +684,7 @@ function UserModal({
                                                 }
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                                                 autoComplete="off"
+                                                maxLength={128}
                                             />
                                         </div>
                                         <div className="relative z-0 w-full mb-3 group">
@@ -621,6 +705,7 @@ function UserModal({
                                                 }
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                                                 autoComplete="off"
+                                                maxLength={128}
                                             />
                                         </div>
                                     </div>
@@ -824,6 +909,7 @@ function UserModal({
                                                 onClick={handleFileReset}
                                                 onChange={handleFileChange}
                                                 accept="image/*"
+                                                maxLength={300}
                                             />
                                         </label>
                                     </div>
