@@ -579,7 +579,7 @@ function UserModal({
                                             className="bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400"
                                             autoComplete="off"
                                             required
-                                            disabled
+                                            disabled={Number(user.id) !== 0}
                                         />
                                     </div>
                                     <div className="grid md:grid-cols-2 md:gap-6">
