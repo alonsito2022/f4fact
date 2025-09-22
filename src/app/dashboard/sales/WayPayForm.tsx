@@ -144,6 +144,9 @@ const CREATE_SALE_MUTATION = gql`
             relatedDocumentCorrelativeSet: $relatedDocumentCorrelativeSet
         ) {
             message
+            operation {
+                id
+            }
             error
         }
     }
@@ -467,9 +470,25 @@ function WayPayForm({
                     });
                     // Use the new close function
                     handleCloseModal();
+
+                    // Obtener el ID de la venta creada
+                    const createdSaleId = data.createSale.operation?.id;
+
                     if (invoice.documentType === "NS") {
                         router.push("/dashboard/sales/exit_note");
+                    } else if (
+                        createdSaleId &&
+                        (invoice.documentType
+                            .replace("A_", "")
+                            .includes("01") ||
+                            invoice.documentType
+                                .replace("A_", "")
+                                .includes("03"))
+                    ) {
+                        // Redirigir a la página de vista del comprobante
+                        router.push(`/dashboard/sales/view/${createdSaleId}`);
                     } else {
+                        // Fallback a la lista de ventas si no hay ID
                         router.push("/dashboard/sales");
                     }
                 }
