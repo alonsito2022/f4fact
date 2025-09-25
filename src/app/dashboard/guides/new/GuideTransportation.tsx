@@ -249,7 +249,8 @@ function GuideTransportation({
                                             </div>
                                         </div>
                                     </fieldset>
-                                    {guide?.documentType === "09" && (
+                                    {(guide?.documentType === "09" ||
+                                        guide?.documentType === "31") && (
                                         <fieldset className="border border-gray-300 dark:border-gray-600 p-4 rounded-lg shadow-sm bg-white dark:bg-gray-800">
                                             <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
                                                 Datos de los Vehículos
@@ -284,7 +285,8 @@ function GuideTransportation({
                                         </fieldset>
                                     )}
                                 </div>
-                                {guide?.documentType === "09" && (
+                                {(guide?.documentType === "09" ||
+                                    guide?.documentType === "31") && (
                                     <button
                                         type="button"
                                         className="px-5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
