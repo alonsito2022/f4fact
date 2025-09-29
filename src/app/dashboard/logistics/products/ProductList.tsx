@@ -32,6 +32,7 @@ const PRODUCT_QUERY = gql`
             maximumFactor
             minimumFactor
             stock
+            retailQuantityThreshold
         }
     }
 `;

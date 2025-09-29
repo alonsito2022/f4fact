@@ -31,6 +31,7 @@ const ADD_PRODUCT = gql`
         $maximumFactor: Int!
         $minimumFactor: Int!
         $stock: Float!
+        $retailQuantityThreshold: Float!
     ) {
         createProduct(
             code: $code
@@ -56,6 +57,7 @@ const ADD_PRODUCT = gql`
             maximumFactor: $maximumFactor
             minimumFactor: $minimumFactor
             stock: $stock
+            retailQuantityThreshold: $retailQuantityThreshold
         ) {
             message
             product {
@@ -96,6 +98,7 @@ const UPDATE_PRODUCT = gql`
         $maximumFactor: Int!
         $minimumFactor: Int!
         $stock: Float!
+        $retailQuantityThreshold: Float!
     ) {
         updateProduct(
             id: $id
@@ -122,6 +125,7 @@ const UPDATE_PRODUCT = gql`
             maximumFactor: $maximumFactor
             minimumFactor: $minimumFactor
             stock: $stock
+            retailQuantityThreshold: $retailQuantityThreshold
         ) {
             message
         }
@@ -303,8 +307,11 @@ function ProductForm({
                     maximumFactor: Number(product.maximumFactor),
                     minimumFactor: Number(product.minimumFactor),
                     stock: Number(product.stock),
+                    retailQuantityThreshold: Number(
+                        product.retailQuantityThreshold
+                    ),
                 };
-                // console.log("values", values, auth?.jwtToken);
+                console.log("values", values, auth?.jwtToken);
                 const { data, errors } = await updateProduct({
                     variables: values,
                 });
@@ -356,6 +363,9 @@ function ProductForm({
                     maximumFactor: Number(product.maximumFactor),
                     minimumFactor: Number(product.minimumFactor),
                     stock: Number(product.stock),
+                    retailQuantityThreshold: Number(
+                        product.retailQuantityThreshold
+                    ),
                 };
                 console.log("values", values, auth?.jwtToken);
                 try {
@@ -643,7 +653,7 @@ function ProductForm({
                                         />
                                     </div>
                                     {/* Tipo afectacion */}
-                                    <div className="sm:col-span-5">
+                                    <div className="sm:col-span-4">
                                         <label
                                             htmlFor="typeAffectationId"
                                             className="form-label"
@@ -794,6 +804,21 @@ function ProductForm({
                                             onFocus={(e) => e.target.select()}
                                             className="form-control"
                                             required
+                                        />
+                                    </div>
+                                    <div className="sm:col-span-3">
+                                        <label className="form-label">
+                                            Umbral de venta al por menor
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="retailQuantityThreshold"
+                                            value={
+                                                product.retailQuantityThreshold
+                                            }
+                                            onChange={handleInputChange}
+                                            onFocus={(e) => e.target.select()}
+                                            className="form-control"
                                         />
                                     </div>
 

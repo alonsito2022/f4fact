@@ -43,6 +43,7 @@ const initialStateProduct = {
     minimumFactor: "1",
     // subsidiaryId: 0,
     stock: 0,
+    retailQuantityThreshold: 0,
 };
 
 const initialStateProductFilterObj = {
@@ -97,6 +98,7 @@ const PRODUCTS_QUERY = gql`
             priceWithoutIgv3
             priceWithoutIgv4
             stock
+            retailQuantityThreshold
         }
     }
 `;
