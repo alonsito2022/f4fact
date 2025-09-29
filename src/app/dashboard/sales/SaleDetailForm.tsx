@@ -46,6 +46,18 @@ const UPDATE_PRODUCT_TARIFF_PRICE = gql`
     }
 `;
 
+const CHECK_WHOLESALE_PRICE = gql`
+    mutation CheckWholesalePrice($productId: ID!, $quantity: Float!) {
+        calculatePrice(productId: $productId, quantity: $quantity) {
+            success
+            total
+            priceWithIgv
+            typePrice
+            message
+        }
+    }
+`;
+
 function SaleDetailForm({
     modalAddDetail,
     setModalAddDetail,
@@ -78,6 +90,8 @@ function SaleDetailForm({
     const [updateProductTariff] = useCustomMutation(
         UPDATE_PRODUCT_TARIFF_PRICE
     );
+
+    const [checkWholesalePrice] = useCustomMutation(CHECK_WHOLESALE_PRICE);
 
     const [productDetailQuery] = useLazyQuery(PRODUCT_DETAIL_QUERY);
     // Add ref for the close button
@@ -281,6 +295,61 @@ function SaleDetailForm({
             const formattedQuantity = decimalPart
                 ? `${integerPart.slice(0, 6)}.${decimalPart.slice(0, 4)}`
                 : integerPart.slice(0, 6);
+
+            // Verificar si hay un producto seleccionado para calcular precio por mayor
+            if (invoiceDetail.productId && Number(formattedQuantity) > 0) {
+                try {
+                    const { data } = await checkWholesalePrice({
+                        variables: {
+                            productId: invoiceDetail.productId.toString(),
+                            quantity: Number(formattedQuantity),
+                        },
+                    });
+
+                    if (data?.calculatePrice?.success) {
+                        const { total, priceWithIgv } = data.calculatePrice;
+
+                        // Calcular unitValue basado en el precio con IGV
+                        const foundTypeAffectation =
+                            typeAffectationsData?.allTypeAffectations?.find(
+                                (ta: ITypeAffectation) =>
+                                    Number(ta.id) ===
+                                    Number(invoiceDetail.typeAffectationId)
+                            );
+                        const code = foundTypeAffectation?.code ?? "10";
+                        const igvPercentage =
+                            code === "10" ? Number(invoice.igvType) : 0;
+                        const unitValue =
+                            priceWithIgv / (1 + igvPercentage * 0.01);
+
+                        const { totalValue, totalAmount, totalIgv } =
+                            calculateBasedOnIgv(
+                                Number(formattedQuantity),
+                                priceWithIgv,
+                                unitValue,
+                                Number(invoiceDetail.totalDiscount),
+                                igvPercentage,
+                                includeIgv
+                            );
+
+                        setInvoiceDetail({
+                            ...invoiceDetail,
+                            quantity: formattedQuantity,
+                            unitPrice: priceWithIgv.toFixed(6),
+                            unitValue: unitValue.toFixed(6),
+                            totalValue: totalValue.toFixed(2),
+                            totalIgv: totalIgv.toFixed(2),
+                            totalAmount: totalAmount.toFixed(2),
+                        });
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Error calculating wholesale price:", error);
+                    // Continuar con el cálculo normal si hay error
+                }
+            }
+
+            // Cálculo normal si no hay producto o hay error en el cálculo por mayor
             const foundTypeAffectation =
                 typeAffectationsData?.allTypeAffectations?.find(
                     (ta: ITypeAffectation) =>
