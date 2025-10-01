@@ -308,7 +308,7 @@ function SaleDetailForm({
                     });
 
                     if (data?.calculatePrice?.success) {
-                        setShouldUpdateTariff(true); // <-- Solo si fue exitoso
+                        setShouldUpdateTariff(false); // <-- Precio por mayor NO actualiza la BD
 
                         const { total, priceWithIgv } = data.calculatePrice;
 
@@ -347,7 +347,7 @@ function SaleDetailForm({
                         return;
                     } else {
                         // Cuando success: false, restaurar precio minorista original
-                        setShouldUpdateTariff(false);
+                        setShouldUpdateTariff(true); // <-- Precio minorista SÍ actualiza la BD
 
                         // Obtener el precio minorista original del producto
                         const productDetail = await productDetailQuery({
