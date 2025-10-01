@@ -505,6 +505,38 @@ function SaleDetailForm({
             return;
         }
 
+        if (name === "totalAmount") {
+            const foundTypeAffectation =
+                typeAffectationsData?.allTypeAffectations?.find(
+                    (ta: ITypeAffectation) =>
+                        Number(ta.id) ===
+                        Number(invoiceDetail.typeAffectationId)
+                );
+            const code = foundTypeAffectation?.code ?? "10";
+            const igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
+
+            // Calcular totalValue basado en totalAmount
+            const totalAmountValue = Number(value);
+            const totalValue = totalAmountValue / (1 + igvPercentage * 0.01);
+            const totalIgv = totalAmountValue - totalValue;
+
+            // Calcular unitValue y unitPrice basado en la cantidad
+            const quantity = Number(invoiceDetail.quantity);
+            const unitValue =
+                (totalValue + Number(invoiceDetail.totalDiscount)) / quantity;
+            const unitPrice = unitValue * (1 + igvPercentage * 0.01);
+
+            setInvoiceDetail({
+                ...invoiceDetail,
+                totalAmount: value,
+                totalValue: totalValue.toFixed(2),
+                totalIgv: totalIgv.toFixed(2),
+                unitValue: unitValue.toFixed(6),
+                unitPrice: unitPrice.toFixed(6),
+            });
+            return;
+        }
+
         setInvoiceDetail({ ...invoiceDetail, [name]: value });
     };
 
@@ -1030,8 +1062,8 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
-                                            disabled
+                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                            autoComplete="off"
                                         />
                                     </div>
                                 </div>
