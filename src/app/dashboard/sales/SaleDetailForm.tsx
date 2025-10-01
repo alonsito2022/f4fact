@@ -346,7 +346,57 @@ function SaleDetailForm({
                         });
                         return;
                     } else {
+                        // Cuando success: false, restaurar precio minorista original
                         setShouldUpdateTariff(false);
+
+                        // Obtener el precio minorista original del producto
+                        const productDetail = await productDetailQuery({
+                            context: getAuthContext(),
+                            variables: {
+                                productId: Number(invoiceDetail.productId),
+                            },
+                            fetchPolicy: "network-only",
+                        });
+
+                        if (productDetail.data?.productDetailByProductId) {
+                            const originalPrice =
+                                productDetail.data.productDetailByProductId
+                                    .priceWithIgv3;
+
+                            // Calcular unitValue basado en el precio minorista original
+                            const foundTypeAffectation =
+                                typeAffectationsData?.allTypeAffectations?.find(
+                                    (ta: ITypeAffectation) =>
+                                        Number(ta.id) ===
+                                        Number(invoiceDetail.typeAffectationId)
+                                );
+                            const code = foundTypeAffectation?.code ?? "10";
+                            const igvPercentage =
+                                code === "10" ? Number(invoice.igvType) : 0;
+                            const unitValue =
+                                originalPrice / (1 + igvPercentage * 0.01);
+
+                            const { totalValue, totalAmount, totalIgv } =
+                                calculateBasedOnIgv(
+                                    Number(formattedQuantity),
+                                    originalPrice,
+                                    unitValue,
+                                    Number(invoiceDetail.totalDiscount),
+                                    igvPercentage,
+                                    includeIgv
+                                );
+
+                            setInvoiceDetail({
+                                ...invoiceDetail,
+                                quantity: formattedQuantity,
+                                unitPrice: originalPrice.toFixed(6),
+                                unitValue: unitValue.toFixed(6),
+                                totalValue: totalValue.toFixed(2),
+                                totalIgv: totalIgv.toFixed(2),
+                                totalAmount: totalAmount.toFixed(2),
+                            });
+                            return;
+                        }
                     }
                 } catch (error) {
                     console.error("Error calculating wholesale price:", error);
