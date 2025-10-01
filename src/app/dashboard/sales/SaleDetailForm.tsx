@@ -92,6 +92,7 @@ function SaleDetailForm({
     );
 
     const [checkWholesalePrice] = useCustomMutation(CHECK_WHOLESALE_PRICE);
+    const [shouldUpdateTariff, setShouldUpdateTariff] = useState(false);
 
     const [productDetailQuery] = useLazyQuery(PRODUCT_DETAIL_QUERY);
     // Add ref for the close button
@@ -307,6 +308,8 @@ function SaleDetailForm({
                     });
 
                     if (data?.calculatePrice?.success) {
+                        setShouldUpdateTariff(true); // <-- Solo si fue exitoso
+
                         const { total, priceWithIgv } = data.calculatePrice;
 
                         // Calcular unitValue basado en el precio con IGV
@@ -342,11 +345,16 @@ function SaleDetailForm({
                             totalAmount: totalAmount.toFixed(2),
                         });
                         return;
+                    } else {
+                        setShouldUpdateTariff(false);
                     }
                 } catch (error) {
                     console.error("Error calculating wholesale price:", error);
+                    setShouldUpdateTariff(false);
                     // Continuar con el cálculo normal si hay error
                 }
+            } else {
+                setShouldUpdateTariff(false);
             }
 
             // Cálculo normal si no hay producto o hay error en el cálculo por mayor
@@ -631,28 +639,28 @@ function SaleDetailForm({
             );
             return;
         }
-
-        const variables = {
-            id: Number(invoiceDetail.productTariffId),
-            priceWithIgv: Number(invoiceDetail.unitPrice),
-            priceWithoutIgv: Number(invoiceDetail.unitValue),
-        };
-        updateProductTariff({
-            variables,
-            // context: getAuthContext(),
-            onCompleted: (data) => {
-                if (data.updatePrice.error) {
-                    toast.error(data.updatePrice.message);
-                    return;
-                }
-                toast.success(data.updatePrice.message);
-            },
-            onError: (err) => {
-                console.error("Error sending tariff:", err);
-                toast.error("Error al enviar tariff");
-            },
-        });
-
+        if (shouldUpdateTariff) {
+            const variables = {
+                id: Number(invoiceDetail.productTariffId),
+                priceWithIgv: Number(invoiceDetail.unitPrice),
+                priceWithoutIgv: Number(invoiceDetail.unitValue),
+            };
+            updateProductTariff({
+                variables,
+                // context: getAuthContext(),
+                onCompleted: (data) => {
+                    if (data.updatePrice.error) {
+                        toast.error(data.updatePrice.message);
+                        return;
+                    }
+                    toast.success(data.updatePrice.message);
+                },
+                onError: (err) => {
+                    console.error("Error sending tariff:", err);
+                    toast.error("Error al enviar tariff");
+                },
+            });
+        }
         if (Number(invoiceDetail?.temporaryId) > 0) {
             // Combina la eliminación y la edición en una sola operación
             const newSaleDetail = {
