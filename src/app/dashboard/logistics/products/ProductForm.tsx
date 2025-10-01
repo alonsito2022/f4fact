@@ -806,22 +806,27 @@ function ProductForm({
                                             required
                                         />
                                     </div>
-                                    <div className="sm:col-span-3">
-                                        <label className="form-label">
-                                            Umbral de venta al por menor
-                                        </label>
-                                        <input
-                                            type="number"
-                                            name="retailQuantityThreshold"
-                                            value={
-                                                product.retailQuantityThreshold
-                                            }
-                                            onChange={handleInputChange}
-                                            onFocus={(e) => e.target.select()}
-                                            className="form-control"
-                                        />
-                                    </div>
-
+                                    {/* Para aplicar el precio por mayor, segun la cantidad comprada */}
+                                    {Number(product.minimumFactor) == 1 &&
+                                        Number(product.maximumFactor) > 1 && (
+                                            <div className="sm:col-span-3">
+                                                <label className="form-label">
+                                                    Umbral de venta al por menor
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    name="retailQuantityThreshold"
+                                                    value={
+                                                        product.retailQuantityThreshold
+                                                    }
+                                                    onChange={handleInputChange}
+                                                    onFocus={(e) =>
+                                                        e.target.select()
+                                                    }
+                                                    className="form-control"
+                                                />
+                                            </div>
+                                        )}
                                     <ProductTariffForm
                                         setProduct={setProduct}
                                         product={product}
