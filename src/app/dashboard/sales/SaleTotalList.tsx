@@ -85,9 +85,11 @@ function SaleTotalList({
         if (invoice?.detractionPercentage) {
             let detractionPercentage = Number(invoice?.detractionPercentage);
             // Redondear al entero más cercano usando Math.round
-            let totalDetraction = Math.round(
-                Number(invoice?.totalAmount) * detractionPercentage * 0.01
-            );
+            let totalDetraction = (
+                Number(invoice?.totalAmount) *
+                detractionPercentage *
+                0.01
+            ).toFixed(2);
             // let totalToPay = Number(invoice?.totalAmount) - totalDetraction;
             setSale((prevSale: IOperation) => ({
                 ...prevSale,
