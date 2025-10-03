@@ -1,19 +1,70 @@
 import React, { useEffect, useState } from "react";
 import { Modal, ModalOptions } from "flowbite";
 import { toast } from "react-toastify";
+import { gql, useQuery } from "@apollo/client";
+
+const USERS_QUERY = gql`
+    query {
+        users {
+            id
+            document
+            fullName
+            firstName
+            lastName
+            phone
+            email
+            roleName
+            avatar
+            avatarUrl
+            subsidiary {
+                id
+                companyName
+                serial
+            }
+            isActive
+            isSuperuser
+        }
+    }
+`;
 
 function ExcelModal({
     modalExcel,
     setModalExcel,
     setFilterObj,
     filterObj,
+    userLogged,
 }: any) {
     const [hostname, setHostname] = useState("");
+    const [filterByUser, setFilterByUser] = useState(false);
+    const [selectedUserId, setSelectedUserId] = useState("");
+
+    // Consulta para obtener usuarios
+    const { data: usersData } = useQuery(USERS_QUERY, {
+        fetchPolicy: "network-only",
+    });
+
+    // Filtrar usuarios por sucursal del usuario logueado
+    const getFilteredUsers = () => {
+        if (!usersData?.users || !userLogged?.subsidiaryId) return [];
+
+        return usersData.users.filter(
+            (user: any) =>
+                user.subsidiary?.id === userLogged.subsidiaryId && user.isActive
+        );
+    };
+
     useEffect(() => {
         if (hostname == "") {
             setHostname(`${process.env.NEXT_PUBLIC_BASE_API}`);
         }
     }, [hostname]);
+
+    // Limpiar selectedUserId cuando se desmarca la casilla
+    useEffect(() => {
+        if (!filterByUser) {
+            setSelectedUserId("");
+        }
+    }, [filterByUser]);
 
     useEffect(() => {
         if (modalExcel == null) {
@@ -152,6 +203,46 @@ function ExcelModal({
                             </select>
                         </div>
 
+                        <div className="mb-4">
+                            <div className="flex items-center mb-2">
+                                <input
+                                    id="filterByUser"
+                                    type="checkbox"
+                                    checked={filterByUser}
+                                    onChange={(e) => {
+                                        setFilterByUser(e.target.checked);
+                                    }}
+                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                />
+                                <label
+                                    htmlFor="filterByUser"
+                                    className="ml-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >
+                                    Filtrar por usuario
+                                </label>
+                            </div>
+
+                            {filterByUser && (
+                                <select
+                                    value={selectedUserId}
+                                    onChange={(e) =>
+                                        setSelectedUserId(e.target.value)
+                                    }
+                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                    required
+                                >
+                                    <option value="">
+                                        Seleccione un usuario
+                                    </option>
+                                    {getFilteredUsers().map((user: any) => (
+                                        <option key={user.id} value={user.id}>
+                                            {user.fullName} - {user.email}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+
                         <button
                             type="button"
                             onClick={() => {
@@ -166,10 +257,29 @@ function ExcelModal({
                                     );
                                     return;
                                 }
-                                window.open(
-                                    `${hostname}/operations/export_sales_to_excel/${filterObj.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/${filterObj.reportType}/`,
-                                    "_blank"
-                                );
+
+                                if (filterByUser && !selectedUserId) {
+                                    toast("Por favor seleccione un usuario", {
+                                        hideProgressBar: true,
+                                        autoClose: 2000,
+                                        type: "warning",
+                                    });
+                                    return;
+                                }
+
+                                // Construir URL con o sin user_id
+                                let url = `${hostname}/operations/export_sales_to_excel/${filterObj.subsidiaryId}/${filterObj.startDate}/${filterObj.endDate}/${filterObj.documentType}/${filterObj.reportType}/`;
+
+                                // Solo agregar user_id si la casilla está marcada Y hay un usuario seleccionado
+                                if (
+                                    filterByUser === true &&
+                                    selectedUserId &&
+                                    selectedUserId !== ""
+                                ) {
+                                    url += `${selectedUserId}/`;
+                                }
+
+                                window.open(url, "_blank");
                                 modalExcel?.hide();
                             }}
                             className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"

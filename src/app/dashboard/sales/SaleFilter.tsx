@@ -490,6 +490,7 @@ function SaleFilter({
                 setModalExcel={setModalExcel}
                 setFilterObj={setFilterObj}
                 filterObj={filterObj}
+                userLogged={auth?.user}
             />
             <SearchInvoice
                 modalSearchInvoice={modalSearchInvoice}
