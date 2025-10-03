@@ -1,7 +1,14 @@
 "use client";
 import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 
-function UserFilter({ searchTerm, setSearchTerm, modal }: any) {
+function UserFilter({
+    searchTerm,
+    setSearchTerm,
+    modal,
+    setUser,
+    initialState,
+    userLogged,
+}: any) {
     const handleInputSearchChange = (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -99,6 +106,21 @@ function UserFilter({ searchTerm, setSearchTerm, modal }: any) {
                 id="createProductButton"
                 type="button"
                 onClick={(e) => {
+                    // Asignar valores automáticamente si no es superusuario
+                    if (
+                        !userLogged.isSuperuser &&
+                        userLogged.companyId &&
+                        userLogged.subsidiaryId
+                    ) {
+                        setUser({
+                            ...initialState,
+                            companyId: userLogged.companyId,
+                            subsidiaryId: userLogged.subsidiaryId,
+                            role: "02", // Establecer PERSONAL por defecto
+                        });
+                    } else {
+                        setUser(initialState);
+                    }
                     modal.show();
                 }}
                 className="btn-blue"

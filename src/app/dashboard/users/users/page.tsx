@@ -33,7 +33,10 @@ const initialStateUserLogged = {
     id: 0,
     email: "",
     subsidiaryId: "",
+    subsidiarySerial: "",
     subsidiaryName: "",
+    companyId: 0,
+    companyName: "",
     isSuperuser: false,
 };
 function UserPage() {
@@ -69,7 +72,6 @@ function UserPage() {
             }
         }
     `;
-        console.log(querys);
         await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -152,11 +154,17 @@ function UserPage() {
         if (session?.user) {
             const user = session.user as IUser;
 
+            console.log(user);
+
             setUserLogged((prev) => ({
                 ...prev,
                 subsidiaryId:
                     prev.subsidiaryId ||
                     (user.isSuperuser ? "0" : user.subsidiaryId!),
+                subsidiarySerial: user.subsidiarySerial || "",
+                subsidiaryName: user.subsidiaryName || "",
+                companyId: user.companyId || 0,
+                companyName: user.companyName || "",
                 isSuperuser: user.isSuperuser ?? false, // Asegura que isSuperuser sea siempre booleano
             }));
         }
@@ -172,6 +180,9 @@ function UserPage() {
                         searchTerm={searchTerm}
                         setSearchTerm={setSearchTerm}
                         modal={modal}
+                        setUser={setUser}
+                        initialState={initialState}
+                        userLogged={userLogged}
                     />
                 </div>
             </div>

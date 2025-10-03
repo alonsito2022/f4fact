@@ -147,6 +147,9 @@ function UserModal({
     // Determinar permisos de edición
     const canEditAllSections = userLogged?.isSuperuser || false;
     const canEditAccountInfo = true; // Cualquier usuario logueado puede editar su información de cuenta
+    const isCreatingUser = Number(user.id) === 0; // Verificar si se está creando un nuevo usuario
+    const canCreateUser =
+        canEditAllSections || (!canEditAllSections && isCreatingUser); // Permitir crear usuarios si es superusuario o si está creando un usuario
 
     // const [selectedFile, setSelectedFile] = useState<string | ArrayBuffer | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -155,7 +158,7 @@ function UserModal({
     const [updateUserPassword] = useMutation(UPDATE_USER_PASSWORD);
     const { data: companiesData } = useQuery(COMPANIES_QUERY, {
         fetchPolicy: "network-only",
-    }); // Add this line
+    });
 
     const { data: subsidiariesData } = useQuery(SUBSIDIARIES_QUERY, {
         fetchPolicy: "network-only",
@@ -198,16 +201,48 @@ function UserModal({
                 subsidiaryId: "",
             });
         } else {
-            setUser({ ...user, [name]: value });
+            // Usar función de callback para garantizar que trabajamos con el estado más reciente
+            setUser((prevUser: any) => {
+                const newUser = { ...prevUser, [name]: value };
+
+                // Si no es superusuario y está creando, preservar los valores asignados automáticamente
+                if (!canEditAllSections && isCreatingUser) {
+                    // Siempre preservar los valores si existen en userLogged
+                    if (userLogged?.companyId) {
+                        newUser.companyId = userLogged.companyId;
+                    }
+                    if (userLogged?.subsidiaryId) {
+                        newUser.subsidiaryId = userLogged.subsidiaryId;
+                    }
+                }
+                return newUser;
+            });
         }
     };
     const handleCheckboxChange = ({
         target: { name, checked },
     }: ChangeEvent<HTMLInputElement>) => {
-        setUser({ ...user, [name]: checked });
+        // Usar función de callback para garantizar que trabajamos con el estado más reciente
+        setUser((prevUser: any) => {
+            const newUser = { ...prevUser, [name]: checked };
+
+            // Si no es superusuario y está creando, preservar los valores asignados automáticamente
+            if (!canEditAllSections && isCreatingUser) {
+                // Siempre preservar los valores si existen en userLogged
+                if (userLogged?.companyId) {
+                    newUser.companyId = userLogged.companyId;
+                }
+                if (userLogged?.subsidiaryId) {
+                    newUser.subsidiaryId = userLogged.subsidiaryId;
+                }
+            }
+            return newUser;
+        });
     };
     const handleSaveUser = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        console.log("handleSaveUser - Estado completo del usuario:", user);
 
         // Validaciones que aplican a todos los usuarios
         // Nota: El email está deshabilitado, por lo que no se valida en actualizaciones
@@ -234,8 +269,8 @@ function UserModal({
             }
         }
 
-        // Validaciones que solo aplican a superusuarios (cuando están editando todas las secciones)
-        if (canEditAllSections) {
+        // Validaciones que aplican cuando se está creando un usuario o editando como superusuario
+        if (canCreateUser) {
             if (!user.firstName?.trim()) {
                 toast("El nombre es requerido", {
                     hideProgressBar: true,
@@ -299,7 +334,20 @@ function UserModal({
                 return;
             }
 
-            if (!user.subsidiaryId) {
+            console.log("Validando sucursal:", {
+                subsidiaryId: user.subsidiaryId,
+                type: typeof user.subsidiaryId,
+                isEmpty: !user.subsidiaryId,
+                isStringEmpty: user.subsidiaryId === "",
+                isZero: user.subsidiaryId === 0,
+            });
+
+            if (
+                !user.subsidiaryId ||
+                user.subsidiaryId === "" ||
+                user.subsidiaryId === 0 ||
+                user.subsidiaryId === "0"
+            ) {
                 toast("La sede es requerida", {
                     hideProgressBar: true,
                     autoClose: 2000,
@@ -471,15 +519,45 @@ function UserModal({
         }
     }, []);
 
-    // Add this function before the return statement
+    // Filtrar empresas según permisos del usuario
+    const getFilteredCompanies = () => {
+        if (canEditAllSections) {
+            // Superusuarios pueden ver todas las empresas
+            return companiesData?.companies || [];
+        } else {
+            // Usuarios normales solo pueden ver su empresa
+            return (
+                companiesData?.companies.filter(
+                    (company: any) => company.id === userLogged?.companyId
+                ) || []
+            );
+        }
+    };
+
+    // Filtrar sucursales según permisos del usuario
     const getFilteredSubsidiaries = () => {
         if (!user.companyId) return [];
-        return (
-            subsidiariesData?.subsidiaries.filter(
-                (subsidiary: any) =>
-                    subsidiary.companyId === Number(user.companyId)
-            ) || []
-        );
+
+        let filtered = [];
+
+        if (canEditAllSections) {
+            // Superusuarios pueden ver todas las sucursales de la empresa seleccionada
+            filtered =
+                subsidiariesData?.subsidiaries.filter(
+                    (subsidiary: any) =>
+                        subsidiary.companyId === Number(user.companyId)
+                ) || [];
+        } else {
+            // Usuarios normales solo pueden ver sucursales de su empresa
+            filtered =
+                subsidiariesData?.subsidiaries.filter(
+                    (subsidiary: any) =>
+                        subsidiary.companyId === Number(user.companyId) &&
+                        subsidiary.companyId === userLogged?.companyId
+                ) || [];
+        }
+
+        return filtered;
     };
 
     return (
@@ -535,8 +613,8 @@ function UserModal({
                                 onSubmit={handleSaveUser}
                                 className="space-y-6"
                             >
-                                {/* Personal Information Section - Solo superusuarios */}
-                                {canEditAllSections && (
+                                {/* Personal Information Section - Solo superusuarios o al crear usuario */}
+                                {canCreateUser && (
                                     <div className="p-4 bg-gray-50 rounded-lg dark:bg-gray-800">
                                         <h4 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
                                             Información personal
@@ -711,8 +789,8 @@ function UserModal({
                                     </div>
                                 </div>
 
-                                {/* Organization Details Section - Solo superusuarios */}
-                                {canEditAllSections && (
+                                {/* Organization Details Section - Solo superusuarios o al crear usuario */}
+                                {canCreateUser && (
                                     <div className="p-4 bg-gray-50 rounded-lg dark:bg-gray-800">
                                         <h4 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
                                             Detalles de la organización
@@ -731,11 +809,18 @@ function UserModal({
                                                     onChange={handleInputChange}
                                                     value={user?.companyId}
                                                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                                    disabled={
+                                                        !canEditAllSections &&
+                                                        isCreatingUser
+                                                    } // Deshabilitar si no es superusuario y está creando
                                                 >
                                                     <option value="">
-                                                        Seleccione una empresa
+                                                        {!canEditAllSections &&
+                                                        isCreatingUser
+                                                            ? `${userLogged?.companyName} (asignada automáticamente)`
+                                                            : "Seleccione una empresa"}
                                                     </option>
-                                                    {companiesData?.companies.map(
+                                                    {getFilteredCompanies().map(
                                                         (company: any) => (
                                                             <option
                                                                 key={company.id}
@@ -765,10 +850,20 @@ function UserModal({
                                                     value={user?.subsidiaryId}
                                                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                                                     disabled={!user.companyId} // Disable if no company is selected
+                                                    required
                                                 >
                                                     <option value="">
                                                         {user.companyId
-                                                            ? "Seleccione una sede"
+                                                            ? !canEditAllSections &&
+                                                              isCreatingUser
+                                                                ? `${
+                                                                      userLogged?.subsidiarySerial ||
+                                                                      "N/A"
+                                                                  } - ${
+                                                                      userLogged?.subsidiaryName ||
+                                                                      "Sucursal"
+                                                                  } (asignada automáticamente)`
+                                                                : "Seleccione una sede"
                                                             : "Primero seleccione una empresa"}
                                                     </option>
                                                     {getFilteredSubsidiaries().map(
@@ -845,8 +940,8 @@ function UserModal({
                                     </div>
                                 )}
 
-                                {/* Avatar Upload Section - Solo superusuarios */}
-                                {canEditAllSections && (
+                                {/* Avatar Upload Section - Solo superusuarios o al crear usuario */}
+                                {canCreateUser && (
                                     <div className="flex items-center justify-center w-full mb-2">
                                         <label
                                             htmlFor="avatarUrl"
