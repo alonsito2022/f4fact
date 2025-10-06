@@ -24,7 +24,8 @@ export default function PaymentApprovalList({
     const [selectedPayment, setSelectedPayment] = useState(null);
     const [modalApproval, setModalApproval] = useState<Modal | null>(null);
     const [showModal, setShowModal] = useState(false);
-
+    // Buscador por nombre de cliente
+    const [searchClient, setSearchClient] = useState("");
     const auth = useAuth();
 
     useEffect(() => {
@@ -151,6 +152,7 @@ export default function PaymentApprovalList({
     }
 
     const payments = pendingPaymentsData?.pendingPayments || [];
+    // Filtrar por nombre de cliente
 
     if (payments.length === 0) {
         return (
@@ -163,8 +165,43 @@ export default function PaymentApprovalList({
         );
     }
 
+    const filteredPayments = payments?.filter((payment: any) =>
+        payment.operation?.client?.names
+            ?.toLowerCase()
+            .includes(searchClient.toLowerCase())
+    );
+
+    // Contador de registros
+    const paymentsCount = filteredPayments.length;
+    if (paymentsCount === 0) {
+        return (
+            <div className="p-8 text-center">
+                <div className="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-gray-500 bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+                    <DocumentTextIcon className="w-5 h-5 mr-2" />
+                    No hay pagos pendientes para mostrar
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
+            {/* Buscador y contador */}
+            <div className="flex items-center justify-between mb-4">
+                <div>
+                    <input
+                        type="search"
+                        placeholder="Buscar por nombre de cliente..."
+                        value={searchClient}
+                        onChange={(e) => setSearchClient(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-200"
+                    />
+                </div>
+                <div className="text-sm text-gray-700 dark:text-gray-300">
+                    Registros:{" "}
+                    <span className="font-bold">{paymentsCount}</span>
+                </div>
+            </div>
             <div className="overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
