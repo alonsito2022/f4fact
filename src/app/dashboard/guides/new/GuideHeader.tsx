@@ -136,7 +136,7 @@ function GuideHeader({
   const validateClientSelection = (clientIdentifier: string) => {
     if (
       guide.guideReasonTransfer !== "18" &&
-      guide.guideModeTransfer !== "02"
+      guide.guideReasonTransfer !== "02"
     ) {
       const companyDoc = auth?.user?.companyDoc; // 20611894067
       if (clientIdentifier.includes(companyDoc)) {
