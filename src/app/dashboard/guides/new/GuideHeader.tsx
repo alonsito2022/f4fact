@@ -135,7 +135,7 @@ function GuideHeader({
   const toastId = "itinerantTransferToast";
   const validateClientSelection = (clientIdentifier: string) => {
     if (
-      guide.guideReasonTransfer !== "18" ||
+      guide.guideReasonTransfer !== "18" &&
       guide.guideReasonTransfer !== "02"
     ) {
       const companyDoc = auth?.user?.companyDoc; // 20611894067
