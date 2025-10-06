@@ -187,19 +187,93 @@ export default function PaymentApprovalList({
     return (
         <>
             {/* Buscador y contador */}
-            <div className="flex items-center justify-between mb-4">
-                <div>
-                    <input
-                        type="search"
-                        placeholder="Buscar por nombre de cliente..."
-                        value={searchClient}
-                        onChange={(e) => setSearchClient(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-200"
-                    />
-                </div>
-                <div className="text-sm text-gray-700 dark:text-gray-300">
-                    Registros:{" "}
-                    <span className="font-bold">{paymentsCount}</span>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    {/* Buscador */}
+                    <div className="flex-1 max-w-md">
+                        <label
+                            htmlFor="searchClient"
+                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        >
+                            Buscar pagos
+                        </label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg
+                                    className="h-5 w-5 text-gray-400"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                            </div>
+                            <input
+                                id="searchClient"
+                                type="search"
+                                placeholder="Escribe el nombre del cliente..."
+                                value={searchClient}
+                                onChange={(e) =>
+                                    setSearchClient(e.target.value)
+                                }
+                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors duration-200"
+                            />
+                            {searchClient && (
+                                <button
+                                    onClick={() => setSearchClient("")}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                                >
+                                    <svg
+                                        className="h-5 w-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Contador */}
+                    <div className="flex items-center space-x-3">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg px-4 py-2.5 border border-blue-200 dark:border-blue-800">
+                            <div className="flex items-center space-x-2">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                                    Total de registros
+                                </span>
+                            </div>
+                            <div className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
+                                {paymentsCount}
+                            </div>
+                        </div>
+
+                        {searchClient && (
+                            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg px-4 py-2.5 border border-green-200 dark:border-green-800">
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                                        Resultados
+                                    </span>
+                                </div>
+                                <div className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
+                                    {filteredPayments.length}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
             <div className="overflow-hidden">
@@ -240,7 +314,7 @@ export default function PaymentApprovalList({
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {payments.map((payment: any) => (
+                            {filteredPayments.map((payment: any) => (
                                 <tr
                                     key={payment.id}
                                     className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
