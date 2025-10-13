@@ -128,6 +128,10 @@ const initialStateSaleDetail = {
     stock: 0,
 
     temporaryId: 0,
+
+    wholesalePriceWithIgv: 0,
+    wholesaleQuantityThreshold: 0,
+    maximumFactor: 0,
 };
 const initialStateProduct = {
     id: 0,

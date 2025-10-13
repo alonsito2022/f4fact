@@ -23,6 +23,9 @@ const PRODUCT_DETAIL_QUERY = gql`
             priceWithoutIgv3
             priceWithIgv3
             productTariffId3
+            wholesalePriceWithIgv
+            wholesaleQuantityThreshold
+            maximumFactor
             typeAffectationId
             activeType
         }
@@ -176,6 +179,13 @@ function SaleDetailForm({
                             unitPrice: Number(
                                 productDetail.priceWithIgv3
                             ).toFixed(6),
+                            // Guardar precios minoristas originales
+                            retailUnitValue: Number(
+                                calculatedPriceWithoutIgv
+                            ).toFixed(6),
+                            retailUnitPrice: Number(
+                                productDetail.priceWithIgv3
+                            ).toFixed(6),
                             igvPercentage: Number(igvPercentage).toFixed(2),
                             totalValue: Number(totalValue).toFixed(2),
                             totalIgv: Number(totalIgv).toFixed(2),
@@ -184,6 +194,13 @@ function SaleDetailForm({
                             typeAffectationId: Number(
                                 productDetail.typeAffectationId
                             ),
+                            wholesaleQuantityThreshold: Number(
+                                productDetail.wholesaleQuantityThreshold
+                            ),
+                            wholesalePriceWithIgv: Number(
+                                productDetail.wholesalePriceWithIgv
+                            ),
+                            maximumFactor: Number(productDetail.maximumFactor),
                         });
                     }
                 },
@@ -297,115 +314,19 @@ function SaleDetailForm({
                 ? `${integerPart.slice(0, 6)}.${decimalPart.slice(0, 4)}`
                 : integerPart.slice(0, 6);
 
-            // Verificar si hay un producto seleccionado para calcular precio por mayor
-            if (invoiceDetail.productId && Number(formattedQuantity) > 0) {
-                try {
-                    const { data } = await checkWholesalePrice({
-                        variables: {
-                            productId: invoiceDetail.productId.toString(),
-                            quantity: Number(formattedQuantity),
-                        },
-                    });
+            const {
+                wholesaleQuantityThreshold,
+                wholesalePriceWithIgv,
+                maximumFactor,
+                retailUnitPrice, // precio minorista original (con IGV)
+                retailUnitValue, // precio minorista original (sin IGV)
+                totalDiscount,
+                typeAffectationId,
+            } = invoiceDetail;
 
-                    if (data?.calculatePrice?.success) {
-                        setShouldUpdateTariff(false); // <-- Precio por mayor NO actualiza la BD
-
-                        const { total, priceWithIgv } = data.calculatePrice;
-
-                        // Calcular unitValue basado en el precio con IGV
-                        const foundTypeAffectation =
-                            typeAffectationsData?.allTypeAffectations?.find(
-                                (ta: ITypeAffectation) =>
-                                    Number(ta.id) ===
-                                    Number(invoiceDetail.typeAffectationId)
-                            );
-                        const code = foundTypeAffectation?.code ?? "10";
-                        const igvPercentage =
-                            code === "10" ? Number(invoice.igvType) : 0;
-                        const unitValue =
-                            priceWithIgv / (1 + igvPercentage * 0.01);
-
-                        const { totalValue, totalAmount, totalIgv } =
-                            calculateBasedOnIgv(
-                                Number(formattedQuantity),
-                                priceWithIgv,
-                                unitValue,
-                                Number(invoiceDetail.totalDiscount),
-                                igvPercentage,
-                                includeIgv
-                            );
-
-                        setInvoiceDetail({
-                            ...invoiceDetail,
-                            quantity: formattedQuantity,
-                            unitPrice: priceWithIgv.toFixed(6),
-                            unitValue: unitValue.toFixed(6),
-                            totalValue: totalValue.toFixed(2),
-                            totalIgv: totalIgv.toFixed(2),
-                            totalAmount: totalAmount.toFixed(2),
-                        });
-                        return;
-                    } else {
-                        // Cuando success: false, restaurar precio minorista original
-                        setShouldUpdateTariff(true); // <-- Precio minorista SÍ actualiza la BD
-
-                        // Obtener el precio minorista original del producto
-                        const productDetail = await productDetailQuery({
-                            context: getAuthContext(),
-                            variables: {
-                                productId: Number(invoiceDetail.productId),
-                            },
-                            fetchPolicy: "network-only",
-                        });
-
-                        if (productDetail.data?.productDetailByProductId) {
-                            const originalPrice =
-                                productDetail.data.productDetailByProductId
-                                    .priceWithIgv3;
-
-                            // Calcular unitValue basado en el precio minorista original
-                            const foundTypeAffectation =
-                                typeAffectationsData?.allTypeAffectations?.find(
-                                    (ta: ITypeAffectation) =>
-                                        Number(ta.id) ===
-                                        Number(invoiceDetail.typeAffectationId)
-                                );
-                            const code = foundTypeAffectation?.code ?? "10";
-                            const igvPercentage =
-                                code === "10" ? Number(invoice.igvType) : 0;
-                            const unitValue =
-                                originalPrice / (1 + igvPercentage * 0.01);
-
-                            const { totalValue, totalAmount, totalIgv } =
-                                calculateBasedOnIgv(
-                                    Number(formattedQuantity),
-                                    originalPrice,
-                                    unitValue,
-                                    Number(invoiceDetail.totalDiscount),
-                                    igvPercentage,
-                                    includeIgv
-                                );
-
-                            setInvoiceDetail({
-                                ...invoiceDetail,
-                                quantity: formattedQuantity,
-                                unitPrice: originalPrice.toFixed(6),
-                                unitValue: unitValue.toFixed(6),
-                                totalValue: totalValue.toFixed(2),
-                                totalIgv: totalIgv.toFixed(2),
-                                totalAmount: totalAmount.toFixed(2),
-                            });
-                            return;
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error calculating wholesale price:", error);
-                    setShouldUpdateTariff(false);
-                    // Continuar con el cálculo normal si hay error
-                }
-            } else {
-                setShouldUpdateTariff(false);
-            }
+            let appliedUnitPrice = Number(retailUnitPrice);
+            let appliedUnitValue = Number(retailUnitValue);
+            let message = "Precio minorista aplicado";
 
             // Cálculo normal si no hay producto o hay error en el cálculo por mayor
             const foundTypeAffectation =
@@ -417,11 +338,35 @@ function SaleDetailForm({
             const code = foundTypeAffectation?.code ?? "10";
             const igvPercentage = code === "10" ? Number(invoice.igvType) : 0;
 
+            // Verificar si aplica precio por mayor
+            if (
+                wholesaleQuantityThreshold > 0 &&
+                Number(formattedQuantity) > wholesaleQuantityThreshold &&
+                wholesalePriceWithIgv > 0
+            ) {
+                const wholesaleUnitPrice =
+                    wholesalePriceWithIgv / maximumFactor;
+                appliedUnitPrice = wholesaleUnitPrice;
+                appliedUnitValue =
+                    wholesaleUnitPrice / (1 + igvPercentage * 0.01);
+                message = `Precio por mayor aplicado (${formattedQuantity} unidades a ${wholesaleUnitPrice.toFixed(
+                    2
+                )} c/u)`;
+
+                setShouldUpdateTariff(false); // no se actualiza la tarifa
+            } else {
+                // Usar precios minoristas originales
+                appliedUnitPrice = Number(retailUnitPrice);
+                appliedUnitValue = Number(retailUnitValue);
+                message = "Precio minorista aplicado";
+                setShouldUpdateTariff(true); // mantiene el precio minorista
+            }
+
             const { totalValue, totalAmount, totalIgv } = calculateBasedOnIgv(
                 Number(formattedQuantity),
-                Number(invoiceDetail.unitPrice),
-                Number(invoiceDetail.unitValue),
-                Number(invoiceDetail.totalDiscount),
+                appliedUnitPrice,
+                appliedUnitValue,
+                Number(totalDiscount),
                 igvPercentage,
                 includeIgv
             );
@@ -429,6 +374,8 @@ function SaleDetailForm({
             setInvoiceDetail({
                 ...invoiceDetail,
                 quantity: formattedQuantity,
+                unitPrice: appliedUnitPrice.toFixed(6),
+                unitValue: appliedUnitValue.toFixed(6),
                 totalValue: totalValue.toFixed(2),
                 totalIgv: totalIgv.toFixed(2),
                 totalAmount: totalAmount.toFixed(2),

@@ -258,6 +258,8 @@ const initialStateSaleDetail = {
 
     unitValue: "",
     unitPrice: "",
+    retailUnitValue: "", // Precio minorista original sin IGV
+    retailUnitPrice: "", // Precio minorista original con IGV
     igvPercentage: "",
     discountPercentage: "",
     totalDiscount: "",
@@ -276,6 +278,10 @@ const initialStateSaleDetail = {
     relatedDocumentSerial: "",
     relatedDocumentCorrelative: "",
     activeType: "NA",
+
+    wholesalePriceWithIgv: 0,
+    wholesaleQuantityThreshold: 0,
+    maximumFactor: 0,
 };
 const initialStatePerson = {
     id: 0,
