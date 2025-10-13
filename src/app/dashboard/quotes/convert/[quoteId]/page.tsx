@@ -181,6 +181,7 @@ const initialStateProduct = {
 
     onSaveSuccess(): void {},
     stock: 0,
+    retailQuantityThreshold: 0,
 };
 const initialStateCashFlow = {
     wayPay: 1,

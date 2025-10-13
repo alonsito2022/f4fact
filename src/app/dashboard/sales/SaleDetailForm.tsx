@@ -128,7 +128,15 @@ function SaleDetailForm({
     }, [modalAddDetail, setModalAddDetail]);
 
     useEffect(() => {
-        if (Number(product.id) > 0 && Number(invoiceDetail.id) === 0) {
+        // Se ejecuta para productos nuevos O para detalles existentes que no tienen precios minoristas guardados
+        const isNewProduct =
+            Number(product.id) > 0 && Number(invoiceDetail.id) === 0;
+        const isExistingProductWithoutRetailPrices =
+            Number(product.id) > 0 &&
+            Number(invoiceDetail.id) > 0 &&
+            (!invoiceDetail.retailUnitPrice || !invoiceDetail.retailUnitValue);
+
+        if (isNewProduct || isExistingProductWithoutRetailPrices) {
             productDetailQuery({
                 context: getAuthContext(),
                 variables: { productId: Number(product.id) },
@@ -161,47 +169,77 @@ function SaleDetailForm({
 
                         let totalIgv = totalValue * igvPercentage * 0.01;
                         let totalAmount = totalValue + totalIgv;
-                        setInvoiceDetail({
-                            ...invoiceDetail,
-                            activeType:
-                                String(productDetail.activeType).replace(
-                                    "A_",
-                                    ""
-                                ) || "NA",
-                            productTariffId: Number(
-                                productDetail.productTariffId3
-                            ),
-                            productId: Number(product.id),
-                            productName: product.name,
-                            unitValue: Number(
-                                calculatedPriceWithoutIgv
-                            ).toFixed(6),
-                            unitPrice: Number(
-                                productDetail.priceWithIgv3
-                            ).toFixed(6),
-                            // Guardar precios minoristas originales
-                            retailUnitValue: Number(
-                                calculatedPriceWithoutIgv
-                            ).toFixed(6),
-                            retailUnitPrice: Number(
-                                productDetail.priceWithIgv3
-                            ).toFixed(6),
-                            igvPercentage: Number(igvPercentage).toFixed(2),
-                            totalValue: Number(totalValue).toFixed(2),
-                            totalIgv: Number(totalIgv).toFixed(2),
-                            totalAmount: Number(totalAmount).toFixed(2),
-                            stock: Number(productDetail.stock),
-                            typeAffectationId: Number(
-                                productDetail.typeAffectationId
-                            ),
-                            wholesaleQuantityThreshold: Number(
-                                productDetail.wholesaleQuantityThreshold
-                            ),
-                            wholesalePriceWithIgv: Number(
-                                productDetail.wholesalePriceWithIgv
-                            ),
-                            maximumFactor: Number(productDetail.maximumFactor),
-                        });
+                        // Si es un producto nuevo, actualizar todo
+                        // Si es un producto existente, solo agregar los campos faltantes
+                        const isNewProduct = Number(invoiceDetail.id) === 0;
+
+                        const updateData = isNewProduct
+                            ? {
+                                  ...invoiceDetail,
+                                  activeType:
+                                      String(productDetail.activeType).replace(
+                                          "A_",
+                                          ""
+                                      ) || "NA",
+                                  productTariffId: Number(
+                                      productDetail.productTariffId3
+                                  ),
+                                  productId: Number(product.id),
+                                  productName: product.name,
+                                  unitValue: Number(
+                                      calculatedPriceWithoutIgv
+                                  ).toFixed(6),
+                                  unitPrice: Number(
+                                      productDetail.priceWithIgv3
+                                  ).toFixed(6),
+                                  // Guardar precios minoristas originales
+                                  retailUnitValue: Number(
+                                      calculatedPriceWithoutIgv
+                                  ).toFixed(6),
+                                  retailUnitPrice: Number(
+                                      productDetail.priceWithIgv3
+                                  ).toFixed(6),
+                                  igvPercentage:
+                                      Number(igvPercentage).toFixed(2),
+                                  totalValue: Number(totalValue).toFixed(2),
+                                  totalIgv: Number(totalIgv).toFixed(2),
+                                  totalAmount: Number(totalAmount).toFixed(2),
+                                  stock: Number(productDetail.stock),
+                                  typeAffectationId: Number(
+                                      productDetail.typeAffectationId
+                                  ),
+                                  wholesaleQuantityThreshold: Number(
+                                      productDetail.wholesaleQuantityThreshold
+                                  ),
+                                  wholesalePriceWithIgv: Number(
+                                      productDetail.wholesalePriceWithIgv
+                                  ),
+                                  maximumFactor: Number(
+                                      productDetail.maximumFactor
+                                  ),
+                              }
+                            : {
+                                  // Para productos existentes, solo agregar los campos faltantes
+                                  ...invoiceDetail,
+                                  retailUnitValue: Number(
+                                      calculatedPriceWithoutIgv
+                                  ).toFixed(6),
+                                  retailUnitPrice: Number(
+                                      productDetail.priceWithIgv3
+                                  ).toFixed(6),
+                                  wholesaleQuantityThreshold: Number(
+                                      productDetail.wholesaleQuantityThreshold
+                                  ),
+                                  wholesalePriceWithIgv: Number(
+                                      productDetail.wholesalePriceWithIgv
+                                  ),
+                                  maximumFactor: Number(
+                                      productDetail.maximumFactor
+                                  ),
+                                  stock: Number(productDetail.stock),
+                              };
+
+                        setInvoiceDetail(updateData);
                     }
                 },
 

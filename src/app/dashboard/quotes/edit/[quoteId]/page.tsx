@@ -482,6 +482,7 @@ const initialStateProduct = {
 
     onSaveSuccess(): void {},
     stock: 0,
+    retailQuantityThreshold: 0,
 };
 function EditQuotePage() {
     const [isProcessing, setIsProcessing] = useState(false);
