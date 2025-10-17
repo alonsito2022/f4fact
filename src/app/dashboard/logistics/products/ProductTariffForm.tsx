@@ -19,16 +19,16 @@ function ProductTariffForm({ setProduct, product }: any) {
     }: ChangeEvent<
         HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >) => {
-        // Limitar a 6 dígitos enteros y 2 decimales (máximo 999999.99)
-        let formattedValue = value.replace(/[^0-9.]/g, "").slice(0, 9);
-        // Asegurar un solo punto decimal y máximo 2 decimales
-        const hasDecimal = formattedValue.indexOf(".") !== -1;
-        if (hasDecimal) {
-            formattedValue = formattedValue.slice(
-                0,
-                formattedValue.indexOf(".") + 3
-            );
-        }
+        // Limitar a 6 dígitos enteros y 6 decimales (máximo 999999.999999)
+        const raw = value.replace(/[^0-9.]/g, "");
+        const parts = raw.split(".");
+        const integerPart = (parts[0] || "0").slice(0, 6);
+        // si hay múltiples puntos, unir el resto y tomar solo los primeros 6 dígitos decimales
+        const decimalPart =
+            parts.length > 1 ? parts.slice(1).join("").slice(0, 6) : "";
+        const formattedValue = decimalPart
+            ? `${integerPart}.${decimalPart}`
+            : integerPart;
 
         if (name === "priceWithIgv1")
             setProduct({
