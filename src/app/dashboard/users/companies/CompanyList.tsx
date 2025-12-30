@@ -53,9 +53,8 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
             isAgentPerception
             showUser
         }
-    }
+        }
         `;
-    console.log(queryfetch);
     await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/graphql`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -65,9 +64,7 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data.data.companyById);
         let companyData = data.data.companyById;
-        console.log(companyData);
         setCompany(companyData);
 
         const stringFields = [
@@ -90,13 +87,27 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
           companyData[field] = companyData[field] || "";
         });
 
-        console.log(companyData);
         setCompany(companyData);
       });
   }
   return (
     <>
       <div className="p-2 sm:p-4 bg-white dark:bg-gray-900 rounded-xl shadow border border-gray-200 dark:border-gray-800">
+        {/* Leyenda de colores */}
+        <div className="mb-4 flex flex-wrap items-center gap-4 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700"></div>
+            <span className="text-gray-700 dark:text-gray-300">
+              <span className="font-semibold">Empresa deshabilitada</span> (isEnabled = false)
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-400 dark:border-yellow-700"></div>
+            <span className="text-gray-700 dark:text-gray-300">
+              <span className="font-semibold">Certificado próximo a vencer</span> (≤ 20 días)
+            </span>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left text-gray-700 dark:text-gray-200">
             <thead>
@@ -125,15 +136,20 @@ function CompanyList({ companies, modal, setModal, company, setCompany }: any) {
                   const diffTime = expiration.getTime() - today.getTime();
                   const diffDays = diffTime / (1000 * 60 * 60 * 24);
                   isExpiring = diffDays <= 20;
-                  console.log("Fecha", diffDays);
                 }
-                console.log("Fechas", item.certificationExpirationDate);
+                
+                // Determinar si la fila debe estar resaltada
+                const isDisabled = !item.isEnabled;
+                const shouldHighlight = isExpiring || isDisabled;
+                
                 return (
                   <tr
                     key={item.id}
                     className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/70 transition-colors group ${
-                      isExpiring
-                        ? "text-red-500 dark:text-red-400"
+                      shouldHighlight
+                        ? isDisabled
+                          ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+                          : "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400"
                         : "text-gray-700 dark:text-gray-200"
                     }`}
                   >
