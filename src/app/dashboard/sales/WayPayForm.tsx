@@ -78,6 +78,7 @@ const CREATE_SALE_MUTATION = gql`
         $isAnticipationSet: [Boolean!]!
         $relatedDocumentSerialSet: [String!]!
         $relatedDocumentCorrelativeSet: [Int!]!
+        $pdfFormatForInvoices: Int
     ) {
         createSale(
             serial: $serial
@@ -142,6 +143,7 @@ const CREATE_SALE_MUTATION = gql`
             isAnticipationSet: $isAnticipationSet
             relatedDocumentSerialSet: $relatedDocumentSerialSet
             relatedDocumentCorrelativeSet: $relatedDocumentCorrelativeSet
+            pdfFormatForInvoices: $pdfFormatForInvoices
         ) {
             message
             operation {
@@ -444,6 +446,7 @@ function WayPayForm({
                 relatedDocumentCorrelativeSet: invoice.operationdetailSet.map(
                     (item: any) => Number(item.relatedDocumentCorrelative || 0)
                 ),
+                pdfFormatForInvoices: Number(invoice.pdfFormatForInvoices) || 0,
             };
             const { data, errors } = await createSale({
                 variables: variables,

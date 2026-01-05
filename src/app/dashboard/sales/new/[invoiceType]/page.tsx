@@ -35,6 +35,7 @@ import SunatCancel from "@/components/icons/SunatCancel";
 import ClientForm from "../../ClientForm";
 import SaleDetailList from "../../SaleDetailList";
 import SaleTotalList from "../../SaleTotalList";
+import PdfFormatModal from "../../PdfFormatModal";
 // Replace the current today constant with this:
 const limaDate = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
@@ -246,6 +247,7 @@ const initialStateSale = {
     totalDetraction: "",
     detractionPercentage: "",
     nextTemporaryId: 1,
+    pdfFormatForInvoices:0,
 };
 const initialStateSaleDetail = {
     id: 0,
@@ -379,6 +381,7 @@ function NewSalePage() {
     const [modalProduct, setModalProduct] = useState<Modal | any>(null);
     const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
     const [modalWayPay, setModalWayPay] = useState<Modal | any>(null);
+    const [modalPdfFormat, setModalPdfFormat] = useState<Modal | any>(null);
     const [barcodeInput, setBarcodeInput] = useState("");
     const auth = useAuth();
     // Add this near the top of your component with other refs
@@ -1098,6 +1101,29 @@ function NewSalePage() {
                                 </div>
                             </div>
                             <div className="flex flex-col space-y-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                                {/* Botón/Pestaña Formato de PDF */}
+                                <div className="mb-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => modalPdfFormat?.show()}
+                                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                    >
+                                        <svg
+                                            className="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                                            />
+                                        </svg>
+                                        Formato de PDF
+                                    </button>
+                                </div>
                                 <div className="overflow-x-auto">
                                     <div className="inline-block min-w-full align-middle">
                                         <div className="overflow-hidden shadow-lg rounded-lg">
@@ -2092,6 +2118,17 @@ function NewSalePage() {
                 isProcessing={isProcessing}
                 setIsProcessing={setIsProcessing}
                 onSaveSaleRef={(fn: any) => (saveSaleRef.current = fn)}
+            />
+            <PdfFormatModal
+                modalPdfFormat={modalPdfFormat}
+                setModalPdfFormat={setModalPdfFormat}
+                pdfFormat={sale.pdfFormatForInvoices}
+                setPdfFormat={(format: number) =>
+                    setSale((prevSale) => ({
+                        ...prevSale,
+                        pdfFormatForInvoices: format,
+                    }))
+                }
             />
         </>
     );
