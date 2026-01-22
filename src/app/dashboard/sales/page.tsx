@@ -33,6 +33,7 @@ const initialStateFilterObj = {
     correlative: "",
     userName: "",
     userId: "",
+    onlyDraft: false,
 };
 const SALES_QUERY = gql`
     query (
@@ -46,6 +47,7 @@ const SALES_QUERY = gql`
         $serial: String
         $correlative: Int
         $userId: Int
+        $onlyDraft: Boolean
     ) {
         allSales(
             subsidiaryId: $subsidiaryId
@@ -58,6 +60,7 @@ const SALES_QUERY = gql`
             serial: $serial
             correlative: $correlative
             userId: $userId
+            onlyDraft: $onlyDraft
         ) {
             sales {
                 id
@@ -171,6 +174,7 @@ function SalePage() {
                     documentType: filterObj.documentType,
                     page: Number(filterObj.page),
                     pageSize: Number(filterObj.pageSize),
+                    onlyDraft: filterObj.onlyDraft || undefined,
                     // serial: String(filterObj.serial),
                     // correlative: Number(filterObj.correlative),
                 },
