@@ -23,7 +23,7 @@ function SalePagination({
                         ...filterObj,
                         page: prevPage,
                     });
-                    const variables = {
+                    const variables: any = {
                         subsidiaryId: Number(filterObj?.subsidiaryId),
                         clientId: Number(filterObj.clientId),
                         startDate: filterObj.startDate,
@@ -33,6 +33,10 @@ function SalePagination({
                         pageSize: Number(filterObj.pageSize),
                         userId: Number(filterObj.userId),
                     };
+                    // Solo agregar onlyDraft si se usa salesQuery
+                    if (salesQuery) {
+                        variables.onlyDraft = filterObj.onlyDraft || undefined;
+                    }
                     const queryToUse =
                         salesQuery ||
                         guidesQuery ||
@@ -84,7 +88,7 @@ function SalePagination({
                         ...filterObj,
                         page: nextPage,
                     });
-                    const variables = {
+                    const variables: any = {
                         subsidiaryId: Number(filterObj?.subsidiaryId),
                         clientId: Number(filterObj.clientId),
                         startDate: filterObj.startDate,
@@ -94,6 +98,10 @@ function SalePagination({
                         pageSize: Number(filterObj.pageSize),
                         userId: Number(filterObj.userId),
                     };
+                    // Solo agregar onlyDraft si se usa salesQuery
+                    if (salesQuery) {
+                        variables.onlyDraft = filterObj.onlyDraft || undefined;
+                    }
 
                     const queryToUse =
                         salesQuery ||
