@@ -668,13 +668,39 @@ function SaleDetailForm({
             });
             return;
         }
-        if (Number(invoiceDetail?.unitPrice) < 0) {
-            toast("Por favor ingrese un precio mayor a 0.", {
-                hideProgressBar: true,
-                autoClose: 2000,
-                type: "warning",
-            });
-            return;
+        // Validación de unitPrice según typeAffectationId
+        const typeAffectationId = Number(invoiceDetail?.typeAffectationId);
+        // Si es GRAVADO (1), EXONERADA (2), o INAFECTO (3): no permitir precio cero
+        // Si es GRATUITO (4): permitir precio cero pero no negativo
+        if (typeAffectationId === 1 || typeAffectationId === 2 || typeAffectationId === 3) {
+            if (Number(invoiceDetail?.unitPrice) <= 0) {
+                toast("Por favor ingrese un precio mayor a 0 para este tipo de afectación.", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "warning",
+                });
+                return;
+            }
+        } else if (typeAffectationId === 4) {
+            // GRATUITO: permitir cero pero no negativo
+            if (Number(invoiceDetail?.unitPrice) < 0) {
+                toast("El precio no puede ser negativo.", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "warning",
+                });
+                return;
+            }
+        } else {
+            // Para otros tipos de afectación, validar que no sea negativo
+            if (Number(invoiceDetail?.unitPrice) < 0) {
+                toast("Por favor ingrese un precio mayor o igual a 0.", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "warning",
+                });
+                return;
+            }
         }
         if (Number(invoiceDetail?.unitValue) < 0) {
             toast("Por favor ingrese un valor mayor a 0.", {
