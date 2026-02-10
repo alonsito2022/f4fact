@@ -813,7 +813,7 @@ function UserModal({
                                             Detalles de la organización
                                         </h4>
                                         <div className="grid md:grid-cols-2 md:gap-6">
-                                            <div className="relative z-0 w-full mb-3 group">
+                                            <div className="relative w-full mb-3 group">
                                                 <label
                                                     htmlFor="companyId"
                                                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"

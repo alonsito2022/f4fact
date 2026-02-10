@@ -81,7 +81,7 @@ const SearchableDropdown = ({
     };
 
     return (
-        <div className="relative">
+        <div className={`relative ${showDropdown ? "z-50" : ""}`}>
             <input
                 type="text"
                 value={value}
@@ -99,7 +99,7 @@ const SearchableDropdown = ({
             {showDropdown && items?.length > 0 && (
                 <div
                     ref={dropdownRef}
-                    className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                    className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto"
                 >
                     {items.map((item, index) => (
                         <div

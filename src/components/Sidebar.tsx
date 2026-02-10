@@ -120,15 +120,6 @@ function Sidebar() {
                                     </li>
                                     <li>
                                         <Link
-                                            href="/dashboard/users/users"
-                                            className="flex items-center p-0 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
-                                            onClick={toggleSidebar}
-                                        >
-                                            Usuarios
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
                                             href="/dashboard/users/subsidiaries"
                                             className="flex items-center p-0 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
                                             onClick={toggleSidebar}
@@ -136,6 +127,16 @@ function Sidebar() {
                                             Sedes/locales
                                         </Link>
                                     </li>
+                                    <li>
+                                        <Link
+                                            href="/dashboard/users/users"
+                                            className="flex items-center p-0 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                            onClick={toggleSidebar}
+                                        >
+                                            Usuarios
+                                        </Link>
+                                    </li>
+                                    
                                 </ul>
                             </li>
 

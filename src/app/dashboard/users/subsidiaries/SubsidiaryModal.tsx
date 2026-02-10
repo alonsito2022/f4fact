@@ -435,7 +435,7 @@ function SubsidiaryModal({
                   <h4 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
                     Información de la Empresa
                   </h4>
-                  <div className="relative z-0 w-full mb-3">
+                  <div className="relative w-full mb-3">
                     <label
                       htmlFor="companyId"
                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
