@@ -9,6 +9,7 @@ interface SearchableDropdownProps {
     placeholder?: string;
     className?: string;
     maxLength?: number;
+    disabled?: boolean;
 }
 
 const SearchableDropdown = ({
@@ -20,6 +21,7 @@ const SearchableDropdown = ({
     placeholder,
     className,
     maxLength = 200,
+    disabled = false,
 }: SearchableDropdownProps) => {
     const [showDropdown, setShowDropdown] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -92,6 +94,7 @@ const SearchableDropdown = ({
                 placeholder={placeholder}
                 className={className}
                 autoComplete="off"
+                disabled={disabled}
             />
             {showDropdown && items?.length > 0 && (
                 <div

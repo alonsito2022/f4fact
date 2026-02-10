@@ -3,6 +3,8 @@ import { ChangeEvent, FormEvent, MouseEvent, useEffect, useRef } from "react";
 import { Modal, ModalOptions } from "flowbite";
 import { toast } from "react-toastify";
 import { gql, useMutation, useQuery } from "@apollo/client";
+import SearchableDropdown from "@/components/SearchableDropdown";
+import { useState } from "react";
 
 const SUBSIDIARIES_QUERY = gql`
     query {
@@ -139,6 +141,7 @@ function UserModal({
     fetchUsers,
     userLogged,
 }: any) {
+    const [companySearch, setCompanySearch] = useState("");
     const options = [
         { id: "01", value: "EMPRESARIAL" },
         { id: "02", value: "PERSONAL" },
@@ -519,6 +522,20 @@ function UserModal({
         }
     }, []);
 
+    useEffect(() => {
+        const companies = companiesData?.companies || [];
+        if (user.companyId && companies.length > 0) {
+            const company = companies.find(
+                (c: any) => Number(c.id) === Number(user.companyId)
+            );
+            if (company && company.businessName) {
+                setCompanySearch(company.businessName);
+            }
+        } else if (!user.companyId) {
+            setCompanySearch("");
+        }
+    }, [user.companyId, companiesData]);
+
     // Filtrar empresas según permisos del usuario
     const getFilteredCompanies = () => {
         if (canEditAllSections) {
@@ -803,38 +820,51 @@ function UserModal({
                                                 >
                                                     Empresa
                                                 </label>
-                                                <select
-                                                    id="companyId"
-                                                    name="companyId"
-                                                    onChange={handleInputChange}
-                                                    value={user?.companyId}
-                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                                <SearchableDropdown
+                                                    value={companySearch}
+                                                    onChange={(val) => {
+                                                        setCompanySearch(val);
+                                                        if (val === "") {
+                                                            setUser({
+                                                                ...user,
+                                                                companyId: "",
+                                                                subsidiaryId:
+                                                                    "",
+                                                            });
+                                                        }
+                                                    }}
+                                                    onSelect={(company) => {
+                                                        setCompanySearch(
+                                                            company.businessName
+                                                        );
+                                                        setUser({
+                                                            ...user,
+                                                            companyId:
+                                                                company.id,
+                                                            subsidiaryId: "",
+                                                        });
+                                                    }}
+                                                    items={getFilteredCompanies().filter(
+                                                        (c: any) =>
+                                                            c.businessName
+                                                                ?.toLowerCase()
+                                                                .includes(
+                                                                    companySearch.toLowerCase()
+                                                                )
+                                                    )}
+                                                    displayKey="businessName"
                                                     disabled={
                                                         !canEditAllSections &&
                                                         isCreatingUser
-                                                    } // Deshabilitar si no es superusuario y está creando
-                                                >
-                                                    <option value="">
-                                                        {!canEditAllSections &&
+                                                    }
+                                                    placeholder={
+                                                        !canEditAllSections &&
                                                         isCreatingUser
                                                             ? `${userLogged?.companyName} (asignada automáticamente)`
-                                                            : "Seleccione una empresa"}
-                                                    </option>
-                                                    {getFilteredCompanies().map(
-                                                        (company: any) => (
-                                                            <option
-                                                                key={company.id}
-                                                                value={
-                                                                    company.id
-                                                                }
-                                                            >
-                                                                {
-                                                                    company.businessName
-                                                                }
-                                                            </option>
-                                                        )
-                                                    )}
-                                                </select>
+                                                            : "Buscar Empresa..."
+                                                    }
+                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                                />
                                             </div>
                                             <div className="relative z-0 w-full mb-3 group">
                                                 <label

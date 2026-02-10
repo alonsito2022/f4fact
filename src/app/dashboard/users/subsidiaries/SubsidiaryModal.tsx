@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { ICompany, ISerialAssigned } from "@/app/types";
 import { gql, useApolloClient, useMutation } from "@apollo/client";
 import SerialAssignedTable from "./SerialAssignedTable";
+import SearchableDropdown from "@/components/SearchableDropdown";
 
 const UPDATE_SERIAL_ASSIGNED = gql`
   mutation UpdateSerialAssigned(
@@ -78,6 +79,7 @@ function SubsidiaryModal({
   user,
 }: any) {
   const [companies, setCompanies] = useState<ICompany[]>([]);
+  const [companySearch, setCompanySearch] = useState("");
   const [createSerialAssigned] = useMutation(CREATE_SERIAL_ASSIGNED);
 
   const [deleteSerialAssigned] = useMutation(DELETE_SERIAL_ASSIGNED);
@@ -350,6 +352,19 @@ function SubsidiaryModal({
     }
     fetchCompanies();
   }, []);
+
+  useEffect(() => {
+    if (subsidiary.companyId && companies.length > 0) {
+      const company = companies.find(
+        (c: ICompany) => Number(c.id) === Number(subsidiary.companyId)
+      );
+      if (company && company.businessName) {
+        setCompanySearch(company.businessName);
+      }
+    } else if (!subsidiary.companyId) {
+      setCompanySearch("");
+    }
+  }, [subsidiary.companyId, companies]);
   const handleCopyToken = () => {
     navigator.clipboard
       .writeText(subsidiary.token || "")
@@ -427,20 +442,30 @@ function SubsidiaryModal({
                     >
                       Empresa
                     </label>
-                    <select
-                      id="companyId"
-                      name="companyId"
-                      onChange={handleInputChange}
-                      value={subsidiary.companyId}
+                    <SearchableDropdown
+                      value={companySearch}
+                      onChange={(val) => {
+                        setCompanySearch(val);
+                        if (val === "") {
+                          setSubsidiary({ ...subsidiary, companyId: "" });
+                        }
+                      }}
+                      onSelect={(company) => {
+                        setCompanySearch(company.businessName);
+                        setSubsidiary({
+                          ...subsidiary,
+                          companyId: company.id,
+                        });
+                      }}
+                      items={companies.filter((c: ICompany) =>
+                        c.businessName
+                          ?.toLowerCase()
+                          .includes(companySearch.toLowerCase())
+                      )}
+                      displayKey="businessName"
+                      placeholder="Buscar Empresa..."
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                    >
-                      <option value="">Seleccionar Empresa</option>
-                      {companies?.map((o, k) => (
-                        <option key={k} value={o.id}>
-                          {o.businessName}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                 </div>
 
