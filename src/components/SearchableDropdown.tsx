@@ -28,6 +28,10 @@ const SearchableDropdown = ({
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        setSelectedIndex(-1);
+    }, [items]);
+
+    useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
                 dropdownRef.current &&
@@ -85,9 +89,15 @@ const SearchableDropdown = ({
             <input
                 type="text"
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(e) => {
+                    onChange(e.target.value);
+                    setShowDropdown(true);
+                }}
                 onKeyDown={handleKeyDown}
                 onFocus={() => {
+                    setShowDropdown(true);
+                }}
+                onClick={() => {
                     setShowDropdown(true);
                 }}
                 maxLength={maxLength}
