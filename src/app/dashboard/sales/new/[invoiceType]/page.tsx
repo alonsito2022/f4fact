@@ -581,6 +581,8 @@ function NewSalePage() {
                     setSale({ ...sale, clientName: value, clientId: 0 });
                 }
             }
+        } else if (name === "igvType") {
+            setSale({ ...sale, [name]: Number(value) });
         } else {
             setSale({ ...sale, [name]: value });
         }
@@ -1172,28 +1174,18 @@ function NewSalePage() {
                                                                     }}
                                                                     required
                                                                 >
-                                                                    <option
-                                                                        value={
-                                                                            18
-                                                                        }
-                                                                    >
+                                                                    <option value={18.0}>
                                                                         18%
                                                                     </option>
-                                                                    <option
-                                                                        value={
-                                                                            10
-                                                                        }
-                                                                    >
-                                                                        10% (Ley
-                                                                        31556)
+                                                                    <option value={10.0}>
+                                                                        10% (Ley 31556)
                                                                     </option>
-                                                                    <option
-                                                                        value={
-                                                                            4
-                                                                        }
-                                                                    >
-                                                                        4%
-                                                                        (IVAP)
+                                                                    <option value={10.5}>
+                                                                        10.5% (Ley 31556 y
+                                                                        32387)
+                                                                    </option>
+                                                                    <option value={4}>
+                                                                        4% (IVAP)
                                                                     </option>
                                                                 </select>
                                                             </div>

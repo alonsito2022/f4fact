@@ -830,6 +830,7 @@ function ProductForm({
                                     <ProductTariffForm
                                         setProduct={setProduct}
                                         product={product}
+                                        auth={auth}
                                     />
                                     <div className="sm:col-span-6 mb-2">
                                         <label

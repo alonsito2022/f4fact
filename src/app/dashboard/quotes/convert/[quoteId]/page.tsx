@@ -743,6 +743,8 @@ function ConvertToInvoicePage() {
                     setSale({ ...sale, clientName: value, clientId: 0 });
                 }
             }
+        } else if (name === "igvType") {
+            setSale({ ...sale, [name]: Number(value) });
         } else {
             setSale({ ...sale, [name]: value });
         }
@@ -1337,11 +1339,15 @@ function ConvertToInvoicePage() {
                                                             className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                             required
                                                         >
-                                                            <option value={18}>
+                                                            <option value={18.0}>
                                                                 18%
                                                             </option>
-                                                            <option value={10}>
+                                                            <option value={10.0}>
                                                                 10% (Ley 31556)
+                                                            </option>
+                                                            <option value={10.5}>
+                                                                10.5% (Ley 31556 y
+                                                                32387)
                                                             </option>
                                                             <option value={4}>
                                                                 4% (IVAP)

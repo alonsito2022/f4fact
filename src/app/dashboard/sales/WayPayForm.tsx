@@ -47,7 +47,7 @@ const CREATE_SALE_MUTATION = gql`
         $discountForItem: Float!
         $discountGlobal: Float!
         $discountPercentageGlobal: Float!
-        $igvType: Int!
+        $igvType: Decimal!
         $totalDiscount: Float!
         $totalTaxed: Float!
         $totalAnticipation: Float!

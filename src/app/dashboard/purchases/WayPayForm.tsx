@@ -47,7 +47,7 @@ const CREATE_PURCHASE_MUTATION = gql`
         $discountForItem: Float!
         $discountGlobal: Float!
         $discountPercentageGlobal: Float!
-        $igvType: Int!
+        $igvType: Decimal!
         $totalDiscount: Float!
         $totalTaxed: Float!
         $totalUnaffected: Float!

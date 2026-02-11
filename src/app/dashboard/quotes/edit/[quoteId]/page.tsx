@@ -154,7 +154,7 @@ const UPDATE_QUOTE_MUTATION = gql`
         $discountForItem: Float
         $discountGlobal: Float
         $discountPercentageGlobal: Float
-        $igvType: Int
+        $igvType: Decimal
         $totalDiscount: Float
         $totalTaxed: Float
         $totalUnaffected: Float
@@ -722,7 +722,11 @@ function EditQuotePage() {
         >
     ) => {
         const { name, value } = event.target;
-        setQuote({ ...quote, [name]: value });
+        if (name === "igvType") {
+            setQuote({ ...quote, [name]: Number(value) });
+        } else {
+            setQuote({ ...quote, [name]: value });
+        }
         // TODO: LOGIC HERE
     };
 

@@ -1,7 +1,7 @@
 import { IUnit, IProduct } from "@/app/types";
 import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 
-function ProductTariffForm({ setProduct, product }: any) {
+function ProductTariffForm({ setProduct, product, auth }: any) {
     const [hiddenSections, setHiddenSections] = useState({
         retailSale: true,
         wholesaleSale: false,
@@ -30,61 +30,72 @@ function ProductTariffForm({ setProduct, product }: any) {
             ? `${integerPart}.${decimalPart}`
             : integerPart;
 
+        const igvPercentage = Number(auth?.user?.companyPercentageIgv) || 18;
+        const igvFactor = 1 + igvPercentage / 100;
+
         if (name === "priceWithIgv1")
             setProduct({
                 ...product,
                 priceWithIgv1: formattedValue,
-                priceWithoutIgv1: Number(Number(formattedValue) / 1.18).toFixed(
-                    6
-                ),
+                priceWithoutIgv1: Number(
+                    Number(formattedValue) / igvFactor
+                ).toFixed(6),
             });
         else if (name === "priceWithoutIgv1")
             setProduct({
                 ...product,
                 priceWithoutIgv1: formattedValue,
-                priceWithIgv1: Number(Number(formattedValue) * 1.18).toFixed(6),
+                priceWithIgv1: Number(
+                    Number(formattedValue) * igvFactor
+                ).toFixed(6),
             });
         else if (name === "priceWithIgv2")
             setProduct({
                 ...product,
                 priceWithIgv2: formattedValue,
-                priceWithoutIgv2: Number(Number(formattedValue) / 1.18).toFixed(
-                    6
-                ),
+                priceWithoutIgv2: Number(
+                    Number(formattedValue) / igvFactor
+                ).toFixed(6),
             });
         else if (name === "priceWithoutIgv2")
             setProduct({
                 ...product,
                 priceWithoutIgv2: formattedValue,
-                priceWithIgv2: Number(Number(formattedValue) * 1.18).toFixed(6),
+                priceWithIgv2: Number(
+                    Number(formattedValue) * igvFactor
+                ).toFixed(6),
             });
         else if (name === "priceWithIgv3")
             setProduct({
                 ...product,
                 priceWithIgv3: formattedValue,
-                priceWithoutIgv3: Number(Number(formattedValue) / 1.18).toFixed(
-                    6
-                ),
+                priceWithoutIgv3: Number(
+                    Number(formattedValue) / igvFactor
+                ).toFixed(6),
             });
         else if (name === "priceWithoutIgv3")
             setProduct({
                 ...product,
                 priceWithoutIgv3: formattedValue,
-                priceWithIgv3: Number(Number(formattedValue) * 1.18).toFixed(6),
+                priceWithIgv3: Number(
+                    Number(formattedValue) * igvFactor
+                ).toFixed(6),
             });
         else if (name === "priceWithIgv4")
             setProduct({
                 ...product,
                 priceWithIgv4: formattedValue,
-                priceWithoutIgv4: Number(Number(formattedValue) / 1.18).toFixed(
-                    6
-                ),
+                priceWithoutIgv4: Number(
+                    Number(formattedValue) / igvFactor
+                ).toFixed(6),
             });
         else if (name === "priceWithoutIgv4")
             setProduct({
                 ...product,
                 priceWithoutIgv4: formattedValue,
-                priceWithIgv4: Number(Number(formattedValue) * 1.18).toFixed(6),
+                priceWithIgv4: Number(
+                    Number(formattedValue) * igvFactor
+                ).toFixed(6),
             });
         else setProduct({ ...product, [name]: formattedValue });
     };

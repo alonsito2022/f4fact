@@ -613,7 +613,11 @@ function CreditPage() {
         >
     ) => {
         const { name, value } = event.target;
-        setCreditNote({ ...creditNote, [name]: value });
+        if (name === "igvType") {
+            setCreditNote({ ...creditNote, [name]: Number(value) });
+        } else {
+            setCreditNote({ ...creditNote, [name]: value });
+        }
     };
     const handleSale = (
         event: ChangeEvent<
@@ -998,21 +1002,18 @@ function CreditPage() {
                                                                 className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                                 required
                                                             >
-                                                                <option
-                                                                    value={4}
-                                                                >
-                                                                    4% (IVAP)
-                                                                </option>
-                                                                <option
-                                                                    value={18}
-                                                                >
+                                                                <option value={18.0}>
                                                                     18%
                                                                 </option>
-                                                                <option
-                                                                    value={10}
-                                                                >
-                                                                    10% (Ley
-                                                                    31556)
+                                                                <option value={10.0}>
+                                                                    10% (Ley 31556)
+                                                                </option>
+                                                                <option value={10.5}>
+                                                                    10.5% (Ley 31556 y
+                                                                    32387)
+                                                                </option>
+                                                                <option value={4}>
+                                                                    4% (IVAP)
                                                                 </option>
                                                             </select>
                                                         </div>

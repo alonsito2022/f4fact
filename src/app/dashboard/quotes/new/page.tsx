@@ -217,7 +217,7 @@ const CREATE_SALE_MUTATION = gql`
         $discountForItem: Float!
         $discountGlobal: Float!
         $discountPercentageGlobal: Float!
-        $igvType: Int!
+        $igvType: Decimal!
         $totalDiscount: Float!
         $totalTaxed: Float!
         $totalUnaffected: Float!
@@ -581,7 +581,11 @@ function NewQuotePage() {
         >
     ) => {
         const { name, value } = event.target;
-        setSale({ ...sale, [name]: value });
+        if (name === "igvType") {
+            setSale({ ...sale, [name]: Number(value) });
+        } else {
+            setSale({ ...sale, [name]: value });
+        }
         // TODO: LOGIC HERE
     };
 
