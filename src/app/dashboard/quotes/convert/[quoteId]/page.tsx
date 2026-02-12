@@ -32,7 +32,7 @@ import { toast } from "react-toastify";
 import Search from "@/components/icons/Search";
 
 const limaDate = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+    new Date().toLocaleString("en-US", { timeZone: "America/Lima" }),
 );
 const today =
     limaDate.getFullYear() +
@@ -439,7 +439,7 @@ function ConvertToInvoicePage() {
                 Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
             },
         }),
-        [auth?.jwtToken]
+        [auth?.jwtToken],
     );
     const getVariables = () => ({
         subsidiaryId: Number(auth?.user?.subsidiaryId),
@@ -569,42 +569,42 @@ function ConvertToInvoicePage() {
                 dataQuote.operationdetailSet.map(
                     (detail: IOperationDetail, index: number) => {
                         const calculatedUnitValue = Number(
-                            (Number(detail.unitPrice) / (1 + igv)).toFixed(6)
+                            (Number(detail.unitPrice) / (1 + igv)).toFixed(6),
                         );
 
                         return {
                             ...detail,
                             quantity: Number(
-                                detail.quantityAvailable
+                                detail.quantityAvailable,
                             ).toString(),
                             quantityReturned: Number(detail.quantityReturned),
                             quantityAvailable: Number(detail.quantityAvailable),
                             unitValue: calculatedUnitValue.toFixed(2),
                             unitPrice: Number(detail.unitPrice).toFixed(2),
                             igvPercentage: Number(detail.igvPercentage).toFixed(
-                                2
+                                2,
                             ),
                             discountPercentage: Number(
-                                detail.discountPercentage
+                                detail.discountPercentage,
                             ).toFixed(2),
                             totalDiscount: Number(detail.totalDiscount).toFixed(
-                                2
+                                2,
                             ),
                             totalValue: Number(
                                 calculatedUnitValue *
-                                    Number(detail.quantityAvailable)
+                                    Number(detail.quantityAvailable),
                             ).toFixed(2),
                             totalIgv: Number(
                                 calculatedUnitValue *
                                     Number(detail.quantityAvailable) *
-                                    igv
+                                    igv,
                             ).toFixed(2),
                             totalAmount: Number(
                                 Number(detail.unitPrice) *
-                                    Number(detail.quantityAvailable)
+                                    Number(detail.quantityAvailable),
                             ).toFixed(2),
                             totalPerception: Number(
-                                detail.totalPerception
+                                detail.totalPerception,
                             ).toFixed(2),
                             totalToPay: Number(detail.totalToPay).toFixed(2),
                             temporaryId: index + 1,
@@ -613,7 +613,7 @@ function ConvertToInvoicePage() {
                             description: String(detail.description || ""),
                             stock: 0,
                         };
-                    }
+                    },
                 );
             // Set initial client data
             setInitialClientData({
@@ -623,7 +623,7 @@ function ConvertToInvoicePage() {
             });
             // Set client search value
             setClientSearch(
-                `${dataQuote?.client.documentNumber} ${dataQuote?.client.names}`
+                `${dataQuote?.client.documentNumber} ${dataQuote?.client.names}`,
             );
             // Determine document type based on client's document
             const clientDocType =
@@ -641,9 +641,7 @@ function ConvertToInvoicePage() {
             setSale((prevSale) => ({
                 ...prevSale,
                 id: Number(dataQuote?.id),
-                igvType: Number(
-                    dataQuote?.igvType?.toString().replace("A_", "")
-                ),
+                igvType: Number(dataQuote?.igvPercentage),
                 currencyType: dataQuote?.currencyType,
                 saleExchangeRate: dataQuote?.saleExchangeRate
                     ? dataQuote?.saleExchangeRate
@@ -663,19 +661,19 @@ function ConvertToInvoicePage() {
                 totalExonerated: Number(dataQuote?.totalExonerated).toFixed(2),
                 totalDiscount: Number(dataQuote?.totalDiscount).toFixed(2),
                 discountForItem: Number(
-                    dataQuote?.discountForItem ? dataQuote?.discountForItem : 0
+                    dataQuote?.discountForItem ? dataQuote?.discountForItem : 0,
                 ).toFixed(2),
                 discountGlobal: Number(
-                    dataQuote?.discountGlobal ? dataQuote?.discountGlobal : 0
+                    dataQuote?.discountGlobal ? dataQuote?.discountGlobal : 0,
                 ).toFixed(2),
                 totalPerception: Number(
-                    dataQuote?.totalPerception ? dataQuote?.totalPerception : 0
+                    dataQuote?.totalPerception ? dataQuote?.totalPerception : 0,
                 ).toFixed(2),
                 totalToPay: Number(dataQuote?.totalToPay).toFixed(2),
                 nextTemporaryId: formattedOperationdetailSet.length + 1,
                 parentOperationDocumentType: dataQuote?.documentType.replace(
                     "A_",
-                    ""
+                    "",
                 ),
                 observation: dataQuote?.observation || "",
             }));
@@ -695,7 +693,7 @@ function ConvertToInvoicePage() {
 
         const selectedData = searchClientData?.searchClientByParameter?.find(
             (person: IPerson) =>
-                `${person.documentNumber} ${person.names}` === selectedOption
+                `${person.documentNumber} ${person.names}` === selectedOption,
         );
 
         if (selectedData) {
@@ -705,7 +703,7 @@ function ConvertToInvoicePage() {
                 clientName: selectedData.names,
                 clientDocumentType: selectedData?.documentType?.replace(
                     "A_",
-                    ""
+                    "",
                 ),
             });
         }
@@ -713,7 +711,7 @@ function ConvertToInvoicePage() {
     const handleSale = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
-        >
+        >,
     ) => {
         const { name, value } = event.target;
         const target = event.target as HTMLInputElement;
@@ -730,7 +728,7 @@ function ConvertToInvoicePage() {
             const dataList = event.target.list;
             if (dataList) {
                 const option = Array.from(dataList.options).find(
-                    (option) => option.value === value
+                    (option) => option.value === value,
                 );
                 if (option) {
                     const selectedId = option.getAttribute("data-key");
@@ -752,7 +750,7 @@ function ConvertToInvoicePage() {
     const handleProduct = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
-        >
+        >,
     ) => {
         const { name, value } = event.target;
         if (name === "name" && event.target instanceof HTMLInputElement) {
@@ -788,7 +786,7 @@ function ConvertToInvoicePage() {
         if (!barcode.trim()) return;
 
         const foundProduct = productsData?.allProducts?.find(
-            (p: IProduct) => p.barcode === barcode.trim()
+            (p: IProduct) => p.barcode === barcode.trim(),
         );
 
         if (!foundProduct) {
@@ -859,7 +857,7 @@ function ConvertToInvoicePage() {
 
     // Función para manejar la tecla Enter en el input de código de barras
     const handleBarcodeKeyPress = (
-        event: React.KeyboardEvent<HTMLInputElement>
+        event: React.KeyboardEvent<HTMLInputElement>,
     ) => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -968,7 +966,7 @@ function ConvertToInvoicePage() {
         ];
 
         const completed = loadingStates.filter(
-            (state) => !state.loading && state.data
+            (state) => !state.loading && state.data,
         ).length;
         const total = loadingStates.length;
 
@@ -1063,7 +1061,7 @@ function ConvertToInvoicePage() {
                         hideProgressBar: true,
                         autoClose: 2000,
                         type: "warning",
-                    }
+                    },
                 );
                 return false;
             }
@@ -1075,7 +1073,7 @@ function ConvertToInvoicePage() {
                         hideProgressBar: true,
                         autoClose: 2000,
                         type: "warning",
-                    }
+                    },
                 );
                 return false;
             }
@@ -1177,7 +1175,7 @@ function ConvertToInvoicePage() {
                             hideProgressBar: true,
                             autoClose: 2000,
                             type: "warning",
-                        }
+                        },
                     );
                     return false;
                 }
@@ -1239,7 +1237,7 @@ function ConvertToInvoicePage() {
                         {(() => {
                             const { completed, total } = getLoadingStatus();
                             const percentage = Math.round(
-                                (completed / total) * 100
+                                (completed / total) * 100,
                             );
                             return (
                                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-4">
@@ -1265,18 +1263,18 @@ function ConvertToInvoicePage() {
                                                 state.loading
                                                     ? "text-yellow-500"
                                                     : state.data
-                                                    ? "text-green-500"
-                                                    : "text-red-500"
+                                                      ? "text-green-500"
+                                                      : "text-red-500"
                                             }`}
                                         >
                                             {state.loading
                                                 ? "⏳ Cargando..."
                                                 : state.data
-                                                ? "✅ Listo"
-                                                : "❌ Error"}
+                                                  ? "✅ Listo"
+                                                  : "❌ Error"}
                                         </span>
                                     </div>
-                                )
+                                ),
                             )}
                         </div>
 
@@ -1339,15 +1337,21 @@ function ConvertToInvoicePage() {
                                                             className="mt-1 px-3 py-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                                             required
                                                         >
-                                                            <option value={18.0}>
+                                                            <option
+                                                                value={18.0}
+                                                            >
                                                                 18%
                                                             </option>
-                                                            <option value={10.0}>
+                                                            <option
+                                                                value={10.0}
+                                                            >
                                                                 10% (Ley 31556)
                                                             </option>
-                                                            <option value={10.5}>
-                                                                10.5% (Ley 31556 y
-                                                                32387)
+                                                            <option
+                                                                value={10.5}
+                                                            >
+                                                                10.5% (Ley 31556
+                                                                y 32387)
                                                             </option>
                                                             <option value={4}>
                                                                 4% (IVAP)
@@ -1418,7 +1422,7 @@ function ConvertToInvoicePage() {
                                                             {operationTypesData?.allOperationTypes
                                                                 ?.filter(
                                                                     (
-                                                                        o: IOperationType
+                                                                        o: IOperationType,
                                                                     ) =>
                                                                         [
                                                                             "0101", // Venta interna
@@ -1431,13 +1435,13 @@ function ConvertToInvoicePage() {
                                                                             // "1004", // Operación Sujeta a Detracción- Servicios de Transporte Carga
                                                                             "2001", // Operación Sujeta a Percepción
                                                                         ].includes(
-                                                                            o.code
-                                                                        )
+                                                                            o.code,
+                                                                        ),
                                                                 )
                                                                 .map(
                                                                     (
                                                                         o: IOperationType,
-                                                                        k: number
+                                                                        k: number,
                                                                     ) => (
                                                                         <option
                                                                             key={
@@ -1452,7 +1456,7 @@ function ConvertToInvoicePage() {
                                                                                 o.name
                                                                             }
                                                                         </option>
-                                                                    )
+                                                                    ),
                                                                 )}
                                                         </select>
                                                     </div>
@@ -1580,7 +1584,7 @@ function ConvertToInvoicePage() {
                                                                         handleSale
                                                                     }
                                                                     onFocus={(
-                                                                        e
+                                                                        e,
                                                                     ) =>
                                                                         e.target.select()
                                                                     }
@@ -1615,15 +1619,15 @@ function ConvertToInvoicePage() {
                                                             {serialsAssignedData?.allSerials
                                                                 ?.filter(
                                                                     (
-                                                                        s: ISerialAssigned
+                                                                        s: ISerialAssigned,
                                                                     ) =>
                                                                         s.documentType ===
                                                                             `A_${sale.documentType}` &&
-                                                                        !s.isGeneratedViaApi
+                                                                        !s.isGeneratedViaApi,
                                                                 )
                                                                 .map(
                                                                     (
-                                                                        s: ISerialAssigned
+                                                                        s: ISerialAssigned,
                                                                     ) => (
                                                                         <option
                                                                             key={
@@ -1637,7 +1641,7 @@ function ConvertToInvoicePage() {
                                                                                 s.serial
                                                                             }
                                                                         </option>
-                                                                    )
+                                                                    ),
                                                                 ) || (
                                                                 <option value="">
                                                                     No hay
@@ -1648,11 +1652,11 @@ function ConvertToInvoicePage() {
                                                         </select>
                                                         {serialsAssignedData?.allSerials?.filter(
                                                             (
-                                                                s: ISerialAssigned
+                                                                s: ISerialAssigned,
                                                             ) =>
                                                                 s.documentType ===
                                                                     `A_${sale.documentType}` &&
-                                                                !s.isGeneratedViaApi
+                                                                !s.isGeneratedViaApi,
                                                         ).length === 0 && (
                                                             <p className="mt-1 text-sm text-red-600 dark:text-red-500">
                                                                 No hay series
@@ -1764,7 +1768,7 @@ function ConvertToInvoicePage() {
                                                                 {searchClientData?.searchClientByParameter?.map(
                                                                     (
                                                                         n: IPerson,
-                                                                        index: number
+                                                                        index: number,
                                                                     ) => (
                                                                         <option
                                                                             key={
@@ -1775,7 +1779,7 @@ function ConvertToInvoicePage() {
                                                                             }
                                                                             value={`${n.documentNumber} ${n.names}`}
                                                                         />
-                                                                    )
+                                                                    ),
                                                                 )}
                                                             </datalist>
                                                             <button
@@ -1789,7 +1793,7 @@ function ConvertToInvoicePage() {
                                                                         clientId: 0,
                                                                     });
                                                                     setClientSearch(
-                                                                        ""
+                                                                        "",
                                                                     );
                                                                 }}
                                                             >
@@ -1799,11 +1803,11 @@ function ConvertToInvoicePage() {
                                                                 type="button"
                                                                 className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
                                                                 onClick={(
-                                                                    e
+                                                                    e,
                                                                 ) => {
                                                                     modalAddClient.show();
                                                                     setPerson(
-                                                                        initialStatePerson
+                                                                        initialStatePerson,
                                                                     );
                                                                 }}
                                                             >
@@ -1858,7 +1862,7 @@ function ConvertToInvoicePage() {
                                                             onChange={(e) =>
                                                                 setBarcodeInput(
                                                                     e.target
-                                                                        .value
+                                                                        .value,
                                                                 )
                                                             }
                                                             onKeyPress={
@@ -1879,7 +1883,7 @@ function ConvertToInvoicePage() {
                                                         type="button"
                                                         onClick={() =>
                                                             handleBarcodeSearch(
-                                                                barcodeInput
+                                                                barcodeInput,
                                                             )
                                                         }
                                                         className="px-3 py-1 text-sm bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
@@ -1909,7 +1913,7 @@ function ConvertToInvoicePage() {
                                                     {productsData?.allProducts?.map(
                                                         (
                                                             n: IProduct,
-                                                            index: number
+                                                            index: number,
                                                         ) => (
                                                             <option
                                                                 key={index}
@@ -1917,11 +1921,11 @@ function ConvertToInvoicePage() {
                                                                 value={n.name
                                                                     .replace(
                                                                         /[\n\r\s]+/g,
-                                                                        " "
+                                                                        " ",
                                                                     )
                                                                     .trim()}
                                                             />
-                                                        )
+                                                        ),
                                                     )}
                                                 </datalist>
                                                 <button
@@ -1936,7 +1940,7 @@ function ConvertToInvoicePage() {
                                                                     modalProduct.hide();
                                                                     modalAddDetail.show();
                                                                     setSaleDetail(
-                                                                        initialStateSaleDetail
+                                                                        initialStateSaleDetail,
                                                                     );
                                                                 },
                                                         });
@@ -1963,7 +1967,7 @@ function ConvertToInvoicePage() {
                                                     onClick={(e) => {
                                                         modalAddDetail.show();
                                                         setSaleDetail(
-                                                            initialStateSaleDetail
+                                                            initialStateSaleDetail,
                                                         );
                                                     }}
                                                 >
@@ -2035,7 +2039,7 @@ function ConvertToInvoicePage() {
                                                         setCashFlow({
                                                             ...cashFlow,
                                                             total: Number(
-                                                                sale.totalAmount
+                                                                sale.totalAmount,
                                                             ),
                                                         });
                                                     }

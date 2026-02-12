@@ -42,7 +42,7 @@ import ClientForm from "@/app/dashboard/sales/ClientForm";
 import SaleDetailForm from "@/app/dashboard/sales/SaleDetailForm";
 // Replace the current today constant with this:
 const limaDate = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+    new Date().toLocaleString("en-US", { timeZone: "America/Lima" }),
 );
 const today =
     limaDate.getFullYear() +
@@ -514,7 +514,7 @@ function EditQuotePage() {
                 Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
             },
         }),
-        [auth?.jwtToken]
+        [auth?.jwtToken],
     );
     const {
         loading: serialsAssignedLoading,
@@ -616,26 +616,26 @@ function EditQuotePage() {
                         return {
                             ...detail,
                             quantity: Number(
-                                detail.quantityAvailable
+                                detail.quantityAvailable,
                             ).toString(),
                             quantityReturned: Number(detail.quantityReturned),
                             quantityAvailable: Number(detail.quantityAvailable),
                             unitValue: Number(calculatedUnitValue).toFixed(6),
                             unitPrice: Number(detail.unitPrice).toFixed(6),
                             igvPercentage: Number(
-                                dataQuote?.igvPercentage
+                                dataQuote?.igvPercentage,
                             ).toFixed(2),
                             discountPercentage: Number(
-                                detail.discountPercentage
+                                detail.discountPercentage,
                             ).toFixed(2),
                             totalDiscount: Number(detail.totalDiscount).toFixed(
-                                2
+                                2,
                             ),
                             totalValue: Number(totalValue).toFixed(2),
                             totalIgv: Number(totalIgv).toFixed(2),
                             totalAmount: Number(totalAmount).toFixed(2),
                             totalPerception: Number(
-                                detail.totalPerception
+                                detail.totalPerception,
                             ).toFixed(2),
                             totalToPay: Number(totalAmount).toFixed(2),
                             temporaryId: index + 1,
@@ -644,7 +644,7 @@ function EditQuotePage() {
                             description: String(detail.description || ""),
                             stock: 0,
                         };
-                    }
+                    },
                 );
 
             setQuote((prevSale) => ({
@@ -652,9 +652,7 @@ function EditQuotePage() {
                 id: Number(dataQuote?.id),
                 serial: dataQuote?.serial,
                 correlative: dataQuote?.correlative,
-                igvType: Number(
-                    dataQuote?.igvType?.toString().replace("A_", "")
-                ),
+                igvType: Number(dataQuote?.igvPercentage),
                 currencyType: dataQuote?.currencyType,
                 saleExchangeRate: dataQuote?.saleExchangeRate
                     ? dataQuote?.saleExchangeRate
@@ -671,13 +669,13 @@ function EditQuotePage() {
                 totalExonerated: Number(dataQuote?.totalExonerated).toFixed(2),
                 totalDiscount: Number(dataQuote?.totalDiscount).toFixed(2),
                 discountForItem: Number(
-                    dataQuote?.discountForItem ? dataQuote?.discountForItem : 0
+                    dataQuote?.discountForItem ? dataQuote?.discountForItem : 0,
                 ).toFixed(2),
                 discountGlobal: Number(
-                    dataQuote?.discountGlobal ? dataQuote?.discountGlobal : 0
+                    dataQuote?.discountGlobal ? dataQuote?.discountGlobal : 0,
                 ).toFixed(2),
                 totalPerception: Number(
-                    dataQuote?.totalPerception ? dataQuote?.totalPerception : 0
+                    dataQuote?.totalPerception ? dataQuote?.totalPerception : 0,
                 ).toFixed(2),
                 totalToPay: Number(dataQuote?.totalToPay).toFixed(2),
                 nextTemporaryId: formattedOperationdetailSet.length + 1,
@@ -700,7 +698,7 @@ function EditQuotePage() {
             const filteredSeries = serialsAssignedData.allSerials.filter(
                 (s: ISerialAssigned) =>
                     s.documentType === `A_${quote.documentType}` &&
-                    !s.isGeneratedViaApi
+                    !s.isGeneratedViaApi,
             );
 
             if (filteredSeries.length > 0) {
@@ -719,7 +717,7 @@ function EditQuotePage() {
     const handleSale = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
-        >
+        >,
     ) => {
         const { name, value } = event.target;
         if (name === "igvType") {
@@ -735,7 +733,7 @@ function EditQuotePage() {
         if (!barcode.trim()) return;
 
         const foundProduct = productsData?.allProducts?.find(
-            (p: IProduct) => p.barcode === barcode.trim()
+            (p: IProduct) => p.barcode === barcode.trim(),
         );
 
         if (!foundProduct) {
@@ -806,7 +804,7 @@ function EditQuotePage() {
 
     // Función para manejar la tecla Enter en el input de código de barras
     const handleBarcodeKeyPress = (
-        event: React.KeyboardEvent<HTMLInputElement>
+        event: React.KeyboardEvent<HTMLInputElement>,
     ) => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -848,7 +846,7 @@ function EditQuotePage() {
                 quoteId: Number(quote.id),
                 serial: quote.serial,
                 correlative: parseInt(
-                    quote.correlative === "" ? "0" : quote.correlative
+                    quote.correlative === "" ? "0" : quote.correlative,
                 ),
                 operationType: quote.operationType,
                 documentType: quote.documentType,
@@ -858,56 +856,56 @@ function EditQuotePage() {
                 dueDate: quote.dueDate,
                 clientId: Number(quote.clientId),
                 productTariffIdSet: quote.operationdetailSet.map(
-                    (item: any) => item.productTariffId
+                    (item: any) => item.productTariffId,
                 ),
                 typeAffectationIdSet: quote.operationdetailSet.map(
-                    (item: any) => item.typeAffectationId
+                    (item: any) => item.typeAffectationId,
                 ),
                 quantitySet: quote.operationdetailSet.map((item: any) =>
-                    parseInt(item.quantity)
+                    parseInt(item.quantity),
                 ),
                 unitValueSet: quote.operationdetailSet.map((item: any) =>
-                    parseFloat(item.unitValue)
+                    parseFloat(item.unitValue),
                 ),
                 unitPriceSet: quote.operationdetailSet.map((item: any) =>
-                    parseFloat(item.unitPrice)
+                    parseFloat(item.unitPrice),
                 ),
                 discountPercentageSet: quote.operationdetailSet.map(
-                    (item: any) => parseFloat(item.discountPercentage) || 0
+                    (item: any) => parseFloat(item.discountPercentage) || 0,
                 ),
                 igvPercentageSet: quote.operationdetailSet.map((item: any) =>
-                    parseFloat(item.igvPercentage)
+                    parseFloat(item.igvPercentage),
                 ),
                 perceptionPercentageSet: quote.operationdetailSet.map(
-                    (item: any) => parseFloat(item.totalPerception) || 0
+                    (item: any) => parseFloat(item.totalPerception) || 0,
                 ),
                 commentSet: quote.operationdetailSet.map(
-                    (item: any) => String(item.description) || ""
+                    (item: any) => String(item.description) || "",
                 ),
                 totalDiscountSet: quote.operationdetailSet.map(
-                    (item: any) => parseFloat(item.totalDiscount) || 0
+                    (item: any) => parseFloat(item.totalDiscount) || 0,
                 ),
                 totalValueSet: quote.operationdetailSet.map((item: any) =>
-                    parseFloat(item.totalValue)
+                    parseFloat(item.totalValue),
                 ),
                 totalIgvSet: quote.operationdetailSet.map((item: any) =>
-                    parseFloat(item.totalIgv)
+                    parseFloat(item.totalIgv),
                 ),
                 totalAmountSet: quote.operationdetailSet.map((item: any) =>
-                    parseFloat(item.totalAmount)
+                    parseFloat(item.totalAmount),
                 ),
                 totalPerceptionSet: quote.operationdetailSet.map(
-                    (item: any) => parseFloat(item.totalPerception) || 0
+                    (item: any) => parseFloat(item.totalPerception) || 0,
                 ),
                 totalToPaySet: quote.operationdetailSet.map(
-                    (item: any) => parseFloat(item.totalToPay) || 0
+                    (item: any) => parseFloat(item.totalToPay) || 0,
                 ),
                 wayPaySet: quote.cashflowSet.map((item: any) => item.wayPay),
                 totalSet: quote.cashflowSet.map((item: any) =>
-                    Number(item.total)
+                    Number(item.total),
                 ),
                 descriptionSet: quote.cashflowSet.map(
-                    (item: any) => item.description || ""
+                    (item: any) => item.description || "",
                 ),
                 discountForItem: parseFloat(quote.discountForItem) || 0,
                 discountGlobal: parseFloat(quote.discountGlobal) || 0,
@@ -1112,7 +1110,7 @@ function EditQuotePage() {
                                                             onClick={(e) => {
                                                                 modalAddDetail.show();
                                                                 setSaleDetail(
-                                                                    initialStateSaleDetail
+                                                                    initialStateSaleDetail,
                                                                 );
                                                             }}
                                                         >

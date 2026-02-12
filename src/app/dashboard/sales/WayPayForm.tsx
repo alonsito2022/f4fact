@@ -232,7 +232,7 @@ function WayPayForm({
                 setCashFlow({ ...cashFlow, [name]: value });
             }
         },
-        [cashFlow, setCashFlow]
+        [cashFlow, setCashFlow],
     );
     const handleAddWayPay = useCallback(() => {
         if (Number(cashFlow.total) > 0) {
@@ -265,11 +265,11 @@ function WayPayForm({
             setInvoice((prevSale: any) => ({
                 ...prevSale,
                 cashflowSet: prevSale?.cashflowSet?.filter(
-                    (detail: ICashFlow) => detail.temporaryId !== indexToRemove
+                    (detail: ICashFlow) => detail.temporaryId !== indexToRemove,
                 ),
             }));
         },
-        [setInvoice]
+        [setInvoice],
     );
 
     // const [createPurchase] = useMutation(CREATE_PURCHASE_MUTATION);
@@ -297,7 +297,7 @@ function WayPayForm({
 
         // Validar que los wayPays de tipo 9 (POR PAGAR [CRÉDITO]) tengan fecha de transacción mayor a la fecha de emisión
         const creditWayPays = invoice.cashflowSet.filter(
-            (item: any) => item.wayPay === 9
+            (item: any) => item.wayPay === 9,
         );
         if (creditWayPays.length > 0) {
             const emitDate = new Date(invoice.emitDate);
@@ -310,7 +310,7 @@ function WayPayForm({
                             hideProgressBar: true,
                             autoClose: 2000,
                             type: "error",
-                        }
+                        },
                     );
                     return;
                 }
@@ -323,7 +323,7 @@ function WayPayForm({
                             hideProgressBar: true,
                             autoClose: 2000,
                             type: "error",
-                        }
+                        },
                     );
                     return;
                 }
@@ -334,7 +334,7 @@ function WayPayForm({
             const variables = {
                 serial: invoice.serial,
                 correlative: parseInt(
-                    invoice.correlative === "" ? "0" : invoice.correlative
+                    invoice.correlative === "" ? "0" : invoice.correlative,
                 ),
                 operationType: invoice.operationType,
                 documentType: invoice.documentType,
@@ -344,59 +344,59 @@ function WayPayForm({
                 dueDate: invoice.dueDate,
                 clientId: parseInt(invoice.clientId),
                 productTariffIdSet: invoice.operationdetailSet.map(
-                    (item: any) => item.productTariffId
+                    (item: any) => item.productTariffId,
                 ),
                 typeAffectationIdSet: invoice.operationdetailSet.map(
-                    (item: any) => item.typeAffectationId
+                    (item: any) => item.typeAffectationId,
                 ),
                 quantitySet: invoice.operationdetailSet.map((item: any) =>
-                    parseFloat(item.quantity)
+                    parseFloat(item.quantity),
                 ),
                 unitValueSet: invoice.operationdetailSet.map((item: any) =>
-                    parseFloat(item.unitValue)
+                    parseFloat(item.unitValue),
                 ),
                 unitPriceSet: invoice.operationdetailSet.map((item: any) =>
-                    parseFloat(item.unitPrice)
+                    parseFloat(item.unitPrice),
                 ),
                 discountPercentageSet: invoice.operationdetailSet.map(
-                    (item: any) => parseFloat(item.discountPercentage) || 0
+                    (item: any) => parseFloat(item.discountPercentage) || 0,
                 ),
                 igvPercentageSet: invoice.operationdetailSet.map((item: any) =>
-                    parseFloat(item.igvPercentage)
+                    parseFloat(item.igvPercentage),
                 ),
                 perceptionPercentageSet: invoice.operationdetailSet.map(
-                    (item: any) => parseFloat(item.totalPerception) || 0
+                    (item: any) => parseFloat(item.totalPerception) || 0,
                 ),
                 commentSet: invoice.operationdetailSet.map(
-                    (item: any) => String(item.description) || ""
+                    (item: any) => String(item.description) || "",
                 ),
                 totalDiscountSet: invoice.operationdetailSet.map(
-                    (item: any) => parseFloat(item.totalDiscount) || 0
+                    (item: any) => parseFloat(item.totalDiscount) || 0,
                 ),
                 totalValueSet: invoice.operationdetailSet.map((item: any) =>
-                    parseFloat(item.totalValue)
+                    parseFloat(item.totalValue),
                 ),
                 totalIgvSet: invoice.operationdetailSet.map((item: any) =>
-                    parseFloat(item.totalIgv)
+                    parseFloat(item.totalIgv),
                 ),
                 totalAmountSet: invoice.operationdetailSet.map((item: any) =>
-                    parseFloat(item.totalAmount)
+                    parseFloat(item.totalAmount),
                 ),
                 totalPerceptionSet: invoice.operationdetailSet.map(
-                    (item: any) => parseFloat(item.totalPerception) || 0
+                    (item: any) => parseFloat(item.totalPerception) || 0,
                 ),
                 totalToPaySet: invoice.operationdetailSet.map(
-                    (item: any) => parseFloat(item.totalToPay) || 0
+                    (item: any) => parseFloat(item.totalToPay) || 0,
                 ),
                 wayPaySet: invoice.cashflowSet.map((item: any) => item.wayPay),
                 totalSet: invoice.cashflowSet.map((item: any) =>
-                    Number(item.total)
+                    Number(item.total),
                 ),
                 descriptionSet: invoice.cashflowSet.map(
-                    (item: any) => item.description || ""
+                    (item: any) => item.description || "",
                 ),
                 transactionDateSet: invoice.cashflowSet.map(
-                    (item: any) => item.transactionDate || ""
+                    (item: any) => item.transactionDate || "",
                 ),
                 discountForItem: parseFloat(invoice.discountForItem) || 0,
                 discountGlobal: parseFloat(invoice.discountGlobal) || 0,
@@ -431,20 +431,20 @@ function WayPayForm({
 
                 detractionType: Number(invoice.detractionType),
                 detractionPaymentMethod: Number(
-                    invoice.detractionPaymentMethod
+                    invoice.detractionPaymentMethod,
                 ),
                 totalDetraction: Number(invoice.totalDetraction),
                 detractionPercentage: Number(invoice.detractionPercentage),
 
                 observation: invoice.observation || "",
                 isAnticipationSet: invoice.operationdetailSet.map(
-                    (item: any) => item.isAnticipation || false
+                    (item: any) => item.isAnticipation || false,
                 ),
                 relatedDocumentSerialSet: invoice.operationdetailSet.map(
-                    (item: any) => String(item.relatedDocumentSerial || "")
+                    (item: any) => String(item.relatedDocumentSerial || ""),
                 ),
                 relatedDocumentCorrelativeSet: invoice.operationdetailSet.map(
-                    (item: any) => Number(item.relatedDocumentCorrelative || 0)
+                    (item: any) => Number(item.relatedDocumentCorrelative || 0),
                 ),
                 pdfFormatForInvoices: Number(invoice.pdfFormatForInvoices) || 0,
             };
@@ -531,7 +531,7 @@ function WayPayForm({
             (total: number, detail: ICashFlow) => {
                 return total + Number(detail.total);
             },
-            0
+            0,
         );
 
         const totalTurned = Number(invoice?.totalToPay) - totalPayed;
@@ -604,7 +604,7 @@ function WayPayForm({
                                                 <option key={k} value={o.code}>
                                                     {o.name}
                                                 </option>
-                                            )
+                                            ),
                                         )}
                                     </select>
                                 </div>
@@ -715,7 +715,7 @@ function WayPayForm({
                                                         {wayPaysData?.allWayPays?.find(
                                                             (w: IWayPay) =>
                                                                 w.code ===
-                                                                item.wayPay
+                                                                item.wayPay,
                                                         )?.name || item.wayPay}
                                                     </td>
                                                     <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
@@ -730,8 +730,8 @@ function WayPayForm({
                                                             onClick={() =>
                                                                 handleRemoveCashFlow(
                                                                     Number(
-                                                                        item?.temporaryId
-                                                                    )
+                                                                        item?.temporaryId,
+                                                                    ),
                                                                 )
                                                             }
                                                         >
@@ -739,7 +739,7 @@ function WayPayForm({
                                                         </a>
                                                     </td>
                                                 </tr>
-                                            )
+                                            ),
                                         )}
                                     </tbody>
                                 </table>

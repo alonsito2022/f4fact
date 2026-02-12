@@ -479,9 +479,7 @@ function CreditPage() {
 
             setCreditNote((prevSale) => ({
                 ...prevSale,
-                igvType: Number(
-                    dataSale?.igvType?.toString().replace("A_", "")
-                ),
+                igvType: Number(dataSale?.igvPercentage),
                 currencyType: dataSale?.currencyType,
                 saleExchangeRate: dataSale?.saleExchangeRate
                     ? dataSale?.saleExchangeRate
