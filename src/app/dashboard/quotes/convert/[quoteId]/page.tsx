@@ -306,6 +306,9 @@ const QUOTE_QUERY_BY_ID = gql`
             totalAmount
             totalTaxed
             totalDiscount
+            discountGlobal
+            discountPercentageGlobal
+            discountForItem
             totalExonerated
             totalUnaffected
             totalFree
