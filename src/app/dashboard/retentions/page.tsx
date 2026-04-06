@@ -115,50 +115,58 @@ function RetentionPage() {
         return <p className="text-center text-red-500">No autorizado</p>;
     }
     return (
-        <>
-            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
-                <div className="w-full mb-1">
-                    <Breadcrumb
-                        section={"Comprobantes de retención"}
-                        article={"Comprobantes de retención"}
-                    />
-                    <RetentionFilter
-                        setFilterObj={setFilterObj}
-                        filterObj={filterObj}
-                        retentionsQuery={retentionsQuery}
-                        retentionsLoading={retentionsLoading}
-                        authContext={authContext}
-                        auth={auth}
-                    />
-                </div>
-            </div>
-            <div className="flex flex-col">
-                <div className="overflow-x-auto">
-                    <div className="inline-block min-w-full align-middle">
-                        <div className="overflow-hidden shadow">
-                            <RetentionList
-                                setFilterObj={setFilterObj}
-                                filterObj={filterObj}
-                                retentionsQuery={retentionsQuery}
-                                retentionsData={retentionsData}
-                                modalWhatsApp={modalWhatsApp}
-                                cpe={cpe}
-                                setCpe={setCpe}
-                                user={auth?.user}
-                            />
+        <div className="min-h-screen bg-white dark:bg-gray-800">
+            <div className="container mx-auto pb-16">
+                <div className="grid grid-cols-12 gap-4">
+                    <div className="col-span-1"></div>
+                    <div className="col-span-10">
+                        <div className="p-4 block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:border-gray-700">
+                            <div className="w-full mb-1">
+                                <Breadcrumb
+                                    section={"Comprobantes de retención"}
+                                    article={"Comprobantes de retención"}
+                                />
+                                <RetentionFilter
+                                    setFilterObj={setFilterObj}
+                                    filterObj={filterObj}
+                                    retentionsQuery={retentionsQuery}
+                                    retentionsLoading={retentionsLoading}
+                                    authContext={authContext}
+                                    auth={auth}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex flex-col">
+                            <div className="overflow-x-auto">
+                                <div className="inline-block min-w-full align-middle">
+                                    <div className="overflow-hidden shadow">
+                                        <RetentionList
+                                            setFilterObj={setFilterObj}
+                                            filterObj={filterObj}
+                                            retentionsQuery={retentionsQuery}
+                                            retentionsData={retentionsData}
+                                            modalWhatsApp={modalWhatsApp}
+                                            cpe={cpe}
+                                            setCpe={setCpe}
+                                            user={auth?.user}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <div className="col-span-1"></div>
                 </div>
             </div>
-
             <WhatsAppModal
                 modalWhatsApp={modalWhatsApp}
                 setModalWhatsApp={setModalWhatsApp}
                 cpe={cpe}
                 setCpe={setCpe}
                 initialStateCpe={initialStateCpe}
+                authContext={authContext}
             />
-        </>
+        </div>
     );
 }
 
