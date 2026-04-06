@@ -28,7 +28,7 @@ import Save from "@/components/icons/Save";
 import { toast } from "react-toastify";
 
 const limaDate = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+    new Date().toLocaleString("en-US", { timeZone: "America/Lima" }),
 );
 const today =
     limaDate.getFullYear() +
@@ -157,16 +157,17 @@ function NewRetentionPage() {
     const [modalAddClient, setModalAddClient] = useState<Modal | any>(null);
     const [person, setPerson] = useState(initialStatePerson);
     // Add this near the top of your component with other refs
+
     const supplierInputRef = useRef<HTMLInputElement>(null);
     const [supplierSearch, setSupplierSearch] = useState("");
     const [retention, setRetention] = useState(initialStateRetention);
     const [retentionDetail, setRetentionDetail] = useState(
-        initialStateRetentionDetail
+        initialStateRetentionDetail,
     );
     const auth = useAuth();
     const router = useRouter();
     const handleSupplierSearchChange = (
-        event: ChangeEvent<HTMLInputElement>
+        event: ChangeEvent<HTMLInputElement>,
     ) => {
         setSupplierSearch(event.target.value);
     };
@@ -175,7 +176,7 @@ function NewRetentionPage() {
 
         const selectedData = searchClientData?.searchClientByParameter?.find(
             (person: IPerson) =>
-                `${person.documentNumber} ${person.names}` === selectedOption
+                `${person.documentNumber} ${person.names}` === selectedOption,
         );
 
         if (selectedData) {
@@ -185,7 +186,7 @@ function NewRetentionPage() {
                 supplierName: selectedData.names,
                 supplierDocumentType: selectedData?.documentType?.replace(
                     "A_",
-                    ""
+                    "",
                 ),
             });
         }
@@ -198,7 +199,7 @@ function NewRetentionPage() {
                 Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
             },
         }),
-        [auth?.jwtToken]
+        [auth?.jwtToken],
     );
     const [
         searchClientQuery,
@@ -230,7 +231,7 @@ function NewRetentionPage() {
                 (type: IRetentionType) => ({
                     ...type,
                     rate: type.name.match(/\d+/)?.[0] || "0",
-                })
+                }),
             ),
         };
     }, [rawRetentionTypesData]);
@@ -264,7 +265,7 @@ function NewRetentionPage() {
     const handleRetention = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
-        >
+        >,
     ) => {
         const { name, value } = event.target;
         const target = event.target as HTMLInputElement;
@@ -323,7 +324,7 @@ function NewRetentionPage() {
                         number: Number(quota.number),
                         total: Number(quota.total),
                     })),
-                })
+                }),
             );
             const variables = {
                 serial: retention.serial,
@@ -529,7 +530,7 @@ function NewRetentionPage() {
                                                         {searchClientData?.searchClientByParameter?.map(
                                                             (
                                                                 n: IPerson,
-                                                                index: number
+                                                                index: number,
                                                             ) => (
                                                                 <option
                                                                     key={index}
@@ -538,7 +539,7 @@ function NewRetentionPage() {
                                                                     }
                                                                     value={`${n.documentNumber} ${n.names}`}
                                                                 />
-                                                            )
+                                                            ),
                                                         )}
                                                     </datalist>
                                                     <button
@@ -552,7 +553,7 @@ function NewRetentionPage() {
                                                                 supplierId: 0,
                                                             });
                                                             setSupplierSearch(
-                                                                ""
+                                                                "",
                                                             );
                                                         }}
                                                     >
@@ -564,7 +565,7 @@ function NewRetentionPage() {
                                                         onClick={(e) => {
                                                             modalAddClient.show();
                                                             setPerson(
-                                                                initialStatePerson
+                                                                initialStatePerson,
                                                             );
                                                         }}
                                                     >
@@ -627,7 +628,7 @@ function NewRetentionPage() {
                                                     {retentionTypesData?.allRetentionTypes?.map(
                                                         (
                                                             o: IRetentionType,
-                                                            k: number
+                                                            k: number,
                                                         ) => (
                                                             <option
                                                                 key={k}
@@ -635,7 +636,7 @@ function NewRetentionPage() {
                                                             >
                                                                 {o.name}
                                                             </option>
-                                                        )
+                                                        ),
                                                     )}
                                                 </select>
                                             </div>
@@ -679,7 +680,7 @@ function NewRetentionPage() {
                                                 setRetentionDetail({
                                                     ...initialStateRetentionDetail,
                                                     retentionType: Number(
-                                                        retention.retentionType
+                                                        retention.retentionType,
                                                     ),
                                                 });
                                             }}
