@@ -157,7 +157,6 @@ function NewRetentionPage() {
     const [modalAddClient, setModalAddClient] = useState<Modal | any>(null);
     const [person, setPerson] = useState(initialStatePerson);
     // Add this near the top of your component with other refs
-
     const supplierInputRef = useRef<HTMLInputElement>(null);
     const [supplierSearch, setSupplierSearch] = useState("");
     const [retention, setRetention] = useState(initialStateRetention);
