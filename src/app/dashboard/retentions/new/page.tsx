@@ -242,7 +242,11 @@ function NewRetentionPage() {
         });
     }
 
-    const [createRetention] = useCustomMutation(CREATE_RETENTION_CONSTANCE);
+    const [createRetention] = useMutation(CREATE_RETENTION_CONSTANCE, {
+        context: authContext,
+        refetchQueries: ["GetRetentions"],
+        onError: (err) => console.error("Error in unit:", err),
+    });
 
     useEffect(() => {
         if (supplierSearch.length > 2) {
@@ -714,6 +718,8 @@ function NewRetentionPage() {
             <ClientForm
                 modalAddClient={modalAddClient}
                 setModalAddClient={setModalAddClient}
+                setClientSearch={setSupplierSearch}
+                clientSearch={supplierSearch}
                 person={person}
                 setPerson={setPerson}
                 auth={auth}

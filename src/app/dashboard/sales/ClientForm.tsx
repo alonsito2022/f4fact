@@ -178,19 +178,36 @@ function ClientForm({
             ) {
                 const newPerson = data.createPerson.person;
 
-                // Update sale state with complete client information
+                const updatedFields: any = {};
+                if (sale) {
+                    if ("clientId" in sale) {
+                        updatedFields.clientId = Number(newPerson.id);
+                        updatedFields.clientName = newPerson.names;
+                        updatedFields.clientDocumentType =
+                            newPerson.documentType;
+                    } else if ("supplierId" in sale) {
+                        updatedFields.supplierId = Number(newPerson.id);
+                        updatedFields.supplierName = newPerson.names;
+                        updatedFields.supplierDocumentType =
+                            newPerson.documentType;
+                    }
+                }
+
                 setSale({
                     ...sale,
-                    clientId: Number(newPerson.id),
-                    clientName: newPerson.names,
-                    clientDocumentType: newPerson.documentType,
+                    ...updatedFields,
                 });
 
                 // Update client search field
-                setClientSearch(
-                    `${newPerson.documentNumber} ${newPerson.names}`
-                );
+                if (setClientSearch) {
+                    setClientSearch(
+                        `${newPerson.documentNumber} ${newPerson.names}`
+                    );
+                }
 
+                if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                }
                 modalAddClient.hide();
             }
         },
@@ -546,17 +563,32 @@ function ClientForm({
         }
 
         if (Number(person.id) !== 0) {
-            // en caso de que la persona ya exista, se actualiza el estado de la venta
+            const updatedFields: any = {};
+            if (sale) {
+                if ("clientId" in sale) {
+                    updatedFields.clientId = Number(person.id);
+                    updatedFields.clientName = person.names;
+                    updatedFields.clientDocumentType = person.documentType;
+                } else if ("supplierId" in sale) {
+                    updatedFields.supplierId = Number(person.id);
+                    updatedFields.supplierName = person.names;
+                    updatedFields.supplierDocumentType = person.documentType;
+                }
+            }
+
             setSale({
                 ...sale,
-                clientId: Number(person.id),
-                clientName: person.names,
-                clientDocumentType: person.documentType,
+                ...updatedFields,
             });
 
             // se actualiza el campo de busqueda de clientes
-            setClientSearch(`${person.documentNumber} ${person.names}`);
+            if (setClientSearch) {
+                setClientSearch(`${person.documentNumber} ${person.names}`);
+            }
 
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
             modalAddClient.hide();
         } else {
             const values = {
@@ -597,19 +629,7 @@ function ClientForm({
             }
         }
     };
-    useEffect(() => {
-        if (modalAddClient == null) {
-            const $targetEl = document.getElementById("modalAddClient");
-            const options: ModalOptions = {
-                placement: "top-center",
-                backdrop: "static",
-                backdropClasses:
-                    "bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40",
-                closable: false,
-            };
-            setModalAddClient(new Modal($targetEl, options));
-        }
-    }, []);
+    // El modal ya se inicializa arriba, eliminamos la duplicidad
     return (
         <>
             {/* Large Modal */}
@@ -631,6 +651,9 @@ function ClientForm({
                             <button
                                 type="button"
                                 onClick={() => {
+                                    if (document.activeElement instanceof HTMLElement) {
+                                        document.activeElement.blur();
+                                    }
                                     modalAddClient.hide();
                                 }}
                                 className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
@@ -1223,6 +1246,9 @@ function ClientForm({
                                 <button
                                     type="button"
                                     onClick={() => {
+                                        if (document.activeElement instanceof HTMLElement) {
+                                            document.activeElement.blur();
+                                        }
                                         modalAddClient.hide();
                                     }}
                                     className="px-5 py-2 inline-flex items-center gap-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:text-white dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"

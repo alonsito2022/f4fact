@@ -1,6 +1,6 @@
 "use client";
 import Breadcrumb from "@/components/Breadcrumb";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import RetentionList from "./RetentionList";
 import RetentionFilter from "./RetentionFilter";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -35,7 +35,7 @@ const initialStateCpe = {
     clientDoc: "",
 };
 const RETENTIONS_QUERY = gql`
-    query (
+    query GetRetentions(
         $subsidiaryId: Int!
         $startDate: Date!
         $endDate: Date!
@@ -107,6 +107,23 @@ function RetentionPage() {
         onCompleted: () => initFlowbite(),
         onError: (err) => console.error("Error in retentions:", err),
     });
+ 
+    useEffect(() => {
+        if (auth?.status === "authenticated" && auth?.jwtToken) {
+            retentionsQuery({
+                variables: {
+                    subsidiaryId: auth?.user?.isSuperuser
+                        ? Number(filterObj.subsidiaryId)
+                        : Number(auth?.user?.subsidiaryId),
+                    startDate: filterObj.startDate,
+                    endDate: filterObj.endDate,
+                    documentType: filterObj.documentType,
+                    page: Number(filterObj.page),
+                    pageSize: Number(filterObj.pageSize),
+                },
+            });
+        }
+    }, [auth?.status, auth?.jwtToken]);
 
     if (auth?.status === "loading") {
         return <p className="text-center">Cargando sesión...</p>;
