@@ -57,7 +57,7 @@ function SaleList({
                 document.body.removeChild(link);
             })
             .catch((error) =>
-                console.error("Error al descargar el archivo:", error)
+                console.error("Error al descargar el archivo:", error),
             );
     };
     const [cancelInvoice, { loading, error, data }] =
@@ -71,10 +71,10 @@ function SaleList({
     const handleCancelInvoice = (
         operationId: number,
         emitDate: string,
-        documentType: string
+        documentType: string,
     ) => {
         const limaDate = new Date(
-            new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+            new Date().toLocaleString("en-US", { timeZone: "America/Lima" }),
         );
         limaDate.setHours(0, 0, 0, 0); // Normalizar la fecha actual
 
@@ -84,23 +84,23 @@ function SaleList({
         const threeDaysAgo = new Date(limaDate);
         threeDaysAgo.setDate(limaDate.getDate() - 4);
 
-        if (documentType === "03") {
-            // Boleta
-            if (emitDateObj < fiveDaysAgo || emitDateObj > limaDate) {
-                toast.error(
-                    "La fecha de emisión de la boleta debe estar entre 5 días antes y hoy. "
-                );
-                return;
-            }
-        } else if (documentType === "01") {
-            // Factura
-            if (emitDateObj < threeDaysAgo || emitDateObj > limaDate) {
-                toast.error(
-                    "La fecha de emisión de la factura debe estar entre 3 días antes y hoy. "
-                );
-                return;
-            }
-        }
+        // if (documentType === "03") {
+        //     // Boleta
+        //     if (emitDateObj < fiveDaysAgo || emitDateObj > limaDate) {
+        //         toast.error(
+        //             "La fecha de emisión de la boleta debe estar entre 5 días antes y hoy. "
+        //         );
+        //         return;
+        //     }
+        // } else if (documentType === "01") {
+        //     // Factura
+        //     if (emitDateObj < threeDaysAgo || emitDateObj > limaDate) {
+        //         toast.error(
+        //             "La fecha de emisión de la factura debe estar entre 3 días antes y hoy. "
+        //         );
+        //         return;
+        //     }
+        // }
 
         cancelInvoice({
             variables: {
@@ -124,7 +124,7 @@ function SaleList({
                     });
                 } else {
                     toast.error(
-                        `Error: ${response.data.cancelInvoice.message}`
+                        `Error: ${response.data.cancelInvoice.message}`,
                     );
                 }
             })
@@ -143,7 +143,7 @@ function SaleList({
             documentType: item.documentType?.replace("A_", ""),
             fileNameXml: `${item?.subsidiary?.company?.doc}-${item?.documentType}-${item.serial}-${item.correlative}.xml`,
             fileNameCdr: `R-${item?.subsidiary?.company?.doc}-${item?.documentType}-${item.serial}-${item.correlative}.xml`,
-        })
+        }),
     );
 
     const getStatusClassName = (status: string) => {
@@ -195,8 +195,8 @@ function SaleList({
                 item.documentType === "01"
                     ? "FACTURA"
                     : item.documentType === "03"
-                    ? "BOLETA"
-                    : "NA",
+                      ? "BOLETA"
+                      : "NA",
             serial: item.serial,
             correlative: item.correlative,
             clientName: item.client?.names,
@@ -235,7 +235,7 @@ function SaleList({
         }
     };
     const hasCreditNote = transformedSalesData?.some(
-        (item: IOperation) => item?.creditNoteReferences?.length > 0
+        (item: IOperation) => item?.creditNoteReferences?.length > 0,
     );
     return (
         <>
@@ -502,7 +502,7 @@ function SaleList({
                                                             "07"
                                                                 ? "print_credit_note"
                                                                 : "print_invoice"
-                                                        }/${item.id}/`
+                                                        }/${item.id}/`,
                                                     );
                                                     pdfModal?.show();
                                                 }}
@@ -548,7 +548,7 @@ function SaleList({
                                                         e.preventDefault();
                                                         handleDownload(
                                                             xmlUrl,
-                                                            item?.fileNameXml
+                                                            item?.fileNameXml,
                                                         );
                                                     }}
                                                     className="hover:underline"
@@ -595,7 +595,7 @@ function SaleList({
                                                         e.preventDefault();
                                                         handleDownload(
                                                             cdrUrl,
-                                                            item?.fileNameCdr
+                                                            item?.fileNameCdr,
                                                         );
                                                     }}
                                                     className="hover:underline"
@@ -621,12 +621,12 @@ function SaleList({
                                             <span
                                                 data-popover-target={`popover-status-${item.id}`}
                                                 className={getStatusClassName(
-                                                    item?.operationStatus
+                                                    item?.operationStatus,
                                                 )}
                                             >
                                                 {getStatusContent(
                                                     item?.operationStatus,
-                                                    String(item?.documentType)
+                                                    String(item?.documentType),
                                                 )}
                                             </span>
                                             <Popover
@@ -672,7 +672,7 @@ function SaleList({
                                                         href="#"
                                                         onClick={() =>
                                                             handleWhatsAppClick(
-                                                                item
+                                                                item,
                                                             )
                                                         }
                                                     >
@@ -723,12 +723,12 @@ function SaleList({
                                                                     className="font-medium text-red-600 dark:text-red-500 hover:underline"
                                                                     href="#"
                                                                     onClick={(
-                                                                        e
+                                                                        e,
                                                                     ) => {
                                                                         e.preventDefault(); // Evita que el enlace cambie de página
                                                                         const confirmDelete =
                                                                             window.confirm(
-                                                                                "¿Estás seguro de que deseas anular esta factura? Esta acción no se puede deshacer."
+                                                                                "¿Estás seguro de que deseas anular esta factura? Esta acción no se puede deshacer.",
                                                                             );
 
                                                                         if (
@@ -736,10 +736,10 @@ function SaleList({
                                                                         ) {
                                                                             handleCancelInvoice(
                                                                                 Number(
-                                                                                    item?.id
+                                                                                    item?.id,
                                                                                 ),
                                                                                 item.emitDate,
-                                                                                item.documentType
+                                                                                item.documentType,
                                                                             );
                                                                         }
                                                                     }}
@@ -783,7 +783,7 @@ function SaleList({
                                         )}
                                     </td>
                                 </tr>
-                            )
+                            ),
                         )}
                     </tbody>
                     <tfoot>
@@ -813,7 +813,7 @@ function SaleList({
                                 {filteredSalesData?.allSales?.totalInvoices
                                     ? Number(
                                           filteredSalesData?.allSales
-                                              ?.totalInvoices
+                                              ?.totalInvoices,
                                       ).toFixed(2)
                                     : "0.00"}
                             </td>
@@ -845,7 +845,7 @@ function SaleList({
                                 {filteredSalesData?.allSales?.totalSalesTickets
                                     ? Number(
                                           filteredSalesData?.allSales
-                                              ?.totalSalesTickets
+                                              ?.totalSalesTickets,
                                       ).toFixed(2)
                                     : "0.00"}
                             </td>
@@ -878,7 +878,7 @@ function SaleList({
                                 {filteredSalesData?.allSales?.totalCreditNotes
                                     ? Number(
                                           filteredSalesData?.allSales
-                                              ?.totalCreditNotes
+                                              ?.totalCreditNotes,
                                       ).toFixed(2)
                                     : "0.00"}
                             </td>
