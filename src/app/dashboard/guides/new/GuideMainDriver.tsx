@@ -310,33 +310,34 @@ function GuideMainDriver({
     }, []);
 
     return (
-        <>
-            <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    DATOS DEL CONDUCTOR
-                </legend>
-                <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-5 ">
+        <div className="relative bg-white dark:bg-gray-800/80 backdrop-blur rounded-2xl border border-gray-200/80 dark:border-gray-700/60 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.2)] overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-60" />
+            <div className="p-5 sm:p-6">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-5">
+                    Datos del Conductor
+                </h2>
+                <div className="grid gap-5 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-5">
                     {/* Botón Agregar Vehiculo */}
                     <div className="md:col-span-3 lg:col-span-5">
                         <div
                             id="other_vehicles"
                             className="w-full grid gap-4 mb-4"
                         >
-                            <fieldset className="border border-gray-300 dark:border-gray-600 p-4 rounded-lg shadow-sm bg-white dark:bg-gray-800">
-                                <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                            <fieldset className="border border-gray-200/80 dark:border-gray-600/60 p-4 rounded-xl bg-gray-50/70 dark:bg-gray-700/20">
+                                <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                                     Datos del Conductor Principal
                                 </legend>
                                 <div className="grid sm:grid-cols-1 md:grid-cols-6 gap-4">
                                     {/* Tipo de documento */}
                                     <div>
-                                        <label className="text-sm text-gray-700 dark:text-gray-200">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Tipo de documento
                                         </label>
                                         <select
                                             value={guide.mainDriverDocumentType}
                                             name="mainDriverDocumentType"
                                             onChange={handleGuide}
-                                            className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                            className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-white dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                                         >
                                             {documentTypesData?.allDocumentTypes?.map(
                                                 (
@@ -357,11 +358,11 @@ function GuideMainDriver({
                                     <div>
                                         <label
                                             htmlFor="mainDriverDocumentNumber"
-                                            className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                                         >
                                             Documento número{" "}
-                                            <span className="text-green-500">
-                                                (dar enter)
+                                            <span className="text-xs text-green-500 font-normal">
+                                                (Enter)
                                             </span>
                                         </label>
                                         <input
@@ -390,53 +391,17 @@ function GuideMainDriver({
                                                         guide?.mainDriverDocumentType ===
                                                             "6")
                                                 ) {
-                                                    e.preventDefault(); // Evita que el formulario se envíe si está dentro de un formulario
-                                                    handleSntDocument(); // Llamada a la función de consulta
+                                                    e.preventDefault();
+                                                    handleSntDocument();
                                                 }
                                             }}
-                                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                            className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-white dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                                             autoComplete="off"
                                         />
                                     </div>
-                                    {/* Nombres y Apellidos del conductor */}
-                                    {/* <div className="md:col-span-2">
-                                        <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
-                                            Nombres y Apellidos del conductor
-                                        </label>
-                                        <input
-                                            type="search"
-                                            maxLength={200}
-                                            onFocus={(e) => e.target.select()}
-                                            // name="mainDriverNames"
-                                            // value={guide.mainDriverNames}
-                                            // onChange={handleGuide}
-                                            onChange={handleDriverSearchChange}
-                                            onInput={handleDriverSelect}
-                                            list="driverList"
-                                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                            autoComplete="off"
-                                        />
-                                        <datalist id="driverList">
-                                            {searchClientData?.searchClientByParameter?.map(
-                                                (n: IPerson, index: number) => (
-                                                    <option
-                                                        key={index}
-                                                        data-key={n.id}
-                                                        value={n.names}
-                                                    />
-                                                )
-                                            )}
-                                        </datalist>
-                                    </div> */}
                                     <div className="sm:col-span-2 relative">
-                                        <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Nombres y Apellidos del conductor
-                                            {/* {" showDropdown: " +
-                                                showDropdown +
-                                                " searchClientData: " +
-                                                searchClientData
-                                                    ?.searchClientByParameter
-                                                    ?.length} */}
                                         </label>
                                         <input
                                             type="text"
@@ -449,7 +414,7 @@ function GuideMainDriver({
                                             onKeyDown={handleKeyDown}
                                             name="mainDriverNames"
                                             value={guide.mainDriverNames}
-                                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                            className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-white dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                                             autoComplete="off"
                                         />
                                         {showDropdown &&
@@ -458,7 +423,7 @@ function GuideMainDriver({
                                                 ?.length > 0 && (
                                                 <div
                                                     ref={dropdownRef}
-                                                    className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                                                    className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
                                                 >
                                                     {searchClientData.searchClientByParameter.map(
                                                         (
@@ -467,11 +432,11 @@ function GuideMainDriver({
                                                         ) => (
                                                             <div
                                                                 key={person.id}
-                                                                className={`px-4 py-2 cursor-pointer ${
+                                                                className={`px-4 py-2.5 text-sm cursor-pointer ${
                                                                     index ===
                                                                     selectedIndex
-                                                                        ? "bg-blue-100 dark:bg-blue-600"
-                                                                        : "hover:bg-gray-100 dark:hover:bg-gray-600"
+                                                                        ? "bg-blue-50 dark:bg-blue-600 text-blue-700 dark:text-blue-200"
+                                                                        : "hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-200"
                                                                 }`}
                                                                 onClick={() => {
                                                                     setGuide({
@@ -488,7 +453,8 @@ function GuideMainDriver({
                                                                     );
                                                                 }}
                                                             >
-                                                                {person.names}
+                                                                <div className="font-medium">{person.names}</div>
+                                                                <div className="text-xs text-gray-500 dark:text-gray-400">{person.documentNumber}</div>
                                                             </div>
                                                         )
                                                     )}
@@ -499,7 +465,7 @@ function GuideMainDriver({
                                     <div>
                                         <label
                                             htmlFor="mainDriverDriverLicense"
-                                            className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                                         >
                                             Licencia de conducir
                                         </label>
@@ -513,7 +479,7 @@ function GuideMainDriver({
                                             }
                                             onChange={handleGuide}
                                             onFocus={(e) => e.target.select()}
-                                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                            className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-white dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                                             autoComplete="off"
                                         />
                                     </div>
@@ -521,12 +487,11 @@ function GuideMainDriver({
                             </fieldset>
                             {guide?.documentType === "09" ||
                                 (guide?.documentType === "31" && (
-                                    <fieldset className="border border-gray-300 dark:border-gray-600 p-4 rounded-lg shadow-sm bg-white dark:bg-gray-800">
-                                        <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                            Datos de los Conductores Secundarios
-                                            (Máximo 2 conductores)
+                                    <fieldset className="border border-gray-200/80 dark:border-gray-600/60 p-4 rounded-xl bg-gray-50/70 dark:bg-gray-700/20">
+                                        <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                            Datos de los Conductores Secundarios (Máximo 2)
                                         </legend>
-                                        <div className="grid  gap-4">
+                                        <div className="grid gap-4">
                                             {guide.othersDrivers.map(
                                                 (
                                                     item: IPerson,
@@ -566,16 +531,31 @@ function GuideMainDriver({
                             (guide?.documentType === "31" && (
                                 <button
                                     type="button"
-                                    className="px-5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
+                                    className="group relative inline-flex items-center justify-center gap-2 h-10 px-5 bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 rounded-xl font-medium text-sm border-2 border-dashed border-blue-300/80 dark:border-blue-500/40 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:shadow-md active:scale-[0.98] transition-all duration-200"
                                     onClick={handleAddDriver}
                                 >
-                                    AGREGAR CONDUCTOR
+                                    <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/25">
+                                        <svg
+                                            className="w-3.5 h-3.5"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            strokeWidth={2.5}
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M12 4v16m8-8H4"
+                                            />
+                                        </svg>
+                                    </span>
+                                    Agregar conductor
                                 </button>
                             ))}
                     </div>
                 </div>
-            </fieldset>
-        </>
+            </div>
+        </div>
     );
 }
 

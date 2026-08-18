@@ -5,7 +5,7 @@ import Popover from "@/components/Popover";
 import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import SalePagination from "../sales/SalePagination";
+import GuidePagination from "./GuidePagination";
 import LoadingIcon from "@/components/icons/LoadingIcon";
 import { Modal } from "flowbite";
 import PdfPreviewModal from "../sales/PdfPreviewModal";
@@ -25,6 +25,7 @@ function GuideList({
     filterObj,
     guidesQuery,
     guidesData,
+    guidesLoading,
     modalWhatsApp,
     cpe,
     setCpe,
@@ -34,7 +35,7 @@ function GuideList({
     const [pdfUrl, setPdfUrl] = useState<string>("");
     const handleDownload = (url: string, filename: string) => {
         if (!url || !filename) {
-            toast.error("URL o nombre de archivo no válido");
+            toast.error("URL o nombre de archivo no valido");
             return;
         }
 
@@ -48,7 +49,7 @@ function GuideList({
             .then((blob) => {
                 const link = document.createElement("a");
                 link.href = URL.createObjectURL(blob);
-                link.download = filename; // Nombre del archivo a descargar
+                link.download = filename;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -74,6 +75,9 @@ function GuideList({
         if (status === "06") {
             return `${baseClasses} bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap`;
         }
+        if (status === "07") {
+            return `${baseClasses} bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300 text-nowrap`;
+        }
         return `${baseClasses}`;
     };
 
@@ -90,6 +94,11 @@ function GuideList({
             return "-";
         }
         if (status === "06") return <SunatCancel />;
+        if (status === "07") {
+            return (
+                <span className="text-red-600 font-bold text-xs">RECHAZADO</span>
+            );
+        }
         return "";
     };
 
@@ -100,11 +109,19 @@ function GuideList({
             return (
                 <p>
                     {item.sunatDescriptionLow ||
-                        "Los documentos no aceptados por la SUNAT se consideran como documentos ANULADOS para efectos tributarios en la mayoría de casos."}
+                        "Los documentos no aceptados por la SUNAT se consideran como documentos ANULADOS para efectos tributarios en la mayoria de casos."}
                 </p>
             );
         }
-        return <p>Sin información</p>;
+        if (item.operationStatus === "07") {
+            return (
+                <p>
+                    {item.sunatDescription ||
+                        "La guia fue rechazada por SUNAT. Verifique los datos y vuelva a emitir."}
+                </p>
+            );
+        }
+        return <p>Sin informacion</p>;
     };
     const handleWhatsAppClick = (item: IOperation) => {
         modalWhatsApp.show();
@@ -115,7 +132,7 @@ function GuideList({
                 item.documentType === "09"
                     ? "GUIA DE REMISION REMITENTE"
                     : item.documentType === "31"
-                    ? "GUÍA DE REMISIÓN TRANSPORTISTA"
+                    ? "GUIA DE REMISION TRANSPORTISTA"
                     : "NA",
             serial: item.serial,
             correlative: item.correlative,
@@ -163,7 +180,7 @@ function GuideList({
                 }
             })
             .catch((err) => {
-                toast.error("Error al anular la factura.");
+                toast.error("Error al anular la guia.");
                 console.error(err, {
                     operationId,
                     lowDate: today,
@@ -174,8 +191,6 @@ function GuideList({
         if (!emitTime) return "";
 
         try {
-            // If emitTime is already a time string (e.g., "15:46:59.855548")
-            // Extract only hours and minutes
             const timeMatch = emitTime.match(/^(\d{1,2}):(\d{2})/);
             if (timeMatch) {
                 const hours = timeMatch[1].padStart(2, "0");
@@ -183,7 +198,6 @@ function GuideList({
                 return `${hours}:${minutes}`;
             }
 
-            // Fallback: try to parse as full datetime
             const date = new Date(emitTime);
             if (!isNaN(date.getTime())) {
                 return date.toLocaleTimeString("es-PE", {
@@ -194,94 +208,79 @@ function GuideList({
                 });
             }
 
-            return emitTime; // Return original if parsing fails
+            return emitTime;
         } catch (error) {
             console.error("Error formatting emitTime:", error);
-            return emitTime; // Return original value if formatting fails
+            return emitTime;
         }
     };
+
+    if (guidesLoading && !guidesData) {
+        return (
+            <div className="w-full">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-12">
+                    <div className="flex flex-col items-center justify-center gap-4">
+                        <div className="relative">
+                            <div className="w-12 h-12 rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
+                            <div className="w-12 h-12 rounded-full border-4 border-transparent border-t-blue-600 animate-spin absolute top-0 left-0"></div>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Cargando guias...
+                            </p>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                Espere un momento
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!guidesLoading && transformedSalesData?.length === 0) {
+        return (
+            <div className="w-full">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-12">
+                    <div className="flex flex-col items-center justify-center gap-4">
+                        <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                            <svg
+                                className="w-8 h-8 text-gray-400 dark:text-gray-500"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={1.5}
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                                />
+                            </svg>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                No se encontraron guias
+                            </p>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 max-w-sm">
+                                No hay registros de guias que coincidan con los filtros seleccionados. Intente ajustar las fechas o el tipo de documento.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
             <div className="w-full overflow-x-auto">
-                <div className="flex flex-wrap items-center gap-4 my-3 pl-3">
-                    <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-500 dark:text-gray-400">
-                            Página:
-                        </label>
-                        <input
-                            type="number"
-                            name="page"
-                            disabled
-                            min="1"
-                            onChange={(e) =>
-                                setFilterObj({
-                                    ...filterObj,
-                                    page: Number(e.target.value),
-                                })
-                            }
-                            value={filterObj.page}
-                            className="form-control-sm w-16 text-center"
-                        />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-500 dark:text-gray-400">
-                            Registros por Página:
-                        </label>
-                        <select
-                            name="pageSize"
-                            disabled
-                            value={filterObj.pageSize}
-                            onChange={(e) =>
-                                setFilterObj({
-                                    ...filterObj,
-                                    pageSize: Number(e.target.value),
-                                })
-                            }
-                            className="form-control-sm w-20"
-                        >
-                            {[10, 20, 50].map((size) => (
-                                <option key={size} value={size}>
-                                    {size}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-500 dark:text-gray-400">
-                            Total de Páginas:
-                        </label>
-                        <input
-                            type="number"
-                            disabled
-                            readOnly
-                            defaultValue={
-                                guidesData?.allGuides?.totalNumberOfPages
-                            }
-                            className="form-control-sm w-16 text-center"
-                        />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-500 dark:text-gray-400">
-                            Total de Registros:
-                        </label>
-                        <input
-                            type="number"
-                            disabled
-                            readOnly
-                            defaultValue={
-                                guidesData?.allGuides?.totalNumberOfSales
-                            }
-                            className="form-control-sm w-16 text-center"
-                        />
-                    </div>
-                    <SalePagination
-                        filterObj={filterObj}
-                        setFilterObj={setFilterObj}
-                        guidesQuery={guidesQuery}
-                        guidesData={guidesData}
-                    />
-                </div>
-
+                <GuidePagination
+                    filterObj={filterObj}
+                    setFilterObj={setFilterObj}
+                    guidesQuery={guidesQuery}
+                    guidesData={guidesData}
+                />
                 <table className="w-full border-collapse border border-gray-100 dark:border-gray-600">
                     <thead className="bg-gray-100 dark:bg-gray-700 text-[13px] text-black-500 uppercase dark:text-gray-400">
                         <tr>
@@ -337,293 +336,309 @@ function GuideList({
                         </tr>
                     </thead>
                     <tbody className="text-[13px] [&>tr:nth-child(even)]:bg-gray-100 dark:[&>tr:nth-child(even)]:bg-gray-800">
-                        {transformedSalesData?.map(
-                            (item: IOperation, index: number) => (
-                                <tr
-                                    key={item.id}
-                                    className={`border border-gray-100 dark:border-gray-600 ${
-                                        item.operationStatus === "06"
-                                            ? "line-through text-red-600 dark:text-red-400"
-                                            : ""
-                                    }`}
+                        {guidesLoading ? (
+                            <tr>
+                                <td
+                                    colSpan={user?.isSuperuser ? 14 : 11}
+                                    className="text-center py-16"
                                 >
-                                    {user?.isSuperuser && (
-                                        <>
-                                            <td className="p-0.5">
-                                                {index + 1}
-                                            </td>
-                                            <td className="p-0.5">
-                                                {item.subsidiary.companyName}
-                                            </td>
-                                            <td className="p-0.5 pl-2 text-nowrap font-bold text-blue-600 dark:text-blue-500">
-                                                {formatEmitTime(item.emitTime)}
-                                            </td>
-                                        </>
-                                    )}
-                                    <td className="p-0.5 pl-2 text-nowrap">
-                                        {item.emitDate}
-                                    </td>
-                                    <td className="p-0.5 text-center">
-                                        {item.documentType}
-                                    </td>
-                                    <td className="p-0.5 text-center">
-                                        {item.serial}
-                                    </td>
-                                    <td className="p-0.5 tex-left">
-                                        {item.correlative}
-                                    </td>
-                                    <td className="p-0.5 text-nowrap">
-                                        {item.client?.names}
-                                    </td>
-                                    <td className="p-0.5 text-center">
-                                        {item.sendWhatsapp ? (
-                                            "SI"
-                                        ) : (
-                                            <span className="text-red-800 font-black">
-                                                x
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td className="p-0.5 text-center">
-                                        {(item.documentType === "09" ||
-                                            item.documentType === "31") && (
-                                            <a
-                                                // href={
-                                                //     process.env
-                                                //         .NEXT_PUBLIC_BASE_API +
-                                                //     "/operations/print_guide/" +
-                                                //     item.id +
-                                                //     "/"
-                                                // }
-                                                href="#"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    setPdfUrl(
-                                                        `${process.env.NEXT_PUBLIC_BASE_API}/operations/print_guide/${item.id}/`
-                                                    );
-                                                    pdfModal?.show();
-                                                }}
-                                                className="hover:underline"
-                                                // target="_blank"
-                                            >
-                                                <span className="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
-                                                    PDF
-                                                </span>
-                                            </a>
-                                        )}
-                                    </td>
-                                    <td className="p-0.5 text-center">
-                                        {(() => {
-                                            const hasXml =
-                                                item.operationStatus === "02" &&
-                                                item.linkXml;
-
-                                            if (!hasXml) return null;
-
-                                            const xmlUrl =
-                                                item.operationStatus === "02"
-                                                    ? item.linkXml
-                                                    : item.linkXmlLow;
-
-                                            return (
-                                                <a
-                                                    href="#"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        handleDownload(
-                                                            xmlUrl,
-                                                            item?.fileNameXml
-                                                        );
-                                                    }}
-                                                    className="hover:underline"
-                                                >
-                                                    <span className="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300 text-nowrap">
-                                                        XML
-                                                    </span>
-                                                </a>
-                                            );
-                                        })()}
-                                    </td>
-                                    <td className="p-0.5 text-center">
-                                        {(() => {
-                                            const hasCdr =
-                                                item.operationStatus === "02" &&
-                                                item.linkCdr;
-                                            if (!hasCdr) return null;
-
-                                            const cdrUrl =
-                                                item.operationStatus === "02"
-                                                    ? item.linkCdr
-                                                    : item.linkCdrLow;
-                                            const getCdrStyle = () => {
-                                                if (
-                                                    item.operationStatus ===
-                                                    "02"
-                                                ) {
-                                                    return item.documentType ===
-                                                        "09"
-                                                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-                                                        : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-                                                }
-                                                return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-                                            };
-
-                                            return (
-                                                <a
-                                                    href="#"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        handleDownload(
-                                                            cdrUrl,
-                                                            item?.fileNameCdr
-                                                        );
-                                                    }}
-                                                    className="hover:underline"
-                                                >
-                                                    <span
-                                                        className={`text-xs font-medium me-2 px-2.5 py-0.5 rounded-full text-nowrap ${getCdrStyle()}`}
-                                                    >
-                                                        {item.operationStatus ===
-                                                            "06" &&
-                                                        !item.linkCdrLow
-                                                            ? "SIN CDR"
-                                                            : "CDR"}
-                                                    </span>
-                                                </a>
-                                            );
-                                        })()}
-                                    </td>
-                                    <td className="p-0.5 text-center">
-                                        {!(
-                                            item.operationStatus === "06" &&
-                                            (item.documentType === "09" ||
-                                                item.documentType === "31")
-                                        ) && (
+                                    <div className="flex flex-col items-center justify-center gap-3">
+                                        <div className="relative">
+                                            <div className="w-10 h-10 rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
+                                            <div className="w-10 h-10 rounded-full border-4 border-transparent border-t-blue-600 animate-spin absolute top-0 left-0"></div>
+                                        </div>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            Actualizando registros...
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : (
+                            transformedSalesData?.map(
+                                (item: IOperation, index: number) => (
+                                    <tr
+                                        key={item.id}
+                                        className={`border border-gray-100 dark:border-gray-600 ${
+                                            item.operationStatus === "06"
+                                                ? "line-through text-red-600 dark:text-red-400"
+                                                : item.operationStatus === "07"
+                                                ? "text-red-500 dark:text-red-400"
+                                                : ""
+                                        }`}
+                                    >
+                                        {user?.isSuperuser && (
                                             <>
-                                                <span
-                                                    data-popover-target={`popover-status-${item.id}`}
-                                                    className={getStatusClassName(
-                                                        item?.operationStatus
-                                                    )}
-                                                >
-                                                    {getStatusContent(
-                                                        item?.operationStatus,
-                                                        String(
-                                                            item?.documentType
-                                                        )
-                                                    )}
-                                                </span>
-                                                <Popover
-                                                    id={`popover-status-${item.id}`}
-                                                >
-                                                    {getPopoverContent(item)}
-                                                </Popover>
+                                                <td className="p-0.5">
+                                                    {index + 1}
+                                                </td>
+                                                <td className="p-0.5">
+                                                    {item.subsidiary.companyName}
+                                                </td>
+                                                <td className="p-0.5 pl-2 text-nowrap font-bold text-blue-600 dark:text-blue-500">
+                                                    {formatEmitTime(item.emitTime)}
+                                                </td>
                                             </>
                                         )}
-                                    </td>
-                                    <td className="p-0.5">
-                                        {item?.operationStatus === "02" ||
-                                        item?.operationStatus === "06" ? (
-                                            <>
-                                                <span
-                                                    data-popover-target={
-                                                        "popover-options-" +
-                                                        item.id
-                                                    }
-                                                    className={
-                                                        "font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer"
-                                                    }
-                                                >
-                                                    Opciones
+                                        <td className="p-0.5 pl-2 text-nowrap">
+                                            {item.emitDate}
+                                        </td>
+                                        <td className="p-0.5 text-center">
+                                            {item.documentType}
+                                        </td>
+                                        <td className="p-0.5 text-center">
+                                            {item.serial}
+                                        </td>
+                                        <td className="p-0.5 text-left">
+                                            {item.correlative}
+                                        </td>
+                                        <td className="p-0.5 text-nowrap">
+                                            {item.client?.names}
+                                        </td>
+                                        <td className="p-0.5 text-center">
+                                            {item.sendWhatsapp ? (
+                                                "SI"
+                                            ) : (
+                                                <span className="text-red-800 font-black">
+                                                    x
                                                 </span>
-                                                <Popover
-                                                    id={
-                                                        "popover-options-" +
-                                                        item.id
-                                                    }
+                                            )}
+                                        </td>
+                                        <td className="p-0.5 text-center">
+                                            {(item.documentType === "09" ||
+                                                item.documentType === "31") && (
+                                                <a
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setPdfUrl(
+                                                            `${process.env.NEXT_PUBLIC_BASE_API}/operations/print_guide/${item.id}/`
+                                                        );
+                                                        pdfModal?.show();
+                                                    }}
+                                                    className="hover:underline"
                                                 >
+                                                    <span className="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
+                                                        PDF
+                                                    </span>
+                                                </a>
+                                            )}
+                                        </td>
+                                        <td className="p-0.5 text-center">
+                                            {(() => {
+                                                const hasXml =
+                                                    item.operationStatus === "02" &&
+                                                    item.linkXml;
+
+                                                if (!hasXml) return null;
+
+                                                const xmlUrl =
+                                                    item.operationStatus === "02"
+                                                        ? item.linkXml
+                                                        : item.linkXmlLow;
+
+                                                return (
                                                     <a
-                                                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                                                         href="#"
-                                                        onClick={() =>
-                                                            handleWhatsAppClick(
-                                                                item
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            handleDownload(
+                                                                xmlUrl,
+                                                                item?.fileNameXml
+                                                            );
+                                                        }}
+                                                        className="hover:underline"
+                                                    >
+                                                        <span className="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300 text-nowrap">
+                                                            XML
+                                                        </span>
+                                                    </a>
+                                                );
+                                            })()}
+                                        </td>
+                                        <td className="p-0.5 text-center">
+                                            {(() => {
+                                                const hasCdr =
+                                                    item.operationStatus === "02" &&
+                                                    item.linkCdr;
+                                                if (!hasCdr) return null;
+
+                                                const cdrUrl =
+                                                    item.operationStatus === "02"
+                                                        ? item.linkCdr
+                                                        : item.linkCdrLow;
+                                                const getCdrStyle = () => {
+                                                    if (
+                                                        item.operationStatus ===
+                                                        "02"
+                                                    ) {
+                                                        return item.documentType ===
+                                                            "09"
+                                                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                                            : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+                                                    }
+                                                    return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+                                                };
+
+                                                return (
+                                                    <a
+                                                        href="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            handleDownload(
+                                                                cdrUrl,
+                                                                item?.fileNameCdr
+                                                            );
+                                                        }}
+                                                        className="hover:underline"
+                                                    >
+                                                        <span
+                                                            className={`text-xs font-medium me-2 px-2.5 py-0.5 rounded-full text-nowrap ${getCdrStyle()}`}
+                                                        >
+                                                            {item.operationStatus ===
+                                                                "06" &&
+                                                            !item.linkCdrLow
+                                                                ? "SIN CDR"
+                                                                : "CDR"}
+                                                        </span>
+                                                    </a>
+                                                );
+                                            })()}
+                                        </td>
+                                        <td className="p-0.5 text-center">
+                                            {!(
+                                                item.operationStatus === "06" &&
+                                                (item.documentType === "09" ||
+                                                    item.documentType === "31")
+                                            ) && (
+                                                <>
+                                                    <span
+                                                        data-popover-target={`popover-status-${item.id}`}
+                                                        className={getStatusClassName(
+                                                            item?.operationStatus
+                                                        )}
+                                                    >
+                                                        {getStatusContent(
+                                                            item?.operationStatus,
+                                                            String(
+                                                                item?.documentType
                                                             )
+                                                        )}
+                                                    </span>
+                                                    <Popover
+                                                        id={`popover-status-${item.id}`}
+                                                    >
+                                                        {getPopoverContent(item)}
+                                                    </Popover>
+                                                </>
+                                            )}
+                                        </td>
+                                        <td className="p-0.5">
+                                            {item?.operationStatus === "02" ||
+                                            item?.operationStatus === "06" ||
+                                            item?.operationStatus === "07" ? (
+                                                <>
+                                                    <span
+                                                        data-popover-target={
+                                                            "popover-options-" +
+                                                            item.id
+                                                        }
+                                                        className={
+                                                            "font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer"
                                                         }
                                                     >
-                                                        Enviar por WhatsApp
-                                                    </a>
-                                                    <br />
-                                                    {item.operationStatus !==
-                                                        "06" && (
-                                                        <>
-                                                            <a
-                                                                className="font-medium text-red-600 dark:text-red-500 hover:underline"
-                                                                href="#"
-                                                                onClick={(
-                                                                    e
-                                                                ) => {
-                                                                    e.preventDefault(); // Evita que el enlace cambie de página
-                                                                    const confirmDelete =
-                                                                        window.confirm(
-                                                                            "Esta opción solo indicará que la Guía de Remision seleccionada está inutilizada para un control interno, para dar de baja una Guía debe hacerse con clave SOL."
-                                                                        );
+                                                        Opciones
+                                                    </span>
+                                                    <Popover
+                                                        id={
+                                                            "popover-options-" +
+                                                            item.id
+                                                        }
+                                                    >
+                                                        <a
+                                                            className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                                            href="#"
+                                                            onClick={() =>
+                                                                handleWhatsAppClick(
+                                                                    item
+                                                                )
+                                                            }
+                                                        >
+                                                            Enviar por WhatsApp
+                                                        </a>
+                                                        <br />
+                                                        {item.operationStatus !==
+                                                            "06" &&
+                                                            item.operationStatus !==
+                                                            "07" && (
+                                                                <>
+                                                                    <a
+                                                                        className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                                                                        href="#"
+                                                                        onClick={(
+                                                                            e
+                                                                        ) => {
+                                                                            e.preventDefault();
+                                                                            const confirmDelete =
+                                                                                window.confirm(
+                                                                                    "Esta opcion solo indicara que la Guia de Remision seleccionada esta inutilizada para un control interno, para dar de baja una Guia debe hacerse con clave SOL."
+                                                                                );
 
-                                                                    if (
-                                                                        confirmDelete
-                                                                    ) {
-                                                                        handleCancelInvoice(
-                                                                            Number(
-                                                                                item?.id
-                                                                            )
-                                                                        );
-                                                                    }
-                                                                }}
-                                                            >
-                                                                INUTILIZAR GUÍA
-                                                                DE REMISION
-                                                                (INTERNO)
-                                                            </a>
-                                                            <br />
-                                                        </>
-                                                    )}
+                                                                            if (
+                                                                                confirmDelete
+                                                                            ) {
+                                                                                handleCancelInvoice(
+                                                                                    Number(
+                                                                                        item?.id
+                                                                                    )
+                                                                                );
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        INUTILIZAR GUIA
+                                                                        DE REMISION
+                                                                        (INTERNO)
+                                                                    </a>
+                                                                    <br />
+                                                                </>
+                                                            )}
 
-                                                    <a
-                                                        className="font-medium text-green-600 dark:text-green-500 hover:underline"
-                                                        target="_blank"
-                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsultaunificadalibre/consultaUnificadaLibre/consulta"
-                                                    >
-                                                        CONSULTA SUNAT 1
-                                                    </a>
-                                                    <br />
-                                                    <a
-                                                        className="font-medium text-green-600 dark:text-green-500 hover:underline"
-                                                        target="_blank"
-                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
-                                                    >
-                                                        CONSULTA SUNAT 2
-                                                    </a>
-                                                    <br />
-                                                    <a
-                                                        className="font-medium text-green-600 dark:text-green-500 hover:underline"
-                                                        target="_blank"
-                                                        href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
-                                                    >
-                                                        Verificar XML en la
-                                                        SUNAT
-                                                    </a>
-                                                </Popover>
-                                            </>
-                                        ) : (
-                                            item?.operationStatusReadable
-                                        )}
-                                    </td>
-                                </tr>
+                                                        <a
+                                                            className="font-medium text-green-600 dark:text-green-500 hover:underline"
+                                                            target="_blank"
+                                                            href="https://ww1.sunat.gob.pe/ol-ti-itconsultaunificadalibre/consultaUnificadaLibre/consulta"
+                                                        >
+                                                            CONSULTA SUNAT 1
+                                                        </a>
+                                                        <br />
+                                                        <a
+                                                            className="font-medium text-green-600 dark:text-green-500 hover:underline"
+                                                            target="_blank"
+                                                            href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
+                                                        >
+                                                            CONSULTA SUNAT 2
+                                                        </a>
+                                                        <br />
+                                                        <a
+                                                            className="font-medium text-green-600 dark:text-green-500 hover:underline"
+                                                            target="_blank"
+                                                            href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
+                                                        >
+                                                            Verificar XML en la
+                                                            SUNAT
+                                                        </a>
+                                                    </Popover>
+                                                </>
+                                            ) : (
+                                                item?.operationStatusReadable
+                                            )}
+                                        </td>
+                                    </tr>
+                                )
                             )
                         )}
                     </tbody>
                 </table>
-                <SalePagination
+                <GuidePagination
                     filterObj={filterObj}
                     setFilterObj={setFilterObj}
                     guidesQuery={guidesQuery}

@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import GuideList from "./GuideList";
 import GuideFilter from "./GuideFilter";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { gql, useLazyQuery } from "@apollo/client";
+import { gql, useLazyQuery, useQuery } from "@apollo/client";
 import { initFlowbite, Modal } from "flowbite";
 import WhatsAppModal from "../sales/WhatsAppModal";
 
@@ -83,6 +83,20 @@ const GUIDES_QUERY = gql`
     }
 `;
 
+const SUBSIDIARIES_WITH_GUIDES_QUERY = gql`
+    query {
+        subsidiariesWithGuides {
+            id
+            serial
+            name
+            company {
+                id
+                businessName
+            }
+        }
+    }
+`;
+
 function GuidePage() {
     const [filterObj, setFilterObj] = useState(initialStateFilterObj);
     const [cpe, setCpe] = useState(initialStateCpe);
@@ -105,6 +119,11 @@ function GuidePage() {
         fetchPolicy: "network-only",
         onCompleted: () => initFlowbite(),
         onError: (err) => console.error("Error in guides:", err),
+    });
+
+    const { data: subsidiariesData } = useQuery(SUBSIDIARIES_WITH_GUIDES_QUERY, {
+        context: authContext,
+        skip: !auth?.jwtToken,
     });
 
     useEffect(() => {
@@ -132,38 +151,34 @@ function GuidePage() {
     }
     return (
         <div className="min-h-screen bg-white dark:bg-gray-800">
-            <div className="container mx-auto pb-16">
-                <div className="grid grid-cols-12 gap-4">
-                    <div className="col-span-1"></div>
-                    <div className="col-span-10">
-                        <GuideFilter
-                            setFilterObj={setFilterObj}
-                            filterObj={filterObj}
-                            guidesQuery={guidesQuery}
-                            guidesLoading={guidesLoading}
-                            authContext={authContext}
-                            auth={auth}
-                        />
-                        <div className="flex flex-col">
-                            <div className="overflow-x-auto">
-                                <div className="inline-block min-w-full align-middle">
-                                    <div className="overflow-hidden shadow">
-                                        <GuideList
-                                            setFilterObj={setFilterObj}
-                                            filterObj={filterObj}
-                                            guidesQuery={guidesQuery}
-                                            guidesData={guidesData}
-                                            modalWhatsApp={modalWhatsApp}
-                                            cpe={cpe}
-                                            setCpe={setCpe}
-                                            user={auth?.user}
-                                        />
-                                    </div>
-                                </div>
+            <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 pb-16">
+                <GuideFilter
+                    setFilterObj={setFilterObj}
+                    filterObj={filterObj}
+                    guidesQuery={guidesQuery}
+                    guidesLoading={guidesLoading}
+                    authContext={authContext}
+                    auth={auth}
+                    subsidiariesData={subsidiariesData}
+                />
+                <div className="flex flex-col">
+                    <div className="overflow-x-auto">
+                        <div className="inline-block min-w-full align-middle">
+                            <div className="overflow-hidden shadow">
+                                <GuideList
+                                    setFilterObj={setFilterObj}
+                                    filterObj={filterObj}
+                                    guidesQuery={guidesQuery}
+                                    guidesData={guidesData}
+                                    guidesLoading={guidesLoading}
+                                    modalWhatsApp={modalWhatsApp}
+                                    cpe={cpe}
+                                    setCpe={setCpe}
+                                    user={auth?.user}
+                                />
                             </div>
                         </div>
                     </div>
-                    <div className="col-span-1"></div>
                 </div>
             </div>
             <WhatsAppModal

@@ -33,7 +33,7 @@ const GuideDocumentItem: React.FC<GuideDocumentItemProps> = ({
         <>
             <div className="grid sm:grid-cols-1 md:grid-cols-6 gap-4">
                 <div className="md:col-span-2">
-                    <label className="text-sm text-gray-700 dark:text-gray-200">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Serie
                     </label>
                     <input
@@ -44,11 +44,11 @@ const GuideDocumentItem: React.FC<GuideDocumentItemProps> = ({
                         value={item.serial}
                         onChange={handleChange}
                         autoComplete="off"
-                        className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-white dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                     />
                 </div>
                 <div>
-                    <label className="text-sm text-gray-700 dark:text-gray-200">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Número
                     </label>
                     <input
@@ -59,18 +59,18 @@ const GuideDocumentItem: React.FC<GuideDocumentItemProps> = ({
                         value={item.correlative}
                         onChange={handleChange}
                         autoComplete="off"
-                        className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-white dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                     />
                 </div>
                 <div className="md:col-span-2">
-                    <label className="text-sm text-gray-700 dark:text-gray-200">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Tipo documento
                     </label>
                     <select
                         value={item.documentType}
                         name="documentType"
                         onChange={handleChange}
-                        className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-white dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                     >
                         <option value={"01"}>FACTURA</option>
                         <option value={"03"}>BOLETA DE VENTA</option>
@@ -83,11 +83,12 @@ const GuideDocumentItem: React.FC<GuideDocumentItemProps> = ({
                         </option>
                     </select>
                 </div>
-                <div className="flex items-center justify-center">
+                <div className="flex items-end justify-center pb-1">
                     <button
                         type="button"
                         onClick={onRemove}
-                        className="text-red-600 hover:text-red-800 text-sm px-2 py-1"
+                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                        title="Eliminar documento"
                     >
                         <Delete />
                     </button>

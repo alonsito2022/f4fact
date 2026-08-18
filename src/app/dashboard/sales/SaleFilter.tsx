@@ -1,5 +1,5 @@
 "use client";
-import { ChangeEvent, FormEvent, useState, useEffect, useMemo } from "react";
+import { ChangeEvent, FormEvent, useState, useEffect, useMemo, useRef } from "react";
 import Add from "@/components/icons/Add";
 import Search from "@/components/icons/Search";
 import Filter from "@/components/icons/Filter";
@@ -43,15 +43,15 @@ const SEARCH_CLIENT_BY_PARAMETER = gql`
     }
 `;
 
-const SUBSIDIARIES_QUERY = gql`
+const SUBSIDIARIES_WITH_SALES_QUERY = gql`
     query {
-        subsidiaries {
+        subsidiariesWithSales {
             id
-            address
             serial
             company {
                 id
                 businessName
+                doc
             }
         }
     }
@@ -81,6 +81,12 @@ function SaleFilter({
     );
     const [modalBulkPdf, setModalBulkPdf] = useState<Modal | null>(null);
     const [clientSearch, setClientSearch] = useState("");
+    const [subsidiarySearch, setSubsidiarySearch] = useState("");
+    const [showSubsidiaryDropdown, setShowSubsidiaryDropdown] = useState(false);
+    const [selectedSubsidiaryIndex, setSelectedSubsidiaryIndex] = useState(-1);
+    const subsidiaryDropdownRef = useRef<HTMLDivElement>(null);
+    const subsidiaryInputRef = useRef<HTMLInputElement>(null);
+    const subsidiaryListRef = useRef<HTMLDivElement>(null);
 
     const handleClickButton = async () => {
         // Reinicializa la página a 1
@@ -142,32 +148,6 @@ function SaleFilter({
                 console.log("sin datalist");
             }
         } else if (
-            name === "subsidiaryName" &&
-            event.target instanceof HTMLInputElement
-        ) {
-            const dataList = event.target.list;
-            if (dataList) {
-                const option = Array.from(dataList.options).find(
-                    (option) => option.value === value
-                );
-                if (option) {
-                    const selectedId = option.getAttribute("data-key");
-                    setFilterObj({
-                        ...filterObj,
-                        subsidiaryId: Number(selectedId),
-                        subsidiaryName: value,
-                    });
-                } else {
-                    setFilterObj({
-                        ...filterObj,
-                        subsidiaryId: 0,
-                        subsidiaryName: value,
-                    });
-                }
-            } else {
-                console.log("sin datalist");
-            }
-        } else if (
             name === "userName" &&
             event.target instanceof HTMLInputElement
         ) {
@@ -206,10 +186,26 @@ function SaleFilter({
         loading: subsidiariesLoading,
         error: subsidiariesError,
         data: subsidiariesData,
-    } = useQuery(SUBSIDIARIES_QUERY, {
+    } = useQuery(SUBSIDIARIES_WITH_SALES_QUERY, {
         context: getAuthContext(),
         skip: !auth?.jwtToken,
     });
+
+    const subsidiaries: ISubsidiary[] =
+        subsidiariesData?.subsidiariesWithSales || [];
+
+    const getSubsidiaryLabel = (s: ISubsidiary) =>
+        `${s.company?.businessName || ""} ${s.serial || ""}`.trim();
+
+    const filteredSubsidiaries = useMemo(() => {
+        if (!subsidiarySearch.trim()) return subsidiaries;
+        const term = subsidiarySearch.toLowerCase();
+        return subsidiaries.filter((s: ISubsidiary) => {
+            const label = getSubsidiaryLabel(s).toLowerCase();
+            const doc = s.company?.doc || "";
+            return label.includes(term) || doc.includes(term);
+        });
+    }, [subsidiaries, subsidiarySearch]);
 
     // Add client search query
     const [
@@ -245,23 +241,121 @@ function SaleFilter({
     useEffect(() => {
         if (
             auth?.user?.subsidiaryId &&
-            subsidiariesData?.subsidiaries &&
+            subsidiaries.length > 0 &&
             !auth?.user?.isSuperuser
         ) {
-            const subsidiaryFound = subsidiariesData?.subsidiaries.find(
-                (subsidiary: ISubsidiary) =>
-                    Number(subsidiary.id) === Number(auth?.user?.subsidiaryId)
+            const subsidiaryFound = subsidiaries.find(
+                (s: ISubsidiary) =>
+                    Number(s.id) === Number(auth?.user?.subsidiaryId)
             );
-            setFilterObj({
-                ...filterObj,
-                subsidiaryId: auth?.user?.subsidiaryId,
-                subsidiaryName:
-                    subsidiaryFound?.company?.businessName +
-                    " " +
-                    subsidiaryFound?.serial,
-            });
+            if (subsidiaryFound) {
+                const label = getSubsidiaryLabel(subsidiaryFound);
+                setFilterObj({
+                    ...filterObj,
+                    subsidiaryId: auth?.user?.subsidiaryId,
+                    subsidiaryName: label,
+                });
+                setSubsidiarySearch(label);
+            }
         }
-    }, [auth?.user?.subsidiaryId, subsidiariesData?.subsidiaries]);
+    }, [auth?.user?.subsidiaryId, subsidiaries.length]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                subsidiaryDropdownRef.current &&
+                !subsidiaryDropdownRef.current.contains(event.target as Node) &&
+                subsidiaryInputRef.current &&
+                !subsidiaryInputRef.current.contains(event.target as Node)
+            ) {
+                setShowSubsidiaryDropdown(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        setSelectedSubsidiaryIndex(-1);
+    }, [subsidiarySearch]);
+
+    useEffect(() => {
+        if (selectedSubsidiaryIndex >= 0 && subsidiaryListRef.current) {
+            const items =
+                subsidiaryListRef.current.querySelectorAll("[data-option]");
+            if (items[selectedSubsidiaryIndex]) {
+                items[selectedSubsidiaryIndex].scrollIntoView({
+                    block: "nearest",
+                });
+            }
+        }
+    }, [selectedSubsidiaryIndex]);
+
+    const handleSubsidiarySelect = (subsidiary: ISubsidiary) => {
+        const label = getSubsidiaryLabel(subsidiary);
+        setFilterObj({
+            ...filterObj,
+            subsidiaryId: Number(subsidiary.id),
+            subsidiaryName: label,
+        });
+        setSubsidiarySearch(label);
+        setShowSubsidiaryDropdown(false);
+        setSelectedSubsidiaryIndex(-1);
+    };
+
+    const handleClearSubsidiary = () => {
+        setSubsidiarySearch("");
+        setFilterObj({
+            ...filterObj,
+            subsidiaryId: 0,
+            subsidiaryName: "",
+        });
+        subsidiaryInputRef.current?.focus();
+    };
+
+    const handleSubsidiaryKeyDown = (e: React.KeyboardEvent) => {
+        if (!showSubsidiaryDropdown || !filteredSubsidiaries.length) {
+            if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                setShowSubsidiaryDropdown(true);
+            }
+            return;
+        }
+        switch (e.key) {
+            case "ArrowDown":
+                e.preventDefault();
+                setSelectedSubsidiaryIndex((prev) =>
+                    prev < filteredSubsidiaries.length - 1 ? prev + 1 : 0
+                );
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+                setSelectedSubsidiaryIndex((prev) =>
+                    prev > 0
+                        ? prev - 1
+                        : filteredSubsidiaries.length - 1
+                );
+                break;
+            case "Enter":
+                e.preventDefault();
+                if (
+                    selectedSubsidiaryIndex >= 0 &&
+                    selectedSubsidiaryIndex < filteredSubsidiaries.length
+                ) {
+                    handleSubsidiarySelect(
+                        filteredSubsidiaries[selectedSubsidiaryIndex]
+                    );
+                } else if (filteredSubsidiaries.length === 1) {
+                    handleSubsidiarySelect(filteredSubsidiaries[0]);
+                }
+                break;
+            case "Escape":
+                e.preventDefault();
+                setShowSubsidiaryDropdown(false);
+                setSelectedSubsidiaryIndex(-1);
+                break;
+        }
+    };
 
     const handleClientSelect = (event: ChangeEvent<HTMLInputElement>) => {
         const selectedOption = event.target.value;
@@ -367,31 +461,114 @@ function SaleFilter({
                         </datalist>
                     </div>
                     {auth?.user?.isSuperuser ? (
-                        <>
+                        <div
+                            className="relative"
+                            ref={subsidiaryDropdownRef}
+                        >
                             <input
-                                type="search"
-                                name="subsidiaryName"
-                                onChange={handleInputChange}
-                                value={filterObj.subsidiaryName}
-                                onFocus={(e) => e.target.select()}
+                                ref={subsidiaryInputRef}
+                                type="text"
+                                value={subsidiarySearch}
+                                onChange={(e) => {
+                                    setSubsidiarySearch(e.target.value);
+                                    setShowSubsidiaryDropdown(true);
+                                    if (!e.target.value.trim()) {
+                                        setFilterObj({
+                                            ...filterObj,
+                                            subsidiaryId: 0,
+                                            subsidiaryName: "",
+                                        });
+                                    }
+                                }}
+                                onKeyDown={handleSubsidiaryKeyDown}
+                                onFocus={() =>
+                                    setShowSubsidiaryDropdown(true)
+                                }
                                 autoComplete="off"
                                 disabled={subsidiariesLoading}
-                                className="filter-form-control h-10 w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                list="subsidiaryList"
-                                placeholder="🏢 Buscar por sede"
+                                className="filter-form-control h-10 w-full justify-self-start rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-sm pr-8"
+                                placeholder={
+                                    subsidiariesLoading
+                                        ? "Cargando sedes..."
+                                        : "Buscar por sede"
+                                }
                             />
-                            <datalist id="subsidiaryList">
-                                {subsidiariesData?.subsidiaries?.map(
-                                    (n: ISubsidiary, index: number) => (
-                                        <option
-                                            key={index}
-                                            data-key={n.id}
-                                            value={`${n.company?.businessName} ${n.serial}`}
+                            {subsidiarySearch && (
+                                <button
+                                    type="button"
+                                    onClick={handleClearSubsidiary}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                >
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M6 18L18 6M6 6l12 12"
                                         />
-                                    )
+                                    </svg>
+                                </button>
+                            )}
+                            {showSubsidiaryDropdown &&
+                                filteredSubsidiaries.length > 0 && (
+                                    <div
+                                        ref={subsidiaryListRef}
+                                        className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                                    >
+                                        {filteredSubsidiaries.map(
+                                            (
+                                                s: ISubsidiary,
+                                                index: number
+                                            ) => (
+                                                <div
+                                                    key={s.id}
+                                                    data-option
+                                                    className={`px-4 py-2.5 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${
+                                                        index ===
+                                                        selectedSubsidiaryIndex
+                                                            ? "bg-blue-50 dark:bg-blue-600"
+                                                            : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                    }`}
+                                                    onClick={() =>
+                                                        handleSubsidiarySelect(
+                                                            s
+                                                        )
+                                                    }
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                                            {s.company
+                                                                ?.businessName || ""}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2 whitespace-nowrap">
+                                                            {s.serial}
+                                                        </span>
+                                                    </div>
+                                                    {s.company?.doc && (
+                                                        <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                                            RUC:{" "}
+                                                            {s.company.doc}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
                                 )}
-                            </datalist>
-                        </>
+                            {showSubsidiaryDropdown &&
+                                subsidiarySearch.trim() &&
+                                filteredSubsidiaries.length === 0 &&
+                                !subsidiariesLoading && (
+                                    <div className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                        No se encontraron sedes
+                                    </div>
+                                )}
+                        </div>
                     ) : null}
                     {usersLoading ? (
                         <div className="flex items-center justify-center">

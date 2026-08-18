@@ -286,14 +286,18 @@ function GuideHeader({
   }, [guide?.documentType]);
 
   return (
-    <>
-      <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-        <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-5 ">
+    <div className="relative bg-white dark:bg-gray-800/80 backdrop-blur rounded-2xl border border-gray-200/80 dark:border-gray-700/60 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.2)] overflow-hidden">
+      <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-60" />
+      <div className="p-5 sm:p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-5">
+          Datos del Documento
+        </h2>
+        <div className="grid gap-5 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-5">
           {/* CPE Tipo documento */}
           <div>
             <label
               htmlFor="invoiceDocumentType"
-              className="text-sm font-medium text-gray-900 dark:text-gray-200"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
               Tipo documento
             </label>
@@ -302,7 +306,7 @@ function GuideHeader({
               onChange={handleGuide}
               id="invoiceDocumentType"
               name="documentType"
-              className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-50/50 dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
             >
               <option value="09">GUIA DE REMISIÓN REMITENTE ELECTRÓNICA</option>
               <option value="31">GUÍA DE REMISIÓN TRANSPORTISTA</option>
@@ -312,14 +316,14 @@ function GuideHeader({
             <>
               {/* Tipo de transporte */}
               <div>
-                <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Tipo de transporte
                 </label>
                 <select
                   name="guideModeTransfer"
                   onChange={handleGuide}
                   value={guide.guideModeTransfer}
-                  className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-50/50 dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                   required
                 >
                   {guideModesData?.allGuideModes?.map(
@@ -333,14 +337,14 @@ function GuideHeader({
               </div>
               {/* Motivo de traslado */}
               <div>
-                <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Motivo de traslado
                 </label>
                 <select
                   name="guideReasonTransfer"
                   onChange={handleGuide}
                   value={guide.guideReasonTransfer}
-                  className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-50/50 dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                   required
                 >
                   {guideReasonsData?.allGuideReasons?.map(
@@ -356,7 +360,7 @@ function GuideHeader({
           )}
           {/* CPE Cliente */}
           <div className="md:col-span-1 lg:col-span-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Cliente
             </label>
             <input
@@ -368,7 +372,7 @@ function GuideHeader({
               onInput={handleClientSelect}
               list="clientList"
               autoComplete="off"
-              className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-50/50 dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
             />
             <datalist id="clientList">
               {searchClientData?.searchClientByParameter?.map(
@@ -387,7 +391,7 @@ function GuideHeader({
           <div>
             <label
               htmlFor="serial"
-              className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
               Serie
             </label>
@@ -396,7 +400,7 @@ function GuideHeader({
               id="serial"
               value={guide.serial}
               onChange={handleGuide}
-              className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-50/50 dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
               required
             >
               {serialsAssignedData?.allSerials
@@ -416,7 +420,7 @@ function GuideHeader({
                 s.documentType === `A_${guide.documentType}` &&
                 !s.isGeneratedViaApi
             ).length === 0 && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-500">
+              <p className="mt-1 text-xs text-red-500 dark:text-red-400">
                 No hay series asignadas para este tipo de documento
               </p>
             )}
@@ -425,7 +429,7 @@ function GuideHeader({
           <div>
             <label
               htmlFor="correlative"
-              className="text-sm font-medium text-gray-900 dark:text-gray-200"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
               Numero
             </label>
@@ -437,7 +441,7 @@ function GuideHeader({
               value={guide.correlative}
               onChange={handleGuide}
               onFocus={(e) => e.target.select()}
-              className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-50/50 dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
               autoComplete="off"
             />
           </div>
@@ -445,7 +449,7 @@ function GuideHeader({
           <div>
             <label
               htmlFor="emitDate"
-              className="text-sm font-medium text-gray-900 dark:text-gray-200"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
               Fecha emisión
             </label>
@@ -456,14 +460,14 @@ function GuideHeader({
               value={guide.emitDate}
               onChange={handleGuide}
               onFocus={(e) => e.target.select()}
-              className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-50/50 dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
               required
               disabled
             />
           </div>
         </div>
-      </fieldset>
-    </>
+      </div>
+    </div>
   );
 }
 

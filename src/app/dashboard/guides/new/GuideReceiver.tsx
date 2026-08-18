@@ -100,22 +100,23 @@ function GuideReceiver({
         }
     };
     return (
-        <>
-            <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    DATOS DEL DESTINATARIO
-                </legend>
-                <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-5 ">
+        <div className="relative bg-white dark:bg-gray-800/80 backdrop-blur rounded-2xl border border-gray-200/80 dark:border-gray-700/60 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.2)] overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-60" />
+            <div className="p-5 sm:p-6">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-5">
+                    Datos del Destinatario
+                </h2>
+                <div className="grid gap-5 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-5">
                     {/* Tipo de documento */}
                     <div>
-                        <label className="text-sm text-gray-700 dark:text-gray-200">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Tipo de documento del destinatario
                         </label>
                         <select
                             value={guide.receiverDocumentType}
                             name="receiverDocumentType"
                             onChange={handleGuide}
-                            className="text-lg w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-50/50 dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                         >
                             {documentTypesData?.allDocumentTypes?.map(
                                 (o: IDocumentType, k: number) => (
@@ -130,10 +131,10 @@ function GuideReceiver({
                     <div>
                         <label
                             htmlFor="receiverDocumentNumber"
-                            className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                         >
                             Documento número{" "}
-                            <span className="text-green-500">(dar enter)</span>
+                            <span className="text-xs text-green-500 font-normal">(Enter)</span>
                         </label>
                         <input
                             type="text"
@@ -155,11 +156,11 @@ function GuideReceiver({
                                     (guide?.receiverDocumentType === "1" ||
                                         guide?.receiverDocumentType === "6")
                                 ) {
-                                    e.preventDefault(); // Evita que el formulario se envíe si está dentro de un formulario
-                                    handleSntDocument(); // Llamada a la función de consulta
+                                    e.preventDefault();
+                                    handleSntDocument();
                                 }
                             }}
-                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-50/50 dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                             autoComplete="off"
                         />
                     </div>
@@ -167,7 +168,7 @@ function GuideReceiver({
                     <div>
                         <label
                             htmlFor="receiverNames"
-                            className="text-sm font-medium text-gray-900 dark:text-gray-200"
+                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                         >
                             Nombre del destinatario
                         </label>
@@ -179,13 +180,13 @@ function GuideReceiver({
                             value={guide.receiverNames}
                             onChange={handleGuide}
                             onFocus={(e) => e.target.select()}
-                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-50/50 dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                             autoComplete="off"
                         />
                     </div>
                 </div>
-            </fieldset>
-        </>
+            </div>
+        </div>
     );
 }
 

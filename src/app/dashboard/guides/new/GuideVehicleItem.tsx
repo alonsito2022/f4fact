@@ -31,7 +31,7 @@ const GuideVehicleItem: React.FC<GuideVehicleItemProps> = ({
     return (
         <>
             <div className="md:col-span-2 lg:col-span-2">
-                <label className="text-sm text-gray-700 dark:text-gray-200">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Transportista placa numero
                 </label>
                 <input
@@ -41,16 +41,16 @@ const GuideVehicleItem: React.FC<GuideVehicleItemProps> = ({
                     onFocus={(e) => e.target.select()}
                     value={item.licensePlate}
                     onChange={handleChange}
-                    // autoComplete="off"
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-white dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                 />
             </div>
 
-            <div className="flex items-center justify-center">
+            <div className="flex items-end justify-center pb-1">
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="text-red-600 hover:text-red-800 text-sm px-2 py-1"
+                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    title="Eliminar vehículo"
                 >
                     <Delete />
                 </button>

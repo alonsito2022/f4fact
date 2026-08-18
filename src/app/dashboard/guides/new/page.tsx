@@ -5,8 +5,6 @@ import {
     IRelatedDocument,
     IVehicle,
 } from "@/app/types";
-import Breadcrumb from "@/components/Breadcrumb";
-import Add from "@/components/icons/Add";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { DocumentNode, gql, useLazyQuery, useMutation } from "@apollo/client";
@@ -17,7 +15,6 @@ import React, {
     useMemo,
     useState,
 } from "react";
-import Save from "@/components/icons/Save";
 import GuideStopPoint from "./GuideStopPoint";
 import GuideTransportation from "./GuideTransportation";
 import GuideMainDriver from "./GuideMainDriver";
@@ -285,52 +282,9 @@ function NewGuidePage() {
     const [createSale] = useCustomMutation(CREATE_SALE_MUTATION);
 
     const saveGuide = useCallback(async () => {
-        if (isSaving) return; // Prevent multiple submissions
+        if (isSaving) return;
         try {
             setIsSaving(true);
-
-            // const limaDate = new Date(
-            //     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
-            // );
-            // const today = limaDate.toISOString().split("T")[0];
-            // if (guide.emitDate !== today) {
-            //     toast(
-            //         "La fecha de emisión debe ser la fecha actual. emitDate: " +
-            //             guide.emitDate +
-            //             " today: " +
-            //             today,
-            //         {
-            //             hideProgressBar: true,
-            //             autoClose: 2000,
-            //             type: "error",
-            //         }
-            //     );
-            //     return false;
-            // }
-
-            const invalidRelatedDocs = guide.relatedDocuments.filter(
-                (doc: IRelatedDocument) => {
-                    const withoutSerial: boolean = Boolean(
-                        doc.serial?.trim().length !== 4
-                    );
-                    const withoutCorrelative: boolean = Boolean(
-                        Number(doc.correlative) === 0
-                    );
-                    return withoutSerial || withoutCorrelative;
-                }
-            );
-
-            if (invalidRelatedDocs.length > 0) {
-                toast(
-                    "Los documentos relacionados deben tener serie (4 caracteres) y correlativo válido. Si no necesita adjuntar documentos, puede eliminar la fila existente.",
-                    {
-                        hideProgressBar: true,
-                        autoClose: 3000,
-                        type: "error",
-                    }
-                );
-                return false;
-            }
 
             if (Number(guide.clientId) === 0) {
                 toast("La guia debe tener un cliente.", {
@@ -341,7 +295,15 @@ function NewGuidePage() {
                 return false;
             }
             if (guide.serial.length !== 4) {
-                toast("La guia debe tener una serie.", {
+                toast("La guia debe tener una serie valida (4 caracteres).", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "error",
+                });
+                return false;
+            }
+            if (!guide.correlative || Number(guide.correlative) <= 0) {
+                toast("La guia debe tener un numero de correlativo valido.", {
                     hideProgressBar: true,
                     autoClose: 2000,
                     type: "error",
@@ -349,11 +311,8 @@ function NewGuidePage() {
                 return false;
             }
 
-            if (
-                !guide.operationdetailSet ||
-                guide.operationdetailSet.length === 0
-            ) {
-                toast("Debe agregar al menos un producto a la guía.", {
+            if (!guide.operationdetailSet || guide.operationdetailSet.length === 0) {
+                toast("Debe agregar al menos un producto a la guia.", {
                     hideProgressBar: true,
                     autoClose: 2000,
                     type: "warning",
@@ -363,25 +322,13 @@ function NewGuidePage() {
 
             const invalidItems = guide.operationdetailSet.filter(
                 (item) =>
-                    item.productId === 0 || // Valida que el producto tenga un ID asignado
-                    !item.quantity || // Valida que la cantidad no sea nula
-                    Number(item.quantity) <= 0 // Valida que la cantidad sea mayor que cero
+                    item.productId === 0 ||
+                    !item.quantity ||
+                    Number(item.quantity) <= 0
             );
 
             if (invalidItems.length > 0) {
-                toast(
-                    "Todos los productos deben tener una cantidad mayor a 0 y un producto seleccionado.",
-                    {
-                        hideProgressBar: true,
-                        autoClose: 2000,
-                        type: "warning",
-                    }
-                );
-                return false;
-            }
-
-            if (Number(guide.totalWeight) === 0) {
-                toast("La guia debe tener un peso total.", {
+                toast("Todos los productos deben tener una cantidad mayor a 0 y un producto seleccionado.", {
                     hideProgressBar: true,
                     autoClose: 2000,
                     type: "warning",
@@ -389,21 +336,26 @@ function NewGuidePage() {
                 return false;
             }
 
-            // console.log(guide.operationdetailSet);
-            if (guide.documentType === "09") {
-                // sender referral guide
+            if (Number(guide.totalWeight) <= 0) {
+                toast("La guia debe tener un peso total mayor a 0.", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "warning",
+                });
+                return false;
+            }
 
-                if (Number(guide.quantityPackages) === 0) {
-                    toast("La guia debe tener un numero de bultos.", {
+            if (guide.documentType === "09") {
+                if (Number(guide.quantityPackages) <= 0) {
+                    toast("La guia debe tener un numero de bultos mayor a 0.", {
                         hideProgressBar: true,
                         autoClose: 2000,
                         type: "warning",
                     });
                     return false;
                 }
-
                 if (guide.guideModeTransfer === "NA") {
-                    toast("La guia debe tener un tipo.", {
+                    toast("La guia debe tener un tipo de transporte.", {
                         hideProgressBar: true,
                         autoClose: 2000,
                         type: "error",
@@ -411,50 +363,35 @@ function NewGuidePage() {
                     return false;
                 }
                 if (guide.guideModeTransfer === "01") {
-                    // public
-                    if (
-                        guide.transportationCompanyDocumentNumber.length !== 11
-                    ) {
-                        toast(
-                            "La guia debe tener un RUC de transportista valido.",
-                            {
-                                hideProgressBar: true,
-                                autoClose: 2000,
-                                type: "error",
-                            }
-                        );
+                    if (guide.transportationCompanyDocumentNumber.length !== 11) {
+                        toast("La guia debe tener un RUC de transportista valido (11 digitos).", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                        });
                         return false;
                     }
                     if (guide.transportationCompanyNames.length === 0) {
-                        toast(
-                            "La guia debe tener una razon social transportista valido.",
-                            {
-                                hideProgressBar: true,
-                                autoClose: 2000,
-                                type: "error",
-                            }
-                        );
+                        toast("La guia debe tener la razon social del transportista.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                        });
                         return false;
                     }
                 }
                 if (guide.guideModeTransfer === "02") {
-                    // private
                     if (guide.mainVehicleLicensePlate.length === 0) {
-                        toast(
-                            "La guia debe tener la placa de un vehiculo principal valido.",
-                            {
-                                hideProgressBar: true,
-                                autoClose: 2000,
-                                type: "error",
-                            }
-                        );
+                        toast("La guia debe tener la placa del vehiculo principal.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                        });
                         return false;
                     }
-
                     const invalidOtherVehicles = guide.othersVehicles.filter(
-                        (item) => item.licensePlate?.length === 0 // Valida que el vehiculo tenga una placa asignado
+                        (item) => item.licensePlate?.length === 0
                     );
-
                     if (invalidOtherVehicles.length > 0) {
                         toast("Todos los vehiculos deben tener una placa.", {
                             hideProgressBar: true,
@@ -463,74 +400,50 @@ function NewGuidePage() {
                         });
                         return false;
                     }
-
-                    if (
-                        guide.mainDriverDocumentType === "1" &&
-                        guide.mainDriverDocumentNumber.length !== 8
-                    ) {
-                        toast(
-                            "La guia debe tener número DNI de un conductor principal valido.",
-                            {
-                                hideProgressBar: true,
-                                autoClose: 2000,
-                                type: "error",
-                            }
-                        );
+                    if (guide.mainDriverDocumentType === "1" && guide.mainDriverDocumentNumber.length !== 8) {
+                        toast("El DNI del conductor principal debe tener 8 digitos.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                        });
                         return false;
                     }
-                    if (
-                        guide.mainDriverDocumentType === "6" &&
-                        guide.mainDriverDocumentNumber.length !== 11
-                    ) {
-                        toast(
-                            "La guia debe tener número RUC de un conductor principal valido.",
-                            {
-                                hideProgressBar: true,
-                                autoClose: 2000,
-                                type: "error",
-                            }
-                        );
+                    if (guide.mainDriverDocumentType === "6" && guide.mainDriverDocumentNumber.length !== 11) {
+                        toast("El RUC del conductor principal debe tener 11 digitos.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                        });
                         return false;
                     }
                     if (guide.mainDriverNames.length === 0) {
-                        toast(
-                            "La guia debe tener nombres y apellidos de un conductor principal valido.",
-                            {
-                                hideProgressBar: true,
-                                autoClose: 2000,
-                                type: "error",
-                            }
-                        );
+                        toast("El conductor principal debe tener nombre y apellido.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                        });
                         return false;
                     }
                     if (guide.mainDriverDriverLicense.length === 0) {
-                        toast(
-                            "La guia debe tener una licencia de un conductor principal valido.",
-                            {
-                                hideProgressBar: true,
-                                autoClose: 2000,
-                                type: "error",
-                            }
-                        );
+                        toast("El conductor principal debe tener licencia de conducir.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "error",
+                        });
                         return false;
                     }
-
                     const invalidOtherDrivers = guide.othersDrivers.filter(
                         (item) =>
-                            item.documentNumber?.length === 0 || // Valida que el conductor tenga un numero de documento asignado
-                            item.names?.length === 0 || // Valida que el conductor tenga un nombre asignado
-                            item.driverLicense?.length === 0 // Valida que el conductor tenga una licencia de conducir asignado
+                            item.documentNumber?.length === 0 ||
+                            item.names?.length === 0 ||
+                            item.driverLicense?.length === 0
                     );
-
                     if (invalidOtherDrivers.length > 0) {
-                        toast(
-                            "Todos los conductores deben tener un numero de documento, un nombre y una licencia de conducir.",
-                            {
-                                hideProgressBar: true,
-                                autoClose: 2000,
-                                type: "warning",
-                            }
-                        );
+                        toast("Todos los conductores secundarios deben tener documento, nombre y licencia.", {
+                            hideProgressBar: true,
+                            autoClose: 2000,
+                            type: "warning",
+                        });
                         return false;
                     }
                 }
@@ -543,23 +456,17 @@ function NewGuidePage() {
                     return false;
                 }
             } else if (guide.documentType === "31") {
-                // carrier referral guide
                 if (guide.mainVehicleLicensePlate.length === 0) {
-                    toast(
-                        "La guia debe tener la placa de un vehiculo principal valido.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "error",
-                        }
-                    );
+                    toast("La guia debe tener la placa del vehiculo principal.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
                     return false;
                 }
-
                 const invalidOtherVehicles = guide.othersVehicles.filter(
-                    (item) => item.licensePlate?.length === 0 // Valida que el vehiculo tenga una placa asignado
+                    (item) => item.licensePlate?.length === 0
                 );
-
                 if (invalidOtherVehicles.length > 0) {
                     toast("Todos los vehiculos deben tener una placa.", {
                         hideProgressBar: true,
@@ -568,101 +475,104 @@ function NewGuidePage() {
                     });
                     return false;
                 }
-
-                if (
-                    guide.mainDriverDocumentType === "1" &&
-                    guide.mainDriverDocumentNumber.length !== 8
-                ) {
-                    toast(
-                        "La guia debe tener número DNI de un conductor principal valido.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "error",
-                        }
-                    );
+                if (guide.mainDriverDocumentType === "1" && guide.mainDriverDocumentNumber.length !== 8) {
+                    toast("El DNI del conductor principal debe tener 8 digitos.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
                     return false;
                 }
-                if (
-                    guide.mainDriverDocumentType === "6" &&
-                    guide.mainDriverDocumentNumber.length !== 11
-                ) {
-                    toast(
-                        "La guia debe tener número RUC de un conductor principal valido.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "error",
-                        }
-                    );
+                if (guide.mainDriverDocumentType === "6" && guide.mainDriverDocumentNumber.length !== 11) {
+                    toast("El RUC del conductor principal debe tener 11 digitos.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
                     return false;
                 }
                 if (guide.mainDriverNames.length === 0) {
-                    toast(
-                        "La guia debe tener nombres y apellidos de un conductor principal valido.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "error",
-                        }
-                    );
+                    toast("El conductor principal debe tener nombre y apellido.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
                     return false;
                 }
                 if (guide.mainDriverDriverLicense.length === 0) {
-                    toast(
-                        "La guia debe tener una licencia de un conductor principal valido.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "error",
-                        }
-                    );
+                    toast("El conductor principal debe tener licencia de conducir.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
                     return false;
                 }
-
                 const invalidOtherDrivers = guide.othersDrivers.filter(
                     (item) =>
-                        item.documentNumber?.length === 0 || // Valida que el conductor tenga un numero de documento asignado
-                        item.names?.length === 0 || // Valida que el conductor tenga un nombre asignado
-                        item.driverLicense?.length === 0 // Valida que el conductor tenga una licencia de conducir asignado
+                        item.documentNumber?.length === 0 ||
+                        item.names?.length === 0 ||
+                        item.driverLicense?.length === 0
                 );
-
                 if (invalidOtherDrivers.length > 0) {
-                    toast(
-                        "Todos los conductores deben tener un numero de documento, un nombre y una licencia de conducir.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "warning",
-                        }
-                    );
+                    toast("Todos los conductores secundarios deben tener documento, nombre y licencia.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "warning",
+                    });
+                    return false;
+                }
+                if (guide.receiverDocumentType === "1" && guide.receiverDocumentNumber.length !== 8) {
+                    toast("El DNI del destinatario debe tener 8 digitos.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
+                    return false;
+                }
+                if (guide.receiverDocumentType === "6" && guide.receiverDocumentNumber.length !== 11) {
+                    toast("El RUC del destinatario debe tener 11 digitos.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
                     return false;
                 }
                 if (guide.receiverDocumentNumber.length === 0) {
-                    toast(
-                        "La guia debe tener un numero de documento de destinatario valido.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "error",
-                        }
-                    );
+                    toast("La guia debe tener un numero de documento del destinatario.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
                     return false;
                 }
                 if (guide.receiverNames.length === 0) {
-                    toast(
-                        "La guia debe tener un nombre de destinatario valido.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "error",
-                        }
-                    );
+                    toast("La guia debe tener el nombre del destinatario.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
                     return false;
                 }
             }
+
+            const invalidRelatedDocs = guide.relatedDocuments.filter(
+                (doc: IRelatedDocument) => {
+                    const withoutSerial: boolean = Boolean(doc.serial?.trim().length !== 4);
+                    const withoutCorrelative: boolean = Boolean(Number(doc.correlative) === 0);
+                    return withoutSerial || withoutCorrelative;
+                }
+            );
+            if (invalidRelatedDocs.length > 0) {
+                toast("Los documentos relacionados deben tener serie (4 caracteres) y correlativo valido.", {
+                    hideProgressBar: true,
+                    autoClose: 3000,
+                    type: "error",
+                });
+                return false;
+            }
+
             if (guide.guideOriginDistrictId.length === 0) {
-                toast("La guia debe tener un ubigeo como punto de partida.", {
+                toast("Debe seleccionar un ubigeo valido como punto de partida.", {
                     hideProgressBar: true,
                     autoClose: 2000,
                     type: "error",
@@ -670,18 +580,15 @@ function NewGuidePage() {
                 return false;
             }
             if (guide.guideOriginAddress.length === 0) {
-                toast(
-                    "La guia debe tener una direccion como punto de partida.",
-                    {
-                        hideProgressBar: true,
-                        autoClose: 2000,
-                        type: "error",
-                    }
-                );
+                toast("Debe ingresar la direccion del punto de partida.", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "error",
+                });
                 return false;
             }
             if (guide.guideArrivalDistrictId.length === 0) {
-                toast("La guia debe tener un ubigeo como punto de llegada.", {
+                toast("Debe seleccionar un ubigeo valido como punto de llegada.", {
                     hideProgressBar: true,
                     autoClose: 2000,
                     type: "error",
@@ -689,117 +596,64 @@ function NewGuidePage() {
                 return false;
             }
             if (guide.guideArrivalAddress.length === 0) {
-                toast(
-                    "La guia debe tener una direccion como punto de llegada.",
-                    {
-                        hideProgressBar: true,
-                        autoClose: 2000,
-                        type: "error",
-                    }
-                );
+                toast("Debe ingresar la direccion del punto de llegada.", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "error",
+                });
                 return false;
             }
 
-            if (
-                (guide.guideOriginSerial.length === 0 ||
-                    guide.guideArrivalSerial.length === 0) &&
-                guide.guideReasonTransfer === "04"
-            ) {
-                toast(
-                    "Los puntos de partida y llegada deben tener un codigo de establecimiento.",
-                    {
-                        hideProgressBar: true,
-                        autoClose: 2000,
-                        type: "error",
-                    }
-                );
+            if ((guide.guideOriginSerial.length === 0 || guide.guideArrivalSerial.length === 0) && guide.guideReasonTransfer === "04") {
+                toast("Los puntos de partida y llegada deben tener un codigo de establecimiento.", {
+                    hideProgressBar: true,
+                    autoClose: 2000,
+                    type: "error",
+                });
                 return false;
             }
 
             if (guide.guideModeTransfer === "02") {
-                // Validar placa del vehículo principal
-                const mainVehicleLicensePlate =
-                    guide.mainVehicleLicensePlate || "";
-                if (
-                    !/^\S+(-\S+)?$/.test(mainVehicleLicensePlate) ||
-                    mainVehicleLicensePlate.length < 6 ||
-                    mainVehicleLicensePlate.length > 7
-                ) {
-                    toast(
-                        "La placa del vehículo principal debe tener entre 6 y 7 caracteres, no debe tener espacios y solo puede contener un guion.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "error",
-                        }
-                    );
+                const mainVehicleLicensePlate = guide.mainVehicleLicensePlate || "";
+                if (!/^\S+(-\S+)?$/.test(mainVehicleLicensePlate) || mainVehicleLicensePlate.length < 6 || mainVehicleLicensePlate.length > 7) {
+                    toast("La placa del vehiculo principal debe tener entre 6 y 7 caracteres, sin espacios.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
                     return false;
                 }
-
-                // Validar placas de otros vehículos
-                const invalidOtherVehicles = guide.othersVehicles.filter(
-                    (item) => {
-                        const licensePlate = item.licensePlate || "";
-                        return (
-                            !/^\S+(-\S+)?$/.test(licensePlate) ||
-                            licensePlate.length < 6 ||
-                            licensePlate.length > 7
-                        );
-                    }
-                );
-
+                const invalidOtherVehicles = guide.othersVehicles.filter((item) => {
+                    const licensePlate = item.licensePlate || "";
+                    return !/^\S+(-\S+)?$/.test(licensePlate) || licensePlate.length < 6 || licensePlate.length > 7;
+                });
                 if (invalidOtherVehicles.length > 0) {
-                    toast(
-                        "Las placas de los vehículos deben tener entre 6 y 7 caracteres, no deben tener espacios y solo pueden contener un guion.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "warning",
-                        }
-                    );
+                    toast("Las placas de los vehiculos secundarios deben tener entre 6 y 7 caracteres, sin espacios.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "warning",
+                    });
                     return false;
                 }
-
-                // Validar licencia del conductor principal
-                const mainDriverDriverLicense =
-                    guide.mainDriverDriverLicense || "";
-                if (
-                    !/^\S+(-\S+)?$/.test(mainDriverDriverLicense) ||
-                    mainDriverDriverLicense.length < 8 ||
-                    mainDriverDriverLicense.length > 12
-                ) {
-                    toast(
-                        "La licencia del conductor principal debe tener entre 8 y 12 caracteres, no debe tener espacios y solo puede contener un guion.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "error",
-                        }
-                    );
+                const mainDriverDriverLicense = guide.mainDriverDriverLicense || "";
+                if (!/^\S+(-\S+)?$/.test(mainDriverDriverLicense) || mainDriverDriverLicense.length < 8 || mainDriverDriverLicense.length > 12) {
+                    toast("La licencia del conductor principal debe tener entre 8 y 12 caracteres, sin espacios.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "error",
+                    });
                     return false;
                 }
-
-                // Validar licencias de otros conductores
-                const invalidOtherDrivers = guide.othersDrivers.filter(
-                    (item) => {
-                        const driverLicense = item.driverLicense || "";
-                        return (
-                            !/^\S+(-\S+)?$/.test(driverLicense) ||
-                            driverLicense.length < 8 ||
-                            driverLicense.length > 12
-                        );
-                    }
-                );
-
+                const invalidOtherDrivers = guide.othersDrivers.filter((item) => {
+                    const driverLicense = item.driverLicense || "";
+                    return !/^\S+(-\S+)?$/.test(driverLicense) || driverLicense.length < 8 || driverLicense.length > 12;
+                });
                 if (invalidOtherDrivers.length > 0) {
-                    toast(
-                        "Las licencias de los conductores deben tener entre 8 y 12 caracteres, no deben tener espacios y solo pueden contener un guion.",
-                        {
-                            hideProgressBar: true,
-                            autoClose: 2000,
-                            type: "warning",
-                        }
-                    );
+                    toast("Las licencias de los conductores secundarios deben tener entre 8 y 12 caracteres, sin espacios.", {
+                        hideProgressBar: true,
+                        autoClose: 2000,
+                        type: "warning",
+                    });
                     return false;
                 }
             }
@@ -924,133 +778,141 @@ function NewGuidePage() {
         }
     }, [createSale, guide, setGuide, initialStateGuide, isSaving]);
     return (
-        <>
-            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
-                <div className="w-full mb-1">
-                    <Breadcrumb
-                        section={"Guías de Remisión"}
-                        article={"Nueva Guía"}
-                    />
-                </div>
-            </div>
-            <div className="flex flex-col space-y-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-                <div className="overflow-x-auto">
-                    <div className="inline-block min-w-full align-middle">
-                        <div className="overflow-hidden shadow-lg rounded-lg">
-                            <div className="p-4 md:p-5 space-y-6">
-                                {/* Cabecera de guia */}
-                                <GuideHeader
-                                    guide={guide}
-                                    setGuide={setGuide}
-                                    auth={auth}
-                                    authContext={authContext}
-                                    handleGuide={handleGuide}
-                                />
-                                {/* Items and  Documentos Relacionados */}
-                                <GuideDetailAndDocument
-                                    guide={guide}
-                                    setGuide={setGuide}
-                                    auth={auth}
-                                    authContext={authContext}
-                                />
+        <div className="min-h-screen bg-white dark:bg-gray-800">
+            <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 pb-16">
+                <button
+                    type="button"
+                    onClick={() => router.push("/dashboard/guides")}
+                    className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 mt-4 mb-2 transition-colors"
+                >
+                    <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 19l-7-7 7-7"
+                        />
+                    </svg>
+                    Volver a guías
+                </button>
 
-                                {/* DATOS DEL TRASLADO */}
-                                <GuideTranferData
-                                    guide={guide}
-                                    handleGuide={handleGuide}
+                <div className="flex flex-col items-center text-center mb-8 mt-2">
+                    <div className="relative mb-4">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full blur-sm opacity-60" />
+                        <div className="relative w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                            <svg
+                                className="w-6 h-6 text-white"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                                 />
-                                {/* DATOS DEL TRANSPORTISTA */}
-                                <GuideTransportation
-                                    guide={guide}
-                                    setGuide={setGuide}
-                                    authContext={authContext}
-                                    handleGuide={handleGuide}
-                                />
-                                {/* DATOS DEL CONDUCTOR */}
-                                {guide?.guideModeTransfer === "02" && (
-                                    <>
-                                        <GuideMainDriver
-                                            guide={guide}
-                                            setGuide={setGuide}
-                                            handleGuide={handleGuide}
-                                            auth={auth}
-                                            authContext={authContext}
-                                        />
-                                    </>
-                                )}
-                                {/* DATOS DEL DESTINATARIO */}
-                                {guide?.documentType === "31" && (
-                                    <>
-                                        <GuideReceiver
-                                            guide={guide}
-                                            setGuide={setGuide}
-                                            handleGuide={handleGuide}
-                                            authContext={authContext}
-                                            auth={auth}
-                                        />
-                                    </>
-                                )}
-                                <GuideStopPoint
-                                    guide={guide}
-                                    setGuide={setGuide}
-                                    authContext={authContext}
-                                    handleGuide={handleGuide}
-                                />
-                                {/* OBSERVACIONES */}
-                                <fieldset className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                                    <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                        OBSERVACIONES
-                                    </legend>
-                                    <div className="grid  ">
-                                        <div className="md:col-span-2">
-                                            <label className="text-sm text-gray-700 dark:text-gray-200">
-                                                Observaciones
-                                            </label>
-                                            <textarea
-                                                name="observation"
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                maxLength={500}
-                                                value={guide.observation}
-                                                onChange={handleGuide}
-                                                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                            ></textarea>
-                                        </div>
-                                    </div>
-                                </fieldset>
-                                {/* Botón Continuar con el Pago */}
-                                <div className="relative">
-                                    {/* Contenido principal */}
-                                    <div className="min-h-screen">
-                                        {/* Aquí va tu contenido */}
-                                    </div>
-
-                                    {/* Botón flotante */}
-                                    <div className="fixed bottom-4 right-4">
-                                        <button
-                                            type="button"
-                                            className="btn-blue px-5 py-2 inline-flex items-center gap-2 shadow-lg rounded-lg"
-                                            onClick={saveGuide}
-                                            disabled={isSaving}
-                                        >
-                                            {isSaving ? (
-                                                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                                            ) : (
-                                                <Save />
-                                            )}
-                                            {isSaving
-                                                ? "GUARDANDO..."
-                                                : "GENERAR GUIA"}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            </svg>
                         </div>
+                    </div>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white tracking-tight">
+                        Nueva Guía de Remisión
+                    </h1>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
+                        Completa los datos para emitir una nueva guía
+                    </p>
+                    <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-3" />
+                </div>
+
+                <div className="space-y-5">
+                    <GuideHeader
+                        guide={guide}
+                        setGuide={setGuide}
+                        auth={auth}
+                        authContext={authContext}
+                        handleGuide={handleGuide}
+                    />
+                    <GuideDetailAndDocument
+                        guide={guide}
+                        setGuide={setGuide}
+                        auth={auth}
+                        authContext={authContext}
+                    />
+                    <GuideTranferData
+                        guide={guide}
+                        handleGuide={handleGuide}
+                    />
+                    <GuideTransportation
+                        guide={guide}
+                        setGuide={setGuide}
+                        authContext={authContext}
+                        handleGuide={handleGuide}
+                    />
+                    {guide?.guideModeTransfer === "02" && (
+                        <GuideMainDriver
+                            guide={guide}
+                            setGuide={setGuide}
+                            handleGuide={handleGuide}
+                            auth={auth}
+                            authContext={authContext}
+                        />
+                    )}
+                    {guide?.documentType === "31" && (
+                        <GuideReceiver
+                            guide={guide}
+                            setGuide={setGuide}
+                            handleGuide={handleGuide}
+                            authContext={authContext}
+                            auth={auth}
+                        />
+                    )}
+                    <GuideStopPoint
+                        guide={guide}
+                        setGuide={setGuide}
+                        authContext={authContext}
+                        handleGuide={handleGuide}
+                    />
+                    <div className="relative bg-white dark:bg-gray-800/80 backdrop-blur rounded-2xl border border-gray-200/80 dark:border-gray-700/60 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.2)] overflow-hidden">
+                        <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-60" />
+                        <div className="p-5 sm:p-6">
+                            <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">
+                                Observaciones
+                            </h2>
+                            <textarea
+                                name="observation"
+                                onFocus={(e) => e.target.select()}
+                                maxLength={500}
+                                rows={3}
+                                value={guide.observation}
+                                onChange={handleGuide}
+                                placeholder="Observaciones adicionales..."
+                                className="w-full px-3 py-2.5 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-50/50 dark:bg-gray-700/30 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="pt-2 pb-4">
+                        <button
+                            type="button"
+                            className="group relative w-full inline-flex items-center justify-center gap-2 h-12 sm:h-14 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold text-lg sm:text-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 ease-out"
+                            onClick={saveGuide}
+                            disabled={isSaving}
+                        >
+                            <span className="absolute inset-0 rounded-xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            {isSaving && (
+                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-transparent border-white"></div>
+                            )}
+                            {isSaving ? "Guardando..." : "Crear Guía de Remisión"}
+                        </button>
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 
