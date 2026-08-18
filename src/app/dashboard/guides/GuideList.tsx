@@ -413,6 +413,7 @@ function GuideList({
                                                         setPdfUrl(
                                                             `${process.env.NEXT_PUBLIC_BASE_API}/operations/print_guide/${item.id}/`
                                                         );
+                                                        pdfModal?.show();
                                                     }}
                                                     className="hover:underline"
                                                 >

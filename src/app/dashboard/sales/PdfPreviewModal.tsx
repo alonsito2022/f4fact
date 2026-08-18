@@ -2,22 +2,41 @@ import { Modal, ModalOptions } from "flowbite";
 import React, { useEffect, useRef, useState } from "react";
 
 function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
+    const modalRef = useRef<Modal | null>(null);
     const printFrameRef = useRef<HTMLIFrameElement>(null);
     const blobUrlRef = useRef<string>("");
     const [previewUrl, setPreviewUrl] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>("");
 
-    useEffect(() => {
-        if (pdfModal == null) {
-            const $targetEl = document.getElementById("pdf-preview-modal");
-            const options: ModalOptions = {
-                placement: "center",
-                backdrop: "static",
-                closable: true,
-            };
-            setPdfModal(new Modal($targetEl, options));
+    const initModal = () => {
+        if (modalRef.current) {
+            return modalRef.current;
         }
+
+        const $targetEl = document.getElementById("pdf-preview-modal");
+        if (!$targetEl) {
+            return null;
+        }
+
+        const options: ModalOptions = {
+            placement: "center",
+            backdrop: "static",
+            closable: true,
+        };
+
+        const modal = new Modal($targetEl, options);
+        modalRef.current = modal;
+
+        if (pdfModal == null) {
+            setPdfModal(modal);
+        }
+
+        return modal;
+    };
+
+    useEffect(() => {
+        initModal();
     }, []);
 
     useEffect(() => {
@@ -41,10 +60,14 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
             return;
         }
 
+        const modal = initModal();
+        modal?.show();
+
         let cancelled = false;
 
         setLoading(true);
         setError("");
+        setPreviewUrl("");
 
         fetch(`/api/pdf?url=${encodeURIComponent(pdfUrl)}`)
             .then((response) => {
@@ -79,13 +102,8 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
         };
     }, [pdfUrl]);
 
-    useEffect(() => {
-        if (pdfUrl && pdfModal) {
-            pdfModal.show();
-        }
-    }, [pdfUrl, pdfModal]);
-
     const handleClose = () => {
+        modalRef.current?.hide();
         pdfModal?.hide();
         setPdfUrl("");
     };
@@ -177,10 +195,10 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
                             </div>
                         )}
                         {previewUrl && !loading && !error && (
-                            <embed
+                            <iframe
                                 src={previewUrl}
-                                type="application/pdf"
-                                className="w-full h-[calc(100vh-300px)]"
+                                className="w-full h-[calc(100vh-300px)] border-0"
+                                title="PDF Preview"
                             />
                         )}
                     </div>
