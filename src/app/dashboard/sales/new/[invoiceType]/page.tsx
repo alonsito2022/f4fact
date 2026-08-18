@@ -38,7 +38,7 @@ import SaleTotalList from "../../SaleTotalList";
 import PdfFormatModal from "../../PdfFormatModal";
 // Replace the current today constant with this:
 const limaDate = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+    new Date().toLocaleString("en-US", { timeZone: "America/Lima" }),
 );
 const today =
     limaDate.getFullYear() +
@@ -247,7 +247,7 @@ const initialStateSale = {
     totalDetraction: "",
     detractionPercentage: "",
     nextTemporaryId: 1,
-    pdfFormatForInvoices:0,
+    pdfFormatForInvoices: 0,
 };
 const initialStateSaleDetail = {
     id: 0,
@@ -374,7 +374,7 @@ function NewSalePage() {
     const [product, setProduct] = useState(initialStateProduct);
     // const [userLogged, setUserLogged] = useState(initialStateUserLogged);
     const [productFilterObj, setProductFilterObj] = useState(
-        initialStateProductFilterObj
+        initialStateProductFilterObj,
     );
     const [cashFlow, setCashFlow] = useState(initialStateCashFlow);
     const [modalAddClient, setModalAddClient] = useState<Modal | any>(null);
@@ -393,7 +393,7 @@ function NewSalePage() {
                 Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
             },
         }),
-        [auth?.jwtToken]
+        [auth?.jwtToken],
     );
     useEffect(() => {
         if (auth?.user?.companyPercentageIgv) {
@@ -532,7 +532,7 @@ function NewSalePage() {
             const filteredSeries = serialsAssignedData.allSerials.filter(
                 (s: ISerialAssigned) =>
                     s.documentType === `A_${sale.documentType}` &&
-                    !s.isGeneratedViaApi
+                    !s.isGeneratedViaApi,
             );
 
             if (filteredSeries.length > 0) {
@@ -551,7 +551,7 @@ function NewSalePage() {
     const handleSale = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
-        >
+        >,
     ) => {
         const { name, value } = event.target;
         const target = event.target as HTMLInputElement;
@@ -568,7 +568,7 @@ function NewSalePage() {
             const dataList = event.target.list;
             if (dataList) {
                 const option = Array.from(dataList.options).find(
-                    (option) => option.value === value
+                    (option) => option.value === value,
                 );
                 if (option) {
                     const selectedId = option.getAttribute("data-key");
@@ -590,7 +590,7 @@ function NewSalePage() {
     const handleProduct = (
         event: ChangeEvent<
             HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
-        >
+        >,
     ) => {
         const { name, value } = event.target;
         if (name === "name" && event.target instanceof HTMLInputElement) {
@@ -633,7 +633,7 @@ function NewSalePage() {
         if (!barcode.trim()) return;
 
         const foundProduct = productsData?.allProducts?.find(
-            (p: IProduct) => p.barcode === barcode.trim()
+            (p: IProduct) => p.barcode === barcode.trim(),
         );
 
         if (!foundProduct) {
@@ -704,7 +704,7 @@ function NewSalePage() {
 
     // Función para manejar la tecla Enter en el input de código de barras
     const handleBarcodeKeyPress = (
-        event: React.KeyboardEvent<HTMLInputElement>
+        event: React.KeyboardEvent<HTMLInputElement>,
     ) => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -714,6 +714,7 @@ function NewSalePage() {
 
     const validateBeforePayment = () => {
         if (isProcessing) return false;
+
         // Solo permitir clientes con RUC para facturas
         if (sale.documentType === "01" && sale.clientDocumentType !== "6") {
             toast("Solo se puede emitir facturas a clientes con RUC.", {
@@ -745,7 +746,7 @@ function NewSalePage() {
         // Validar que haya al menos un ítem válido
         const validItems = Array.isArray(sale.operationdetailSet)
             ? sale.operationdetailSet.filter(
-                  (item) => item && item.productId && Number(item.quantity) > 0
+                  (item) => item && item.productId && Number(item.quantity) > 0,
               )
             : [];
         if (validItems.length === 0) {
@@ -759,7 +760,7 @@ function NewSalePage() {
 
         // Validar que todos los items tengan productTariffId válido
         const itemsWithoutTariff = sale.operationdetailSet.filter(
-            (item: any) => Number(item.productTariffId) === 0
+            (item: any) => Number(item.productTariffId) === 0,
         );
         if (itemsWithoutTariff.length > 0) {
             toast("Todos los productos deben tener una tarifa asignada.", {
@@ -788,7 +789,7 @@ function NewSalePage() {
                         hideProgressBar: true,
                         autoClose: 2000,
                         type: "warning",
-                    }
+                    },
                 );
                 return false;
             }
@@ -800,7 +801,7 @@ function NewSalePage() {
                         hideProgressBar: true,
                         autoClose: 2000,
                         type: "warning",
-                    }
+                    },
                 );
                 return false;
             }
@@ -902,7 +903,7 @@ function NewSalePage() {
                             hideProgressBar: true,
                             autoClose: 2000,
                             type: "warning",
-                        }
+                        },
                     );
                     return false;
                 }
@@ -960,7 +961,7 @@ function NewSalePage() {
                     hideProgressBar: true,
                     autoClose: 2000,
                     type: "warning",
-                }
+                },
             );
             return false;
         }
@@ -981,7 +982,7 @@ function NewSalePage() {
                     hideProgressBar: true,
                     autoClose: 2000,
                     type: "warning",
-                }
+                },
             );
             return false;
         }
@@ -996,7 +997,7 @@ function NewSalePage() {
         const selectedOption = event.target.value;
         const selectedData = searchClientData?.searchClientByParameter?.find(
             (person: IPerson) =>
-                `${person.documentNumber} ${person.names}` === selectedOption
+                `${person.documentNumber} ${person.names}` === selectedOption,
         );
 
         if (selectedData) {
@@ -1006,7 +1007,7 @@ function NewSalePage() {
                 clientName: selectedData.names,
                 clientDocumentType: selectedData?.documentType?.replace(
                     "A_",
-                    ""
+                    "",
                 ),
             });
             setClientSearch(selectedOption); // Ensure the search field shows the complete selected value
@@ -1096,8 +1097,8 @@ function NewSalePage() {
                                             {sale.documentType === "01"
                                                 ? "FACTURA ELECTRÓNICA"
                                                 : sale.documentType === "03"
-                                                ? "BOLETA DE VENTA ELECTRÓNICA"
-                                                : ""}
+                                                  ? "BOLETA DE VENTA ELECTRÓNICA"
+                                                  : ""}
                                         </h2>
                                     </div>
                                 </div>
@@ -1174,18 +1175,38 @@ function NewSalePage() {
                                                                     }}
                                                                     required
                                                                 >
-                                                                    <option value={18.0}>
+                                                                    <option
+                                                                        value={
+                                                                            18.0
+                                                                        }
+                                                                    >
                                                                         18%
                                                                     </option>
-                                                                    <option value={10.0}>
-                                                                        10% (Ley 31556)
+                                                                    <option
+                                                                        value={
+                                                                            10.0
+                                                                        }
+                                                                    >
+                                                                        10% (Ley
+                                                                        31556)
                                                                     </option>
-                                                                    <option value={10.5}>
-                                                                        10.5% (Ley 31556 y
+                                                                    <option
+                                                                        value={
+                                                                            10.5
+                                                                        }
+                                                                    >
+                                                                        10.5%
+                                                                        (Ley
+                                                                        31556 y
                                                                         32387)
                                                                     </option>
-                                                                    <option value={4}>
-                                                                        4% (IVAP)
+                                                                    <option
+                                                                        value={
+                                                                            4
+                                                                        }
+                                                                    >
+                                                                        4%
+                                                                        (IVAP)
                                                                     </option>
                                                                 </select>
                                                             </div>
@@ -1266,7 +1287,7 @@ function NewSalePage() {
                                                                     {operationTypesData?.allOperationTypes
                                                                         ?.filter(
                                                                             (
-                                                                                o: IOperationType
+                                                                                o: IOperationType,
                                                                             ) =>
                                                                                 [
                                                                                     "0101", // Venta interna
@@ -1279,13 +1300,13 @@ function NewSalePage() {
                                                                                     // "1004", // Operación Sujeta a Detracción- Servicios de Transporte Carga
                                                                                     "2001", // Operación Sujeta a Percepción
                                                                                 ].includes(
-                                                                                    o.code
-                                                                                )
+                                                                                    o.code,
+                                                                                ),
                                                                         )
                                                                         .map(
                                                                             (
                                                                                 o: IOperationType,
-                                                                                k: number
+                                                                                k: number,
                                                                             ) => (
                                                                                 <option
                                                                                     key={
@@ -1300,7 +1321,7 @@ function NewSalePage() {
                                                                                         o.name
                                                                                     }
                                                                                 </option>
-                                                                            )
+                                                                            ),
                                                                         )}
                                                                 </select>
                                                             </div>
@@ -1324,7 +1345,7 @@ function NewSalePage() {
                                                                         handleSale
                                                                     }
                                                                     onFocus={(
-                                                                        e
+                                                                        e,
                                                                     ) =>
                                                                         e.target.select()
                                                                     }
@@ -1355,7 +1376,7 @@ function NewSalePage() {
                                                                         handleSale
                                                                     }
                                                                     onFocus={(
-                                                                        e
+                                                                        e,
                                                                     ) =>
                                                                         e.target.select()
                                                                     }
@@ -1460,7 +1481,7 @@ function NewSalePage() {
                                                                                 handleSale
                                                                             }
                                                                             onFocus={(
-                                                                                e
+                                                                                e,
                                                                             ) =>
                                                                                 e.target.select()
                                                                             }
@@ -1503,15 +1524,15 @@ function NewSalePage() {
                                                                     {serialsAssignedData?.allSerials
                                                                         ?.filter(
                                                                             (
-                                                                                s: ISerialAssigned
+                                                                                s: ISerialAssigned,
                                                                             ) =>
                                                                                 s.documentType ===
                                                                                     `A_${sale.documentType}` &&
-                                                                                !s.isGeneratedViaApi
+                                                                                !s.isGeneratedViaApi,
                                                                         )
                                                                         .map(
                                                                             (
-                                                                                s: ISerialAssigned
+                                                                                s: ISerialAssigned,
                                                                             ) => (
                                                                                 <option
                                                                                     key={
@@ -1525,7 +1546,7 @@ function NewSalePage() {
                                                                                         s.serial
                                                                                     }
                                                                                 </option>
-                                                                            )
+                                                                            ),
                                                                         ) || (
                                                                         <option value="">
                                                                             No
@@ -1537,11 +1558,11 @@ function NewSalePage() {
                                                                 </select>
                                                                 {serialsAssignedData?.allSerials?.filter(
                                                                     (
-                                                                        s: ISerialAssigned
+                                                                        s: ISerialAssigned,
                                                                     ) =>
                                                                         s.documentType ===
                                                                             `A_${sale.documentType}` &&
-                                                                        !s.isGeneratedViaApi
+                                                                        !s.isGeneratedViaApi,
                                                                 ).length ===
                                                                     0 && (
                                                                     <p className="mt-1 text-sm text-red-600 dark:text-red-500">
@@ -1577,7 +1598,7 @@ function NewSalePage() {
                                                                         handleSale
                                                                     }
                                                                     onFocus={(
-                                                                        e
+                                                                        e,
                                                                     ) =>
                                                                         e.target.select()
                                                                     }
@@ -1657,7 +1678,7 @@ function NewSalePage() {
                                                                             handleClientSelect
                                                                         }
                                                                         onFocus={(
-                                                                            e
+                                                                            e,
                                                                         ) =>
                                                                             e.target.select()
                                                                         }
@@ -1676,7 +1697,7 @@ function NewSalePage() {
                                                                         {searchClientData?.searchClientByParameter?.map(
                                                                             (
                                                                                 n: IPerson,
-                                                                                index: number
+                                                                                index: number,
                                                                             ) => (
                                                                                 <option
                                                                                     key={
@@ -1687,7 +1708,7 @@ function NewSalePage() {
                                                                                     }
                                                                                     value={`${n.documentNumber} ${n.names}`}
                                                                                 />
-                                                                            )
+                                                                            ),
                                                                         )}
                                                                     </datalist>
                                                                     <button
@@ -1700,10 +1721,10 @@ function NewSalePage() {
                                                                                     clientName:
                                                                                         "",
                                                                                     clientId: 0,
-                                                                                }
+                                                                                },
                                                                             );
                                                                             setClientSearch(
-                                                                                ""
+                                                                                "",
                                                                             );
                                                                         }}
                                                                     >
@@ -1713,11 +1734,11 @@ function NewSalePage() {
                                                                         type="button"
                                                                         className="absolute inset-y-0 right-0 px-2 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-r-full hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
                                                                         onClick={(
-                                                                            e
+                                                                            e,
                                                                         ) => {
                                                                             modalAddClient.show();
                                                                             setPerson(
-                                                                                initialStatePerson
+                                                                                initialStatePerson,
                                                                             );
                                                                         }}
                                                                     >
@@ -1774,19 +1795,19 @@ function NewSalePage() {
                                                                         barcodeInput
                                                                     }
                                                                     onChange={(
-                                                                        e
+                                                                        e,
                                                                     ) =>
                                                                         setBarcodeInput(
                                                                             e
                                                                                 .target
-                                                                                .value
+                                                                                .value,
                                                                         )
                                                                     }
                                                                     onKeyPress={
                                                                         handleBarcodeKeyPress
                                                                     }
                                                                     onFocus={(
-                                                                        e
+                                                                        e,
                                                                     ) =>
                                                                         e.target.select()
                                                                     }
@@ -1802,7 +1823,7 @@ function NewSalePage() {
                                                                 type="button"
                                                                 onClick={() =>
                                                                     handleBarcodeSearch(
-                                                                        barcodeInput
+                                                                        barcodeInput,
                                                                     )
                                                                 }
                                                                 className="px-3 py-1 text-sm bg-blue-600 dark:bg-cyan-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
@@ -1839,7 +1860,7 @@ function NewSalePage() {
                                                             {productsData?.allProducts?.map(
                                                                 (
                                                                     n: IProduct,
-                                                                    index: number
+                                                                    index: number,
                                                                 ) => (
                                                                     <option
                                                                         key={
@@ -1856,15 +1877,15 @@ function NewSalePage() {
                                                                         }] ${n.name
                                                                             .replace(
                                                                                 /[\n\r\s]+/g,
-                                                                                " "
+                                                                                " ",
                                                                             )
                                                                             .trim()} ▶️ S/ ${Number(
-                                                                            n.priceWithIgv3
+                                                                            n.priceWithIgv3,
                                                                         ).toFixed(
-                                                                            2
+                                                                            2,
                                                                         )}`}
                                                                     />
-                                                                )
+                                                                ),
                                                             )}
                                                         </datalist>
                                                         <button
@@ -1879,7 +1900,7 @@ function NewSalePage() {
                                                                             modalProduct.hide();
                                                                             modalAddDetail.show();
                                                                             setSaleDetail(
-                                                                                initialStateSaleDetail
+                                                                                initialStateSaleDetail,
                                                                             );
                                                                         },
                                                                 });
@@ -1910,7 +1931,7 @@ function NewSalePage() {
                                                             onClick={(e) => {
                                                                 modalAddDetail.show();
                                                                 setSaleDetail(
-                                                                    initialStateSaleDetail
+                                                                    initialStateSaleDetail,
                                                                 );
                                                             }}
                                                         >
@@ -1994,9 +2015,9 @@ function NewSalePage() {
                                                                         {
                                                                             ...cashFlow,
                                                                             total: Number(
-                                                                                sale.totalToPay
+                                                                                sale.totalToPay,
                                                                             ),
-                                                                        }
+                                                                        },
                                                                     );
                                                                 } else {
                                                                     // Handle direct cash payment
@@ -2004,7 +2025,7 @@ function NewSalePage() {
                                                                         {
                                                                             wayPay: 1, // EFECTIVO [CONTADO]
                                                                             total: Number(
-                                                                                sale.totalToPay
+                                                                                sale.totalToPay,
                                                                             ),
                                                                             description:
                                                                                 "Pago en efectivo",
@@ -2027,7 +2048,7 @@ function NewSalePage() {
                                                                     });
                                                                     // Set trigger to call handleSaveSale after state update
                                                                     setTriggerSaveSale(
-                                                                        true
+                                                                        true,
                                                                     );
                                                                 }
                                                             }
