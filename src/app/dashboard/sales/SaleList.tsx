@@ -238,88 +238,40 @@ function SaleList({
     const hasCreditNote = transformedSalesData?.some(
         (item: IOperation) => item?.creditNoteReferences?.length > 0,
     );
+
+    if (!transformedSalesData || transformedSalesData.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 px-4">
+                <div className="w-20 h-20 mb-6 rounded-full bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center">
+                    <svg className="w-10 h-10 text-gray-300 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                    </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
+                    No se encontraron comprobantes
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm mb-6">
+                    No hay registros que coincidan con los filtros de búsqueda aplicados. Intente ajustar las fechas o los criterios de filtrado.
+                </p>
+                <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Verifique que las fechas y la sede sean correctas</span>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
             <div className="w-full overflow-x-auto">
-                <div className="flex flex-wrap items-center gap-4 my-3 pl-3">
-                    <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-500 dark:text-gray-400">
-                            Página:
-                        </label>
-                        <input
-                            type="number"
-                            name="page"
-                            disabled
-                            min="1"
-                            onChange={(e) =>
-                                setFilterObj({
-                                    ...filterObj,
-                                    page: Number(e.target.value),
-                                })
-                            }
-                            value={filterObj.page}
-                            className="form-control-sm w-16 text-center"
-                        />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-500 dark:text-gray-400">
-                            Registros por Página:
-                        </label>
-                        <select
-                            name="pageSize"
-                            disabled
-                            value={filterObj.pageSize}
-                            onChange={(e) =>
-                                setFilterObj({
-                                    ...filterObj,
-                                    pageSize: Number(e.target.value),
-                                })
-                            }
-                            className="form-control-sm w-20"
-                        >
-                            {[10, 20, 50].map((size) => (
-                                <option key={size} value={size}>
-                                    {size}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-500 dark:text-gray-400">
-                            Total de Páginas:
-                        </label>
-                        <input
-                            type="number"
-                            disabled
-                            readOnly
-                            defaultValue={
-                                filteredSalesData?.allSales?.totalNumberOfPages
-                            }
-                            className="form-control-sm w-16 text-center"
-                        />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-500 dark:text-gray-400">
-                            Total de Registros:
-                        </label>
-                        <input
-                            type="number"
-                            disabled
-                            readOnly
-                            defaultValue={
-                                filteredSalesData?.allSales?.totalNumberOfSales
-                            }
-                            className="form-control-sm w-16 text-center"
-                        />
-                    </div>
-                    <SalePagination
-                        filterObj={filterObj}
-                        setFilterObj={setFilterObj}
-                        salesQuery={salesQuery}
-                        filteredSalesData={filteredSalesData}
-                    />
-                </div>
-
+                <SalePagination
+                    filterObj={filterObj}
+                    setFilterObj={setFilterObj}
+                    salesQuery={salesQuery}
+                    filteredSalesData={filteredSalesData}
+                />
                 <table className="w-full border-collapse border border-gray-100 dark:border-gray-600 text-12">
                     <thead className="bg-gray-100 dark:bg-gray-700 text-black-500 uppercase dark:text-gray-400">
                         <tr>

@@ -1,6 +1,5 @@
 "use client";
-import { useState, useMemo, use, useEffect } from "react";
-import Breadcrumb from "@/components/Breadcrumb";
+import { useState, useMemo, useEffect } from "react";
 import SaleList from "./SaleList";
 import SaleFilter from "./SaleFilter";
 import { gql, useLazyQuery } from "@apollo/client";
@@ -184,11 +183,33 @@ function SalePage() {
 
     // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
     if (auth?.status === "loading") {
-        return <p className="text-center">Cargando sesión...</p>;
+        return (
+            <div className="min-h-screen bg-white dark:bg-gray-800 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="relative">
+                        <div className="w-10 h-10 border-4 border-blue-200 dark:border-blue-800 rounded-full"></div>
+                        <div className="w-10 h-10 border-4 border-transparent border-t-blue-600 rounded-full animate-spin absolute top-0 left-0"></div>
+                    </div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Cargando sesión...</span>
+                </div>
+            </div>
+        );
     }
     // Si la sesión no está autenticada, muestra un mensaje de error o redirige
     if (auth?.status === "unauthenticated") {
-        return <p className="text-center text-red-500">No autorizado</p>;
+        return (
+            <div className="min-h-screen bg-white dark:bg-gray-800 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                        </svg>
+                    </div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">No autorizado</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Inicie sesión para acceder a esta página</p>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -208,21 +229,48 @@ function SalePage() {
                         <div className="flex flex-col">
                             <div className="overflow-x-auto">
                                 <div className="inline-block min-w-full align-middle">
-                                    <div className="overflow-hidden shadow">
+                                    <div className="overflow-hidden">
                                         {filteredSalesLoading ? (
-                                            <div className="p-4 text-center">
-                                                <span className="loader"></span>
-                                                Cargando ventas...
+                                            <div className="p-8">
+                                                <div className="flex items-center justify-center mb-6">
+                                                    <div className="relative">
+                                                        <div className="w-12 h-12 border-4 border-blue-200 dark:border-blue-800 rounded-full"></div>
+                                                        <div className="w-12 h-12 border-4 border-transparent border-t-blue-600 rounded-full animate-spin absolute top-0 left-0"></div>
+                                                    </div>
+                                                    <span className="ml-4 text-sm font-medium text-gray-600 dark:text-gray-300">
+                                                        Cargando comprobantes...
+                                                    </span>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    {Array.from({ length: 8 }).map((_, i) => (
+                                                        <div key={i} className="flex items-center gap-4 animate-pulse">
+                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-12"></div>
+                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-10"></div>
+                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded flex-1"></div>
+                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         ) : filteredSalesError ? (
-                                            <div className="p-4 text-red-500 text-center">
-                                                {filteredSalesError.message}
+                                            <div className="flex flex-col items-center justify-center py-16 text-center">
+                                                <div className="w-16 h-16 mb-4 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                                                    <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                                    </svg>
+                                                </div>
+                                                <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                                                    Error al cargar los datos
+                                                </p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm">
+                                                    {filteredSalesError.message || "Ocurrió un error inesperado. Intente recargar la página."}
+                                                </p>
                                             </div>
                                         ) : (
                                             <SaleList
-                                                filteredSalesData={
-                                                    filteredSalesData
-                                                }
+                                                filteredSalesData={filteredSalesData}
                                                 setFilterObj={setFilterObj}
                                                 filterObj={filterObj}
                                                 modalWhatsApp={modalWhatsApp}
