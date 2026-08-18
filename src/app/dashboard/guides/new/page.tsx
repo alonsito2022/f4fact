@@ -302,15 +302,6 @@ function NewGuidePage() {
                 });
                 return false;
             }
-            if (!guide.correlative || Number(guide.correlative) <= 0) {
-                toast("La guia debe tener un numero de correlativo valido.", {
-                    hideProgressBar: true,
-                    autoClose: 2000,
-                    type: "error",
-                });
-                return false;
-            }
-
             if (!guide.operationdetailSet || guide.operationdetailSet.length === 0) {
                 toast("Debe agregar al menos un producto a la guia.", {
                     hideProgressBar: true,

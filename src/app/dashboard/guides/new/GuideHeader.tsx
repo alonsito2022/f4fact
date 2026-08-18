@@ -441,7 +441,9 @@ function GuideHeader({
               value={guide.correlative}
               onChange={handleGuide}
               onFocus={(e) => e.target.select()}
-              className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-50/50 dark:bg-gray-700/30 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
+              placeholder="Automático"
+              disabled
+              className="w-full h-10 sm:h-11 px-3 text-sm rounded-xl border-2 border-gray-200 dark:border-gray-600/80 bg-gray-100 dark:bg-gray-600/50 text-gray-500 dark:text-gray-400 cursor-not-allowed transition-all duration-200"
               autoComplete="off"
             />
           </div>
