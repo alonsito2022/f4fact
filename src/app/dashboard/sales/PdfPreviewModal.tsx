@@ -1,8 +1,13 @@
 import { Modal, ModalOptions } from "flowbite";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
-    const iframeRef = useRef<HTMLIFrameElement>(null);
+    const printFrameRef = useRef<HTMLIFrameElement>(null);
+    const blobUrlRef = useRef<string>("");
+    const [previewUrl, setPreviewUrl] = useState<string>("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string>("");
+
     useEffect(() => {
         if (pdfModal == null) {
             const $targetEl = document.getElementById("pdf-preview-modal");
@@ -15,21 +20,103 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
         }
     }, []);
 
-    const handlePrint = () => {
-        if (iframeRef.current && iframeRef.current.contentWindow) {
-            try {
-                // Activar la impresión del iframe
-                iframeRef.current.contentWindow.print();
-            } catch (error) {
-                console.log("Error al imprimir desde iframe:", error);
-                // Fallback: abrir en nueva ventana
-                window.open(pdfUrl, "_blank");
+    useEffect(() => {
+        return () => {
+            if (blobUrlRef.current) {
+                URL.revokeObjectURL(blobUrlRef.current);
+                blobUrlRef.current = "";
             }
-        } else {
-            // Fallback si no hay iframe
-            window.open(pdfUrl, "_blank");
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!pdfUrl) {
+            if (blobUrlRef.current) {
+                URL.revokeObjectURL(blobUrlRef.current);
+                blobUrlRef.current = "";
+            }
+            setPreviewUrl("");
+            setError("");
+            setLoading(false);
+            return;
         }
+
+        let cancelled = false;
+
+        setLoading(true);
+        setError("");
+
+        fetch(`/api/pdf?url=${encodeURIComponent(pdfUrl)}`)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("No se pudo cargar el PDF");
+                }
+                return response.blob();
+            })
+            .then((blob) => {
+                if (cancelled) return;
+
+                if (blobUrlRef.current) {
+                    URL.revokeObjectURL(blobUrlRef.current);
+                }
+
+                blobUrlRef.current = URL.createObjectURL(blob);
+                setPreviewUrl(blobUrlRef.current);
+            })
+            .catch((err) => {
+                if (!cancelled) {
+                    setError(err.message || "Error al cargar el PDF");
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [pdfUrl]);
+
+    useEffect(() => {
+        if (pdfUrl && pdfModal) {
+            pdfModal.show();
+        }
+    }, [pdfUrl, pdfModal]);
+
+    const handleClose = () => {
+        pdfModal?.hide();
+        setPdfUrl("");
     };
+
+    const handlePrint = () => {
+        if (!previewUrl && !pdfUrl) return;
+
+        const printSrc =
+            previewUrl ||
+            `/api/pdf?url=${encodeURIComponent(pdfUrl)}`;
+
+        if (printFrameRef.current) {
+            printFrameRef.current.src = printSrc;
+            printFrameRef.current.onload = () => {
+                try {
+                    printFrameRef.current?.contentWindow?.print();
+                } catch {
+                    window.open(printSrc, "_blank");
+                }
+            };
+            return;
+        }
+
+        window.open(printSrc, "_blank");
+    };
+
+    const openInNewTabUrl =
+        previewUrl ||
+        (pdfUrl
+            ? `/api/pdf?url=${encodeURIComponent(pdfUrl)}`
+            : "");
 
     return (
         <div
@@ -46,10 +133,7 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
                         </h3>
                         <button
                             type="button"
-                            onClick={() => {
-                                pdfModal?.hide();
-                                setPdfUrl("");
-                            }}
+                            onClick={handleClose}
                             className="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                         >
                             <svg
@@ -69,24 +153,42 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
                             </svg>
                         </button>
                     </div>
-                    <div className="p-4 md:p-5">
-                        <iframe
-                            ref={iframeRef}
-                            src={
-                                pdfUrl
-                                    ? `/api/pdf?url=${encodeURIComponent(
-                                          pdfUrl
-                                      )}`
-                                    : ""
-                            }
-                            className="w-full h-[calc(100vh-300px)]"
-                            title="PDF Preview"
-                        />
+                    <div className="p-4 md:p-5 min-h-[calc(100vh-300px)]">
+                        {loading && (
+                            <div className="flex h-[calc(100vh-300px)] items-center justify-center">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    Cargando PDF...
+                                </p>
+                            </div>
+                        )}
+                        {error && !loading && (
+                            <div className="flex h-[calc(100vh-300px)] flex-col items-center justify-center gap-3">
+                                <p className="text-sm text-red-600 dark:text-red-400">
+                                    {error}
+                                </p>
+                                <a
+                                    href={pdfUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+                                >
+                                    Abrir PDF directamente
+                                </a>
+                            </div>
+                        )}
+                        {previewUrl && !loading && !error && (
+                            <embed
+                                src={previewUrl}
+                                type="application/pdf"
+                                className="w-full h-[calc(100vh-300px)]"
+                            />
+                        )}
                     </div>
                     <div className="flex items-center justify-between p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
                         <button
                             onClick={handlePrint}
-                            className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 flex items-center"
+                            disabled={loading || !!error || !previewUrl}
+                            className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 flex items-center"
                         >
                             <svg
                                 className="w-4 h-4 mr-2"
@@ -102,7 +204,7 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
                             Imprimir
                         </button>
                         <a
-                            href={pdfUrl}
+                            href={openInNewTabUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -112,6 +214,11 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
                     </div>
                 </div>
             </div>
+            <iframe
+                ref={printFrameRef}
+                className="hidden"
+                title="PDF Print"
+            />
         </div>
     );
 }

@@ -53,6 +53,7 @@ export async function GET(request) {
             headers: {
                 "Content-Type": "application/pdf",
                 "Content-Disposition": `inline; filename="${responseFilename}"`,
+                "Permissions-Policy": "unload=(self)",
             },
         });
     } catch (error) {
