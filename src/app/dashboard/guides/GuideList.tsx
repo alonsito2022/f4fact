@@ -33,6 +33,7 @@ function GuideList({
 }: any) {
     const [pdfModal, setPdfModal] = useState<Modal | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string>("");
+    const [pdfFileName, setPdfFileName] = useState<string>("");
     const handleDownload = (url: string, filename: string) => {
         if (!url || !filename) {
             toast.error("URL o nombre de archivo no valido");
@@ -413,6 +414,9 @@ function GuideList({
                                                         setPdfUrl(
                                                             `${process.env.NEXT_PUBLIC_BASE_API}/operations/print_guide/${item.id}/`
                                                         );
+                                                        setPdfFileName(
+                                                            `${item?.subsidiary?.company?.doc}-${item.documentType}-${item.serial}-${item.correlative}.pdf`
+                                                        );
                                                         pdfModal?.show();
                                                     }}
                                                     className="hover:underline"
@@ -650,6 +654,8 @@ function GuideList({
                 setPdfModal={setPdfModal}
                 pdfUrl={pdfUrl}
                 setPdfUrl={setPdfUrl}
+                pdfFileName={pdfFileName}
+                setPdfFileName={setPdfFileName}
             />
         </>
     );

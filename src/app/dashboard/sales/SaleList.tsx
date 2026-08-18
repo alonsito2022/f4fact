@@ -35,6 +35,7 @@ function SaleList({
 }: any) {
     const [pdfModal, setPdfModal] = useState<Modal | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string>("");
+    const [pdfFileName, setPdfFileName] = useState<string>("");
     const handleDownload = (url: string, filename: string) => {
         if (!url || !filename) {
             toast.error("URL o nombre de archivo no válido");
@@ -504,6 +505,9 @@ function SaleList({
                                                                 : "print_invoice"
                                                         }/${item.id}/`,
                                                     );
+                                                    setPdfFileName(
+                                                        `${item?.subsidiary?.company?.doc}-${item.documentType}-${item.serial}-${item.correlative}.pdf`
+                                                    );
                                                     pdfModal?.show();
                                                 }}
                                                 className="hover:underline"
@@ -933,6 +937,8 @@ function SaleList({
                 setPdfModal={setPdfModal}
                 pdfUrl={pdfUrl}
                 setPdfUrl={setPdfUrl}
+                pdfFileName={pdfFileName}
+                setPdfFileName={setPdfFileName}
             />
         </>
     );

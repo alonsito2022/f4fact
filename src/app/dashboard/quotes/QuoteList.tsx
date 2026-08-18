@@ -35,6 +35,7 @@ function QuoteList({
 }: any) {
     const [pdfModal, setPdfModal] = useState<Modal | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string>("");
+    const [pdfFileName, setPdfFileName] = useState<string>("");
     const [cancelInvoice, { loading, error, data }] =
         useMutation(CANCEL_INVOICE);
 
@@ -329,6 +330,9 @@ function QuoteList({
                                                         setPdfUrl(
                                                             `${process.env.NEXT_PUBLIC_BASE_API}/operations/print_quotation/${item.id}/`
                                                         );
+                                                        setPdfFileName(
+                                                            `PDF-COTIZACION-${item.correlative}.pdf`
+                                                        );
                                                         pdfModal?.show();
                                                     }}
                                                     className="hover:underline"
@@ -453,6 +457,8 @@ function QuoteList({
                 setPdfModal={setPdfModal}
                 pdfUrl={pdfUrl}
                 setPdfUrl={setPdfUrl}
+                pdfFileName={pdfFileName}
+                setPdfFileName={setPdfFileName}
             />
         </>
     );

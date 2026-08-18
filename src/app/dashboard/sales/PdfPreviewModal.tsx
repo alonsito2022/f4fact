@@ -1,10 +1,17 @@
 import { Modal, ModalOptions } from "flowbite";
 import React, { useEffect, useRef, useState } from "react";
 
-function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
+function buildProxyUrl(url: string, fileName?: string, download = false) {
+    if (!url) return "";
+    const safeName = (fileName || "documento.pdf").replace(/["\\\r\n]/g, "").trim();
+    const params = new URLSearchParams({ url });
+    if (download) params.set("download", "1");
+    return `/api/pdf/file/${encodeURIComponent(safeName)}?${params.toString()}`;
+}
+
+function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl, pdfFileName, setPdfFileName }: any) {
     const modalRef = useRef<Modal | null>(null);
     const printFrameRef = useRef<HTMLIFrameElement>(null);
-    const blobUrlRef = useRef<string>("");
     const [previewUrl, setPreviewUrl] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>("");
@@ -40,20 +47,7 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
     }, []);
 
     useEffect(() => {
-        return () => {
-            if (blobUrlRef.current) {
-                URL.revokeObjectURL(blobUrlRef.current);
-                blobUrlRef.current = "";
-            }
-        };
-    }, []);
-
-    useEffect(() => {
         if (!pdfUrl) {
-            if (blobUrlRef.current) {
-                URL.revokeObjectURL(blobUrlRef.current);
-                blobUrlRef.current = "";
-            }
             setPreviewUrl("");
             setError("");
             setLoading(false);
@@ -63,57 +57,22 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
         const modal = initModal();
         modal?.show();
 
-        let cancelled = false;
-
         setLoading(true);
         setError("");
-        setPreviewUrl("");
-
-        fetch(`/api/pdf?url=${encodeURIComponent(pdfUrl)}`)
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("No se pudo cargar el PDF");
-                }
-                return response.blob();
-            })
-            .then((blob) => {
-                if (cancelled) return;
-
-                if (blobUrlRef.current) {
-                    URL.revokeObjectURL(blobUrlRef.current);
-                }
-
-                blobUrlRef.current = URL.createObjectURL(blob);
-                setPreviewUrl(blobUrlRef.current);
-            })
-            .catch((err) => {
-                if (!cancelled) {
-                    setError(err.message || "Error al cargar el PDF");
-                }
-            })
-            .finally(() => {
-                if (!cancelled) {
-                    setLoading(false);
-                }
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [pdfUrl]);
+        setPreviewUrl(buildProxyUrl(pdfUrl, pdfFileName));
+    }, [pdfUrl, pdfFileName]);
 
     const handleClose = () => {
         modalRef.current?.hide();
         pdfModal?.hide();
         setPdfUrl("");
+        setPdfFileName?.("");
     };
 
     const handlePrint = () => {
         if (!previewUrl && !pdfUrl) return;
 
-        const printSrc =
-            previewUrl ||
-            `/api/pdf?url=${encodeURIComponent(pdfUrl)}`;
+        const printSrc = previewUrl || buildProxyUrl(pdfUrl, pdfFileName);
 
         if (printFrameRef.current) {
             printFrameRef.current.src = printSrc;
@@ -130,11 +89,30 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
         window.open(printSrc, "_blank");
     };
 
-    const openInNewTabUrl =
-        previewUrl ||
-        (pdfUrl
-            ? `/api/pdf?url=${encodeURIComponent(pdfUrl)}`
-            : "");
+    const handleDownload = async () => {
+        if (!pdfUrl) return;
+        const filename = pdfFileName || "documento.pdf";
+
+        try {
+            const response = await fetch(buildProxyUrl(pdfUrl, filename, true));
+            if (!response.ok) {
+                throw new Error("No se pudo descargar el PDF");
+            }
+
+            const blob = await response.blob();
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error al descargar el PDF");
+        }
+    };
+
+    const openInNewTabUrl = previewUrl || (pdfUrl ? buildProxyUrl(pdfUrl, pdfFileName) : "");
 
     return (
         <div
@@ -171,9 +149,9 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
                             </svg>
                         </button>
                     </div>
-                    <div className="p-4 md:p-5 min-h-[calc(100vh-300px)]">
+                    <div className="p-4 md:p-5 min-h-[calc(100vh-300px)] relative">
                         {loading && (
-                            <div className="flex h-[calc(100vh-300px)] items-center justify-center">
+                            <div className="absolute inset-4 md:inset-5 z-10 flex items-center justify-center bg-white/80 dark:bg-gray-700/80">
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                     Cargando PDF...
                                 </p>
@@ -194,15 +172,20 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
                                 </a>
                             </div>
                         )}
-                        {previewUrl && !loading && !error && (
+                        {previewUrl && !error && (
                             <iframe
                                 src={previewUrl}
                                 className="w-full h-[calc(100vh-300px)] border-0"
                                 title="PDF Preview"
+                                onLoad={() => setLoading(false)}
+                                onError={() => {
+                                    setLoading(false);
+                                    setError("No se pudo cargar el PDF");
+                                }}
                             />
                         )}
                     </div>
-                    <div className="flex items-center justify-between p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                    <div className="flex items-center justify-between gap-3 p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
                         <button
                             onClick={handlePrint}
                             disabled={loading || !!error || !previewUrl}
@@ -221,14 +204,24 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl }: any) {
                             </svg>
                             Imprimir
                         </button>
-                        <a
-                            href={openInNewTabUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                        >
-                            Abrir en Nueva Pestaña
-                        </a>
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={handleDownload}
+                                disabled={loading || !!error || !pdfUrl}
+                                className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+                            >
+                                Descargar
+                            </button>
+                            <a
+                                href={openInNewTabUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                            >
+                                Abrir en Nueva Pestaña
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

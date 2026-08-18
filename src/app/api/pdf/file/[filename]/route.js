@@ -1,28 +1,11 @@
-// import { NextResponse } from "next/server";
-// import path from "path";
-// import { readFile } from "fs/promises";
-
-// export async function GET() {
-//     try {
-//         const filePath = path.join(process.cwd(), "public/pdfs/sample.pdf");
-//         const fileBuffer = await readFile(filePath);
-//         return new NextResponse(fileBuffer, {
-//             headers: {
-//                 "Content-Type": "application/pdf",
-//             },
-//         });
-//     } catch (error) {
-//         return new NextResponse("File not found", { status: 404 });
-//     }
-// }
 import { NextResponse } from "next/server";
 
-export async function GET(request) {
+export async function GET(request, { params }) {
     try {
         const { searchParams } = new URL(request.url);
         const url = searchParams.get("url");
         const asAttachment = searchParams.get("download") === "1";
-        const requestedFilename = (searchParams.get("filename") || "")
+        const requestedFilename = decodeURIComponent(params.filename || "")
             .replace(/["\\\r\n]/g, "")
             .trim();
 
@@ -41,24 +24,6 @@ export async function GET(request) {
         }
 
         let responseFilename = requestedFilename || "documento.pdf";
-        if (!requestedFilename || requestedFilename === "documento.pdf") {
-            const contentDisposition = response.headers.get("content-disposition");
-            if (contentDisposition && contentDisposition.includes("filename=")) {
-                const backendFilename = contentDisposition
-                    .split("filename=")[1]
-                    .replace(/"/g, "")
-                    .trim();
-                if (
-                    backendFilename &&
-                    !backendFilename.match(
-                        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
-                    )
-                ) {
-                    responseFilename = backendFilename;
-                }
-            }
-        }
-
         if (!responseFilename.toLowerCase().endsWith(".pdf")) {
             responseFilename = `${responseFilename}.pdf`;
         }

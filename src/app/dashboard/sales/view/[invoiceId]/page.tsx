@@ -109,6 +109,7 @@ export default function ViewInvoicePage({
     const [isLoading, setIsLoading] = useState(true);
     const [pdfModal, setPdfModal] = useState<Modal | any>(null);
     const [pdfUrl, setPdfUrl] = useState<string>("");
+    const [pdfFileName, setPdfFileName] = useState<string>("");
     const [whatsappModal, setWhatsappModal] = useState<Modal | any>(null);
     const [cpe, setCpe] = useState<any>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -596,10 +597,14 @@ export default function ViewInvoicePage({
                                 invoice.documentType === "A_07"
                                     ? "print_credit_note"
                                     : "print_invoice";
-                            // Construir la URL del PDF
+                            const documentType = String(
+                                invoice.documentType
+                            ).replace("A_", "");
                             const pdfUrl = `${process.env.NEXT_PUBLIC_BASE_API}/operations/${endpoint}/${invoice.id}/`;
-                            // Establecer la URL y abrir el modal
                             setPdfUrl(pdfUrl);
+                            setPdfFileName(
+                                `${invoice.subsidiary?.company?.doc}-${documentType}-${invoice.serial}-${invoice.correlative}.pdf`
+                            );
                             pdfModal?.show();
                         }}
                         className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-3 rounded-xl hover:from-red-700 hover:to-red-800 flex items-center justify-center shadow-md transform hover:scale-105 transition-all duration-200 font-medium"
@@ -845,6 +850,8 @@ export default function ViewInvoicePage({
                 setPdfModal={setPdfModal}
                 pdfUrl={pdfUrl}
                 setPdfUrl={setPdfUrl}
+                pdfFileName={pdfFileName}
+                setPdfFileName={setPdfFileName}
             />
 
             {/* Modal de WhatsApp */}
