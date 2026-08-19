@@ -109,10 +109,21 @@ function SaleDetailList({
         //     newTotalTaxed * (Number(invoice?.igvType) || 0) * 0.01
         // );
 
-        // 4. Cálculo de IGV (proporcional solo para items no anticipo)
-        const newTotalIgv = safeNumber(
-            totalIgv * (newTotalTaxed / oldTotalTaxed) // ← Proporción exacta
-        );
+        // 4. Cálculo de IGV
+        // Si hay descuento global activo y todos los ítems son gravados, recalcular
+        // IGV por tasa directa para evitar acumulación de error de redondeo.
+        // En mezcla de tipos de afectación se mantiene la proporción.
+        const hasOnlyTaxed =
+            totalUnaffected === 0 && totalExonerated === 0 && totalTaxed > 0;
+        const igvRate = (Number(invoice?.igvType) || 0) * 0.01;
+        const newTotalIgv =
+            hasOnlyTaxed && discountGlobal > 0
+                ? safeNumber(newTotalTaxed * igvRate)
+                : safeNumber(
+                      oldTotalTaxed > 0
+                          ? totalIgv * (newTotalTaxed / oldTotalTaxed)
+                          : 0
+                  );
 
         // 5. Totales finales (el anticipo se resta al final)
         const subtotal = safeNumber(
