@@ -938,20 +938,22 @@ function NewSalePage() {
                 break;
         }
 
-        // Validar la fecha de emisión
-        const emitDate = new Date(sale.emitDate);
-        const currentDate = new Date();
-        const fiveDaysAgo = new Date(currentDate);
-        fiveDaysAgo.setDate(currentDate.getDate() - 6);
-        const threeDaysAgo = new Date(currentDate);
-        threeDaysAgo.setDate(currentDate.getDate() - 4);
+        // Validar la fecha de emisión (solo día calendario en America/Lima; sin horas)
+        const parseDateOnly = (dateStr: string) => {
+            const [year, month, day] = dateStr.split("-").map(Number);
+            return new Date(year, month - 1, day);
+        };
+        const emitDate = parseDateOnly(sale.emitDate);
+        const currentDate = new Date(
+            new Date().toLocaleString("en-US", { timeZone: "America/Lima" }),
+        );
+        currentDate.setHours(0, 0, 0, 0);
 
-        // Calcular días máximos permitidos según tipo de documento
-        const maxDaysBack = sale.documentType === "01" ? 4 : 6; // 3 días para facturas, 5 para boletas
-        // Calcular fecha mínima permitida
+        // 3 días para facturas (01), 5 días para boletas
+        const maxDaysBack = sale.documentType === "01" ? 3 : 5;
         const minAllowedDate = new Date(currentDate);
         minAllowedDate.setDate(currentDate.getDate() - maxDaysBack);
-        // Verificar si la fecha de emisión es anterior a la mínima permitida
+
         if (emitDate < minAllowedDate) {
             const documentType =
                 sale.documentType === "01" ? "facturas" : "boletas";
@@ -974,7 +976,7 @@ function NewSalePage() {
             return false;
         }
 
-        const dueDate = new Date(sale.dueDate);
+        const dueDate = parseDateOnly(sale.dueDate);
         if (dueDate < emitDate) {
             toast(
                 "La fecha de vencimiento no puede ser menor a la fecha de emisión.",
