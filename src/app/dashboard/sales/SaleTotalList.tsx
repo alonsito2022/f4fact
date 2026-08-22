@@ -23,6 +23,21 @@ function SaleTotalList({
     const [localDiscountGlobal, setLocalDiscountGlobal] = React.useState(
         invoice.discountGlobal || ""
     );
+    // "net"   → el usuario ingresa sobre el valor neto (sin IGV) — comportamiento SUNAT
+    // "gross" → el usuario ingresa sobre el precio final (con IGV incluido)
+    const [discountMode, setDiscountMode] = React.useState<"net" | "gross">("net");
+
+    // Convierte el monto ingresado a valor neto según el modo activo.
+    // Se trabaja con precisión completa (sin redondear aquí) para evitar
+    // que el centavo se pierda en calculateTotal.
+    const toNetDiscount = (rawValue: number): number => {
+        if (discountMode === "gross") {
+            const igvFactor = 1 + (Number(invoice?.igvType) || 18) * 0.01;
+            // Devolvemos la división exacta; SaleDetailList redondeará al final
+            return rawValue / igvFactor;
+        }
+        return rawValue;
+    };
 
     // Sincronizar estados locales cuando cambie el invoice
     React.useEffect(() => {
@@ -189,16 +204,41 @@ function SaleTotalList({
                     <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-4"></div>
                         <div className="col-span-4 text-right text-gray-600 dark:text-gray-400 group hover:bg-gray-50 dark:hover:bg-gray-700 py-1 px-2 transition-colors">
-                            Descuento Global (-){" "}
-                            {invoice.currencyType === "PEN"
-                                ? "S/"
-                                : invoice.currencyType === "USD"
-                                ? "US$"
-                                : invoice.currencyType === "EUR"
-                                ? "€"
-                                : invoice.currencyType === "GBP"
-                                ? "£"
-                                : null}
+                            <div className="flex items-center justify-end gap-2">
+                                <span>
+                                    Descuento Global (-){" "}
+                                    {invoice.currencyType === "PEN"
+                                        ? "S/"
+                                        : invoice.currencyType === "USD"
+                                        ? "US$"
+                                        : invoice.currencyType === "EUR"
+                                        ? "€"
+                                        : invoice.currencyType === "GBP"
+                                        ? "£"
+                                        : null}
+                                </span>
+                                {/* Toggle neto / con IGV */}
+                                <button
+                                    type="button"
+                                    title={
+                                        discountMode === "net"
+                                            ? "Modo actual: valor neto (sin IGV). Click para ingresar con IGV incluido"
+                                            : "Modo actual: precio final (con IGV). Click para ingresar valor neto"
+                                    }
+                                    onClick={() =>
+                                        setDiscountMode((m) =>
+                                            m === "net" ? "gross" : "net"
+                                        )
+                                    }
+                                    className={`text-xs px-1.5 py-0.5 rounded font-semibold border transition-colors ${
+                                        discountMode === "gross"
+                                            ? "bg-amber-500 text-white border-amber-600 hover:bg-amber-600"
+                                            : "bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500"
+                                    }`}
+                                >
+                                    {discountMode === "gross" ? "+IGV" : "neto"}
+                                </button>
+                            </div>
                         </div>
                         <div className="col-span-4">
                             <div className="flex items-center gap-2">
@@ -207,7 +247,6 @@ function SaleTotalList({
                                     value={localDiscountGlobal}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Permitir valores vacíos y números
                                         if (
                                             value === "" ||
                                             /^\d*\.?\d*$/.test(value)
@@ -217,35 +256,33 @@ function SaleTotalList({
                                     }}
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter") {
-                                            const value =
-                                                Number(localDiscountGlobal) ||
-                                                0;
-
+                                            const raw = Number(localDiscountGlobal) || 0;
+                                            const netValue = toNetDiscount(raw);
                                             setSale((prevSale: any) => ({
                                                 ...prevSale,
-                                                discountGlobal: value,
-                                                discountPercentageGlobal: 0, // Limpiar el porcentaje para evitar conflictos
+                                                discountGlobal: netValue,
+                                                discountPercentageGlobal: 0,
                                             }));
-
                                             setLocalDiscountPercentage("0");
                                         }
                                     }}
                                     onFocus={(e) => e.target.select()}
                                     placeholder="0.00"
-                                    className="flex-1 rounded-full text-right font-medium bg-white dark:bg-gray-700 text-black-800 dark:text-white border border-gray-300 dark:border-gray-600 py-1 px-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 dark:hover:border-blue-500 cursor-text transition-all duration-200"
+                                    className={`flex-1 rounded-full text-right font-medium bg-white dark:bg-gray-700 text-black-800 dark:text-white border py-1 px-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 dark:hover:border-blue-500 cursor-text transition-all duration-200 ${
+                                        discountMode === "gross"
+                                            ? "border-amber-400 dark:border-amber-500"
+                                            : "border-gray-300 dark:border-gray-600"
+                                    }`}
                                 />
                                 <button
                                     onClick={() => {
-                                        const value =
-                                            Number(localDiscountGlobal) || 0;
-
+                                        const raw = Number(localDiscountGlobal) || 0;
+                                        const netValue = toNetDiscount(raw);
                                         setSale((prevSale: any) => ({
                                             ...prevSale,
-                                            discountGlobal: value,
-                                            discountPercentageGlobal: 0, // Limpiar el porcentaje para evitar conflictos
+                                            discountGlobal: netValue,
+                                            discountPercentageGlobal: 0,
                                         }));
-
-                                        // Actualizar también el estado local del porcentaje
                                         setLocalDiscountPercentage("0");
                                     }}
                                     className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
@@ -253,6 +290,12 @@ function SaleTotalList({
                                     ✓
                                 </button>
                             </div>
+                            {/* Indicador visual cuando modo gross está activo */}
+                            {discountMode === "gross" && Number(localDiscountGlobal) > 0 && (
+                                <p className="text-xs text-amber-600 dark:text-amber-400 text-right mt-0.5">
+                                    Neto: {toNetDiscount(Number(localDiscountGlobal)).toFixed(2)}
+                                </p>
+                            )}
                         </div>
                     </div>
                     <div className="grid grid-cols-12 gap-4">
