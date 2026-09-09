@@ -207,16 +207,11 @@ function UbigeoAutocomplete({
             setShowDropdown(true);
           }}
           placeholder="Buscar ubigeo..."
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
+          autoComplete="on"
           spellCheck={false}
           role="combobox"
           aria-autocomplete="list"
           aria-expanded={showDropdown}
-          data-lpignore="true"
-          data-1p-ignore="true"
-          data-form-type="other"
           className={`${inputClassName} ${
             isSelected
               ? "border-emerald-300 dark:border-emerald-500/40 bg-emerald-50/40 dark:bg-emerald-500/5"
@@ -374,7 +369,7 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                   onFocus={(e) => e.target.select()}
                   value={guide.guideOriginAddress}
                   onChange={handleGuide}
-                  autoComplete="off"
+                  autoComplete="on"
                   className={inputClassName}
                 />
               </div>
@@ -445,7 +440,7 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                   onFocus={(e) => e.target.select()}
                   value={guide.guideArrivalAddress}
                   onChange={handleGuide}
-                  autoComplete="off"
+                  autoComplete="on"
                   className={inputClassName}
                 />
               </div>
