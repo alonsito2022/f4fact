@@ -32,7 +32,7 @@ import GuideHeader from "../../new/GuideHeader";
 import GuideDetailAndDocument from "../../new/GuideDetailAndDocument";
 import GuideMainDriver from "../../new/GuideMainDriver";
 import GuideReceiver from "../../new/GuideReceiver";
-import GuideStopPoint from "../../new/GuideStopPoint";
+import GuideStopPoint, { isValidUbigeoId } from "../../new/GuideStopPoint";
 import GuideTransportation from "../../new/GuideTransportation";
 import GuideTranferData from "../../new/GuideTranferData";
 
@@ -371,7 +371,7 @@ function NewGuidePageWithInvoice() {
                 formattedValue = formattedValue.slice(0, 6);
             }
         }
-        setGuide({ ...guide, [name]: formattedValue });
+        setGuide((prev) => ({ ...prev, [name]: formattedValue }));
     };
 
     function useCustomMutation(mutation: DocumentNode) {
@@ -719,10 +719,10 @@ function NewGuidePageWithInvoice() {
                     return false;
                 }
             }
-            if (guide.guideOriginDistrictId.length === 0) {
-                toast("La guia debe tener un ubigeo como punto de partida.", {
+            if (!isValidUbigeoId(guide.guideOriginDistrictId)) {
+                toast("Debe seleccionar un ubigeo válido de la lista como punto de partida.", {
                     hideProgressBar: true,
-                    autoClose: 2000,
+                    autoClose: 3000,
                     type: "error",
                 });
                 return false;
@@ -738,10 +738,10 @@ function NewGuidePageWithInvoice() {
                 );
                 return false;
             }
-            if (guide.guideArrivalDistrictId.length === 0) {
-                toast("La guia debe tener un ubigeo como punto de llegada.", {
+            if (!isValidUbigeoId(guide.guideArrivalDistrictId)) {
+                toast("Debe seleccionar un ubigeo válido de la lista como punto de llegada.", {
                     hideProgressBar: true,
-                    autoClose: 2000,
+                    autoClose: 3000,
                     type: "error",
                 });
                 return false;
@@ -952,10 +952,10 @@ function NewGuidePageWithInvoice() {
                 receiverDocumentType: guide.receiverDocumentType,
                 receiverDocumentNumber: guide.receiverDocumentNumber,
                 receiverNames: guide.receiverNames,
-                guideOriginDistrictId: guide.guideOriginDistrictId,
+                guideOriginDistrictId: String(guide.guideOriginDistrictId || "").trim(),
                 guideOriginAddress: guide.guideOriginAddress,
                 guideOriginSerial: guide.guideOriginSerial,
-                guideArrivalDistrictId: guide.guideArrivalDistrictId,
+                guideArrivalDistrictId: String(guide.guideArrivalDistrictId || "").trim(),
                 guideArrivalAddress: guide.guideArrivalAddress,
                 guideArrivalSerial: guide.guideArrivalSerial,
                 observation: guide.observation,
@@ -989,8 +989,17 @@ function NewGuidePageWithInvoice() {
                     router.push("/dashboard/guides");
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error creating invoice:", error);
+            const message =
+                error?.graphQLErrors?.[0]?.message ||
+                error?.message ||
+                "Error al crear la guía.";
+            toast(message, {
+                hideProgressBar: true,
+                autoClose: 4000,
+                type: "error",
+            });
         } finally {
             setIsSaving(false);
         }

@@ -15,7 +15,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import GuideStopPoint from "./GuideStopPoint";
+import GuideStopPoint, { isValidUbigeoId } from "./GuideStopPoint";
 import GuideTransportation from "./GuideTransportation";
 import GuideMainDriver from "./GuideMainDriver";
 import { toast } from "react-toastify";
@@ -270,7 +270,7 @@ function NewGuidePage() {
         formattedValue = formattedValue.slice(0, 6);
       }
     }
-    setGuide({ ...guide, [name]: formattedValue });
+    setGuide((prev) => ({ ...prev, [name]: formattedValue }));
   };
 
   function useCustomMutation(mutation: DocumentNode) {
@@ -1026,29 +1026,35 @@ function NewGuidePage() {
         return false;
       }
 
+      if (!isValidUbigeoId(guide.guideOriginDistrictId)) {
+        toast(
+          "Debe seleccionar un ubigeo válido de la lista como punto de partida.",
+          {
+            hideProgressBar: true,
+            autoClose: 3000,
+            type: "error",
+          },
+        );
+        return false;
+      }
+      if (guide.guideOriginAddress.length === 0) {
+        toast("Debe ingresar la direccion del punto de partida.", {
+          hideProgressBar: true,
+          autoClose: 2000,
+          type: "error",
+        });
+        return false;
+      }
       if (motivo !== "18") {
-        if (guide.guideOriginDistrictId.length === 0) {
-          toast("Debe seleccionar un ubigeo valido como punto de partida.", {
-            hideProgressBar: true,
-            autoClose: 2000,
-            type: "error",
-          });
-          return false;
-        }
-        if (guide.guideOriginAddress.length === 0) {
-          toast("Debe ingresar la direccion del punto de partida.", {
-            hideProgressBar: true,
-            autoClose: 2000,
-            type: "error",
-          });
-          return false;
-        }
-        if (guide.guideArrivalDistrictId.length === 0) {
-          toast("Debe seleccionar un ubigeo valido como punto de llegada.", {
-            hideProgressBar: true,
-            autoClose: 2000,
-            type: "error",
-          });
+        if (!isValidUbigeoId(guide.guideArrivalDistrictId)) {
+          toast(
+            "Debe seleccionar un ubigeo válido de la lista como punto de llegada.",
+            {
+              hideProgressBar: true,
+              autoClose: 3000,
+              type: "error",
+            },
+          );
           return false;
         }
         if (guide.guideArrivalAddress.length === 0) {
@@ -1226,10 +1232,10 @@ function NewGuidePage() {
         receiverDocumentType: guide.receiverDocumentType,
         receiverDocumentNumber: guide.receiverDocumentNumber,
         receiverNames: guide.receiverNames,
-        guideOriginDistrictId: guide.guideOriginDistrictId,
+        guideOriginDistrictId: String(guide.guideOriginDistrictId || "").trim(),
         guideOriginAddress: guide.guideOriginAddress,
         guideOriginSerial: guide.guideOriginSerial,
-        guideArrivalDistrictId: guide.guideArrivalDistrictId,
+        guideArrivalDistrictId: String(guide.guideArrivalDistrictId || "").trim(),
         guideArrivalAddress: guide.guideArrivalAddress,
         guideArrivalSerial: guide.guideArrivalSerial,
         observation: guide.observation,
@@ -1262,8 +1268,17 @@ function NewGuidePage() {
           router.push("/dashboard/guides");
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating invoice:", error);
+      const message =
+        error?.graphQLErrors?.[0]?.message ||
+        error?.message ||
+        "Error al crear la guía.";
+      toast(message, {
+        hideProgressBar: true,
+        autoClose: 4000,
+        type: "error",
+      });
     } finally {
       setIsSaving(false);
     }

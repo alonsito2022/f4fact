@@ -50,6 +50,19 @@ function highlightMatch(text: string, query: string) {
   );
 }
 
+export function normalizeUbigeoId(value: unknown): string {
+  if (value == null) return "";
+  const digits = String(value).trim().replace(/\D/g, "");
+  if (digits.length === 6) return digits;
+  // IDs like 040101 can arrive as 40101 if JS/GraphQL coerces the string to number
+  if (digits.length === 5) return digits.padStart(6, "0");
+  return digits;
+}
+
+export function isValidUbigeoId(value: unknown): boolean {
+  return /^\d{6}$/.test(normalizeUbigeoId(value));
+}
+
 function locationLabel(location: GeographicLocation) {
   return `${location.districtId} - ${location.districtDescription} | ${location.provinceDescription} | ${location.departmentDescription} |`;
 }
@@ -90,23 +103,32 @@ function UbigeoAutocomplete({
   );
 
   const options: GeographicLocation[] = useMemo(
-    () => data?.searchGeographicLocationCode || [],
+    () =>
+      (data?.searchGeographicLocationCode || []).map(
+        (location: GeographicLocation) => ({
+          ...location,
+          districtId: normalizeUbigeoId(location.districtId),
+        }),
+      ),
     [data],
   );
 
-  const isSelected = Boolean(selectedId);
+  const isSelected = isValidUbigeoId(selectedId);
 
-  useEffect(() => {
-    if (didInit.current || !selectedId) return;
-    didInit.current = true;
-    setSearch((current) =>
-      current
-        ? current
-        : selectedDescription
-          ? `${selectedId} - ${selectedDescription}`
-          : selectedId,
+  const restoreSelectedLabel = useCallback(() => {
+    if (!isValidUbigeoId(selectedId)) return;
+    setSearch(
+      selectedDescription
+        ? `${normalizeUbigeoId(selectedId)} - ${selectedDescription}`
+        : normalizeUbigeoId(selectedId),
     );
   }, [selectedId, selectedDescription]);
+
+  useEffect(() => {
+    if (didInit.current || !isValidUbigeoId(selectedId)) return;
+    didInit.current = true;
+    restoreSelectedLabel();
+  }, [selectedId, restoreSelectedLabel]);
 
   useEffect(() => {
     onOpenChange?.(showDropdown);
@@ -119,25 +141,30 @@ function UbigeoAutocomplete({
         !wrapperRef.current.contains(event.target as Node)
       ) {
         setShowDropdown(false);
+        restoreSelectedLabel();
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [restoreSelectedLabel]);
 
   useEffect(() => {
+    if (isSelected) return;
     const term = search.trim();
     if (term.length <= 2) return;
     const timeout = setTimeout(() => {
       searchLocation({ variables: { search: term } });
     }, 160);
     return () => clearTimeout(timeout);
-  }, [search, searchLocation]);
+  }, [search, searchLocation, isSelected]);
 
   const selectLocation = useCallback(
     (location: GeographicLocation) => {
-      setSearch(locationLabel(location));
-      onSelect(location);
+      const districtId = normalizeUbigeoId(location.districtId);
+      if (!isValidUbigeoId(districtId)) return;
+      const normalized = { ...location, districtId };
+      setSearch(locationLabel(normalized));
+      onSelect(normalized);
       setShowDropdown(false);
       setHighlightedIndex(-1);
     },
@@ -175,13 +202,24 @@ function UbigeoAutocomplete({
       event.preventDefault();
       setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : -1));
     } else if (event.key === "Enter") {
+      event.preventDefault();
       if (highlightedIndex >= 0 && options[highlightedIndex]) {
-        event.preventDefault();
         selectLocation(options[highlightedIndex]);
+        return;
       }
+      if (options.length === 1) {
+        selectLocation(options[0]);
+        return;
+      }
+      const typedId = normalizeUbigeoId(search);
+      const match = options.find(
+        (option) => normalizeUbigeoId(option.districtId) === typedId,
+      );
+      if (match) selectLocation(match);
     } else if (event.key === "Escape") {
       setShowDropdown(false);
       setHighlightedIndex(-1);
+      restoreSelectedLabel();
     }
   };
 
@@ -195,7 +233,7 @@ function UbigeoAutocomplete({
       </label>
       <div className="relative">
         <input
-          type="search"
+          type="text"
           name={inputName}
           id={inputName}
           maxLength={200}
@@ -207,7 +245,7 @@ function UbigeoAutocomplete({
             setShowDropdown(true);
           }}
           placeholder="Buscar ubigeo..."
-          autoComplete="on"
+          autoComplete="off"
           spellCheck={false}
           role="combobox"
           aria-autocomplete="list"
@@ -290,6 +328,11 @@ function UbigeoAutocomplete({
                 No se encontraron coincidencias
               </p>
             )}
+            {!isSelected && options.length > 0 && (
+              <p className="px-3 py-1.5 text-xs text-gray-400 dark:text-gray-500">
+                Haga clic en un resultado para confirmar el ubigeo
+              </p>
+            )}
             {options.map((location, index) => {
               const active = highlightedIndex === index;
               const optionLabel = locationLabel(location);
@@ -343,9 +386,10 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                 authContext={authContext}
                 onOpenChange={setOriginOpen}
                 onSelect={(location) => {
+                  const districtId = normalizeUbigeoId(location.districtId);
                   setGuide((prev: any) => ({
                     ...prev,
-                    guideOriginDistrictId: location.districtId,
+                    guideOriginDistrictId: districtId,
                     guideOriginDistrictDescription:
                       location.districtDescription,
                   }));
@@ -414,9 +458,10 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                 authContext={authContext}
                 onOpenChange={setArrivalOpen}
                 onSelect={(location) => {
+                  const districtId = normalizeUbigeoId(location.districtId);
                   setGuide((prev: any) => ({
                     ...prev,
-                    guideArrivalDistrictId: location.districtId,
+                    guideArrivalDistrictId: districtId,
                     guideArrivalDistrictDescription:
                       location.districtDescription,
                   }));
