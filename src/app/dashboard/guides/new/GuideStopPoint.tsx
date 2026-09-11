@@ -72,6 +72,8 @@ function UbigeoAutocomplete({
   inputName,
   selectedId,
   selectedDescription,
+  selectedProvinceDescription = "",
+  selectedDepartmentDescription = "",
   onSelect,
   onClear,
   authContext,
@@ -81,6 +83,8 @@ function UbigeoAutocomplete({
   inputName: string;
   selectedId: string;
   selectedDescription: string;
+  selectedProvinceDescription?: string;
+  selectedDepartmentDescription?: string;
   onSelect: (location: GeographicLocation) => void;
   onClear: () => void;
   authContext: any;
@@ -91,6 +95,7 @@ function UbigeoAutocomplete({
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const didInit = useRef(false);
+  const selectedLocationRef = useRef<GeographicLocation | null>(null);
 
   const [searchLocation, { loading, data }] = useLazyQuery(
     SEARCH_GEOGRAPHIC_LOCATION_BY_PARAMETER,
@@ -116,13 +121,46 @@ function UbigeoAutocomplete({
   const isSelected = isValidUbigeoId(selectedId);
 
   const restoreSelectedLabel = useCallback(() => {
-    if (!isValidUbigeoId(selectedId)) return;
-    setSearch(
-      selectedDescription
-        ? `${normalizeUbigeoId(selectedId)} - ${selectedDescription}`
-        : normalizeUbigeoId(selectedId),
-    );
-  }, [selectedId, selectedDescription]);
+    if (!isValidUbigeoId(selectedId)) {
+      selectedLocationRef.current = null;
+      return;
+    }
+    const id = normalizeUbigeoId(selectedId);
+    const selectedLocation = selectedLocationRef.current;
+    const districtDescription =
+      selectedLocation?.districtDescription || selectedDescription;
+    const provinceDescription =
+      selectedLocation?.provinceDescription || selectedProvinceDescription;
+    const departmentDescription =
+      selectedLocation?.departmentDescription || selectedDepartmentDescription;
+    if (districtDescription && provinceDescription && departmentDescription) {
+      setSearch(
+        locationLabel({
+          districtId: id,
+          districtDescription,
+          provinceDescription,
+          departmentDescription,
+        }),
+      );
+      return;
+    }
+    if (
+      selectedLocation &&
+      normalizeUbigeoId(selectedLocation.districtId) === id
+    ) {
+      setSearch(locationLabel(selectedLocation));
+      return;
+    }
+    setSearch((current) => {
+      if (current.includes(id) && current.includes("|")) return current;
+      return selectedDescription ? `${id} - ${selectedDescription}` : id;
+    });
+  }, [
+    selectedId,
+    selectedDescription,
+    selectedProvinceDescription,
+    selectedDepartmentDescription,
+  ]);
 
   useEffect(() => {
     if (didInit.current || !isValidUbigeoId(selectedId)) return;
@@ -163,6 +201,7 @@ function UbigeoAutocomplete({
       const districtId = normalizeUbigeoId(location.districtId);
       if (!isValidUbigeoId(districtId)) return;
       const normalized = { ...location, districtId };
+      selectedLocationRef.current = normalized;
       setSearch(locationLabel(normalized));
       onSelect(normalized);
       setShowDropdown(false);
@@ -172,6 +211,7 @@ function UbigeoAutocomplete({
   );
 
   const clearLocation = () => {
+    selectedLocationRef.current = null;
     setSearch("");
     onClear();
     setHighlightedIndex(-1);
@@ -383,6 +423,12 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                 inputName="originSearch"
                 selectedId={guide.guideOriginDistrictId || ""}
                 selectedDescription={guide.guideOriginDistrictDescription || ""}
+                selectedProvinceDescription={
+                  guide.guideOriginProvinceDescription || ""
+                }
+                selectedDepartmentDescription={
+                  guide.guideOriginDepartmentDescription || ""
+                }
                 authContext={authContext}
                 onOpenChange={setOriginOpen}
                 onSelect={(location) => {
@@ -392,6 +438,10 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                     guideOriginDistrictId: districtId,
                     guideOriginDistrictDescription:
                       location.districtDescription,
+                    guideOriginProvinceDescription:
+                      location.provinceDescription,
+                    guideOriginDepartmentDescription:
+                      location.departmentDescription,
                   }));
                 }}
                 onClear={() => {
@@ -399,6 +449,8 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                     ...prev,
                     guideOriginDistrictId: "",
                     guideOriginDistrictDescription: "",
+                    guideOriginProvinceDescription: "",
+                    guideOriginDepartmentDescription: "",
                   }));
                 }}
               />
@@ -455,6 +507,12 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                 selectedDescription={
                   guide.guideArrivalDistrictDescription || ""
                 }
+                selectedProvinceDescription={
+                  guide.guideArrivalProvinceDescription || ""
+                }
+                selectedDepartmentDescription={
+                  guide.guideArrivalDepartmentDescription || ""
+                }
                 authContext={authContext}
                 onOpenChange={setArrivalOpen}
                 onSelect={(location) => {
@@ -464,6 +522,10 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                     guideArrivalDistrictId: districtId,
                     guideArrivalDistrictDescription:
                       location.districtDescription,
+                    guideArrivalProvinceDescription:
+                      location.provinceDescription,
+                    guideArrivalDepartmentDescription:
+                      location.departmentDescription,
                   }));
                 }}
                 onClear={() => {
@@ -471,6 +533,8 @@ function GuideStopPoint({ guide, setGuide, authContext, handleGuide }: any) {
                     ...prev,
                     guideArrivalDistrictId: "",
                     guideArrivalDistrictDescription: "",
+                    guideArrivalProvinceDescription: "",
+                    guideArrivalDepartmentDescription: "",
                   }));
                 }}
               />
