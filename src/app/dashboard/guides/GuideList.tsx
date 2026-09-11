@@ -96,9 +96,7 @@ function GuideList({
         }
         if (status === "06") return <SunatCancel />;
         if (status === "07") {
-            return (
-                <span className="text-red-600 font-bold text-xs">RECHAZADO</span>
-            );
+            return <LoadingIcon className="text-red-600" />;
         }
         return "";
     };
@@ -118,9 +116,12 @@ function GuideList({
             return (
                 <p>
                     {item.sunatDescription ||
-                        "La guia fue rechazada por SUNAT. Verifique los datos y vuelva a emitir."}
+                        "La guia fue rechazada por SUNAT. Los comprobantes no aceptados se consideran anulados o rechazados."}
                 </p>
             );
+        }
+        if (item.sunatDescription) {
+            return <p>{item.sunatDescription}</p>;
         }
         return <p>Sin informacion</p>;
     };
