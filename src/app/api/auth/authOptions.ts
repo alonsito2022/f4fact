@@ -5,6 +5,18 @@ import { gql } from "@apollo/client";
 import { User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 
+const REFRESH_TOKEN_MUTATION = gql`
+  mutation ($refreshToken: String!) {
+    customRefreshToken(refreshToken: $refreshToken) {
+      success
+      message
+      token
+      refreshToken
+      refreshExpiresIn
+    }
+  }
+`;
+
 const TOKEN_AUTH_MUTATION = gql`
   mutation TokenAuth($email: String!, $password: String!) {
     tokenAuth(email: $email, password: $password) {
@@ -48,6 +60,7 @@ const TOKEN_AUTH_MUTATION = gql`
 
 interface ExtendedUser extends User {
   accessToken: string;
+  refreshToken: string;
   iat: number;
   exp: number;
   fullName: string;
@@ -72,6 +85,44 @@ interface ExtendedUser extends User {
   companyDisableContinuePay: boolean;
   companyIsProduction: boolean;
   companyShowUser: boolean;
+}
+
+function decodeJwt(jwtToken: string): { exp: number; origIat?: number } {
+  const payload = jwtToken.split(".")[1];
+  return JSON.parse(Buffer.from(payload, "base64url").toString("utf-8"));
+}
+
+const REFRESH_BUFFER_SECONDS = 5 * 60;
+
+async function refreshAccessToken(token: JWT): Promise<JWT> {
+  try {
+    const client = createApolloClient();
+    const { data, errors } = await client.mutate({
+      mutation: REFRESH_TOKEN_MUTATION,
+      variables: { refreshToken: token.refreshToken },
+    });
+
+    if (errors || !data?.customRefreshToken?.success) {
+      throw new Error(
+        data?.customRefreshToken?.message || "No se pudo renovar la sesión."
+      );
+    }
+
+    const refreshed = data.customRefreshToken;
+    const payload = decodeJwt(refreshed.token);
+
+    return {
+      ...token,
+      accessToken: refreshed.token,
+      refreshToken: refreshed.refreshToken,
+      exp: payload.exp,
+      iat: payload.origIat,
+      error: undefined,
+    };
+  } catch (error) {
+    console.error("Error al renovar el access token:", error);
+    return { ...token, error: "RefreshAccessTokenError" };
+  }
 }
 
 export const authOptions: NextAuthOptions = {
@@ -114,6 +165,7 @@ export const authOptions: NextAuthOptions = {
               avatar: data.tokenAuth.user.avatar,
               isSuperuser: data.tokenAuth.user.isSuperuser,
               accessToken: data.tokenAuth.token,
+              refreshToken: data.tokenAuth.refreshToken,
               subsidiaryId: data.tokenAuth.user.subsidiary.id,
               subsidiaryName: data.tokenAuth.user.subsidiary.name,
               subsidiarySerial: data.tokenAuth.user.subsidiary.serial,
@@ -172,8 +224,10 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.user = user as ExtendedUser;
         token.accessToken = (user as ExtendedUser).accessToken;
+        token.refreshToken = (user as ExtendedUser).refreshToken;
         token.iat = (user as ExtendedUser).iat;
         token.exp = (user as ExtendedUser).exp;
+        token.error = undefined;
         token.fullName = (user as ExtendedUser).fullName;
         token.avatar = (user as ExtendedUser).avatar;
         token.isSuperuser = (user as ExtendedUser).isSuperuser;
@@ -199,12 +253,28 @@ export const authOptions: NextAuthOptions = {
         ).companyDisableContinuePay;
         token.companyIsProduction = (user as ExtendedUser).companyIsProduction;
         token.companyShowUser = (user as ExtendedUser).companyShowUser;
+        return token;
       }
-      return token;
+
+      // Llamadas posteriores: renovar el access token de Django antes de que expire
+      const expiresAt = typeof token.exp === "number" ? token.exp : 0;
+      const shouldRefresh =
+        Date.now() >= (expiresAt - REFRESH_BUFFER_SECONDS) * 1000;
+
+      if (!shouldRefresh) {
+        return token;
+      }
+
+      if (!token.refreshToken) {
+        return { ...token, error: "RefreshAccessTokenError" };
+      }
+
+      return refreshAccessToken(token);
     },
     async session({ session, token }: { session: any; token: JWT }) {
       return {
         ...session,
+        error: token.error,
         user: {
           id: token.sub,
           fullName: token.fullName,

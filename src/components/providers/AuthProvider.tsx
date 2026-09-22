@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { SessionProvider, useSession } from "next-auth/react";
+import { createContext, useContext, useEffect, useMemo } from "react";
+import { SessionProvider, signOut, useSession } from "next-auth/react";
 import type { Session } from "next-auth";
 import { IUser } from "@/app/types";
 
@@ -17,6 +17,35 @@ export function useAuth() {
     return useContext(AuthContext);
 }
 
+function AuthContextBridge({ children }: { children: React.ReactNode }) {
+    // useSession() se revalida en foco/reconexion y en cada refetchInterval,
+    // por lo que aqui siempre llega el accessToken ya renovado por el
+    // callback jwt de NextAuth (ver authOptions.ts).
+    const { data: session, status: sessionStatus } = useSession();
+    const hasRefreshError = (session as any)?.error === "RefreshAccessTokenError";
+
+    useEffect(() => {
+        if (hasRefreshError) {
+            signOut({ callbackUrl: "/login" });
+        }
+    }, [hasRefreshError]);
+
+    const user = session && !hasRefreshError ? ((session as any).user as IUser) : null;
+    const jwtToken = session && !hasRefreshError ? ((session as any).accessToken as string) : null;
+    const status: AuthContextType["status"] = hasRefreshError ? "unauthenticated" : sessionStatus;
+
+    const contextValue = useMemo(
+        () => ({ user, jwtToken, status }),
+        [user, jwtToken, status]
+    );
+
+    return (
+        <AuthContext.Provider value={contextValue}>
+            {children}
+        </AuthContext.Provider>
+    );
+}
+
 export default function AuthProvider({
     session,
     children,
@@ -24,45 +53,9 @@ export default function AuthProvider({
     session: Session | null;
     children: React.ReactNode;
 }) {
-    const [user, setUser] = useState<IUser | null>(null);
-    const [jwtToken, setJwtToken] = useState<string | null>(null);
-    const [status, setStatus] = useState<
-        "authenticated" | "unauthenticated" | "loading"
-    >("loading");
-    useEffect(() => {
-        if (session) {
-            const { user: userData, accessToken } = session as Session & {
-                accessToken: string;
-            };
-            setUser(userData as IUser);
-            setJwtToken(accessToken || null);
-            setStatus("authenticated");
-        } else {
-            setStatus("unauthenticated");
-        }
-    }, [session]);
-    // useEffect(() => {
-    //     // Obtén sesión actualizada
-    //     if (status === "authenticated" && session) {
-    //         setUser(session.user as IUser);
-    //         setJwtToken((session?.user as IUser).accessToken || null);
-    //         setStatus("authenticated");
-    //     } else if (status === "unauthenticated") {
-    //         setUser(null);
-    //         setJwtToken(null);
-    //         setStatus("unauthenticated");
-    //     }
-    // }, [sessionUseSession, statusUseSession]); // <-- Este cambio es clave
-    const contextValue = useMemo(
-        () => ({ user, jwtToken, status }),
-        [user, jwtToken, status, session]
-    );
-
     return (
-        <SessionProvider session={session}>
-            <AuthContext.Provider value={contextValue}>
-                {children}
-            </AuthContext.Provider>
+        <SessionProvider session={session} refetchInterval={5 * 60}>
+            <AuthContextBridge>{children}</AuthContextBridge>
         </SessionProvider>
     );
 }
