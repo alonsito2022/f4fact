@@ -87,6 +87,8 @@ const SALES_QUERY = gql`
                 linkXmlLow
                 linkCdr
                 linkCdrLow
+                driveFirmaId
+                driveCdrId
                 sunatStatus
                 sendSunat
                 sunatDescription

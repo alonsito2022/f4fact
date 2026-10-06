@@ -421,6 +421,8 @@ export interface IOperation {
     linkXmlLow: string;
     linkCdr: string;
     linkCdrLow: string;
+    driveFirmaId?: string;
+    driveCdrId?: string;
     fileNameXml: string;
     fileNameCdr: string;
     codeHash: string;

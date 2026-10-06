@@ -44,13 +44,23 @@ function SaleList({
   const [pdfModal, setPdfModal] = useState<Modal | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [pdfFileName, setPdfFileName] = useState<string>("");
-  const handleDownload = (url: string, filename: string) => {
-    if (!url || !filename) {
+  const handleDownload = (
+    url: string,
+    filename: string,
+    driveKind?: "firma" | "cdr",
+    operationId?: number,
+  ) => {
+    const useDrive = Boolean(driveKind && operationId);
+    if (!filename || (!useDrive && !url)) {
       toast.error("URL o nombre de archivo no válido");
       return;
     }
 
-    fetch(url.toString().replace("http:", "https:"))
+    const downloadUrl = useDrive
+      ? `${process.env.NEXT_PUBLIC_BASE_API}/operations/drive_file/${operationId}/${driveKind}/`
+      : url.toString().replace("http:", "https:");
+
+    fetch(downloadUrl)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Error en la respuesta de la descarga");
@@ -60,12 +70,16 @@ function SaleList({
       .then((blob) => {
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = filename; // Nombre del archivo a descargar
+        link.download = filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
       })
-      .catch((error) => console.error("Error al descargar el archivo:", error));
+      .catch((error) => {
+        console.error("Error al descargar el archivo:", error);
+        toast.error("No se pudo descargar el archivo");
+      });
   };
   const [cancelInvoice, { loading, error, data }] = useMutation(CANCEL_INVOICE);
 
@@ -488,7 +502,10 @@ function SaleList({
                 </td>
                 <td className="p-0.5 text-center">
                   {(() => {
+                    const useDriveXml =
+                      item.operationStatus === "02" && Boolean(item.driveFirmaId);
                     const hasXml =
+                      useDriveXml ||
                       (item.operationStatus === "02" && item.linkXml) ||
                       (item.operationStatus === "06" && item.linkXmlLow);
 
@@ -504,7 +521,12 @@ function SaleList({
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          handleDownload(xmlUrl, item?.fileNameXml);
+                          handleDownload(
+                            xmlUrl,
+                            item?.fileNameXml,
+                            useDriveXml ? "firma" : undefined,
+                            useDriveXml ? item.id : undefined,
+                          );
                         }}
                         className="hover:underline"
                       >
@@ -517,7 +539,10 @@ function SaleList({
                 </td>
                 <td className="p-0.5 text-center">
                   {(() => {
+                    const useDriveCdr =
+                      item.operationStatus === "02" && Boolean(item.driveCdrId);
                     const hasCdr =
+                      useDriveCdr ||
                       (item.operationStatus === "02" && item.linkCdr) ||
                       (item.operationStatus === "06" && item.linkCdrLow);
                     if (!hasCdr) return null;
@@ -540,7 +565,12 @@ function SaleList({
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          handleDownload(cdrUrl, item?.fileNameCdr);
+                          handleDownload(
+                            cdrUrl,
+                            item?.fileNameCdr,
+                            useDriveCdr ? "cdr" : undefined,
+                            useDriveCdr ? item.id : undefined,
+                          );
                         }}
                         className="hover:underline"
                       >
