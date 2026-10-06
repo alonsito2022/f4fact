@@ -13,6 +13,14 @@ interface GuideVehicleItemProps {
     onChange: (index: number, field: string, value: any) => void;
 }
 
+function formatLicensePlateInput(value: string): string {
+    return value
+        .toUpperCase()
+        .replace(/\s+/g, "")
+        .replace(/[^A-Z0-9-]/g, "")
+        .slice(0, 7);
+}
+
 const GuideVehicleItem: React.FC<GuideVehicleItemProps> = ({
     index,
     item,
@@ -25,8 +33,12 @@ const GuideVehicleItem: React.FC<GuideVehicleItemProps> = ({
         >
     ) => {
         const { name, value } = e.target;
+        let formattedValue = value;
+        if (name === "licensePlate") {
+            formattedValue = formatLicensePlateInput(formattedValue);
+        }
 
-        onChange(index, name, value);
+        onChange(index, name, formattedValue);
     };
     return (
         <>

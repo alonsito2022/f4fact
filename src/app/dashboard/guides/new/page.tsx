@@ -35,6 +35,22 @@ const today =
   "-" +
   String(limaDate.getDate()).padStart(2, "0");
 
+function isValidLicensePlate(plate: string): boolean {
+  if (!plate) return false;
+  const clean = plate.replace(/-/g, "").toUpperCase();
+  if (clean.length < 6) return false;
+  if (!/^[A-Z][A-Z0-9]{5,}$/.test(clean)) return false;
+  return true;
+}
+
+function formatLicensePlateInput(value: string): string {
+  return value
+    .toUpperCase()
+    .replace(/\s+/g, "")
+    .replace(/[^A-Z0-9-]/g, "")
+    .slice(0, 7);
+}
+
 const initialStateGuide = {
   clientId: 0,
   documentType: "09",
@@ -269,6 +285,9 @@ function NewGuidePage() {
       } else {
         formattedValue = formattedValue.slice(0, 6);
       }
+    }
+    if (name === "mainVehicleLicensePlate") {
+      formattedValue = formatLicensePlateInput(formattedValue);
     }
     setGuide((prev) => ({ ...prev, [name]: formattedValue }));
   };
@@ -1083,18 +1102,16 @@ function NewGuidePage() {
         return false;
       }
 
-      if (guide.guideModeTransfer === "02") {
+      const requiresPlates =
+        guide.guideModeTransfer === "02" || guide.documentType === "31";
+      if (requiresPlates) {
         const mainVehicleLicensePlate = guide.mainVehicleLicensePlate || "";
-        if (
-          !/^\S+(-\S+)?$/.test(mainVehicleLicensePlate) ||
-          mainVehicleLicensePlate.length < 6 ||
-          mainVehicleLicensePlate.length > 7
-        ) {
+        if (!isValidLicensePlate(mainVehicleLicensePlate)) {
           toast(
-            "La placa del vehiculo principal debe tener entre 6 y 7 caracteres, sin espacios.",
+            "La placa del vehículo principal no es válida. Debe tener al menos 6 caracteres alfanuméricos (sin contar el guion), iniciar con letra y no contener espacios. Ejemplos: V5F-565 o VFS565.",
             {
               hideProgressBar: true,
-              autoClose: 2000,
+              autoClose: 3500,
               type: "error",
             },
           );
@@ -1102,23 +1119,21 @@ function NewGuidePage() {
         }
         const invalidOtherVehicles = guide.othersVehicles.filter((item) => {
           const licensePlate = item.licensePlate || "";
-          return (
-            !/^\S+(-\S+)?$/.test(licensePlate) ||
-            licensePlate.length < 6 ||
-            licensePlate.length > 7
-          );
+          return !isValidLicensePlate(licensePlate);
         });
         if (invalidOtherVehicles.length > 0) {
           toast(
-            "Las placas de los vehiculos secundarios deben tener entre 6 y 7 caracteres, sin espacios.",
+            "Las placas de los vehículos secundarios no son válidas. Cada placa debe tener al menos 6 caracteres alfanuméricos (sin contar el guion), iniciar con letra y no contener espacios. Ejemplos: V5F-565 o VFS565.",
             {
               hideProgressBar: true,
-              autoClose: 2000,
+              autoClose: 3500,
               type: "warning",
             },
           );
           return false;
         }
+      }
+      if (guide.guideModeTransfer === "02" || guide.documentType === "31") {
         const mainDriverDriverLicense = guide.mainDriverDriverLicense || "";
         if (
           !/^\S+(-\S+)?$/.test(mainDriverDriverLicense) ||
@@ -1235,7 +1250,9 @@ function NewGuidePage() {
         guideOriginDistrictId: String(guide.guideOriginDistrictId || "").trim(),
         guideOriginAddress: guide.guideOriginAddress,
         guideOriginSerial: guide.guideOriginSerial,
-        guideArrivalDistrictId: String(guide.guideArrivalDistrictId || "").trim(),
+        guideArrivalDistrictId: String(
+          guide.guideArrivalDistrictId || "",
+        ).trim(),
         guideArrivalAddress: guide.guideArrivalAddress,
         guideArrivalSerial: guide.guideArrivalSerial,
         observation: guide.observation,
