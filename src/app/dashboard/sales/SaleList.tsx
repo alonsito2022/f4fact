@@ -60,6 +60,23 @@ function SaleList({
       ? `${process.env.NEXT_PUBLIC_BASE_API}/operations/drive_file/${operationId}/${driveKind}/`
       : url.toString().replace("http:", "https:");
 
+    if (useDrive) {
+      console.log("[Drive] consultando archivo", {
+        operationId,
+        driveKind,
+        downloadUrl,
+      });
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
+
+    console.log("[XML/CDR] descarga por URL local", { downloadUrl });
+
     fetch(downloadUrl)
       .then((response) => {
         if (!response.ok) {
