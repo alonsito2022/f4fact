@@ -71,7 +71,7 @@ export async function GET(request) {
             headers: {
                 "Content-Type": "application/pdf",
                 "Content-Disposition": `${disposition}; filename="${responseFilename}"; filename*=UTF-8''${encodedFilename}`,
-                "Permissions-Policy": "unload=(self)",
+                "Permissions-Policy": "unload=*",
             },
         });
     } catch (error) {

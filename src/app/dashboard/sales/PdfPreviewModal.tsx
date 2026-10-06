@@ -177,6 +177,7 @@ function PdfPreviewModal({ pdfModal, setPdfModal, pdfUrl, setPdfUrl, pdfFileName
                                 src={previewUrl}
                                 className="w-full h-[calc(100vh-300px)] border-0"
                                 title="PDF Preview"
+                                allow="fullscreen; unload *"
                                 onLoad={() => setLoading(false)}
                                 onError={() => {
                                     setLoading(false);

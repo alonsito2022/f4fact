@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { Modal, ModalOptions } from "flowbite";
 import PdfPreviewModal from "../../PdfPreviewModal";
 import WhatsAppModal from "../../WhatsAppModal";
+import { downloadCpeFile } from "@/lib/downloadCpeFile";
 
 const today = new Date().toISOString().split("T")[0];
 
@@ -47,6 +48,8 @@ const SALE_QUERY_BY_ID = gql`
             linkXml
             linkCdrLow
             linkXmlLow
+            driveFirmaId
+            driveCdrId
             totalAmount
             totalTaxed
             totalIgv
@@ -154,35 +157,7 @@ export default function ViewInvoicePage({
         }
     }, [invoiceId, auth?.jwtToken]);
 
-    const handleDownload = (url: string, filename: string) => {
-        if (!url || !filename) {
-            toast.error("URL o nombre de archivo no válido");
-            return;
-        }
-
-        fetch(url.toString().replace("http:", "https:"))
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Error en la respuesta de la descarga");
-                }
-                return response.blob();
-            })
-            .then((blob) => {
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = downloadUrl;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(downloadUrl);
-                toast.success("Archivo descargado correctamente");
-            })
-            .catch((error) => {
-                console.error("Error al descargar:", error);
-                toast.error("Error al descargar el archivo");
-            });
-    };
+    const handleDownload = downloadCpeFile;
 
     const handlePrint = () => {
         if (!invoice) {
@@ -192,7 +167,7 @@ export default function ViewInvoicePage({
 
         // Determinar el tipo de endpoint basándose en el tipo de documento
         const endpoint =
-            invoice.documentType === "A_07"
+            String(invoice.documentType).replace("A_", "") === "07"
                 ? "print_credit_note"
                 : "print_invoice";
 
@@ -592,14 +567,13 @@ export default function ViewInvoicePage({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                     <button
                         onClick={() => {
-                            // Determinar el endpoint correcto basado en el tipo de documento
-                            const endpoint =
-                                invoice.documentType === "A_07"
-                                    ? "print_credit_note"
-                                    : "print_invoice";
                             const documentType = String(
                                 invoice.documentType
                             ).replace("A_", "");
+                            const endpoint =
+                                documentType === "07"
+                                    ? "print_credit_note"
+                                    : "print_invoice";
                             const pdfUrl = `${process.env.NEXT_PUBLIC_BASE_API}/operations/${endpoint}/${invoice.id}/`;
                             setPdfUrl(pdfUrl);
                             setPdfFileName(
@@ -622,13 +596,29 @@ export default function ViewInvoicePage({
                         </svg>
                         VER PDF
                     </button>
-                    {invoice.operationStatus === "02" && (
-                        <>
+                    {(() => {
+                        const useDriveXml =
+                            invoice.operationStatus === "02" &&
+                            Boolean(invoice.driveFirmaId);
+                        const hasXml =
+                            useDriveXml ||
+                            (invoice.operationStatus === "02" &&
+                                invoice.linkXml) ||
+                            (invoice.operationStatus === "06" &&
+                                invoice.linkXmlLow);
+                        if (!hasXml) return null;
+                        const xmlUrl =
+                            invoice.operationStatus === "02"
+                                ? invoice.linkXml
+                                : invoice.linkXmlLow;
+                        return (
                             <button
                                 onClick={() =>
                                     handleDownload(
-                                        invoice.linkXml,
-                                        invoice.fileNameXml
+                                        xmlUrl,
+                                        invoice.fileNameXml,
+                                        useDriveXml ? "firma" : undefined,
+                                        useDriveXml ? invoice.id : undefined,
                                     )
                                 }
                                 className="bg-gradient-to-r from-green-600 to-green-700 text-white px-4 py-3 rounded-xl hover:from-green-700 hover:to-green-800 flex items-center justify-center shadow-md transform hover:scale-105 transition-all duration-200 font-medium"
@@ -646,11 +636,31 @@ export default function ViewInvoicePage({
                                 </svg>
                                 DESCARGAR XML
                             </button>
+                        );
+                    })()}
+                    {(() => {
+                        const useDriveCdr =
+                            invoice.operationStatus === "02" &&
+                            Boolean(invoice.driveCdrId);
+                        const hasCdr =
+                            useDriveCdr ||
+                            (invoice.operationStatus === "02" &&
+                                invoice.linkCdr) ||
+                            (invoice.operationStatus === "06" &&
+                                invoice.linkCdrLow);
+                        if (!hasCdr) return null;
+                        const cdrUrl =
+                            invoice.operationStatus === "02"
+                                ? invoice.linkCdr
+                                : invoice.linkCdrLow;
+                        return (
                             <button
                                 onClick={() =>
                                     handleDownload(
-                                        invoice.linkCdr,
-                                        invoice.fileNameCdr
+                                        cdrUrl,
+                                        invoice.fileNameCdr,
+                                        useDriveCdr ? "cdr" : undefined,
+                                        useDriveCdr ? invoice.id : undefined,
                                     )
                                 }
                                 className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 flex items-center justify-center shadow-md transform hover:scale-105 transition-all duration-200 font-medium"
@@ -668,8 +678,8 @@ export default function ViewInvoicePage({
                                 </svg>
                                 DESCARGAR CDR
                             </button>
-                        </>
-                    )}
+                        );
+                    })()}
                 </div>
 
                 {/* Botones de acciones adicionales */}
