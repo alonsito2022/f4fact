@@ -204,8 +204,11 @@ function PersonForm({
             event.target instanceof HTMLInputElement
         ) {
             let documentType = person.documentType;
-            // Reemplaza todos los caracteres que no son numéricos con una cadena vacía
-            const formattedValue = value.replace(/[^0-9]/g, "");
+            // TIN (C) puede ser alfanumérico; el resto solo admite dígitos
+            const formattedValue =
+                documentType === "C"
+                    ? value.replace(/[^0-9a-zA-Z]/g, "").toUpperCase()
+                    : value.replace(/[^0-9]/g, "");
             // Limita a 6 dígitos
             const limitedValue =
                 documentType === "1"
@@ -384,7 +387,11 @@ function PersonForm({
             });
             return;
         }
-        if (person?.documentType === "6" && person?.address.length === 0) {
+        // TIN (C): exige dirección; ubigeo, email y teléfono son opcionales
+        if (
+            (person?.documentType === "6" || person?.documentType === "C") &&
+            !person?.address?.trim()
+        ) {
             toast("Por favor ingrese una direccion valida.", {
                 hideProgressBar: true,
                 autoClose: 2000,
@@ -432,7 +439,10 @@ function PersonForm({
                     email: person.email,
                     address: person.address,
                     country: person.country,
-                    districtId: person.districtId,
+                    districtId:
+                        person.districtId && person.districtId !== "0"
+                            ? person.districtId
+                            : "040601",
                     documentType: person.documentType,
                     documentNumber: person.documentNumber,
                     isEnabled: person.isEnabled,

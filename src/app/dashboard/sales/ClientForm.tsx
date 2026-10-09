@@ -482,8 +482,11 @@ function ClientForm({
             event.target instanceof HTMLInputElement
         ) {
             let documentType = person.documentType;
-            // Reemplaza todos los caracteres que no son numéricos con una cadena vacía
-            const formattedValue = value.replace(/[^0-9]/g, "");
+            // TIN (C) puede ser alfanumérico; el resto solo admite dígitos
+            const formattedValue =
+                documentType === "C"
+                    ? value.replace(/[^0-9a-zA-Z]/g, "").toUpperCase()
+                    : value.replace(/[^0-9]/g, "");
             // Limita a 6 dígitos
             const limitedValue =
                 documentType === "1"
@@ -502,6 +505,10 @@ function ClientForm({
     }: ChangeEvent<HTMLInputElement>) => {
         setPerson({ ...person, [name]: checked });
     };
+
+    // TIN (código "C"): exige número, nombre y dirección;
+    // ubigeo, email y celular son opcionales.
+    const isTin = person?.documentType === "C";
 
     const handleSaveClient = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -553,7 +560,10 @@ function ClientForm({
             });
             return;
         }
-        if (person?.documentType === "6" && person?.address.length === 0) {
+        if (
+            (person?.documentType === "6" || isTin) &&
+            !person?.address?.trim()
+        ) {
             toast("Por favor ingrese una direccion valida.", {
                 hideProgressBar: true,
                 autoClose: 2000,
@@ -598,7 +608,11 @@ function ClientForm({
                 email: person.email,
                 address: person.address,
                 country: person.country,
-                districtId: person.districtId || "040601",
+                // Ubigeo opcional para TIN: si no se eligió, se usa el valor por defecto
+                districtId:
+                    person.districtId && person.districtId !== "0"
+                        ? person.districtId
+                        : "040601",
                 documentType: person.documentType,
                 documentNumber: person.documentNumber,
                 isEnabled: person.isEnabled,
@@ -940,6 +954,7 @@ function ClientForm({
                                         <div className="grid gap-4 sm:grid-cols-4">
                                             {/* Address, Department, Province, District fields */}
                                             {(person.documentType === "6" ||
+                                                isTin ||
                                                 person.documentType ===
                                                     "-") && (
                                                 <div className="sm:col-span-4">
@@ -996,7 +1011,7 @@ function ClientForm({
                                                             onChange={
                                                                 handleInputChange
                                                             }
-                                                            required
+                                                            required={!isTin}
                                                             className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                         >
                                                             <option value={"0"}>
@@ -1067,7 +1082,7 @@ function ClientForm({
                                                             onChange={
                                                                 handleInputChange
                                                             }
-                                                            required
+                                                            required={!isTin}
                                                             className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                         >
                                                             <option value={"0"}>
@@ -1137,7 +1152,7 @@ function ClientForm({
                                                             onChange={
                                                                 handleInputChange
                                                             }
-                                                            required
+                                                            required={!isTin}
                                                             className="block w-full py-2 pl-3 pr-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                         >
                                                             <option value={"0"}>

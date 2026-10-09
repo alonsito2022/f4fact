@@ -703,7 +703,9 @@ function SaleFilter({
             <BulkPdfDownloadModal
                 modalBulkPdf={modalBulkPdf}
                 setModalBulkPdf={setModalBulkPdf}
-                salesData={filteredSalesData?.allSales?.sales || []}
+                filterObj={filterObj}
+                auth={auth}
+                totalSales={filteredSalesData?.allSales?.totalNumberOfSales || 0}
             />
         </>
     );

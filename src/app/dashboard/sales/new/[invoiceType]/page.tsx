@@ -712,9 +712,12 @@ function NewSalePage() {
   const validateBeforePayment = () => {
     if (isProcessing) return false;
 
-    // Solo permitir clientes con RUC para facturas
-    if (sale.documentType === "01" && sale.clientDocumentType !== "6") {
-      toast("Solo se puede emitir facturas a clientes con RUC.", {
+    // Solo permitir clientes con RUC o TIN (C) para facturas
+    if (
+      sale.documentType === "01" &&
+      !["6", "C"].includes(sale.clientDocumentType)
+    ) {
+      toast("Solo se puede emitir facturas a clientes con RUC o TIN.", {
         hideProgressBar: true,
         autoClose: 2000,
         type: "warning",
