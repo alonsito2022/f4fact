@@ -204,10 +204,11 @@ function PersonForm({
             event.target instanceof HTMLInputElement
         ) {
             let documentType = person.documentType;
-            // TIN (C) puede ser alfanumérico; el resto solo admite dígitos
+            // TIN (C) e IN (D) pueden ser alfanuméricos y llevar guiones y
+            // puntos; el resto solo admite dígitos
             const formattedValue =
-                documentType === "C"
-                    ? value.replace(/[^0-9a-zA-Z]/g, "").toUpperCase()
+                documentType === "C" || documentType === "D"
+                    ? value.replace(/[^0-9a-zA-Z.-]/g, "").toUpperCase()
                     : value.replace(/[^0-9]/g, "");
             // Limita a 6 dígitos
             const limitedValue =
@@ -387,9 +388,9 @@ function PersonForm({
             });
             return;
         }
-        // TIN (C): exige dirección; ubigeo, email y teléfono son opcionales
+        // TIN (C) e IN (D): exigen dirección; ubigeo, email y teléfono son opcionales
         if (
-            (person?.documentType === "6" || person?.documentType === "C") &&
+            ["6", "C", "D"].includes(person?.documentType) &&
             !person?.address?.trim()
         ) {
             toast("Por favor ingrese una direccion valida.", {

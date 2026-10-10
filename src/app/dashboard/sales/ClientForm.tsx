@@ -482,10 +482,11 @@ function ClientForm({
             event.target instanceof HTMLInputElement
         ) {
             let documentType = person.documentType;
-            // TIN (C) puede ser alfanumérico; el resto solo admite dígitos
+            // TIN (C) e IN (D) pueden ser alfanuméricos y llevar guiones y
+            // puntos; el resto solo admite dígitos
             const formattedValue =
-                documentType === "C"
-                    ? value.replace(/[^0-9a-zA-Z]/g, "").toUpperCase()
+                documentType === "C" || documentType === "D"
+                    ? value.replace(/[^0-9a-zA-Z.-]/g, "").toUpperCase()
                     : value.replace(/[^0-9]/g, "");
             // Limita a 6 dígitos
             const limitedValue =
@@ -506,9 +507,9 @@ function ClientForm({
         setPerson({ ...person, [name]: checked });
     };
 
-    // TIN (código "C"): exige número, nombre y dirección;
+    // TIN (código "C") e IN (código "D"): exigen número, nombre y dirección;
     // ubigeo, email y celular son opcionales.
-    const isTin = person?.documentType === "C";
+    const isTin = ["C", "D"].includes(person?.documentType);
 
     const handleSaveClient = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
