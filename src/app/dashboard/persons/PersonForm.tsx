@@ -204,11 +204,11 @@ function PersonForm({
             event.target instanceof HTMLInputElement
         ) {
             let documentType = person.documentType;
-            // TIN (C) e IN (D) pueden ser alfanuméricos y llevar guiones y
-            // puntos; el resto solo admite dígitos
+            // TIN (C) e IN (D) pueden ser alfanuméricos (sin guiones ni
+            // puntos); el resto solo admite dígitos
             const formattedValue =
                 documentType === "C" || documentType === "D"
-                    ? value.replace(/[^0-9a-zA-Z.-]/g, "").toUpperCase()
+                    ? value.replace(/[^0-9a-zA-Z]/g, "").toUpperCase()
                     : value.replace(/[^0-9]/g, "");
             // Limita a 6 dígitos
             const limitedValue =
