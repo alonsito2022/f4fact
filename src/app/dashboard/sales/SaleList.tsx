@@ -174,7 +174,10 @@ function SaleList({
     if (status === "06") {
       return `${baseClasses} bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap`;
     }
-    return `${baseClasses}`;
+    if (status === "07") {
+      return `${baseClasses} text-red-600 text-xs font-medium px-2.5 py-0.5 rounded-full dark:text-red-400`;
+    }
+    return `${baseClasses} text-gray-400`;
   };
 
   const getStatusContent = (status: string, documentType: string) => {
@@ -190,6 +193,7 @@ function SaleList({
       return "-";
     }
     if (status === "06") return <SunatCancel />;
+    if (status === "07") return <LoadingIcon className="text-red-600" />;
     return "";
   };
 
@@ -200,6 +204,15 @@ function SaleList({
         <p>
           {item.sunatDescriptionLow ||
             "Los documentos no aceptados por la SUNAT se consideran como documentos ANULADOS para efectos tributarios en la mayoría de casos."}
+        </p>
+      );
+    }
+    if (item.sunatDescription) return <p>{item.sunatDescription}</p>;
+    if (item.operationStatus === "07") {
+      return (
+        <p>
+          El comprobante ya esta informado y se encuentra con estado anulado o
+          rechazado.
         </p>
       );
     }
