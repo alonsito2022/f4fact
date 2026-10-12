@@ -3,20 +3,111 @@ import { Modal } from "flowbite";
 import { toast } from "react-toastify";
 import JSZip from "jszip";
 import LoadingIcon from "@/components/icons/LoadingIcon";
+import { gql, useApolloClient } from "@apollo/client";
+
+// Solo los campos necesarios para armar la URL y el nombre del PDF
+const ALL_SALES_FOR_PDF_QUERY = gql`
+    query (
+        $subsidiaryId: Int!
+        $clientId: Int!
+        $startDate: Date!
+        $endDate: Date!
+        $documentType: String!
+        $page: Int!
+        $pageSize: Int!
+        $userId: Int
+        $onlyDraft: Boolean
+    ) {
+        allSales(
+            subsidiaryId: $subsidiaryId
+            clientId: $clientId
+            startDate: $startDate
+            endDate: $endDate
+            documentType: $documentType
+            page: $page
+            pageSize: $pageSize
+            userId: $userId
+            onlyDraft: $onlyDraft
+        ) {
+            sales {
+                id
+                documentType
+                operationStatus
+                serial
+                correlative
+                subsidiary {
+                    company {
+                        doc
+                    }
+                }
+            }
+            totalNumberOfPages
+        }
+    }
+`;
+
+const FETCH_PAGE_SIZE = 200;
+const PDF_CONCURRENCY = 5;
 
 interface Props {
     modalBulkPdf: Modal | null;
     setModalBulkPdf: (modal: Modal | null) => void;
-    salesData: any[];
+    filterObj: any;
+    auth: any;
+    totalSales: number;
 }
 
 function BulkPdfDownloadModal({
     modalBulkPdf,
     setModalBulkPdf,
-    salesData,
+    filterObj,
+    auth,
+    totalSales,
 }: Props) {
+    const client = useApolloClient();
     const [downloading, setDownloading] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [stage, setStage] = useState<"listing" | "downloading">("listing");
+
+    // Trae TODAS las páginas según los filtros actuales (rango de fechas, etc.)
+    const fetchAllSales = async () => {
+        const context = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
+            },
+        };
+        const baseVariables = {
+            // Misma regla que sales/page.tsx: el superusuario usa la sucursal
+            // elegida (0 = todas); el resto, siempre la de su usuario.
+            subsidiaryId: auth?.user?.isSuperuser
+                ? Number(filterObj.subsidiaryId) || 0
+                : Number(auth?.user?.subsidiaryId),
+            clientId: Number(filterObj.clientId),
+            startDate: filterObj.startDate,
+            endDate: filterObj.endDate,
+            documentType: filterObj.documentType,
+            pageSize: FETCH_PAGE_SIZE,
+            userId: Number(filterObj.userId) || undefined,
+            onlyDraft: filterObj.onlyDraft || undefined,
+        };
+
+        const all: any[] = [];
+        let page = 1;
+        let totalPages = 1;
+        do {
+            const { data } = await client.query({
+                query: ALL_SALES_FOR_PDF_QUERY,
+                variables: { ...baseVariables, page },
+                context,
+                fetchPolicy: "network-only",
+            });
+            all.push(...(data?.allSales?.sales || []));
+            totalPages = data?.allSales?.totalNumberOfPages || 0;
+            page++;
+        } while (page <= totalPages);
+        return all;
+    };
 
     useEffect(() => {
         const $modalElement = document.querySelector("#bulk-pdf-modal");
@@ -34,25 +125,34 @@ function BulkPdfDownloadModal({
     }, [setModalBulkPdf]);
 
     const handleDownload = async () => {
-        if (!salesData?.length) {
-            toast.error("No hay documentos para descargar");
-            return;
-        }
-        // Limpiar los atributos "A_" en documentType y operationStatus
-        const cleanSalesData = salesData.map((sale) => ({
-            ...sale,
-            documentType: sale.documentType?.replace("A_", ""),
-            operationStatus: sale.operationStatus?.replace("A_", ""),
-        }));
-
         setDownloading(true);
+        setStage("listing");
+        setProgress(0);
         const zip = new JSZip();
         let completed = 0;
 
         try {
-            // Crear un array de promesas para las descargas
-            const downloadPromises = cleanSalesData.map(async (item) => {
-                if (!item.documentType || !item.id) return;
+            const salesData = await fetchAllSales();
+            if (!salesData.length) {
+                toast.error("No hay documentos para descargar");
+                return;
+            }
+            // Limpiar los atributos "A_" en documentType y operationStatus
+            const cleanSalesData = salesData.map((sale) => ({
+                ...sale,
+                documentType: sale.documentType?.replace("A_", ""),
+                operationStatus: sale.operationStatus?.replace("A_", ""),
+            }));
+            setStage("downloading");
+
+            const downloadItem = async (item: any) => {
+                if (!item.documentType || !item.id) {
+                    completed++;
+                    setProgress(
+                        Math.round((completed / cleanSalesData.length) * 100)
+                    );
+                    return;
+                }
 
                 const baseUrl = process.env.NEXT_PUBLIC_BASE_API || "";
                 const url = `${baseUrl}/operations/${
@@ -80,21 +180,33 @@ function BulkPdfDownloadModal({
                         item.correlative
                     }.pdf`;
                     zip.file(fileName, blob);
-
-                    completed++;
-                    setProgress(
-                        Math.round((completed / cleanSalesData.length) * 100)
-                    );
                 } catch (error) {
                     console.error(`Error descargando ${item.id}:`, error);
                     toast.error(
                         `Error al descargar el documento ${item.subsidiary?.company?.doc}-${item.documentType}-${item.serial}-${item.correlative}`
                     );
+                } finally {
+                    completed++;
+                    setProgress(
+                        Math.round((completed / cleanSalesData.length) * 100)
+                    );
                 }
-            });
+            };
 
-            // Esperar a que todas las descargas terminen
-            await Promise.all(downloadPromises);
+            // Pool con concurrencia limitada para no saturar el backend
+            let nextIndex = 0;
+            const worker = async () => {
+                while (nextIndex < cleanSalesData.length) {
+                    const item = cleanSalesData[nextIndex++];
+                    await downloadItem(item);
+                }
+            };
+            await Promise.all(
+                Array.from(
+                    { length: Math.min(PDF_CONCURRENCY, cleanSalesData.length) },
+                    worker
+                )
+            );
 
             // Generar y descargar el archivo ZIP
             const content = await zip.generateAsync({ type: "blob" });
@@ -157,8 +269,9 @@ function BulkPdfDownloadModal({
                     </div>
                     <div className="p-6 space-y-6">
                         <p className="text-base leading-relaxed text-gray-500 dark:text-gray-400">
-                            Se descargarán {salesData?.length || 0} documentos
-                            en formato PDF. Los archivos se comprimirán en un
+                            Se descargarán {totalSales || 0} documentos del{" "}
+                            {filterObj.startDate} al {filterObj.endDate} en
+                            formato PDF. Los archivos se comprimirán en un
                             archivo ZIP para facilitar la descarga.
                         </p>
                         {downloading && (
@@ -168,7 +281,9 @@ function BulkPdfDownloadModal({
                                     style={{ width: `${progress}%` }}
                                 ></div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                    Progreso: {progress}%
+                                    {stage === "listing"
+                                        ? "Obteniendo lista de documentos..."
+                                        : `Progreso: ${progress}%`}
                                 </p>
                             </div>
                         )}
