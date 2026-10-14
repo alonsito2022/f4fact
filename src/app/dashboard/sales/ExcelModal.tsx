@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Modal, ModalOptions } from "flowbite";
 import { toast } from "react-toastify";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useLazyQuery } from "@apollo/client";
 
 const USERS_QUERY = gql`
     query {
@@ -39,9 +39,19 @@ function ExcelModal({
     const [selectedUserId, setSelectedUserId] = useState("");
     const [isDownloading, setIsDownloading] = useState(false);
 
-    const { data: usersData } = useQuery(USERS_QUERY, {
-        fetchPolicy: "network-only",
+    // La lista de usuarios solo se pide cuando el modal se abre por primera
+    // vez: antes se descargaba en cada carga de la pagina.
+    const [fetchUsers, { data: usersData }] = useLazyQuery(USERS_QUERY, {
+        fetchPolicy: "cache-and-network",
     });
+    const usersFetched = useRef(false);
+
+    useEffect(() => {
+        if (modalExcel && !usersFetched.current) {
+            usersFetched.current = true;
+            fetchUsers();
+        }
+    }, [modalExcel]);
 
     const getFilteredUsers = () => {
         if (!usersData?.users || !userLogged?.subsidiaryId) return [];

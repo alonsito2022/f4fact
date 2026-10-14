@@ -906,9 +906,15 @@ function CompanyModal({
             setModal(new Modal($targetEl, options));
         }
     }, []);
-    useEffect(() => {
-        console.log(company);
-    }, [company]);
+    // Cierra el modal devolviendo el foco: si el boton que dispara el cierre
+    // conserva el foco, Flowbite marca el contenedor como aria-hidden y el
+    // navegador advierte que hay foco dentro de un elemento oculto.
+    const closeModal = (e?: React.MouseEvent<HTMLButtonElement>) => {
+        e?.currentTarget?.blur();
+        modal.hide();
+        setCompany(initialState);
+    };
+
     return (
         <div>
             <div
@@ -930,8 +936,7 @@ function CompanyModal({
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                    modal.hide();
-                                    setCompany(initialState);
+                                    closeModal(e);
                                 }}
                                 className="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                             >

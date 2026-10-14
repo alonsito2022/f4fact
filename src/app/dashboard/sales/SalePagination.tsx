@@ -11,6 +11,7 @@ function SalePagination({
     quotesData,
     exitNotesQuery,
     exitNotesData,
+    compact,
 }: any) {
     const totalPages = filteredSalesData
         ? filteredSalesData?.allSales?.totalNumberOfPages
@@ -104,7 +105,13 @@ function SalePagination({
     if (!totalPages || totalPages <= 0) return null;
 
     return (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-gray-50/50 dark:bg-gray-800/30 rounded-lg border border-gray-100 dark:border-gray-700/50">
+        <div
+            className={`flex flex-col items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 dark:border-gray-700/50 dark:bg-gray-800/30 sm:flex-row ${
+                compact
+                    ? "gap-3 px-4 py-3 lg:gap-2 lg:px-3 lg:py-1.5"
+                    : "gap-3 px-4 py-3"
+            }`}
+        >
             <div className="text-xs text-gray-500 dark:text-gray-400">
                 Mostrando{" "}
                 <span className="font-semibold text-gray-700 dark:text-gray-300">
@@ -197,7 +204,7 @@ function SalePagination({
                     onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                     className="px-2 py-1 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-700 dark:text-gray-300 cursor-pointer"
                 >
-                    {[10, 20, 50, 100].map((size) => (
+                    {[10, 20, 25, 50, 100].map((size) => (
                         <option key={size} value={size}>
                             {size}
                         </option>

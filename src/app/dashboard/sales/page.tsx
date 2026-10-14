@@ -3,7 +3,6 @@ import { useState, useMemo, useEffect } from "react";
 import SaleList from "./SaleList";
 import SaleFilter from "./SaleFilter";
 import { gql, useLazyQuery } from "@apollo/client";
-import { initFlowbite } from "flowbite";
 import WhatsAppModal from "./WhatsAppModal";
 import { Modal } from "flowbite";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -25,7 +24,7 @@ const initialStateFilterObj = {
     supplierName: "",
     documentType: "NA",
     page: 1,
-    pageSize: 50,
+    pageSize: 25,
     isSuperuser: false,
     reportType: "",
     serial: "",
@@ -65,19 +64,12 @@ const SALES_QUERY = gql`
                 id
                 emitDate
                 emitTime
-                operationDate
                 currencyType
                 documentType
                 serial
                 correlative
-                totalAmount
-                totalTaxed
-                totalDiscount
-                totalExonerated
-                totalUnaffected
-                totalFree
-                totalIgv
                 totalToPay
+                totalFree
                 totalPayed
                 operationStatus
                 operationStatusReadable
@@ -89,8 +81,6 @@ const SALES_QUERY = gql`
                 linkCdrLow
                 driveFirmaId
                 driveCdrId
-                sunatStatus
-                sendSunat
                 sunatDescription
                 sunatDescriptionLow
                 codeHash
@@ -114,7 +104,6 @@ const SALES_QUERY = gql`
             totalInvoices
             totalSalesTickets
             totalCreditNotes
-            totalDebitNotes
             totalNumberOfPages
             totalNumberOfSales
         }
@@ -157,9 +146,10 @@ function SalePage() {
         },
     ] = useLazyQuery(SALES_QUERY, {
         context: authContext,
-        fetchPolicy: "network-only",
-        onCompleted: () => initFlowbite(),
-        onError: (err) => console.error("Error in sales:", err, auth?.jwtToken),
+        // Pinta la cache al instante y refresca en segundo plano.
+        fetchPolicy: "cache-and-network",
+        nextFetchPolicy: "cache-first",
+        onError: (err) => console.error("Error in sales:", err),
     });
 
     useEffect(() => {
@@ -216,10 +206,9 @@ function SalePage() {
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-800">
-            <div className="container mx-auto pb-16">
+            <div className="container mx-auto px-3 pb-16 sm:px-4 lg:px-6">
                 <div className="grid grid-cols-12 gap-4">
-                    <div className="col-span-1"></div>
-                    <div className="col-span-10">
+                    <div className="col-span-12">
                         <SaleFilter
                             setFilterObj={setFilterObj}
                             filterObj={filterObj}
@@ -232,31 +221,8 @@ function SalePage() {
                             <div className="overflow-x-auto">
                                 <div className="inline-block min-w-full align-middle">
                                     <div className="overflow-hidden">
-                                        {filteredSalesLoading ? (
-                                            <div className="p-8">
-                                                <div className="flex items-center justify-center mb-6">
-                                                    <div className="relative">
-                                                        <div className="w-12 h-12 border-4 border-blue-200 dark:border-blue-800 rounded-full"></div>
-                                                        <div className="w-12 h-12 border-4 border-transparent border-t-blue-600 rounded-full animate-spin absolute top-0 left-0"></div>
-                                                    </div>
-                                                    <span className="ml-4 text-sm font-medium text-gray-600 dark:text-gray-300">
-                                                        Cargando comprobantes...
-                                                    </span>
-                                                </div>
-                                                <div className="space-y-3">
-                                                    {Array.from({ length: 8 }).map((_, i) => (
-                                                        <div key={i} className="flex items-center gap-4 animate-pulse">
-                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-12"></div>
-                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
-                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-10"></div>
-                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded flex-1"></div>
-                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ) : filteredSalesError ? (
+                                        {filteredSalesError &&
+                                        !filteredSalesData ? (
                                             <div className="flex flex-col items-center justify-center py-16 text-center">
                                                 <div className="w-16 h-16 mb-4 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
                                                     <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -271,23 +237,63 @@ function SalePage() {
                                                 </p>
                                             </div>
                                         ) : (
-                                            <SaleList
-                                                filteredSalesData={filteredSalesData}
-                                                setFilterObj={setFilterObj}
-                                                filterObj={filterObj}
-                                                modalWhatsApp={modalWhatsApp}
-                                                cpe={cpe}
-                                                setCpe={setCpe}
-                                                salesQuery={salesQuery}
-                                                user={auth?.user}
-                                            />
+                                            <div className="relative">
+                                                {/* La tabla no se desmonta al cambiar de pagina:
+                                                    se atenua mientras llegan los datos nuevos. */}
+                                                {filteredSalesData && (
+                                                    <div
+                                                        className={`transition-opacity duration-200 ${
+                                                            filteredSalesLoading
+                                                                ? "pointer-events-none opacity-40"
+                                                                : "opacity-100"
+                                                        }`}
+                                                    >
+                                                        <SaleList
+                                                            filteredSalesData={filteredSalesData}
+                                                            setFilterObj={setFilterObj}
+                                                            filterObj={filterObj}
+                                                            modalWhatsApp={modalWhatsApp}
+                                                            cpe={cpe}
+                                                            setCpe={setCpe}
+                                                            salesQuery={salesQuery}
+                                                            user={auth?.user}
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                {filteredSalesLoading &&
+                                                    !filteredSalesData && (
+                                                        <div className="p-8">
+                                                            <div className="flex items-center justify-center mb-6">
+                                                                <div className="relative">
+                                                                    <div className="w-12 h-12 border-4 border-blue-200 dark:border-blue-800 rounded-full"></div>
+                                                                    <div className="w-12 h-12 border-4 border-transparent border-t-blue-600 rounded-full animate-spin absolute top-0 left-0"></div>
+                                                                </div>
+                                                                <span className="ml-4 text-sm font-medium text-gray-600 dark:text-gray-300">
+                                                                    Cargando comprobantes...
+                                                                </span>
+                                                            </div>
+                                                            <div className="space-y-3">
+                                                                {Array.from({ length: 8 }).map((_, i) => (
+                                                                    <div key={i} className="flex items-center gap-4 animate-pulse">
+                                                                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                                                                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-12"></div>
+                                                                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                                                                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-10"></div>
+                                                                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded flex-1"></div>
+                                                                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                            </div>
                                         )}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="col-span-1"></div>
                 </div>
             </div>
             <WhatsAppModal

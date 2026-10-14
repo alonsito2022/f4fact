@@ -18,9 +18,10 @@ export function useAuth() {
 }
 
 function AuthContextBridge({ children }: { children: React.ReactNode }) {
-    // useSession() se revalida en foco/reconexion y en cada refetchInterval,
-    // por lo que aqui siempre llega el accessToken ya renovado por el
-    // callback jwt de NextAuth (ver authOptions.ts).
+    // useSession() revalida cada refetchInterval para que el accessToken siga
+    // renovado por el callback jwt de NextAuth (ver authOptions.ts).
+    // El refetch por foco se desactiva porque reinicia el arbol de providers
+    // en cada cambio de pestaña y obliga a repintar toda la vista.
     const { data: session, status: sessionStatus } = useSession();
     const hasRefreshError = (session as any)?.error === "RefreshAccessTokenError";
 
@@ -54,7 +55,11 @@ export default function AuthProvider({
     children: React.ReactNode;
 }) {
     return (
-        <SessionProvider session={session} refetchInterval={5 * 60}>
+        <SessionProvider
+            session={session}
+            refetchInterval={5 * 60}
+            refetchOnWindowFocus={false}
+        >
             <AuthContextBridge>{children}</AuthContextBridge>
         </SessionProvider>
     );

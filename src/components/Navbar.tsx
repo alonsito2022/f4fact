@@ -78,16 +78,15 @@ function Navbar() {
 
                             <a
                                 href="/dashboard"
-                                className="ml-2 md:mr-24 hidden sm:flex"
+                                className="ml-2 md:mr-24 hidden sm:flex shrink-0 items-center transition-opacity hover:opacity-80 dark:rounded-xl dark:bg-white/10 dark:px-2.5 dark:py-1.5"
                             >
                                 <img
-                                    src="/images/4fact.svg"
-                                    className="h-8 mr-3 dark:[filter:invert(100%)_sepia(100%)_brightness(100%)_contrast(300%)]"
-                                    alt="FlowBite Logo"
+                                    src="/images/tufact-logo.png"
+                                    width={1200}
+                                    height={326}
+                                    className="h-9 w-auto max-w-[220px] shrink-0 object-contain"
+                                    alt="TUFACT"
                                 />
-                                <span className="self-center text-blue-900 font-sm sm:text-2xl whitespace-nowrap dark:text-white transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/50 hover:text-blue-800 dark:hover:text-blue-200 rounded-lg font-nulshock">
-                                    TUFACT
-                                </span>
                             </a>
                             {/* <form action="#" method="GET" className="hidden lg:block lg:pl-3.5">
                             <label htmlFor="topbar-search" className="sr-only">Search</label>

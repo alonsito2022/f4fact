@@ -219,15 +219,17 @@ function Cpe() {
                 <div className="px-3 py-3 lg:px-5 lg:pl-3">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center justify-start">
-                            <a href="/dashboard" className="flex ml-2 md:mr-24">
+                            <a
+                                href="/dashboard"
+                                className="flex ml-2 md:mr-24 shrink-0 items-center transition-opacity hover:opacity-80 dark:rounded-xl dark:bg-white/10 dark:px-2.5 dark:py-1.5"
+                            >
                                 <img
-                                    src="/images/logo.svg"
-                                    className="h-8 mr-3"
-                                    alt="FlowBite Logo"
+                                    src="/images/tufact-logo.png"
+                                    width={1200}
+                                    height={326}
+                                    className="h-9 w-auto max-w-[220px] shrink-0 object-contain"
+                                    alt="TUFACT"
                                 />
-                                <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">
-                                    4Fact
-                                </span>
                             </a>
                         </div>
                         <div className="flex items-center gap-4">
