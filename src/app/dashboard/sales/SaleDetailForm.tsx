@@ -1,7 +1,10 @@
-import { ChangeEvent, FormEvent, useState, useEffect, useRef } from "react";
+import { ChangeEvent, FormEvent, useMemo, useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import Save from "@/components/icons/Save";
 import { Modal, ModalOptions } from "flowbite";
+import Combobox, {
+    ComboboxOption,
+} from "@/components/Combobox";
 import {
     IOperation,
     IOperationDetail,
@@ -120,7 +123,7 @@ function SaleDetailForm({
                 placement: "top-center",
                 backdrop: "static",
                 backdropClasses:
-                    "bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40",
+                    "bg-gray-900 bg-opacity-60 dark:bg-opacity-80 fixed inset-0 z-40",
                 closable: false,
             };
             setModalAddDetail(new Modal($targetEl, options));
@@ -613,6 +616,18 @@ function SaleDetailForm({
         return formatted;
     };
 
+    // Opciones del autocomplete de producto del modal de detalle
+    const productOptions: ComboboxOption[] = useMemo(
+        () =>
+            (productsData?.allProducts ?? []).map((n: IProduct) => ({
+                id: n.id,
+                label: n.name.replace(/[\n\r\s]+/g, " ").trim(),
+                badge: n.code || undefined,
+                raw: n,
+            })),
+        [productsData],
+    );
+
     const handleProductNameChange = (input: HTMLInputElement) => {
         const dataList = input.list;
         if (!dataList) {
@@ -798,29 +813,52 @@ function SaleDetailForm({
             {/* Large Modal */}
             <div
                 id="modalAddDetail"
-                // ref={modalRef}
                 tabIndex={-1}
-                className="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
+                className="fixed left-0 right-0 top-0 z-50 hidden h-[calc(100%-1rem)] max-h-full w-full items-center justify-center overflow-x-hidden overflow-y-auto p-4"
             >
-                <div className="relative w-full max-w-4xl max-h-full">
+                <div className="relative max-h-full w-full max-w-4xl">
                     {/* Modal content */}
-                    <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                    <div className="relative overflow-hidden rounded-2xl border border-blue-100 bg-white bg-gradient-to-b from-blue-50 via-slate-50 to-white shadow-2xl dark:border-gray-700 dark:bg-gray-800 dark:from-slate-900 dark:via-gray-800 dark:to-gray-800">
                         {/* Modal header */}
-                        <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                            <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-                                Detalle de la LINEA o ITEM
-                            </h3>
+                        <div className="flex items-start gap-3 border-b border-blue-100/70 px-5 py-4 dark:border-gray-700">
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:ring-blue-400/20">
+                                <svg
+                                    className="h-5 w-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth={1.7}
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+                                    />
+                                </svg>
+                            </span>
+                            <div className="min-w-0 flex-1">
+                                <h3 className="text-base font-semibold leading-tight text-gray-900 dark:text-white">
+                                    Detalle de la línea o ítem
+                                </h3>
+                                <p className="mt-0.5 text-[13px] text-gray-500 dark:text-gray-400">
+                                    Define el producto, la cantidad y los
+                                    valores de esta línea
+                                </p>
+                            </div>
                             <button
                                 ref={closeButtonRef}
                                 type="button"
                                 onClick={handleCloseModal}
-                                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                aria-label="Cerrar"
+                                className="-mr-1.5 -mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-blue-500/30"
                             >
                                 <svg
-                                    className="w-3 h-3"
+                                    className="h-3.5 w-3.5"
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 14 14"
+                                    aria-hidden="true"
                                 >
                                     <path
                                         stroke="currentColor"
@@ -830,53 +868,66 @@ function SaleDetailForm({
                                         d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
                                     />
                                 </svg>
-                                <span className="sr-only">Close modal</span>
                             </button>
                         </div>
                         {/* Modal body */}
 
                         <form onSubmit={handleAddDetail}>
-                            <div className="p-4 md:p-5 space-y-4">
-                                <div className="grid sm:grid-cols-1 md:grid-cols-6 gap-4">
+                            <div className="space-y-5 p-4 md:p-6">
+                                <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-6">
                                     {/* Product name input - adjusted to 4 columns */}
                                     <div className="sm:col-span-4">
-                                        <label className="form-label text-gray-900 dark:text-gray-200">
+                                        <label className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-gray-300">
                                             Producto - Servicio (CATÁLOGO) 2
                                         </label>
-                                        <input
-                                            type="text"
-                                            name="productName"
-                                            maxLength={100}
-                                            onFocus={(e) => e.target.select()}
-                                            value={product.name}
-                                            onChange={
-                                                handleInputChangeSaleDetail
-                                            }
-                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
-                                            list="productList"
-                                            autoComplete="off"
-                                            required
-                                        />
-                                        <datalist id="productList">
-                                            {productsData?.allProducts?.map(
-                                                (
-                                                    n: IProduct,
-                                                    index: number
-                                                ) => (
-                                                    <option
-                                                        key={index}
-                                                        data-key={n.id}
-                                                        value={n.name}
-                                                    />
-                                                )
-                                            )}
-                                        </datalist>
+                                        <div className="relative mt-1">
+                                            <Combobox
+                                                value={product.name}
+                                                onChange={(value) => {
+                                                    setProduct({
+                                                        ...product,
+                                                        id: 0,
+                                                        name: value,
+                                                    });
+                                                }}
+                                                onSelect={(option) => {
+                                                    setProduct({
+                                                        ...product,
+                                                        id: Number(
+                                                            option.id,
+                                                        ),
+                                                        name: option.label,
+                                                    });
+                                                }}
+                                                options={productOptions}
+                                                placeholder="Buscar o escribir el producto..."
+                                                required
+                                                maxLength={100}
+                                                selectOnFocus
+                                                icon={
+                                                    <svg
+                                                        className="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth={1.8}
+                                                        viewBox="0 0 24 24"
+                                                        aria-hidden="true"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+                                                        />
+                                                    </svg>
+                                                }
+                                            />
+                                        </div>
                                     </div>
 
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="stock"
-                                            className="form-label text-gray-900 dark:text-gray-200"
+                                            className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Stock actual disponible
                                         </label>
@@ -891,7 +942,7 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
+                                            className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800/60 dark:disabled:text-gray-500"
                                             disabled
                                         />
                                     </div>
@@ -899,7 +950,7 @@ function SaleDetailForm({
                                     <div className="sm:col-span-6">
                                         <label
                                             htmlFor="description"
-                                            className="form-label text-gray-900 dark:text-gray-200"
+                                            className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Detalle adicional
                                         </label>
@@ -912,14 +963,14 @@ function SaleDetailForm({
                                             onChange={
                                                 handleInputChangeSaleDetail
                                             }
-                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                            className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800/60 dark:disabled:text-gray-500 tabular-nums"
                                             autoComplete="off"
                                         />
                                     </div>
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="quantity"
-                                            className="form-label text-gray-900 dark:text-gray-200"
+                                            className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Cantidad
                                         </label>
@@ -934,7 +985,7 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                            className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800/60 dark:disabled:text-gray-500 tabular-nums"
                                             autoComplete="off"
                                             required
                                         />
@@ -943,7 +994,7 @@ function SaleDetailForm({
                                         <div className="sm:col-span-2">
                                             <label
                                                 htmlFor="unitPrice"
-                                                className="form-label text-gray-900 dark:text-gray-200"
+                                                className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-gray-300"
                                             >
                                                 Precio VENTA unitario CON IGV
                                             </label>
@@ -961,7 +1012,7 @@ function SaleDetailForm({
                                                     e.target.select()
                                                 }
                                                 autoComplete="off"
-                                                className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800/60 dark:disabled:text-gray-500 tabular-nums"
                                                 required
                                             />
                                         </div>
@@ -969,7 +1020,7 @@ function SaleDetailForm({
                                         <div className="sm:col-span-2">
                                             <label
                                                 htmlFor="unitValue"
-                                                className="form-label text-gray-900 dark:text-gray-200"
+                                                className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-gray-300"
                                             >
                                                 VALOR VENTA unitario SIN IGV
                                             </label>
@@ -987,7 +1038,7 @@ function SaleDetailForm({
                                                     e.target.select()
                                                 }
                                                 autoComplete="off"
-                                                className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800/60 dark:disabled:text-gray-500 tabular-nums"
                                             />
                                         </div>
                                     )}
@@ -995,7 +1046,7 @@ function SaleDetailForm({
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="totalValue"
-                                            className="form-label text-gray-900 dark:text-gray-200"
+                                            className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Subtotal
                                         </label>
@@ -1011,7 +1062,7 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
+                                            className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800/60 dark:disabled:text-gray-500"
                                         />
                                     </div>
 
@@ -1020,7 +1071,7 @@ function SaleDetailForm({
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="totalDiscount"
-                                            className="form-label text-gray-900 dark:text-gray-200"
+                                            className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Descuento por Item{" "}
                                             <span className="text-xs">
@@ -1038,7 +1089,7 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                            className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800/60 dark:disabled:text-gray-500 tabular-nums"
                                         />
                                     </div>
 
@@ -1047,7 +1098,7 @@ function SaleDetailForm({
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="typeAffectationId"
-                                            className="form-label text-gray-900 dark:text-gray-200"
+                                            className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Tipo IGV
                                         </label>
@@ -1060,7 +1111,7 @@ function SaleDetailForm({
                                             value={
                                                 invoiceDetail.typeAffectationId
                                             }
-                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                            className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800/60 dark:disabled:text-gray-500 tabular-nums"
                                             required
                                         >
                                             <option value={0}>
@@ -1085,7 +1136,7 @@ function SaleDetailForm({
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="totalIgv"
-                                            className="form-label text-gray-900 dark:text-gray-200"
+                                            className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             IGV de la linea
                                         </label>
@@ -1100,7 +1151,7 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control cursor-not-allowed dark:bg-gray-800 dark:text-gray-200"
+                                            className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800/60 dark:disabled:text-gray-500"
                                             disabled
                                         />
                                     </div>
@@ -1108,7 +1159,7 @@ function SaleDetailForm({
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="totalAmount"
-                                            className="form-label text-gray-900 dark:text-gray-200"
+                                            className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-gray-300"
                                         >
                                             Total
                                         </label>
@@ -1123,29 +1174,50 @@ function SaleDetailForm({
                                                 handleInputChangeSaleDetail
                                             }
                                             onFocus={(e) => e.target.select()}
-                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
+                                            className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800/60 dark:disabled:text-gray-500 tabular-nums"
                                             autoComplete="off"
                                         />
                                     </div>
                                 </div>
                                 {/* Sección de Anticipos */}
                                 {invoice.operationType === "0502" && (
-                                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-sm p-6 space-y-4">
-                                        <div className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed text-center">
-                                            Si es el{" "}
-                                            <span className="font-semibold">
-                                                PRIMER ANTICIPO
-                                            </span>{" "}
-                                            dejar estos datos en blanco.
-                                        </div>
-                                        <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                                            Si es una{" "}
-                                            <span className="font-semibold">
-                                                DEDUCCIÓN DE ANTICIPO
-                                            </span>{" "}
-                                            el importe de este ITEM o LINEA es
-                                            el total del pago anticipado y
-                                            restará a los totales del documento.
+                                    <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-600 dark:bg-gray-700">
+                                        <div className="flex items-start gap-2.5">
+                                            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-400">
+                                                <svg
+                                                    className="h-3.5 w-3.5"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth={2}
+                                                    viewBox="0 0 24 24"
+                                                    aria-hidden="true"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                                                    />
+                                                </svg>
+                                            </span>
+                                            <div className="text-[13px] leading-relaxed text-gray-600 dark:text-gray-300">
+                                                <p>
+                                                    Si es el{" "}
+                                                    <span className="font-semibold text-gray-900 dark:text-white">
+                                                        PRIMER ANTICIPO
+                                                    </span>{" "}
+                                                    deja estos datos en blanco.
+                                                </p>
+                                                <p className="mt-1">
+                                                    Si es una{" "}
+                                                    <span className="font-semibold text-gray-900 dark:text-white">
+                                                        DEDUCCIÓN DE ANTICIPO
+                                                    </span>
+                                                    , el importe de esta
+                                                    línea es el total del pago
+                                                    anticipado y restará a los
+                                                    totales del documento.
+                                                </p>
+                                            </div>
                                         </div>
 
                                         <div className="flex flex-col gap-4">
@@ -1157,7 +1229,7 @@ function SaleDetailForm({
                                                     ¿Deducción de Anticipo?
                                                 </label>
                                                 {invoiceDetail.isAnticipation && (
-                                                    <div className="flex items-center space-x-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full text-xs font-medium">
+                                                    <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1 text-[11px] font-semibold text-blue-800 dark:bg-blue-400/10 dark:text-blue-200">
                                                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                                                         <span>
                                                             Anticipo Activo
@@ -1190,7 +1262,7 @@ function SaleDetailForm({
                                                     />
                                                     <label
                                                         htmlFor="isAnticipation"
-                                                        className={`block w-12 h-6 rounded-full cursor-pointer transition-all duration-200 ease-in-out hover:scale-105 ${
+                                                        className={`block h-6 w-12 cursor-pointer rounded-full transition-all duration-200 ease-in-out hover:scale-105 ${
                                                             invoiceDetail.isAnticipation
                                                                 ? "bg-blue-600 dark:bg-blue-500 shadow-lg shadow-blue-200 dark:shadow-blue-900/30"
                                                                 : "bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500"
@@ -1219,20 +1291,20 @@ function SaleDetailForm({
 
                                         {/* Sección de Anticipos - Solo visible cuando invoiceDetail.isAnticipation es true */}
                                         {invoiceDetail.isAnticipation && (
-                                            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-4">
-                                                <div className="flex items-center space-x-2">
-                                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                                    <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-200">
+                                            <div className="space-y-3 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-400/40 dark:bg-blue-900/40">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="h-2 w-2 shrink-0 rounded-full bg-blue-500" />
+                                                    <h4 className="text-[13px] font-semibold text-blue-900 dark:text-blue-200">
                                                         Datos del Documento de
                                                         Anticipo
                                                     </h4>
                                                 </div>
 
-                                                <div className="text-sm text-blue-700 dark:text-blue-300">
+                                                <p className="text-[13px] text-blue-700 dark:text-blue-300">
                                                     Ingrese la información del
                                                     documento que contenía el
                                                     anticipo anterior:
-                                                </div>
+                                                </p>
 
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
@@ -1253,7 +1325,7 @@ function SaleDetailForm({
                                                             onChange={
                                                                 handleAnticipationFieldChange
                                                             }
-                                                            className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                                                            className="w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-blue-50 dark:border-blue-400/40 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800/60"
                                                             placeholder="Ej: F001"
                                                             disabled={
                                                                 !invoiceDetail.isAnticipation
@@ -1279,7 +1351,7 @@ function SaleDetailForm({
                                                             onChange={
                                                                 handleAnticipationFieldChange
                                                             }
-                                                            className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                                                            className="w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-blue-50 dark:border-blue-400/40 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:disabled:bg-gray-800/60"
                                                             placeholder="Ej: 00000001"
                                                             disabled={
                                                                 !invoiceDetail.isAnticipation
@@ -1295,17 +1367,17 @@ function SaleDetailForm({
                             </div>
 
                             {/* Modal footer */}
-                            <div className="flex items-center p-4 md:p-5 space-x-3 rtl:space-x-reverse border-t border-gray-200 rounded-b dark:border-gray-600">
+                            <div className="flex flex-wrap items-center justify-end gap-2 border-t border-blue-100/70 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-800">
                                 <button
                                     type="button"
                                     onClick={handleCloseModal}
-                                    className="btn-dark px-5 py-2 inline-flex items-center gap-2 dark:bg-gray-800 dark:text-gray-200"
+                                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 text-[13px] font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-700/70 dark:focus:ring-gray-700"
                                 >
                                     Cerrar
                                 </button>
                                 <button
                                     type="submit"
-                                    className="btn-green px-5 py-2 inline-flex items-center gap-2 dark:bg-green-700 dark:text-gray-200"
+                                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-blue-600 bg-blue-50 px-4 text-[13px] font-semibold text-blue-700 shadow-sm transition-colors hover:border-blue-700 hover:bg-blue-100 focus:outline-none focus:ring-4 focus:ring-blue-200/70 dark:border-blue-400/40 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:border-blue-400/70 dark:hover:bg-blue-500/20 dark:focus:ring-blue-500/30"
                                 >
                                     <Save /> Aceptar
                                 </button>

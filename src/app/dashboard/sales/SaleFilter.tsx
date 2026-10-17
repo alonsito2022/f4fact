@@ -107,8 +107,14 @@ function SaleFilter({
                 pageSize: Number(filterObj.pageSize),
                 userId: Number(filterObj.userId),
                 onlyDraft: filterObj.onlyDraft || undefined,
-                // serial: String(filterObj.serial),
-                // correlative: Number(filterObj.correlative),
+                // Se envian siempre para limpiar el par serial/correlative que
+                // pudo dejar "Buscar Documento": Apollo fusiona las variables
+                // entre ejecuciones y, si se omiten, el backend sigue filtrando
+                // por ese unico comprobante.
+                serial: filterObj.serial ? String(filterObj.serial) : undefined,
+                correlative: filterObj.correlative
+                    ? Number(filterObj.correlative)
+                    : undefined,
             },
             // El usuario pide datos frescos al filtrar: fuerza red aunque
             // el resultado anterior siga cacheado.
@@ -241,24 +247,27 @@ function SaleFilter({
         skip: !auth?.jwtToken || !filterObj.subsidiaryId,
     });
     useEffect(() => {
+        // El usuario normal siempre queda atado a su sede: la consulta inicial
+        // ya usa auth.user.subsidiaryId, asi que si aqui se dejara en "" la
+        // paginacion enviaria subsidiaryId=0 y mostraria ventas de otras sedes.
         if (
             auth?.user?.subsidiaryId &&
-            subsidiaries.length > 0 &&
-            !auth?.user?.isSuperuser
+            !auth?.user?.isSuperuser &&
+            Number(filterObj.subsidiaryId) !== Number(auth.user.subsidiaryId)
         ) {
             const subsidiaryFound = subsidiaries.find(
                 (s: ISubsidiary) =>
-                    Number(s.id) === Number(auth?.user?.subsidiaryId)
+                    Number(s.id) === Number(auth?.user?.subsidiaryId),
             );
-            if (subsidiaryFound) {
-                const label = getSubsidiaryLabel(subsidiaryFound);
-                setFilterObj({
-                    ...filterObj,
-                    subsidiaryId: auth?.user?.subsidiaryId,
-                    subsidiaryName: label,
-                });
-                setSubsidiarySearch(label);
-            }
+            const label = subsidiaryFound
+                ? getSubsidiaryLabel(subsidiaryFound)
+                : "";
+            setFilterObj((prev: any) => ({
+                ...prev,
+                subsidiaryId: auth?.user?.subsidiaryId,
+                subsidiaryName: label || prev?.subsidiaryName || "",
+            }));
+            if (label) setSubsidiarySearch(label);
         }
     }, [auth?.user?.subsidiaryId, subsidiaries.length]);
 
@@ -420,7 +429,16 @@ function SaleFilter({
     const roseSoftButtonClass = `${softButtonClass} gap-1.5 border-rose-200 bg-rose-50 px-2.5 text-xs text-rose-700 hover:border-rose-300 hover:bg-rose-100 focus:ring-rose-200/70 dark:border-rose-400/40 dark:bg-rose-400/10 dark:text-rose-300 dark:hover:border-rose-400/70 dark:hover:bg-rose-400/20 dark:focus:ring-rose-500/30`;
 
     const filterRowTemplate =
-        "grid-cols-1 items-center gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_7.5rem_6.5rem_6.5rem_6.5rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_8.5rem_9.5rem_9.5rem_9.5rem]";
+        // Fila 1: el rango de fechas ocupa las 2 primeras columnas, cuya suma
+        // (0.729 + 1.271) sigue siendo 2fr, por lo que su ancho no cambia.
+        // Los tres botones secundarios usan 0.84fr cada uno, que es la
+        // proporcion que reparte en partes iguales el 20% que se le quita a
+        // las fechas.
+        // Fila 2 usa el mismo template, asi que todas las columnas quedan
+        // alineadas entre ambas filas:
+        //   col 1 -> Tipo de documento (0.729fr)
+        //   col 2 -> Buscar por sede   (1.271fr, el ancho que se le cede)
+        "grid-cols-1 items-center gap-2 sm:grid-cols-2 md:grid-cols-[minmax(0,0.729fr)_minmax(0,1.271fr)_7.5rem_minmax(6.5rem,0.84fr)_minmax(6.5rem,0.84fr)_minmax(6.5rem,0.84fr)] lg:grid-cols-[minmax(0,0.729fr)_minmax(0,1.271fr)_8.5rem_minmax(8rem,0.84fr)_minmax(8rem,0.84fr)_minmax(8rem,0.84fr)]";
 
     const renderDraftToggle = () => (
         <div className="flex h-9 w-full items-center justify-start gap-2 rounded-xl border border-gray-300 bg-white px-3 transition-colors hover:border-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600">
@@ -588,33 +606,10 @@ function SaleFilter({
                                 Nota de crédito electrónica
                             </option>
                         </select>
-                        {/* Add client search input */}
-                        <div className="min-w-0 md:col-start-2 md:col-span-1">
-                            <input
-                                type="text"
-                                list="clientList"
-                                className={controlClass}
-                                placeholder="Buscar por entidad (nombre o doc)"
-                                aria-label="Buscar por entidad"
-                                value={clientSearch}
-                                onChange={handleClientSearchChange}
-                                onInput={handleClientSelect}
-                            />
-                            <datalist id="clientList">
-                                {searchClientData?.searchClientByParameter?.map(
-                                    (person: IPerson) => (
-                                        <option
-                                            key={person.id}
-                                            value={`${person.documentNumber} ${person.names}`}
-                                            data-key={person.id}
-                                        />
-                                    )
-                                )}
-                            </datalist>
-                        </div>
+                        {/* Buscar por sede va antes que buscar por entidad */}
                         {auth?.user?.isSuperuser ? (
                             <div
-                                className="relative col-span-2 min-w-0 md:col-start-3 md:col-span-2"
+                                className="relative col-span-2 min-w-0 md:col-start-2 md:col-span-1"
                                 ref={subsidiaryDropdownRef}
                             >
                                 <input
@@ -726,6 +721,38 @@ function SaleFilter({
                                     )}
                             </div>
                         ) : null}
+                        {/* Buscar por entidad ocupa ahora el ancho de
+                            "Filtrar + Buscar Documento". Sin filtro por sede
+                            (usuario normal) se estira hasta esa misma columna. */}
+                        <div
+                            className={`col-span-2 min-w-0 ${
+                                auth?.user?.isSuperuser
+                                    ? "md:col-start-3 md:col-span-2"
+                                    : "md:col-start-2 md:col-span-3"
+                            }`}
+                        >
+                            <input
+                                type="text"
+                                list="clientList"
+                                className={controlClass}
+                                placeholder="Buscar por entidad (nombre o doc)"
+                                aria-label="Buscar por entidad"
+                                value={clientSearch}
+                                onChange={handleClientSearchChange}
+                                onInput={handleClientSelect}
+                            />
+                            <datalist id="clientList">
+                                {searchClientData?.searchClientByParameter?.map(
+                                    (person: IPerson) => (
+                                        <option
+                                            key={person.id}
+                                            value={`${person.documentNumber} ${person.names}`}
+                                            data-key={person.id}
+                                        />
+                                    )
+                                )}
+                            </datalist>
+                        </div>
                         {usersLoading ? (
                             <div className="col-span-2 flex h-9 items-center justify-center rounded-xl border border-gray-200 bg-white dark:border-gray-700/70 dark:bg-gray-800/50 md:col-start-5 md:col-span-1">
                                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600 dark:border-blue-800 dark:border-t-blue-400" />

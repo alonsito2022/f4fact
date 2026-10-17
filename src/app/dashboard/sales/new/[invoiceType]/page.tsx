@@ -32,6 +32,9 @@ import SaleDetailForm from "../../SaleDetailForm";
 import WayPayForm from "../../WayPayForm";
 import { useAuth } from "@/components/providers/AuthProvider";
 import SunatCancel from "@/components/icons/SunatCancel";
+import Combobox, {
+    ComboboxOption,
+} from "@/components/Combobox";
 import ClientForm from "../../ClientForm";
 import SaleDetailList from "../../SaleDetailList";
 import SaleTotalList from "../../SaleTotalList";
@@ -430,6 +433,9 @@ function NewSalePage() {
     available: true,
   });
   const [clientSearch, setClientSearch] = useState("");
+  // Controlan el panel de los autocompletes para cerrarlo al abrir un modal
+  const [clientBoxOpen, setClientBoxOpen] = useState(false);
+  const [productBoxOpen, setProductBoxOpen] = useState(false);
   const [
     searchClientQuery,
     {
@@ -586,46 +592,18 @@ function NewSalePage() {
       setSale({ ...sale, [name]: value });
     }
   };
-  const handleProduct = (
-    event: ChangeEvent<
-      HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
-    >,
-  ) => {
-    const { name, value } = event.target;
-    if (name === "name" && event.target instanceof HTMLInputElement) {
-      const dataList = event.target.list;
-      if (dataList) {
-        const normalizedValue = value.replace(/[\n\r\s]+/g, " ").trim();
-        const option = Array.from(dataList.options).find((option) => {
-          const normalizedOptionValue = option.value
-            .replace(/[\n\r\s]+/g, " ")
-            .trim();
-          return normalizedValue === normalizedOptionValue;
-        });
-        if (option) {
-          const selectedId = option.getAttribute("data-key");
-          const selectedPrice = option.getAttribute("data-price");
-          // Extract just the product name from the combined value
-          // Format: [CODE] Product Name ▶️ S/ Price
-          const productName = value
-            .split(" ▶️ S/")[0]
-            .replace(/^\[.*?\]\s*/, "");
-          setProduct({
-            ...product,
-            id: Number(selectedId),
-            name: productName,
-            priceWithIgv3: Number(selectedPrice) || 0,
-          });
-          modalAddDetail.show();
-          // setPurchaseDetail({...purchaseDetail, id: 0});
-        } else {
-          setProduct({ ...product, id: 0, name: value });
-        }
-      } else {
-        console.log("sin datalist");
-      }
-    } else setProduct({ ...product, [name]: value });
-  };
+// Opciones del autocomplete de producto para el Combobox
+  const productOptions: ComboboxOption[] = useMemo(
+    () =>
+      (productsData?.allProducts ?? []).map((n: IProduct) => ({
+        id: n.id,
+        label: n.name.replace(/[\n\r\s]+/g, " ").trim(),
+        badge: n.code || undefined,
+        meta: `S/ ${Number(n.priceWithIgv3 || 0).toFixed(2)}`,
+        raw: n,
+      })),
+    [productsData],
+  );
 
   // Función para manejar la búsqueda por código de barras
   const handleBarcodeSearch = async (barcode: string) => {
@@ -988,34 +966,22 @@ function NewSalePage() {
     return true;
   };
 
-  const handleClientSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setClientSearch(event.target.value);
-  };
-  const handleClientSelect = (event: ChangeEvent<HTMLInputElement>) => {
-    const selectedOption = event.target.value;
-    const selectedData = searchClientData?.searchClientByParameter?.find(
-      (person: IPerson) =>
-        `${person.documentNumber} ${person.names}` === selectedOption,
-    );
-
-    if (selectedData) {
-      setSale({
-        ...sale,
-        clientId: selectedData.id,
-        clientName: selectedData.names,
-        clientDocumentType: selectedData?.documentType?.replace("A_", ""),
-      });
-      setClientSearch(selectedOption); // Ensure the search field shows the complete selected value
-    } else {
-      // Clear client data if no match is found
-      setSale({
-        ...sale,
-        clientId: 0,
-        clientName: "",
-        clientDocumentType: "",
-      });
-    }
-  };
+  // Opciones del autocomplete de cliente para el Combobox
+  const clientOptions: ComboboxOption[] = useMemo(
+    () =>
+      (searchClientData?.searchClientByParameter ?? []).map(
+        (person: IPerson) => ({
+          id: person.id,
+          // El texto que queda escrito en el input es "DOC NOMBRES",
+          // exactamente el valor que usaba el <datalist> anterior.
+          label: `${person.documentNumber} ${person.names}`,
+          description: person.names,
+          badge: person.documentNumber,
+          raw: person,
+        }),
+      ),
+    [searchClientData],
+  );
 
   useEffect(() => {
     if (clientSearch.length > 2) {
@@ -1077,58 +1043,79 @@ function NewSalePage() {
 
   return (
     <>
-      <div className="min-h-screen bg-white dark:bg-gray-800">
-        <div className="container mx-auto pb-16">
+<div className="min-h-screen bg-white dark:bg-gray-800">
+        <div className="container mx-auto px-3 pb-16 sm:px-4 lg:px-6">
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-1"></div>
             <div className="col-span-10">
-              <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
-                <div className="mb-1 w-full">
-                  <div className="flex items-center gap-4">
-                    <h1 className="text-2xl font-medium text-black-0 sm:text-2xl dark:text-white">
+              {/* Encabezado */}
+              <div className="mb-4 mt-5 flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <h1 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
                       Nuevo Comprobante
                     </h1>
-                    <h2 className="text-4xl font-semibold text-gray-500 dark:text-white">
+                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-blue-700 ring-1 ring-inset ring-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-400/20">
                       {sale.documentType === "01"
-                        ? "FACTURA ELECTRÓNICA"
+                        ? "Factura electrónica"
                         : sale.documentType === "03"
-                          ? "BOLETA DE VENTA ELECTRÓNICA"
+                          ? "Boleta de venta electrónica"
                           : ""}
-                    </h2>
+                    </span>
                   </div>
+                  <p className="mt-0.5 text-[13px] text-gray-500 dark:text-gray-400">
+                    Completa los datos del comprobante y guarda para emitirlo
+                  </p>
                 </div>
-              </div>
-              <div className="flex flex-col space-y-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-                {/* Botón/Pestaña Formato de PDF */}
-                <div className="mb-4">
-                  <button
-                    type="button"
-                    onClick={() => modalPdfFormat?.show()}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                  >
+
+                {/* Configuración del formato del PDF */}
+                <button
+                  type="button"
+                  onClick={() => modalPdfFormat?.show()}
+                  className="group inline-flex h-9 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-sm transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 focus:outline-none focus:ring-4 focus:ring-rose-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-rose-400/60 dark:hover:bg-rose-500/10 dark:hover:text-rose-300 dark:focus:ring-rose-500/20"
+                >
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-rose-50 text-rose-600 transition-colors group-hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400">
                     <svg
-                      className="w-5 h-5"
+                      className="h-3.5 w-3.5"
                       fill="none"
                       stroke="currentColor"
+                      strokeWidth={1.8}
                       viewBox="0 0 24 24"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                        d="M19.5 14.25v-2.63c0-1.14-.93-2.06-2.06-2.06h-1.88a1.13 1.13 0 01-1.13-1.13V6.69c0-1.14-.93-2.06-2.06-2.06h-.5M9.75 21v-4.5m0-3.75H4.5m14.25 3.75H12M7.5 21H4.5a1.5 1.5 0 01-1.5-1.5V6.75a1.5 1.5 0 011.5-1.5h6a1.5 1.5 0 011.5 1.5v12.75a1.5 1.5 0 01-1.5 1.5z"
                       />
                     </svg>
-                    Formato de PDF
-                  </button>
-                </div>
+                  </span>
+                  <span>Formato de PDF</span>
+                  <svg
+                    className="h-3.5 w-3.5 text-gray-300 transition-transform group-hover:translate-x-0.5 dark:text-gray-600"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700/70 dark:bg-gray-900/40 sm:p-5">
                 <div className="overflow-x-auto">
                   <div className="inline-block min-w-full align-middle">
-                    <div className="overflow-hidden shadow-lg rounded-lg">
-                      <div className="p-4 md:p-5 space-y-4">
+                    <div className="overflow-hidden">
+                      <div className="p-1 md:p-2 space-y-4">
                         <div className="grid gap-4">
-                          <fieldset className="border-2 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg p-6 relative group">
-                            <legend className="px-2 text-gray-500 dark:text-white font-semibold text-sm transition-all duration-300 group-hover:text-blue-700 dark:group-hover:text-blue-300">
+                          <fieldset className="relative rounded-2xl border border-gray-200 bg-gray-50/60 p-5 group dark:border-gray-700 dark:bg-gray-800/40">
+                            <legend className="px-2 text-[13px] font-semibold uppercase tracking-wide text-gray-500 transition-colors duration-200 group-hover:text-blue-700 dark:text-gray-400 dark:group-hover:text-blue-300">
                               <div className="flex items-center gap-2">
                                 <svg
                                   className="w-4 h-4"
@@ -1430,7 +1417,7 @@ function NewSalePage() {
                           </fieldset>
 
                           <fieldset className="border-2 border-gray-200 dark:border-white bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg p-6 relative group hover:shadow-gray-500/20 hover:shadow-2xl">
-                            <legend className="px-2 text-gray-500 dark:text-white font-semibold text-sm ">
+                            <legend className="px-2 text-[13px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                               <div className="flex items-center gap-2">
                                 <svg
                                   className="w-4 h-4"
@@ -1465,67 +1452,102 @@ function NewSalePage() {
                                       : "⚠️ Seleccione un cliente"}
                                   </span>
                                 </label>
-                                <div className="relative w-full mt-1 group">
-                                  <input
-                                    ref={clientInputRef}
-                                    type="text"
-                                    className="mt-1 px-3 py-2 block w-full rounded-full dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                    style={{
-                                      border: "1px solid rgb(202, 202, 202)",
-                                    }}
-                                    maxLength={200}
+                                <Combobox
+                                    inputRef={clientInputRef}
+                                    open={clientBoxOpen}
+                                    onOpenChange={setClientBoxOpen}
                                     value={clientSearch}
-                                    onChange={handleClientSearchChange}
-                                    onInput={handleClientSelect}
-                                    onFocus={(e) => e.target.select()}
-                                    autoComplete="off"
-                                    // disabled={
-                                    //     searchClientLoading
-                                    // }
-                                    placeholder="Buscar cliente..."
-                                    list="clientNameList"
-                                    required
-                                  />
-                                  <datalist
-                                    id="clientNameList"
-                                    className="custom-datalist"
-                                  >
-                                    {searchClientData?.searchClientByParameter?.map(
-                                      (n: IPerson, index: number) => (
-                                        <option
-                                          key={index}
-                                          data-key={n.id}
-                                          value={`${n.documentNumber} ${n.names}`}
-                                        />
-                                      ),
-                                    )}
-                                  </datalist>
-                                  <button
-                                    type="button"
-                                    className="absolute inset-y-0 right-12 px-3 py-2 bg-gray-600 text-white rounded-r-xs hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
-                                    onClick={() => {
+                                    onChange={(value) => {
+                                      setClientSearch(value);
+                                      // Igual que antes: si el texto no
+                                      // corresponde a un cliente de la lista,
+                                      // se limpia la seleccion.
                                       setSale({
                                         ...sale,
-                                        clientName: "",
                                         clientId: 0,
+                                        clientName: "",
+                                        clientDocumentType: "",
                                       });
-                                      setClientSearch("");
                                     }}
-                                  >
-                                    <SunatCancel />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="absolute inset-y-0 right-0 px-2 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-r-full hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
-                                    onClick={(e) => {
-                                      modalAddClient.show();
-                                      setPerson(initialStatePerson);
+                                    onSelect={(option) => {
+                                      // El id llega como string (GraphQL ID!),
+                                      // asi que se usa el objeto que ya trae
+                                      // la opcion y, si no, se compara como
+                                      // texto para no fallar por tipo.
+                                      const person: IPerson | undefined =
+                                        option.raw ??
+                                        searchClientData?.searchClientByParameter?.find(
+                                          (p: IPerson) =>
+                                            String(p.id) ===
+                                            String(option.id),
+                                        );
+                                      // El input muestra "DOCUMENTO NOMBRES",
+                                      // igual que antes.
+                                      setClientSearch(option.label);
+                                      setSale({
+                                        ...sale,
+                                        clientId: Number(option.id),
+                                        clientName:
+                                          person?.names ?? option.label,
+                                        clientDocumentType:
+                                          person?.documentType ?? "",
+                                      });
                                     }}
-                                  >
-                                    Nuevo
-                                  </button>
+                                    options={clientOptions}
+                                    loading={searchClientLoading}
+                                    placeholder="Buscar por nombre o documento..."
+                                    required
+                                    maxLength={200}
+                                    icon={
+                                      <svg
+                                        className="h-4 w-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={1.8}
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a7.5 7.5 0 1115 0v.75h-15v-.75z"
+                                        />
+                                      </svg>
+                                    }
+                                    actions={
+                                      <>
+                                        <button
+                                          type="button"
+                                          title="Limpiar cliente"
+                                          aria-label="Limpiar cliente"
+                                          className="inline-flex h-7 items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 text-[11px] font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                          onClick={() => {
+                                            setSale({
+                                              ...sale,
+                                              clientName: "",
+                                              clientId: 0,
+                                            });
+                                            setClientSearch("");
+                                          }}
+                                        >
+                                          <SunatCancel />
+                                          <span>Limpiar</span>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className="inline-flex h-7 items-center rounded-lg border border-blue-200 bg-blue-50 px-2.5 text-[11px] font-semibold text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-200/70 dark:border-blue-400/40 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20"
+                                          onClick={() => {
+                                            setClientBoxOpen(false);
+                                            modalAddClient.show();
+                                            setPerson(initialStatePerson);
+                                          }}
+                                        >
+                                          Nuevo
+                                        </button>
+                                      </>
+                                    }
+                                  />
                                 </div>
-                              </div>
                               <style jsx>{`
                                 .custom-datalist option {
                                   background-color: #1f2937; /* Dark background */
@@ -1592,56 +1614,81 @@ function NewSalePage() {
                             </div>
                           </div>
                           <div className="relative w-full">
-                            <input
-                              type="text"
-                              className="mt-1 px-3 py-2 block w-full rounded-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                              maxLength={500}
+<Combobox
+                              open={productBoxOpen}
+                              onOpenChange={setProductBoxOpen}
                               value={product.name}
-                              name="name"
-                              onChange={handleProduct}
-                              onFocus={(e) => e.target.select()}
-                              autoComplete="off"
-                              disabled={productsLoading}
-                              placeholder="Buscar Producto..."
-                              list="productNameList"
-                              required
-                              style={{
-                                border: "1px solid rgb(202, 202, 202)",
+                              onChange={(value) => {
+                                // Igual que antes: si el texto no coincide con
+                                // un producto de la lista, queda sin producto
+                                // asignado.
+                                setProduct({ ...product, id: 0, name: value });
                               }}
-                            />
-                            <datalist id="productNameList">
-                              {productsData?.allProducts?.map(
-                                (n: IProduct, index: number) => (
-                                  <option
-                                    key={index}
-                                    data-key={n.id}
-                                    data-price={n.priceWithIgv3}
-                                    value={`[${n.code}] ${n.name
-                                      .replace(/[\n\r\s]+/g, " ")
-                                      .trim()} ▶️ S/ ${Number(
-                                      n.priceWithIgv3,
-                                    ).toFixed(2)}`}
-                                  />
-                                ),
-                              )}
-                            </datalist>
-                            <button
-                              type="button"
-                              className="absolute inset-y-0 right-0 px-2.5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-r-full hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
-                              onClick={(e) => {
-                                modalProduct.show();
+                              onSelect={(option) => {
+                                // El id llega como string (GraphQL ID!): se usa
+                                // el objeto de la opcion y, si no, se compara
+                                // como texto. Si fallara, el precio quedaria
+                                // en 0.
+                                const found: IProduct | undefined =
+                                  option.raw ??
+                                  (productsData?.allProducts ?? []).find(
+                                    (p: IProduct) =>
+                                      String(p.id) === String(option.id),
+                                  );
                                 setProduct({
-                                  ...initialStateProduct,
-                                  onSaveSuccess: () => {
-                                    modalProduct.hide();
-                                    modalAddDetail.show();
-                                    setSaleDetail(initialStateSaleDetail);
-                                  },
+                                  ...product,
+                                  id: Number(option.id),
+                                  name: found?.name ?? option.label,
+                                  priceWithIgv3: Number(
+                                    found?.priceWithIgv3,
+                                  ) || 0,
                                 });
+                                modalAddDetail.show();
                               }}
-                            >
-                              Nuevo
-                            </button>
+                              options={productOptions}
+                              loading={productsLoading}
+                              placeholder="Buscar Producto..."
+                              required
+                              maxLength={500}
+                              icon={
+                                <svg
+                                  className="h-4 w-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth={1.8}
+                                  viewBox="0 0 24 24"
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+                                  />
+                                </svg>
+                              }
+                              actions={
+                                <button
+                                  type="button"
+                                  className="inline-flex h-7 items-center rounded-lg border border-blue-200 bg-blue-50 px-2.5 text-[11px] font-semibold text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-200/70 dark:border-blue-400/40 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20"
+                                  onClick={() => {
+                                    setProductBoxOpen(false);
+                                    modalProduct.show();
+                                    setProduct({
+                                      ...initialStateProduct,
+                                      onSaveSuccess: () => {
+                                        modalProduct.hide();
+                                        modalAddDetail.show();
+                                        setSaleDetail(
+                                          initialStateSaleDetail,
+                                        );
+                                      },
+                                    });
+                                  }}
+                                >
+                                  Nuevo
+                                </button>
+                              }
+                            />
                           </div>
                         </div>
                         {/* Lista de Detalles */}
@@ -1659,6 +1706,8 @@ function NewSalePage() {
                               type="button"
                               className="px-5 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-full hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
                               onClick={(e) => {
+                                setProductBoxOpen(false);
+                                setClientBoxOpen(false);
                                 modalAddDetail.show();
                                 setSaleDetail(initialStateSaleDetail);
                               }}
@@ -1680,7 +1729,7 @@ function NewSalePage() {
                         />
                         {/* OBSERVACIONES */}
                         <fieldset className="border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-md p-6">
-                          <legend className="px-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                          <legend className="px-2 text-[13px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                             OBSERVACIONES
                           </legend>
                           <div className="grid  ">

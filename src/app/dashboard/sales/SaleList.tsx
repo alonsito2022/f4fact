@@ -147,6 +147,40 @@ const getStatusMessage = (item: IOperation) => {
     return "Sin información";
 };
 
+// Encabezado y color del tooltip de estado. Solo/presentation: el texto del
+// mensaje sigue saliendo de getStatusMessage, sin cambios en su logica.
+const getStatusTone = (status: string) => {
+  if (status === "02")
+    return {
+      label: "Aceptado por la SUNAT",
+      dot: "bg-emerald-500 dark:bg-emerald-400",
+      accent: "text-emerald-600 dark:text-emerald-400",
+    };
+  if (status === "01")
+    return {
+      label: "En proceso de envio",
+      dot: "bg-blue-500 dark:bg-blue-400 animate-pulse",
+      accent: "text-blue-600 dark:text-blue-400",
+    };
+  if (status === "06")
+    return {
+      label: "No aceptado por la SUNAT",
+      dot: "bg-amber-500 dark:bg-amber-400",
+      accent: "text-amber-600 dark:text-amber-400",
+    };
+  if (status === "07")
+    return {
+      label: "Anulado o rechazado",
+      dot: "bg-rose-500 dark:bg-rose-400",
+      accent: "text-rose-600 dark:text-rose-400",
+    };
+  return {
+    label: "Estado en la SUNAT",
+    dot: "bg-slate-400",
+    accent: "text-slate-600 dark:text-slate-300",
+  };
+};
+
 const formatEmitTime = (emitTime: string) => {
     if (!emitTime) return "";
 
@@ -200,6 +234,14 @@ function SaleList({
   useEffect(() => {
     filterRef.current = filterObj;
   }, [filterObj]);
+
+  // Al cambiar de pagina la tabla se mantiene desplazada (el contenedor es
+  // horizontal y el usuario puede estar lejos), por lo que la pagina nueva
+  // parecia no haber cargado. Se vuelve al inicio para que se note el cambio.
+  const tableScrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    tableScrollRef.current?.scrollTo({ top: 0, left: 0 });
+  }, [filterObj?.page, filterObj?.pageSize]);
 
   const handleCancelInvoice = useCallback(
     (
@@ -358,6 +400,38 @@ function SaleList({
     [transformedSalesData],
   );
 
+  // Tooltip del estado SUNAT: una sola instancia compartida en vez de 25
+  // tooltips (uno por fila). Se posiciona con position:fixed para que los
+  // contenedor overflow-x-auto de la tabla no lo recorten.
+  const [statusTip, setStatusTip] = useState<{
+    item: IOperation;
+    rect: DOMRect;
+  } | null>(null);
+
+  const handleStatusHover = useCallback(
+    (item: IOperation, el: HTMLElement | null) => {
+      if (!el) {
+        setStatusTip(null);
+        return;
+      }
+      setStatusTip({ item, rect: el.getBoundingClientRect() });
+    },
+    [],
+  );
+
+  // Si el usuario se desplaza mientras el puntero esta encima, la posicion
+  // calculada dejaria de coincidir: se oculta y se recalcula al volver a entrar.
+  useEffect(() => {
+    if (!statusTip) return;
+    const hide = () => setStatusTip(null);
+    window.addEventListener("scroll", hide, true);
+    window.addEventListener("resize", hide);
+    return () => {
+      window.removeEventListener("scroll", hide, true);
+      window.removeEventListener("resize", hide);
+    };
+  }, [statusTip]);
+
   // Las filas solo se repintan si cambian los datos o el usuario: escribir en
   // los filtros ya no obliga a reconstruir las 25 filas de la tabla.
   const rows = useMemo(
@@ -377,6 +451,7 @@ function SaleList({
           onCdr={downloadCdr}
           onWhatsApp={handleWhatsAppClick}
           onCancel={confirmCancel}
+          onStatusHover={handleStatusHover}
         />
       )),
     [
@@ -389,8 +464,31 @@ function SaleList({
       downloadCdr,
       handleWhatsAppClick,
       confirmCancel,
+      handleStatusHover,
     ],
   );
+
+  // Posicion del tooltip: centrado sobre el icono, se voltea hacia abajo si no
+  // hay espacio arriba y se mantiene dentro del viewport.
+  const TIP_WIDTH = 288;
+  const tip =
+    statusTip && typeof window !== "undefined"
+      ? (() => {
+          const { rect } = statusTip;
+          const rawLeft = rect.left + rect.width / 2 - TIP_WIDTH / 2;
+          const left = Math.min(
+            Math.max(12, rawLeft),
+            Math.max(12, window.innerWidth - TIP_WIDTH - 12),
+          );
+          const below = rect.top < 170;
+          return {
+            left,
+            top: below ? rect.bottom + 10 : rect.top - 10,
+            below,
+          };
+        })()
+      : null;
+  const tipTone = statusTip ? getStatusTone(statusTip.item.operationStatus) : null;
 
   if (!transformedSalesData || transformedSalesData.length === 0) {
     return (
@@ -439,7 +537,7 @@ function SaleList({
 
   return (
     <>
-      <div className="w-full overflow-x-auto">
+      <div ref={tableScrollRef} className="w-full overflow-x-auto">
         <SalePagination
           filterObj={filterObj}
           setFilterObj={setFilterObj}
@@ -643,6 +741,48 @@ function SaleList({
         pdfFileName={pdfFileName}
         setPdfFileName={setPdfFileName}
       />
+      {statusTip && tip && tipTone && (
+        <div
+          role="tooltip"
+          style={{ left: tip.left, top: tip.top }}
+          className="pointer-events-none fixed z-[70] w-72 select-none"
+        >
+          <div
+            className={
+              tip.below ? "" : "-translate-y-full"
+            }
+          >
+            <div className="relative">
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white py-3 pl-3.5 pr-4 shadow-xl shadow-slate-900/10 ring-1 ring-slate-100 dark:border-gray-600 dark:bg-gray-700 dark:shadow-black/40 dark:ring-white/10">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`h-2 w-2 shrink-0 rounded-full ${tipTone.dot}`}
+                  />
+                  <p
+                    className={`text-[12px] font-semibold uppercase leading-tight tracking-wide ${tipTone.accent}`}
+                  >
+                    {tipTone.label}
+                  </p>
+                </div>
+                <p className="mt-1.5 text-[12px] font-semibold leading-snug text-slate-900 dark:text-white">
+                  {statusTip.item.serial}-{statusTip.item.correlative}
+                </p>
+                <p className="mt-1 text-[12px] leading-relaxed text-slate-600 dark:text-slate-300">
+                  {getStatusMessage(statusTip.item)}
+                </p>
+              </div>
+              <span
+                aria-hidden="true"
+                className={`absolute left-1/2 h-2.5 w-2.5 -translate-x-1/2 rotate-45 border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-700 ${
+                  tip.below
+                    ? "-top-[5px] border-l border-t dark:border-l-0 dark:border-t-0"
+                    : "-bottom-[5px] border-b border-r"
+                }`}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -764,6 +904,7 @@ const SaleRow = memo(function SaleRow({
   onCdr,
   onWhatsApp,
   onCancel,
+  onStatusHover,
 }: {
   item: IOperation;
   index: number;
@@ -775,6 +916,7 @@ const SaleRow = memo(function SaleRow({
   onCdr: (item: IOperation) => void;
   onWhatsApp: (item: IOperation) => void;
   onCancel: (item: IOperation) => void;
+  onStatusHover: (item: IOperation, el: HTMLElement | null) => void;
 }) {
   const useDriveXml =
     item.operationStatus === "02" && Boolean(item.driveFirmaId);
@@ -912,8 +1054,15 @@ const SaleRow = memo(function SaleRow({
       </td>
       <td className="p-0.5 text-center">
         <span
-          title={getStatusMessage(item)}
-          className={`${getStatusClassName(item?.operationStatus)} cursor-help`}
+          tabIndex={0}
+          onMouseEnter={(e) => onStatusHover(item, e.currentTarget)}
+          onMouseLeave={() => onStatusHover(item, null)}
+          onFocus={(e) => onStatusHover(item, e.currentTarget)}
+          onBlur={() => onStatusHover(item, null)}
+          aria-label={`Estado SUNAT: ${getStatusMessage(item)}`}
+          className={`${getStatusClassName(
+            item?.operationStatus,
+          )} cursor-help outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1 dark:focus-visible:ring-blue-500 dark:focus-visible:ring-offset-gray-800`}
         >
           {getStatusContent(
             item?.operationStatus,

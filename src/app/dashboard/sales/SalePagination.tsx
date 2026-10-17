@@ -30,9 +30,62 @@ function SalePagination({
             0;
 
     const currentPage = filterObj.page || 1;
-    const pageSize = filterObj.pageSize || 50;
+    const pageSize = Number(filterObj.pageSize) || 50;
     const startRecord = (currentPage - 1) * pageSize + 1;
     const endRecord = Math.min(currentPage * pageSize, totalRecords);
+
+    // Convierte a entero solo si hay un valor usable. Evita mandar NaN a una
+    // variable Int (Apollo descarta la respuesta entera si no puede
+    // serializarla) y, en lugar de 0, omite los filtros sin valor para que el
+    // backend los ignore igual que la consulta inicial.
+    const toInt = (value: unknown): number | undefined => {
+        if (value === "" || value === null || value === undefined) {
+            return undefined;
+        }
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : undefined;
+    };
+
+    // Una sola fuente de verdad para las variables: antes goToPage y
+    // handlePageSizeChange las montaban por separado y ya se habian
+    // desincronizado de la consulta inicial.
+    const buildVariables = (page: number, size: number) => {
+        const variables: any = {
+            subsidiaryId: toInt(filterObj?.subsidiaryId) ?? 0,
+            clientId: toInt(filterObj.clientId) ?? 0,
+            startDate: filterObj.startDate,
+            endDate: filterObj.endDate,
+            documentType: filterObj.documentType,
+            page,
+            pageSize: size,
+            // Apollo fusiona las variables de cada ejecucion con las de la
+            // anterior. Si "Buscar Documento" mando serial/correlative y aqui
+            // se omiten, el backend recibe ese par y filtra por un unico
+            // comprobante: cada pagina terminaba mostrando 1 registro. Se
+            // envian siempre; undefined si no hay busqueda activa.
+            serial: filterObj.serial ? String(filterObj.serial) : undefined,
+            correlative: toInt(filterObj.correlative),
+        };
+        const userId = toInt(filterObj.userId);
+        if (userId !== undefined) variables.userId = userId;
+        if (salesQuery) {
+            const onlyDraft = filterObj.onlyDraft || undefined;
+            if (onlyDraft !== undefined) variables.onlyDraft = onlyDraft;
+        }
+        return variables;
+    };
+
+    // fetchPolicy explicito: la query de ventas esta configurada con
+    // cache-and-network + nextFetchPolicy cache-first, asi que sin esto el
+    // clic en otra pagina podia resolverse desde la cache de Apollo y la tabla
+    // se quedaba igual. El boton Filtrar ya hacia lo mismo.
+    const runQuery = (variables: any) => {
+        const queryToUse =
+            salesQuery || guidesQuery || quotesQuery || exitNotesQuery;
+        if (queryToUse) {
+            queryToUse({ variables, fetchPolicy: "network-only" });
+        }
+    };
 
     const goToPage = (page: number) => {
         if (page < 1 || page > totalPages || page === currentPage) return;
@@ -40,24 +93,7 @@ function SalePagination({
             ...filterObj,
             page,
         });
-        const variables: any = {
-            subsidiaryId: Number(filterObj?.subsidiaryId),
-            clientId: Number(filterObj.clientId),
-            startDate: filterObj.startDate,
-            endDate: filterObj.endDate,
-            documentType: filterObj.documentType,
-            page,
-            pageSize: Number(filterObj.pageSize),
-            userId: Number(filterObj.userId),
-        };
-        if (salesQuery) {
-            variables.onlyDraft = filterObj.onlyDraft || undefined;
-        }
-        const queryToUse =
-            salesQuery || guidesQuery || quotesQuery || exitNotesQuery;
-        if (queryToUse) {
-            queryToUse({ variables });
-        }
+        runQuery(buildVariables(page, pageSize));
     };
 
     const handlePageSizeChange = (newSize: number) => {
@@ -66,24 +102,7 @@ function SalePagination({
             pageSize: newSize,
             page: 1,
         });
-        const variables: any = {
-            subsidiaryId: Number(filterObj?.subsidiaryId),
-            clientId: Number(filterObj.clientId),
-            startDate: filterObj.startDate,
-            endDate: filterObj.endDate,
-            documentType: filterObj.documentType,
-            page: 1,
-            pageSize: newSize,
-            userId: Number(filterObj.userId),
-        };
-        if (salesQuery) {
-            variables.onlyDraft = filterObj.onlyDraft || undefined;
-        }
-        const queryToUse =
-            salesQuery || guidesQuery || quotesQuery || exitNotesQuery;
-        if (queryToUse) {
-            queryToUse({ variables });
-        }
+        runQuery(buildVariables(1, newSize));
     };
 
     const pageNumbers = useMemo(() => {

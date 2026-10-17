@@ -85,6 +85,7 @@ const SALES_QUERY = gql`
                 sunatDescriptionLow
                 codeHash
                 client {
+                    id
                     names
                     documentNumber
                 }
@@ -93,8 +94,10 @@ const SALES_QUERY = gql`
                     fullName
                 }
                 subsidiary {
+                    id
                     companyName
                     company {
+                        id
                         doc
                         showUser
                     }
@@ -146,9 +149,11 @@ function SalePage() {
         },
     ] = useLazyQuery(SALES_QUERY, {
         context: authContext,
-        // Pinta la cache al instante y refresca en segundo plano.
-        fetchPolicy: "cache-and-network",
-        nextFetchPolicy: "cache-first",
+        // network-only como en guias y cotizaciones: con cache-and-network +
+        // nextFetchPolicy cache-first, cambiar de pagina se resolvia desde la
+        // cache de Apollo y la tabla no actualizaba (o se mezclaba el corte de
+        // pagina con los datos cacheados de la anterior).
+        fetchPolicy: "network-only",
         onError: (err) => console.error("Error in sales:", err),
     });
 
@@ -166,8 +171,16 @@ function SalePage() {
                     page: Number(filterObj.page),
                     pageSize: Number(filterObj.pageSize),
                     onlyDraft: filterObj.onlyDraft || undefined,
-                    // serial: String(filterObj.serial),
-                    // correlative: Number(filterObj.correlative),
+                    // Limpia el par serial/correlative que deja "Buscar
+                    // Documento": Apollo fusiona variables entre ejecuciones y,
+                    // si se omiten, el backend sigue filtrando por un unico
+                    // comprobante en lugar de por rango de fechas.
+                    serial: filterObj.serial
+                        ? String(filterObj.serial)
+                        : undefined,
+                    correlative: filterObj.correlative
+                        ? Number(filterObj.correlative)
+                        : undefined,
                 },
             });
         }

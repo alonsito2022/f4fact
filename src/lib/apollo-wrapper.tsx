@@ -14,35 +14,20 @@ let singleton: ApolloClient<unknown> | null = null;
 function createApolloClient() {
     return new ApolloClient({
         uri: `${process.env.NEXT_PUBLIC_BASE_API}/graphql`,
-        cache: new InMemoryCache({
-            typePolicies: {
-                Query: {
-                    fields: {
-                        // La lista de ventas se cachea por filtros (no por pagina),
-                        // de modo que `client` y `subsidiary` embebidos se
-                        // normalizan y no se duplican en cada fila.
-                        allSales: {
-                            keyArgs: [
-                                "subsidiaryId",
-                                "clientId",
-                                "startDate",
-                                "endDate",
-                                "documentType",
-                                "userId",
-                                "onlyDraft",
-                            ],
-                            merge(existing, incoming, { args }) {
-                                if (!args?.page || args.page === 1) return incoming;
-                                const merged = existing?.sales?.slice() ?? [];
-                                const byId = new Map(merged.map((d: any) => [d.id, d]));
-                                (incoming?.sales ?? []).forEach((d: any) => byId.set(d.id, d));
-                                return { ...incoming, sales: Array.from(byId.values()) };
-                            },
-                        },
-                    },
-                },
-            },
-        }),
+        // Sin typePolicies para allSales: el comportamiento por defecto indexa
+        // el campo por TODAS sus argumentos (incluidos page y pageSize) y no
+        // fusiona resultados, que es lo correcto para una lista paginada.
+        //
+        // Antes se excluian page/pageSize del keyArgs y se fusionaba a mano con
+        // un Map por id. El problema es que merge() recibe los datos ya
+        // normalizados: cada fila llega como { __ref: "Operation:3613661" }, sin
+        // la propiedad id. El Map usaba undefined como clave, las 25 filas
+        // colapsaban a una sola entrada y cada pagina siguiente terminaba
+        // pintando un unico comprobante.
+        //
+        // Los objetos anidados (client, subsidiary) si se normalizan solos, sin
+        // duplicarse por fila, en cuanto la query pide su id.
+        cache: new InMemoryCache(),
         defaultOptions: {
             watchQuery: {
                 // Muestra cache al instante y refresca en segundo plano.

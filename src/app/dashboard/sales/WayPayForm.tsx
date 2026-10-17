@@ -543,276 +543,429 @@ function WayPayForm({
         }));
     }, [invoice, setInvoice]);
 
-    return (
+return (
         <>
-            {/* Default Modal */}
+            {/* Modal de forma de pago */}
             <div
                 id="modalWayPay"
                 tabIndex={-1}
-                className="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full"
+                className="fixed left-0 right-0 top-0 z-50 hidden h-[calc(100%-1rem)] max-h-full w-full items-start justify-center overflow-x-hidden overflow-y-auto p-4 md:pt-16"
             >
-                <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-                    {" "}
-                    {/* Modal header */}
-                    <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-blue-600 dark:to-cyan-600 rounded-t-xl">
-                        <h3 className="text-2xl font-bold text-white">
-                            Forma de Pago
-                        </h3>
-                        <button
-                            ref={closeButtonRef}
-                            type="button"
-                            onClick={handleCloseModal}
-                            className="text-white bg-transparent hover:bg-white/20 rounded-lg text-sm w-8 h-8 flex items-center justify-center transition-colors duration-200"
-                        >
-                            <svg
-                                className="w-5 h-5"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 14 14"
-                            >
-                                <path
+                <div className="relative w-full max-w-2xl">
+                    <div className="relative overflow-hidden rounded-2xl bg-white shadow-2xl shadow-slate-900/10 ring-1 ring-slate-900/5 dark:bg-gray-800 dark:ring-white/10 dark:shadow-black/40">
+                        {/* Barra de acento */}
+                        <div className="h-1 w-full bg-gradient-to-r from-blue-700 via-blue-500 to-cyan-400 dark:from-blue-600 dark:via-blue-400 dark:to-cyan-300" />
+                        {/* Encabezado */}
+                        <div className="flex items-start gap-3.5 border-b border-slate-100 px-5 py-4 dark:border-gray-700">
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm shadow-slate-900/20 dark:bg-white/10 dark:text-white dark:ring-1 dark:ring-inset dark:ring-white/15">
+                                <svg
+                                    className="h-5 w-5"
+                                    fill="none"
                                     stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                />
-                            </svg>
-                            <span className="sr-only">Close modal</span>
-                        </button>
-                    </div>
-                    {/* Modal body */}
-                    <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
-                        <fieldset className="border-2 p-6 rounded-xl border-blue-200 dark:border-blue-900 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 hover:shadow-blue-500/20">
-                            <legend className="px-2 text-lg font-semibold text-blue-600 dark:text-blue-400">
-                                Agregar Medio de Pago
-                            </legend>
-                            <div className="grid grid-cols-4 gap-4">
-                                <div className="col-span-3">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Tipo
-                                    </label>
-                                    <select
-                                        name="wayPay"
-                                        onChange={handleInputChangeWayPay}
-                                        value={cashFlow.wayPay}
-                                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
-                                        required
-                                    >
-                                        {wayPaysData?.allWayPays?.map(
-                                            (o: IWayPay, k: number) => (
-                                                <option key={k} value={o.code}>
-                                                    {o.name}
-                                                </option>
-                                            ),
-                                        )}
-                                    </select>
-                                </div>
-
-                                <div className="col-span-1">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Importe
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="total"
-                                        onWheel={(e) => e.currentTarget.blur()}
-                                        value={cashFlow.total}
-                                        onChange={handleInputChangeWayPay}
-                                        onFocus={(e) => e.target.select()}
-                                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
+                                    strokeWidth={1.7}
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"
                                     />
+                                </svg>
+                            </span>
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-[15px] font-semibold leading-tight tracking-tight text-slate-900 dark:text-white">
+                                        Forma de pago
+                                    </h3>
+                                    <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-white/10 dark:text-slate-300">
+                                        Cobro
+                                    </span>
                                 </div>
-
-                                <div className="col-span-4">
-                                    {Number(cashFlow.wayPay) === 9 ? (
-                                        <>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                Fecha de Pago (Cuota)
-                                            </label>
-                                            <input
-                                                type="date"
-                                                name="transactionDate"
-                                                value={cashFlow.transactionDate}
-                                                onChange={
-                                                    handleInputChangeWayPay
-                                                }
-                                                className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
-                                            />
-                                        </>
-                                    ) : (
-                                        <>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                Nota
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="description"
-                                                autoComplete="off"
-                                                onFocus={(e) =>
-                                                    e.target.select()
-                                                }
-                                                value={cashFlow.description}
-                                                onChange={
-                                                    handleInputChangeWayPay
-                                                }
-                                                className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
-                                            />
-                                        </>
-                                    )}
-                                </div>
+                                <p className="mt-1 text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
+                                    Registra uno o varios medios de pago y
+                                    verifica el total del comprobante
+                                </p>
                             </div>
-                        </fieldset>
-                        <div className="flex justify-end mt-6">
                             <button
-                                className="btn-blue px-6 py-2.5 text-sm font-medium inline-flex items-center gap-2 rounded-lg transition-all duration-200 transform hover:scale-105"
-                                onClick={handleAddWayPay}
+                                ref={closeButtonRef}
+                                type="button"
+                                onClick={handleCloseModal}
+                                aria-label="Cerrar"
+                                className="-mr-1.5 -mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:hover:bg-white/10 dark:hover:text-white dark:focus:ring-white/20"
                             >
-                                <Add />
-                                Agregar medio de pago
+                                <svg
+                                    className="h-3.5 w-3.5"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 14 14"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        stroke="currentColor"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                                    />
+                                </svg>
                             </button>
                         </div>
-                    </div>
-                    {/* Payment list section */}
-                    {invoice?.cashflowSet?.length > 0 ? (
-                        <div className="px-6 pb-6">
-                            <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead className="bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-blue-600 dark:to-cyan-600">
-                                        <tr>
-                                            <th
-                                                scope="col"
-                                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
+
+                        {/* Cuerpo */}
+                        <div className="max-h-[60vh] space-y-5 overflow-y-auto overscroll-contain p-5">
+                            {/* Agregar medio de pago */}
+                            <fieldset className="relative rounded-2xl border border-slate-200 bg-slate-50/80 p-4 ring-1 ring-inset ring-white/60 dark:border-gray-700 dark:bg-white/[0.03] dark:ring-white/5">
+                                <legend className="px-1.5">
+                                    <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                        <svg
+                                            className="h-3.5 w-3.5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth={1.8}
+                                            viewBox="0 0 24 24"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M12 4.5v15m7.5-7.5h-15"
+                                            />
+                                        </svg>
+                                        Agregar medio de pago
+                                    </span>
+                                </legend>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                                    <div className="sm:col-span-3">
+                                        <label className="mb-1.5 block text-[13px] font-medium text-slate-700 dark:text-slate-300">
+                                            Tipo
+                                        </label>
+                                        <div className="relative">
+                                            <select
+                                                name="wayPay"
+                                                onChange={
+                                                    handleInputChangeWayPay
+                                                }
+                                                value={cashFlow.wayPay}
+                                                className="block h-10 w-full cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white py-2 pl-3.5 pr-10 text-sm text-slate-900 shadow-sm transition-[border-color,box-shadow] hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-gray-600 dark:bg-gray-900 dark:text-slate-100 dark:hover:border-gray-500 dark:focus:ring-blue-500/20"
+                                                required
                                             >
-                                                TIPO
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
-                                            >
-                                                IMPORTE
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
-                                            >
-                                                NOTA
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-800"
-                                            ></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                        {invoice?.cashflowSet?.map(
-                                            (item: ICashFlow, c: number) => (
-                                                <tr
-                                                    key={c}
-                                                    className="bg-yellow-400 border-b dark:bg-cyan-700 dark:border-gray-700 hover:bg-cyan-100"
-                                                >
-                                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
-                                                        {wayPaysData?.allWayPays?.find(
-                                                            (w: IWayPay) =>
-                                                                w.code ===
-                                                                item.wayPay,
-                                                        )?.name || item.wayPay}
-                                                    </td>
-                                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
-                                                        {item.total}
-                                                    </td>
-                                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
-                                                        {item.description}
-                                                    </td>
-                                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-300">
-                                                        <a
-                                                            className="hover:underline cursor-pointer text-red-600 dark:text-red-400"
-                                                            onClick={() =>
-                                                                handleRemoveCashFlow(
-                                                                    Number(
-                                                                        item?.temporaryId,
-                                                                    ),
-                                                                )
-                                                            }
+                                                {wayPaysData?.allWayPays?.map(
+                                                    (
+                                                        o: IWayPay,
+                                                        k: number,
+                                                    ) => (
+                                                        <option
+                                                            key={k}
+                                                            value={o.code}
                                                         >
-                                                            <Delete />
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            ),
+                                                            {o.name}
+                                                        </option>
+                                                    ),
+                                                )}
+                                            </select>
+                                            <svg
+                                                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth={1.8}
+                                                viewBox="0 0 24 24"
+                                                aria-hidden="true"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                                                />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <div className="sm:col-span-1">
+                                        <label className="mb-1.5 block text-[13px] font-medium text-slate-700 dark:text-slate-300">
+                                            Importe
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="total"
+                                            onWheel={(e) =>
+                                                e.currentTarget.blur()
+                                            }
+                                            value={cashFlow.total}
+                                            onChange={
+                                                handleInputChangeWayPay
+                                            }
+                                            onFocus={(e) =>
+                                                e.target.select()
+                                            }
+                                            className="block h-10 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm tabular-nums text-slate-900 shadow-sm transition-[border-color,box-shadow] hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-gray-600 dark:bg-gray-900 dark:text-slate-100 dark:hover:border-gray-500 dark:focus:ring-blue-500/20"
+                                        />
+                                    </div>
+
+                                    <div className="sm:col-span-4">
+                                        {Number(cashFlow.wayPay) === 9 ? (
+                                            <>
+                                                <label className="mb-1.5 block text-[13px] font-medium text-slate-700 dark:text-slate-300">
+                                                    Fecha de pago (cuota)
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    name="transactionDate"
+                                                    value={
+                                                        cashFlow.transactionDate
+                                                    }
+                                                    onChange={
+                                                        handleInputChangeWayPay
+                                                    }
+                                                    className="block h-10 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm text-slate-900 shadow-sm transition-[border-color,box-shadow] hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-gray-600 dark:bg-gray-900 dark:text-slate-100 dark:hover:border-gray-500 dark:focus:ring-blue-500/20"
+                                                />
+                                            </>
+                                        ) : (
+                                            <>
+                                                <label className="mb-1.5 block text-[13px] font-medium text-slate-700 dark:text-slate-300">
+                                                    Nota
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="description"
+                                                    autoComplete="off"
+                                                    onFocus={(e) =>
+                                                        e.target.select()
+                                                    }
+                                                    value={
+                                                        cashFlow.description
+                                                    }
+                                                    onChange={
+                                                        handleInputChangeWayPay
+                                                    }
+                                                    className="block h-10 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm text-slate-900 shadow-sm transition-[border-color,box-shadow] placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-gray-600 dark:bg-gray-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:hover:border-gray-500 dark:focus:ring-blue-500/20"
+                                                />
+                                            </>
                                         )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    ) : null}
-                    {/* Totals section */}
-                    <div className="p-6 rounded-b-xl">
-                        <fieldset className="border-2 p-6 rounded-xl border-cyan-200 dark:border-cyan-900 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 hover:shadow-cyan-500/20">
-                            <legend className="px-2 text-lg font-semibold text-cyan-600 dark:text-cyan-400">
-                                Resumen de Pago
-                            </legend>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div className="col-span-1">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Importe TOTAL
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={invoice.totalToPay}
-                                        readOnly
-                                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
-                                    />
+                                    </div>
                                 </div>
 
-                                <div className="col-span-1">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Importe TOTAL pagado
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={invoice.totalPayed}
-                                        readOnly
-                                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
-                                    />
+                                <div className="mt-4 flex justify-end">
+                                    <button
+                                        type="button"
+                                        className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-blue-200 bg-white px-3.5 text-[13px] font-semibold text-blue-700 shadow-sm transition-colors hover:border-blue-300 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-100 sm:w-auto dark:border-blue-400/40 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20 dark:focus:ring-blue-500/20 [&>svg]:h-4 [&>svg]:w-4"
+                                        onClick={handleAddWayPay}
+                                    >
+                                        <Add />
+                                        Agregar medio de pago
+                                    </button>
                                 </div>
+                            </fieldset>
 
-                                <div className="col-span-1">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Diferencia (vuelto / cobro)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={invoice.totalTurned}
-                                        readOnly
-                                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-gray-300"
-                                    />
+                            {/* Medios de pago agregados */}
+                            {invoice?.cashflowSet?.length > 0 ? (
+                                <div>
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <h4 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                            <svg
+                                                className="h-3.5 w-3.5"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth={1.8}
+                                                viewBox="0 0 24 24"
+                                                aria-hidden="true"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                                                />
+                                            </svg>
+                                            Medios de pago agregados
+                                        </h4>
+                                        <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-white/10 dark:text-slate-300">
+                                            {invoice.cashflowSet.length}
+                                        </span>
+                                    </div>
+                                    <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm shadow-slate-900/5 dark:border-gray-700 dark:shadow-black/20">
+                                        <table className="min-w-full divide-y divide-slate-100 dark:divide-gray-700">
+                                            <thead>
+                                                <tr className="bg-slate-50 dark:bg-white/[0.04]">
+                                                    {["Tipo", "Importe", "Nota", ""].map(
+                                                        (t, i) => (
+                                                            <th
+                                                                key={t + i}
+                                                                scope="col"
+                                                                className={`px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 ${
+                                                                    i === 1 || i === 3
+                                                                        ? "text-right"
+                                                                        : "text-left"
+                                                                }`}
+                                                            >
+                                                                {t}
+                                                            </th>
+                                                        ),
+                                                    )}
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
+                                                {invoice?.cashflowSet?.map(
+                                                    (
+                                                        item: ICashFlow,
+                                                        c: number,
+                                                    ) => (
+                                                        <tr
+                                                            key={c}
+                                                            className="bg-white transition-colors hover:bg-slate-50/80 dark:bg-transparent dark:hover:bg-white/[0.03]"
+                                                        >
+                                                            <td className="px-4 py-2.5 text-[13px] font-medium text-slate-900 dark:text-slate-100">
+                                                                {wayPaysData?.allWayPays?.find(
+                                                                    (
+                                                                        w: IWayPay,
+                                                                    ) =>
+                                                                        w.code ===
+                                                                        item.wayPay,
+                                                                )
+                                                                    ?.name ||
+                                                                    item.wayPay}
+                                                            </td>
+                                                            <td className="px-4 py-2.5 text-right text-[13px] font-semibold tabular-nums text-slate-700 dark:text-slate-200">
+                                                                {item.total}
+                                                            </td>
+                                                            <td className="px-4 py-2.5 text-[13px] text-slate-500 dark:text-slate-400">
+                                                                {item.description ||
+                                                                    "—"}
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right">
+                                                                <button
+                                                                    type="button"
+                                                                    title="Quitar medio de pago"
+                                                                    aria-label="Quitar medio de pago"
+                                                                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-100 dark:hover:bg-red-500/10 dark:hover:text-red-400 dark:focus:ring-red-500/20"
+                                                                    onClick={() =>
+                                                                        handleRemoveCashFlow(
+                                                                            Number(
+                                                                                item?.temporaryId,
+                                                                            ),
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <span className="[&>svg]:h-4 [&>svg]:w-4">
+                                                                        <Delete />
+                                                                    </span>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ),
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                            </div>
-                        </fieldset>
-                    </div>
-                    {/* Footer buttons */}
-                    <div className="flex items-center justify-end space-x-4 mt-6">
-                        <button
-                            type="button"
-                            onClick={handleCloseModal}
-                            className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleSaveSale}
-                            disabled={isProcessing}
-                            className="px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 inline-flex items-center gap-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isProcessing ? (
-                                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
                             ) : (
-                                <Save />
+                                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 px-4 py-6 text-center dark:border-gray-600 dark:bg-white/[0.02]">
+                                    <span className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
+                                        <svg
+                                            className="h-4 w-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth={1.7}
+                                            viewBox="0 0 24 24"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"
+                                            />
+                                        </svg>
+                                    </span>
+                                    <p className="text-[13px] font-medium text-slate-600 dark:text-slate-300">
+                                        Todavía no hay medios de pago
+                                    </p>
+                                    <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+                                        Agrega al menos uno para poder finalizar
+                                        la venta
+                                    </p>
+                                </div>
                             )}
-                            {isProcessing ? "Guardando..." : "Finalizar Venta"}
-                        </button>
+
+                            {/* Resumen */}
+                            <fieldset className="relative rounded-2xl border border-slate-200 bg-slate-50/80 p-4 ring-1 ring-inset ring-white/60 dark:border-gray-700 dark:bg-white/[0.03] dark:ring-white/5">
+                                <legend className="px-1.5">
+                                    <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                        <svg
+                                            className="h-3.5 w-3.5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth={1.8}
+                                            viewBox="0 0 24 24"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                            />
+                                        </svg>
+                                        Resumen de pago
+                                    </span>
+                                </legend>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                    {[
+                                        {
+                                            label: "Importe total",
+                                            value: invoice.totalToPay,
+                                        },
+                                        {
+                                            label: "Importe total pagado",
+                                            value: invoice.totalPayed,
+                                        },
+                                        {
+                                            label: "Diferencia (vuelto / cobro)",
+                                            value: invoice.totalTurned,
+                                        },
+                                    ].map((f, i) => (
+                                        <div key={f.label}>
+                                            <label className="mb-1.5 block text-[13px] font-medium text-slate-700 dark:text-slate-300">
+                                                {f.label}
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={f.value}
+                                                readOnly
+                                                className={`block h-10 w-full rounded-xl border px-3.5 text-sm tabular-nums shadow-sm transition-colors ${
+                                                    i === 2
+                                                        ? "border-amber-200 bg-amber-50 font-semibold text-amber-900 dark:border-amber-400/40 dark:bg-amber-400/10 dark:text-amber-200"
+                                                        : "border-slate-200 bg-white text-slate-600 dark:border-gray-600 dark:bg-gray-900/60 dark:text-slate-300"
+                                                }`}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </fieldset>
+                        </div>
+
+                        {/* Pie */}
+                        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/70 px-5 py-4 dark:border-gray-700 dark:bg-white/[0.02]">
+                            <button
+                                type="button"
+                                onClick={handleCloseModal}
+                                className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-[13px] font-medium text-slate-700 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-200 dark:border-gray-700 dark:bg-transparent dark:text-slate-300 dark:hover:border-gray-600 dark:hover:bg-white/5 dark:focus:ring-white/10"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSaveSale}
+                                disabled={isProcessing}
+                                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-900/20 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-white/90 dark:focus:ring-white/25"
+                            >
+                                {isProcessing ? (
+                                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white dark:border-slate-900/20 dark:border-t-slate-900" />
+                                ) : (
+                                    <span className="[&>svg]:h-4 [&>svg]:w-4">
+                                        <Save />
+                                    </span>
+                                )}
+                                {isProcessing ? "Guardando..." : "Finalizar venta"}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

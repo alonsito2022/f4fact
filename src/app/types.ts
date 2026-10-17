@@ -385,6 +385,7 @@ export interface IOperation {
     supplierId: number;
     supplierDocumentType: string;
     igvType: number;
+    igvPercentage?: number;
     documentType: string;
     documentTypeReadable: string;
     currencyType: string;
