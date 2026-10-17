@@ -40,6 +40,8 @@ interface ComboboxProps {
     name?: string;
     emptyMessage?: string;
     loadingMessage?: string;
+    /** Aviso al pie del panel (p. ej. lista recortada). */
+    hint?: string | null;
     icon?: ReactNode;
     /** Contenido a la derecha del input (botones de accion). */
     actions?: ReactNode;
@@ -79,6 +81,7 @@ function Combobox({
     name,
     emptyMessage = "Sin resultados",
     loadingMessage = "Buscando...",
+    hint,
     icon,
     actions,
     selectOnFocus = true,
@@ -280,6 +283,12 @@ function Combobox({
                             </button>
                         );
                     })}
+
+                    {hint && (
+                        <p className="mt-1 border-t border-gray-100 px-3 py-2 text-[11px] leading-relaxed text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                            {hint}
+                        </p>
+                    )}
                 </div>
             )}
         </div>

@@ -363,6 +363,23 @@ const initialStateCashFlow = {
   description: "",
   transactionDate: today,
 };
+
+/**
+ * Texto comparable para el buscador: sin acentos, en minusculas y con los
+ * espacios normalizados. Asi "arroz" encuentra "Arroz" y tambien "árroz", y
+ * "p001" encuentra "P001".
+ */
+const normalizeText = (text: string): string =>
+  (text ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+/** Techo del panel: con miles de productos, pintar todos en cada pulsacion
+ *  ralentiza el input. Antes el <datalist> nativo se encargaba de esto. */
+const MAX_VISIBLE_PRODUCTS = 100;
 function NewSalePage() {
   const params = useParams();
   const { invoiceType } = params;
@@ -592,18 +609,52 @@ function NewSalePage() {
       setSale({ ...sale, [name]: value });
     }
   };
-// Opciones del autocomplete de producto para el Combobox
-  const productOptions: ComboboxOption[] = useMemo(
-    () =>
-      (productsData?.allProducts ?? []).map((n: IProduct) => ({
-        id: n.id,
-        label: n.name.replace(/[\n\r\s]+/g, " ").trim(),
-        badge: n.code || undefined,
-        meta: `S/ ${Number(n.priceWithIgv3 || 0).toFixed(2)}`,
-        raw: n,
-      })),
-    [productsData],
+// Opciones del autocomplete de producto para el Combobox.
+//
+// El <datalist> que se uso antes filtraba solo, de forma nativa, por nombre,
+// codigo o precio. El Combobox dibuja el panel por su cuenta, asi que el
+// filtrado hay que hacerlo aqui: sin esto se mostraban TODOS los productos
+// siempre y escribir cualquier cosa no acotaba nada.
+const productMatches: ComboboxOption[] = useMemo(() => {
+  const options: ComboboxOption[] = (productsData?.allProducts ?? []).map(
+    (n: IProduct) => ({
+      id: n.id,
+      label: n.name.replace(/[\n\r\s]+/g, " ").trim(),
+      badge: n.code || undefined,
+      meta: `S/ ${Number(n.priceWithIgv3 || 0).toFixed(2)}`,
+      raw: n,
+    }),
   );
+
+  // Con el input vacio (o al enfocar, que selecciona todo) se listan todos,
+  // igual que hacia el datalist.
+  const query = normalizeText(product.name);
+  if (!query) return options;
+
+  const matched = options.filter((o) => {
+    const n = o.raw as IProduct;
+    return (
+      normalizeText(o.label).includes(query) ||
+      normalizeText(String(n.code ?? "")).includes(query) ||
+      normalizeText(String(n.barcode ?? "")).includes(query) ||
+      normalizeText(Number(n.priceWithIgv3 || 0).toFixed(2)).includes(query)
+    );
+  });
+
+  return matched;
+}, [productsData, product.name]);
+
+const productOptions: ComboboxOption[] = useMemo(
+  () => productMatches.slice(0, MAX_VISIBLE_PRODUCTS),
+  [productMatches],
+);
+
+// Si se recorto la lista, se avisa para que no parezca que el producto no existe.
+const productsHint =
+  productMatches.length > productOptions.length
+    ? `Mostrando ${productOptions.length} de ${productMatches.length}. Sigue escribiendo para afinar la busqueda.`
+    : null;
+
 
   // Función para manejar la búsqueda por código de barras
   const handleBarcodeSearch = async (barcode: string) => {
@@ -1647,6 +1698,7 @@ function NewSalePage() {
                               }}
                               options={productOptions}
                               loading={productsLoading}
+                              hint={productsHint}
                               placeholder="Buscar Producto..."
                               required
                               maxLength={500}
