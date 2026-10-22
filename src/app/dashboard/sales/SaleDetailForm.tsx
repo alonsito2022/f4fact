@@ -592,12 +592,11 @@ function SaleDetailForm({
             );
             return false;
         }
+        // Validación de stock: solo requiere que la empresa tenga stock habilitado
+        // y que la cantidad supere el stock disponible. Igual que en la versión original.
         if (
             auth?.user?.companyWithStock &&
-            Number(value) > Number(invoiceDetail?.stock) &&
-            invoice?.parentOperationDocumentType !== "NS" &&
-            (invoiceDetail.activeType == "01" ||
-                invoiceDetail.activeType == "02")
+            Number(value) > Number(invoiceDetail?.stock)
         ) {
             toast.warning(
                 "La cantidad no puede ser mayor al stock disponible."
@@ -738,9 +737,7 @@ function SaleDetailForm({
         }
         if (
             auth?.user?.companyWithStock &&
-            Number(invoiceDetail?.quantity) > Number(invoiceDetail?.stock) &&
-            (invoiceDetail.activeType == "01" ||
-                invoiceDetail.activeType == "02")
+            Number(invoiceDetail?.quantity) > Number(invoiceDetail?.stock)
         ) {
             toast.warning(
                 "La cantidad no puede ser mayor al stock disponible."
