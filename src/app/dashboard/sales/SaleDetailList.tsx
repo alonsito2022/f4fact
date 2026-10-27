@@ -27,6 +27,7 @@ function SaleDetailList({
         invoice.operationdetailSet,
         invoice.discountPercentageGlobal,
         invoice.discountGlobal,
+        invoice.discountGlobalWithIgv,
         invoice.igvType,
     ]);
 
@@ -91,6 +92,9 @@ function SaleDetailList({
         let discountPercentageGlobal = safeNumber(
             invoice?.discountPercentageGlobal
         );
+        // Descuento global con IGV tal como se ingresó (modo "+IGV"); el neto
+        // redondeado a 2 decimales no permite recuperarlo con exactitud.
+        let discountGlobalWithIgv = safeNumber(invoice?.discountGlobalWithIgv);
         if (discountGlobal > 0 && discountPercentageGlobal === 0) {
             discountPercentageGlobal = safeNumber(
                 (discountGlobal / oldTotalTaxed) * 100
@@ -99,31 +103,51 @@ function SaleDetailList({
             discountGlobal = safeNumber(
                 oldTotalTaxed * (discountPercentageGlobal / 100)
             );
+            discountGlobalWithIgv = safeNumber(
+                (oldTotalTaxed + totalIgv) * (discountPercentageGlobal / 100)
+            );
         }
 
         const totalDiscount = safeNumber(discountForItem + discountGlobal);
+        // totalValue de cada línea ya viene neto de su descuento por ítem,
+        // por eso aquí solo se resta el descuento global.
         const newTotalTaxed = safeNumber(
-            oldTotalTaxed - totalDiscount - totalAnticipation
+            oldTotalTaxed - discountGlobal - totalAnticipation
         );
         // const newTotalIgv = safeNumber(
         //     newTotalTaxed * (Number(invoice?.igvType) || 0) * 0.01
         // );
 
         // 4. Cálculo de IGV
-        // Si hay descuento global activo y todos los ítems son gravados, recalcular
-        // IGV por tasa directa para evitar acumulación de error de redondeo.
-        // En mezcla de tipos de afectación se mantiene la proporción.
+        // Si hay descuento global con IGV conocido (modo "+IGV" o porcentaje) y
+        // todos los ítems son gravados, el IGV se obtiene por diferencia desde
+        // el total con IGV (precio cobrado menos descuento con IGV), para que el
+        // total cuadre al céntimo con lo cobrado. Con descuento neto o anticipo
+        // se mantiene la tasa directa; en mezcla de tipos de afectación se
+        // mantiene la proporción.
         const hasOnlyTaxed =
             totalUnaffected === 0 && totalExonerated === 0 && totalTaxed > 0;
         const igvRate = (Number(invoice?.igvType) || 0) * 0.01;
-        const newTotalIgv =
-            hasOnlyTaxed && discountGlobal > 0
-                ? safeNumber(newTotalTaxed * igvRate)
-                : safeNumber(
-                      oldTotalTaxed > 0
-                          ? totalIgv * (newTotalTaxed / oldTotalTaxed)
-                          : 0
-                  );
+        let newTotalIgv: number;
+        if (
+            hasOnlyTaxed &&
+            discountGlobal > 0 &&
+            discountGlobalWithIgv > 0 &&
+            totalAnticipation === 0
+        ) {
+            const totalWithIgv = safeNumber(
+                oldTotalTaxed + totalIgv - discountGlobalWithIgv
+            );
+            newTotalIgv = safeNumber(totalWithIgv - newTotalTaxed);
+        } else if (hasOnlyTaxed && discountGlobal > 0) {
+            newTotalIgv = safeNumber(newTotalTaxed * igvRate);
+        } else {
+            newTotalIgv = safeNumber(
+                oldTotalTaxed > 0
+                    ? totalIgv * (newTotalTaxed / oldTotalTaxed)
+                    : 0
+            );
+        }
 
         // 5. Totales finales (el anticipo se resta al final)
         const subtotal = safeNumber(
@@ -138,6 +162,8 @@ function SaleDetailList({
             ...prev,
             discountForItem: discountForItem.toFixed(2),
             discountGlobal: discountGlobal.toFixed(2),
+            discountGlobalWithIgv:
+                discountGlobal > 0 ? discountGlobalWithIgv.toFixed(2) : "0",
             totalDiscount: totalDiscount.toFixed(2),
             totalAnticipation: totalAnticipation.toFixed(2),
             totalUnaffected: totalUnaffected.toFixed(2),

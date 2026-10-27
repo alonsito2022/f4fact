@@ -170,6 +170,7 @@ function SaleTotalList({
                                                 ...prevSale,
                                                 discountPercentageGlobal: value,
                                                 discountGlobal: 0, // Limpiar el monto directo para evitar conflictos
+                                                discountGlobalWithIgv: 0,
                                             }));
 
                                             setLocalDiscountGlobal("0");
@@ -189,6 +190,7 @@ function SaleTotalList({
                                             ...prevSale,
                                             discountPercentageGlobal: value,
                                             discountGlobal: 0, // Limpiar el monto directo para evitar conflictos
+                                            discountGlobalWithIgv: 0,
                                         }));
 
                                         // Actualizar también el estado local del descuento global
@@ -261,6 +263,8 @@ function SaleTotalList({
                                             setSale((prevSale: any) => ({
                                                 ...prevSale,
                                                 discountGlobal: netValue,
+                                                // Monto con IGV ingresado: permite calcular el IGV por diferencia
+                                                discountGlobalWithIgv: discountMode === "gross" ? raw : 0,
                                                 discountPercentageGlobal: 0,
                                             }));
                                             setLocalDiscountPercentage("0");
@@ -281,6 +285,8 @@ function SaleTotalList({
                                         setSale((prevSale: any) => ({
                                             ...prevSale,
                                             discountGlobal: netValue,
+                                            // Monto con IGV ingresado: permite calcular el IGV por diferencia
+                                            discountGlobalWithIgv: discountMode === "gross" ? raw : 0,
                                             discountPercentageGlobal: 0,
                                         }));
                                         setLocalDiscountPercentage("0");
