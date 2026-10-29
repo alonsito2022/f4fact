@@ -171,10 +171,11 @@ function SummaryList({
                             No hay resúmenes en este período
                         </p>
                         <p className="mx-auto mt-2 max-w-lg text-sm text-slate-500 dark:text-gray-400">
-                            {companyName || "La empresa"}
-                            {companyDoc ? ` (RUC ${companyDoc})` : ""} no tiene
-                            resúmenes de boletas de venta entre las fechas
-                            seleccionadas.
+                            {isSuperuser
+                                ? "Ninguna empresa tiene resúmenes de boletas de venta entre las fechas seleccionadas."
+                                : `${companyName || "La empresa"}${
+                                      companyDoc ? ` (RUC ${companyDoc})` : ""
+                                  } no tiene resúmenes de boletas de venta entre las fechas seleccionadas.`}
                         </p>
                     </div>
                 ) : (

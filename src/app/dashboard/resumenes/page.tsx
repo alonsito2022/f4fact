@@ -66,8 +66,10 @@ const SUMMARIES_QUERY = gql`
 function TicketSummariesPage() {
     const auth = useAuth();
     const [filterObj, setFilterObj] = useState(initialFilter);
-    const companyId = Number(auth?.user?.companyId || 0);
+    const isSuperuser = Boolean(auth?.user?.isSuperuser);
+    const companyId = isSuperuser ? 0 : Number(auth?.user?.companyId || 0);
     const hasCompany = companyId > 0;
+    const canQuery = isSuperuser || hasCompany;
 
     const authContext = useMemo(
         () => ({
@@ -90,7 +92,7 @@ function TicketSummariesPage() {
     );
 
     const runQuery = (next = filterObj) => {
-        if (!hasCompany || !auth?.jwtToken) return;
+        if (!canQuery || !auth?.jwtToken) return;
         if (next.startDate > next.endDate) {
             toast.warning(
                 "La fecha inicial no puede ser posterior a la fecha final."
@@ -109,12 +111,12 @@ function TicketSummariesPage() {
     };
 
     useEffect(() => {
-        if (auth?.status === "authenticated" && auth?.jwtToken && hasCompany) {
+        if (auth?.status === "authenticated" && auth?.jwtToken && canQuery) {
             runQuery(initialFilter);
         }
         // La carga inicial depende de la sesión, no de cada cambio de filtro.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth?.status, auth?.jwtToken, hasCompany]);
+    }, [auth?.status, auth?.jwtToken, canQuery]);
 
     if (auth?.status === "loading") {
         return <p className="text-center py-16">Cargando sesión...</p>;
@@ -138,22 +140,36 @@ function TicketSummariesPage() {
                         venta enviadas a la SUNAT. El número corresponde al
                         identificador RC-fecha-correlativo.
                     </p>
-                    {hasCompany && (
+                    {isSuperuser ? (
                         <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                             <p className="text-[11px] uppercase tracking-wider text-slate-400">
-                                Empresa
+                                Alcance
                             </p>
                             <p className="text-sm font-semibold text-slate-800 dark:text-white">
-                                {auth?.user?.companyName}
+                                Todas las empresas
                             </p>
-                            <p className="font-mono text-xs text-slate-500 dark:text-gray-400">
-                                RUC {auth?.user?.companyDoc || "—"}
+                            <p className="text-xs text-slate-500 dark:text-gray-400">
+                                Vista de superusuario
                             </p>
                         </div>
+                    ) : (
+                        hasCompany && (
+                            <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                                <p className="text-[11px] uppercase tracking-wider text-slate-400">
+                                    Empresa
+                                </p>
+                                <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                                    {auth?.user?.companyName}
+                                </p>
+                                <p className="font-mono text-xs text-slate-500 dark:text-gray-400">
+                                    RUC {auth?.user?.companyDoc || "—"}
+                                </p>
+                            </div>
+                        )
                     )}
                 </header>
 
-                {!hasCompany ? (
+                {!canQuery ? (
                     <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center dark:border-gray-600 dark:bg-gray-800">
                         <p className="text-lg font-medium text-slate-800 dark:text-white">
                             Este reporte corresponde a una empresa
@@ -186,7 +202,7 @@ function TicketSummariesPage() {
                                 setFilterObj(next);
                                 runQuery(next);
                             }}
-                            isSuperuser={Boolean(auth?.user?.isSuperuser)}
+                            isSuperuser={isSuperuser}
                             companyName={auth?.user?.companyName || ""}
                             companyDoc={auth?.user?.companyDoc || ""}
                             authContext={authContext}
