@@ -431,6 +431,7 @@ export interface IOperation {
     sendSunat: boolean;
     sunatDescription: string;
     sunatDescriptionLow: string;
+    ticketSummaryDate?: string | null;
 
     creditNoteReferences: string;
 

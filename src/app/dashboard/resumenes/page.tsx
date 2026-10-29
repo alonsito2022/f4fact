@@ -3,6 +3,7 @@
 import Breadcrumb from "@/components/Breadcrumb";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { gql, useLazyQuery } from "@apollo/client";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import SummaryFilter from "./SummaryFilter";
@@ -67,9 +68,21 @@ const SUMMARIES_QUERY = gql`
 
 function TicketSummariesPage() {
     const auth = useAuth();
-    const [filterObj, setFilterObj] = useState(initialFilter);
+    const searchParams = useSearchParams();
+    const startFromUrl = searchParams.get("startDate") || "";
+    const endFromUrl = searchParams.get("endDate") || "";
+    const companyFromUrl = Number(searchParams.get("companyId") || 0);
+    const [filterObj, setFilterObj] = useState({
+        ...initialFilter,
+        startDate: startFromUrl || monthStart,
+        endDate: endFromUrl || today,
+    });
     const isSuperuser = Boolean(auth?.user?.isSuperuser);
-    const companyId = isSuperuser ? 0 : Number(auth?.user?.companyId || 0);
+    const companyId = isSuperuser
+        ? companyFromUrl > 0
+            ? companyFromUrl
+            : 0
+        : Number(auth?.user?.companyId || 0);
     const hasCompany = companyId > 0;
     const canQuery = isSuperuser || hasCompany;
 
@@ -114,11 +127,26 @@ function TicketSummariesPage() {
 
     useEffect(() => {
         if (auth?.status === "authenticated" && auth?.jwtToken && canQuery) {
-            runQuery(initialFilter);
+            const next = {
+                startDate: startFromUrl || monthStart,
+                endDate: endFromUrl || today,
+                page: 1,
+                pageSize: initialFilter.pageSize,
+            };
+            setFilterObj(next);
+            runQuery(next);
         }
-        // La carga inicial depende de la sesión, no de cada cambio de filtro.
+        // La carga inicial depende de la sesión y, si vienen en la URL, de la
+        // fecha del resumen abierto desde un comprobante.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth?.status, auth?.jwtToken, canQuery]);
+    }, [
+        auth?.status,
+        auth?.jwtToken,
+        canQuery,
+        startFromUrl,
+        endFromUrl,
+        companyId,
+    ]);
 
     if (auth?.status === "loading") {
         return <p className="text-center py-16">Cargando sesión...</p>;

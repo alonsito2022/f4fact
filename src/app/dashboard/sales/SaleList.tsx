@@ -2,10 +2,12 @@ import React, {
     memo,
     useCallback,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { IOperation } from "@/app/types";
 import { toast } from "react-toastify";
 import { gql, useMutation } from "@apollo/client";
@@ -787,10 +789,28 @@ function SaleList({
   );
 }
 
+function summaryDateOf(item: IOperation) {
+  if (item.ticketSummaryDate) return String(item.ticketSummaryDate).slice(0, 10);
+  const text = `${item.sunatDescription || ""} ${item.sunatDescriptionLow || ""}`;
+  const match = text.match(/RC-(\d{4})(\d{2})(\d{2})-/);
+  if (!match) return "";
+  return `${match[1]}-${match[2]}-${match[3]}`;
+}
+
+function summaryReportHref(item: IOperation, summaryDate: string) {
+  const params = new URLSearchParams({
+    startDate: summaryDate,
+    endDate: summaryDate,
+  });
+  const companyId = item.subsidiary?.company?.id;
+  if (companyId) params.set("companyId", String(companyId));
+  return `/dashboard/resumenes?${params.toString()}`;
+}
+
 /**
- * Menu de acciones por fila. Antes usaba un Popover de Flowbite (2 instancias
- * por fila => ~50 objetos + listeners de Flowbite en cada respuesta). Con
- * <details> es HTML nativo: cero inicializacion y cero coste de redibujo.
+ * Menu de acciones por fila. Se pinta en document.body con posicion fija:
+ * el overflow de la tabla recortaba el panel, lo dejaba detras y al abrir
+ * <details> aparecia la barra vertical.
  */
 const OptionsMenu = memo(function OptionsMenu({
   item,
@@ -801,95 +821,168 @@ const OptionsMenu = memo(function OptionsMenu({
   onWhatsApp: (item: IOperation) => void;
   onCancel: (item: IOperation) => void;
 }) {
-  const close = (
-    event: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>,
-  ) => {
-    const details = (event.currentTarget as HTMLElement).closest("details");
-    if (details) details.removeAttribute("open");
-  };
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
 
-  const linkClass =
-    "block w-full rounded-md px-2 py-1.5 text-left font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-gray-700";
+  const placeMenu = useCallback(() => {
+    const button = buttonRef.current;
+    const menu = menuRef.current;
+    if (!button || !menu) return;
+    const rect = button.getBoundingClientRect();
+    const menuRect = menu.getBoundingClientRect();
+    const gap = 6;
+    let left = rect.right - menuRect.width;
+    left = Math.max(8, Math.min(left, window.innerWidth - menuRect.width - 8));
+    let top = rect.bottom + gap;
+    if (top + menuRect.height > window.innerHeight - 8) {
+      top = rect.top - gap - menuRect.height;
+    }
+    if (top < 8) top = 8;
+    setPos({ top, left });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    placeMenu();
+  }, [open, placeMenu]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (buttonRef.current?.contains(target) || menuRef.current?.contains(target)) {
+        return;
+      }
+      setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    const close = () => setOpen(false);
+    document.addEventListener("mousedown", onPointer);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("resize", close);
+    window.addEventListener("scroll", close, true);
+    return () => {
+      document.removeEventListener("mousedown", onPointer);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", close);
+      window.removeEventListener("scroll", close, true);
+    };
+  }, [open]);
+
+  const itemClass =
+    "block w-full rounded-lg px-2.5 py-1.5 text-left text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-gray-100 dark:hover:bg-gray-700";
+  const sunatClass =
+    "block w-full rounded-lg px-2.5 py-1.5 text-left text-[13px] font-medium text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40";
 
   return (
-    <details className="group relative inline-block text-left">
-      <summary
-        className={`cursor-pointer list-none font-medium text-blue-600 hover:underline dark:text-blue-500 [&::-webkit-details-marker]:hidden`}
+    <>
+      <button
+        ref={buttonRef}
+        type="button"
+        className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
       >
         Opciones
-      </summary>
-      <div className="absolute right-0 z-50 mt-1 w-64 rounded-lg border border-gray-200 bg-white p-1.5 text-[13px] shadow-lg dark:border-gray-600 dark:bg-gray-800">
-        <a
-          href="#"
-          className={linkClass}
-          onClick={(e) => {
-            e.preventDefault();
-            close(e);
-            onWhatsApp(item);
-          }}
-        >
-          Enviar por WhatsApp
-        </a>
-
-        {item.operationStatus !== "06" && item.codeHash && (
-          <>
-            <Link
-              className={linkClass}
-              href={`/dashboard/sales/credit_note/${item.id}`}
-            >
-              Generar NOTA DE CREDITO
-            </Link>
-            <Link
-              className={linkClass}
-              href={`/dashboard/guides/${item.id}/09`}
-            >
-              Generar GUIA DE REMISIÓN REMITENTE
-            </Link>
-            <Link
-              className={linkClass}
-              href={`/dashboard/guides/${item.id}/31`}
-            >
-              Generar GUIA DE REMISIÓN TRANSPORTISTA
-            </Link>
-            <button
-              type="button"
-              className={`${linkClass} text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10`}
-              onClick={(e) => {
-                close(e);
-                onCancel(item);
+      </button>
+      {open &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            style={{ top: pos.top, left: pos.left }}
+            className="fixed z-[80] w-60 overflow-hidden rounded-xl border border-slate-200 bg-white py-1.5 shadow-2xl shadow-slate-900/15 ring-1 ring-slate-900/5 dark:border-gray-600 dark:bg-gray-800 dark:ring-white/10"
+          >
+            <p className="px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              Comprobante
+            </p>
+            <a
+              href="#"
+              role="menuitem"
+              className={itemClass}
+              onClick={(event) => {
+                event.preventDefault();
+                setOpen(false);
+                onWhatsApp(item);
               }}
             >
-              ANULAR o COMUNICAR DE BAJA
-            </button>
-          </>
+              Enviar por WhatsApp
+            </a>
+            {item.operationStatus !== "06" && item.codeHash && (
+              <>
+                <Link
+                  role="menuitem"
+                  className={itemClass}
+                  href={`/dashboard/sales/credit_note/${item.id}`}
+                >
+                  Generar nota de crédito
+                </Link>
+                <Link
+                  role="menuitem"
+                  className={itemClass}
+                  href={`/dashboard/guides/${item.id}/09`}
+                >
+                  Guía de remisión remitente
+                </Link>
+                <Link
+                  role="menuitem"
+                  className={itemClass}
+                  href={`/dashboard/guides/${item.id}/31`}
+                >
+                  Guía de remisión transportista
+                </Link>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className={`${itemClass} text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40`}
+                  onClick={() => {
+                    setOpen(false);
+                    onCancel(item);
+                  }}
+                >
+                  Anular o comunicar de baja
+                </button>
+              </>
+            )}
+            <div className="mx-2 my-1 border-t border-slate-100 dark:border-gray-700" />
+            <p className="px-3 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              SUNAT
+            </p>
+            <a
+              role="menuitem"
+              className={sunatClass}
+              target="_blank"
+              rel="noreferrer"
+              href="https://ww1.sunat.gob.pe/ol-ti-itconsultaunificadalibre/consultaUnificadaLibre/consulta"
+            >
+              Consulta SUNAT 1
+            </a>
+            <a
+              role="menuitem"
+              className={sunatClass}
+              target="_blank"
+              rel="noreferrer"
+              href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
+            >
+              Consulta SUNAT 2
+            </a>
+            <a
+              role="menuitem"
+              className={sunatClass}
+              target="_blank"
+              rel="noreferrer"
+              href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
+            >
+              Verificar XML en la SUNAT
+            </a>
+          </div>,
+          document.body,
         )}
-
-        <a
-          className="block w-full rounded-md px-2 py-1.5 text-left font-medium text-green-600 hover:bg-green-50 dark:text-green-500 dark:hover:bg-gray-700"
-          target="_blank"
-          rel="noreferrer"
-          href="https://ww1.sunat.gob.pe/ol-ti-itconsultaunificadalibre/consultaUnificadaLibre/consulta"
-        >
-          CONSULTA SUNAT 1
-        </a>
-        <a
-          className="block w-full rounded-md px-2 py-1.5 text-left font-medium text-green-600 hover:bg-green-50 dark:text-green-500 dark:hover:bg-gray-700"
-          target="_blank"
-          rel="noreferrer"
-          href="https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm"
-        >
-          CONSULTA SUNAT 2
-        </a>
-        <a
-          className="block w-full rounded-md px-2 py-1.5 text-left font-medium text-green-600 hover:bg-green-50 dark:text-green-500 dark:hover:bg-gray-700"
-          target="_blank"
-          rel="noreferrer"
-          href="https://ww1.sunat.gob.pe/ol-ti-itconsverixml/ConsVeriXml.htm"
-        >
-          Verificar XML en la SUNAT
-        </a>
-      </div>
-    </details>
+    </>
   );
 });
 
@@ -927,10 +1020,12 @@ const SaleRow = memo(function SaleRow({
 
   const useDriveCdr =
     item.operationStatus === "02" && Boolean(item.driveCdrId);
-  const hasCdr =
+  const summaryDate = summaryDateOf(item);
+  const hasOwnCdr =
     useDriveCdr ||
     (item.operationStatus === "02" && item.linkCdr) ||
     (item.operationStatus === "06" && item.linkCdrLow);
+  const hasCdr = Boolean(summaryDate) || hasOwnCdr;
 
   const cdrStyle =
     item.operationStatus === "02"
@@ -1033,23 +1128,37 @@ const SaleRow = memo(function SaleRow({
         )}
       </td>
       <td className="p-0.5 text-center">
-        {hasCdr && (
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              onCdr(item);
-            }}
+        {summaryDate ? (
+          <Link
+            href={summaryReportHref(item, summaryDate)}
+            title={`Resumen del ${summaryDate}`}
             className="hover:underline"
           >
             <span
               className={`text-white text-[11px] font-semibold me-2 px-1.5 py-0.5 rounded-full text-nowrap ${cdrStyle}`}
             >
-              {item.operationStatus === "06" && !item.linkCdrLow
-                ? "SIN CDR"
-                : "CDR"}
+              CDR
             </span>
-          </a>
+          </Link>
+        ) : (
+          hasCdr && (
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                onCdr(item);
+              }}
+              className="hover:underline"
+            >
+              <span
+                className={`text-white text-[11px] font-semibold me-2 px-1.5 py-0.5 rounded-full text-nowrap ${cdrStyle}`}
+              >
+                {item.operationStatus === "06" && !item.linkCdrLow
+                  ? "SIN CDR"
+                  : "CDR"}
+              </span>
+            </a>
+          )
         )}
       </td>
       <td className="p-0.5 text-center">

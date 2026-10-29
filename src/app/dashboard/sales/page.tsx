@@ -84,6 +84,7 @@ const SALES_QUERY = gql`
                 driveCdrId
                 sunatDescription
                 sunatDescriptionLow
+                ticketSummaryDate
                 codeHash
                 client {
                     id
