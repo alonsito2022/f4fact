@@ -1,8 +1,15 @@
 "use client";
 
+import SunatCheck from "@/components/icons/SunatCheck";
 import { downloadCpeFile } from "@/lib/downloadCpeFile";
 import { gql, useLazyQuery } from "@apollo/client";
+import Link from "next/link";
 import React, { useState } from "react";
+
+const SUNAT_CONSULTA_1 =
+    "https://ww1.sunat.gob.pe/ol-ti-itconsultaunificadalibre/consultaUnificadaLibre/consulta";
+const SUNAT_CONSULTA_2 =
+    "https://ww1.sunat.gob.pe/ol-ti-itconsvalicpe/ConsValiCpe.htm";
 
 const DETAIL_QUERY = gql`
     query TicketSummaryDetail($pk: ID!) {
@@ -18,17 +25,21 @@ const DETAIL_QUERY = gql`
             sunatDescription
             details {
                 id
-                conditionCode
                 serial
                 correlative
                 emitDate
                 documentType
                 documentTypeReadable
-                clientName
-                clientDocument
+                operationStatus
                 totalToPay
-                totalTaxed
-                totalIgv
+                operation {
+                    id
+                    currencyType
+                    sunatStatus
+                    subsidiary {
+                        id
+                    }
+                }
             }
         }
     }
@@ -65,12 +76,6 @@ const STATUS_LABEL: Record<
     },
 };
 
-const CONDITION_LABEL: Record<string, string> = {
-    "1": "Adicionar",
-    "2": "Modificar",
-    "3": "Anular",
-};
-
 function formatDate(iso?: string | null) {
     if (!iso) return "—";
     const [year, month, day] = iso.slice(0, 10).split("-");
@@ -87,6 +92,38 @@ function money(value?: number | string | null) {
 
 function padCorr(value?: number | null) {
     return String(value ?? 0).padStart(2, "0");
+}
+
+function currencyMark(code?: string | null) {
+    if (!code || code === "PEN") return "S/";
+    if (code === "USD") return "USD";
+    return code;
+}
+
+function isAccepted(row: any) {
+    const status = String(row?.operationStatus || "");
+    return (
+        Boolean(row?.operation?.sunatStatus) ||
+        status === "02" ||
+        status === "04" ||
+        status === "05" ||
+        status === "06"
+    );
+}
+
+function isVoided(row: any) {
+    return String(row?.operationStatus || "") === "06" ? "SI" : "NO";
+}
+
+function saleHref(row: any) {
+    const params = new URLSearchParams({
+        serial: String(row.serial || ""),
+        correlative: String(row.correlative ?? ""),
+        documentType: String(row.documentType || "03"),
+    });
+    const subsidiaryId = row?.operation?.subsidiary?.id;
+    if (subsidiaryId) params.set("subsidiaryId", String(subsidiaryId));
+    return `/dashboard/sales?${params.toString()}`;
 }
 
 function SummaryList({
@@ -149,14 +186,7 @@ function SummaryList({
 
     const detail = detailData?.getTicketSummaryById;
     const detailRows = detail?.details ?? [];
-    const detailTotals = detailRows.reduce(
-        (acc: { taxed: number; igv: number; pay: number }, row: any) => ({
-            taxed: acc.taxed + Number(row.totalTaxed || 0),
-            igv: acc.igv + Number(row.totalIgv || 0),
-            pay: acc.pay + Number(row.totalToPay || 0),
-        }),
-        { taxed: 0, igv: 0, pay: 0 }
-    );
+    const documentCount = detailRows.length || Number(detail?.documentsCount || 0);
 
     return (
         <>
@@ -374,17 +404,14 @@ function SummaryList({
 
             {selectedId && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 p-4">
-                    <div className="flex max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-800">
+                    <div className="flex max-h-[90vh] w-full max-w-[1280px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-800">
                         <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 dark:border-gray-700">
                             <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-700 dark:text-blue-300">
-                                    Documentos del resumen
+                                <p className="text-lg font-semibold tracking-wide text-slate-900 dark:text-white">
+                                    RESUMEN: {detailLoading ? "…" : documentCount}
                                 </p>
-                                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                                    {detail?.rcId || "Detalle"}
-                                </h3>
                                 <p className="text-xs text-slate-500 dark:text-gray-400">
-                                    Generación{" "}
+                                    {detail?.rcId || "Detalle"} · Generación{" "}
                                     {formatDate(detail?.summaryDate)} ·
                                     Documentos{" "}
                                     {formatDate(detail?.documentsDate)}
@@ -415,87 +442,128 @@ function SummaryList({
                                 <table className="min-w-full text-left text-[13px]">
                                     <thead className="sticky top-0 bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500 dark:bg-gray-900 dark:text-gray-400">
                                         <tr>
-                                            <th className="px-4 py-2">
-                                                Comprobante
+                                            <th className="px-3 py-2">#</th>
+                                            <th className="px-3 py-2">
+                                                Fecha de documento
                                             </th>
-                                            <th className="px-4 py-2">
-                                                Fecha
+                                            <th className="px-3 py-2">Tipo</th>
+                                            <th className="px-3 py-2">Serie</th>
+                                            <th className="px-3 py-2">
+                                                Número
                                             </th>
-                                            <th className="px-4 py-2">
-                                                Cliente
+                                            <th className="px-3 py-2 text-center">
+                                                M
                                             </th>
-                                            <th className="px-4 py-2">
-                                                Condición
-                                            </th>
-                                            <th className="px-4 py-2 text-right">
-                                                Gravada
-                                            </th>
-                                            <th className="px-4 py-2 text-right">
-                                                IGV
-                                            </th>
-                                            <th className="px-4 py-2 text-right">
+                                            <th className="px-3 py-2 text-right">
                                                 Total
+                                            </th>
+                                            <th className="px-3 py-2 text-center">
+                                                Aceptada
+                                            </th>
+                                            <th className="px-3 py-2 text-center">
+                                                Marcado como anulado
+                                            </th>
+                                            <th className="px-3 py-2 text-center">
+                                                Ver
+                                            </th>
+                                            <th className="px-3 py-2 text-center">
+                                                Consulta SUNAT 1
+                                            </th>
+                                            <th className="px-3 py-2 text-center">
+                                                Consulta SUNAT 2
                                             </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
-                                        {detailRows.map((row: any) => (
-                                            <tr
-                                                key={row.id}
-                                                className="text-slate-700 dark:text-gray-200"
-                                            >
-                                                <td className="whitespace-nowrap px-4 py-2 font-medium">
-                                                    {row.documentTypeReadable ||
-                                                        "Boleta"}{" "}
-                                                    {row.serial}-
-                                                    {row.correlative}
-                                                </td>
-                                                <td className="whitespace-nowrap px-4 py-2 tabular-nums">
-                                                    {formatDate(row.emitDate)}
-                                                </td>
-                                                <td className="px-4 py-2">
-                                                    <p>{row.clientName || "—"}</p>
-                                                    <p className="font-mono text-xs text-slate-400">
-                                                        {row.clientDocument ||
-                                                            ""}
-                                                    </p>
-                                                </td>
-                                                <td className="px-4 py-2">
-                                                    {CONDITION_LABEL[
-                                                        row.conditionCode
-                                                    ] || row.conditionCode}
-                                                </td>
-                                                <td className="px-4 py-2 text-right tabular-nums">
-                                                    {money(row.totalTaxed)}
-                                                </td>
-                                                <td className="px-4 py-2 text-right tabular-nums">
-                                                    {money(row.totalIgv)}
-                                                </td>
-                                                <td className="px-4 py-2 text-right font-medium tabular-nums">
-                                                    {money(row.totalToPay)}
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {detailRows.map(
+                                            (row: any, index: number) => (
+                                                <tr
+                                                    key={row.id}
+                                                    className="text-slate-700 dark:text-gray-200"
+                                                >
+                                                    <td className="px-3 py-2 tabular-nums text-slate-400">
+                                                        {index + 1}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-2 tabular-nums">
+                                                        {formatDate(
+                                                            row.emitDate
+                                                        )}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-2">
+                                                        {row.documentTypeReadable ||
+                                                            row.documentType ||
+                                                            "—"}
+                                                    </td>
+                                                    <td className="px-3 py-2 font-medium">
+                                                        {row.serial || "—"}
+                                                    </td>
+                                                    <td className="px-3 py-2 tabular-nums">
+                                                        {row.correlative ?? "—"}
+                                                    </td>
+                                                    <td className="px-3 py-2 text-center">
+                                                        {currencyMark(
+                                                            row.operation
+                                                                ?.currencyType
+                                                        )}
+                                                    </td>
+                                                    <td className="px-3 py-2 text-right font-medium tabular-nums">
+                                                        {money(row.totalToPay)}
+                                                    </td>
+                                                    <td className="px-3 py-2 text-center text-green-600">
+                                                        {isAccepted(row) ? (
+                                                            <SunatCheck />
+                                                        ) : (
+                                                            <span className="text-slate-300">
+                                                                —
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td
+                                                        className={`px-3 py-2 text-center font-semibold ${
+                                                            isVoided(row) ===
+                                                            "SI"
+                                                                ? "text-red-600"
+                                                                : "text-slate-500"
+                                                        }`}
+                                                    >
+                                                        {isVoided(row)}
+                                                    </td>
+                                                    <td className="px-3 py-2 text-center">
+                                                        <Link
+                                                            href={saleHref(row)}
+                                                            className="inline-flex rounded-full bg-blue-600 px-2.5 py-0.5 text-[11px] font-semibold text-white hover:bg-blue-700"
+                                                        >
+                                                            VER
+                                                        </Link>
+                                                    </td>
+                                                    <td className="px-3 py-2 text-center">
+                                                        <a
+                                                            href={
+                                                                SUNAT_CONSULTA_1
+                                                            }
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="inline-flex whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-semibold text-green-600 hover:bg-green-50 dark:text-green-500 dark:hover:bg-gray-700"
+                                                        >
+                                                            CONSULTA SUNAT 1
+                                                        </a>
+                                                    </td>
+                                                    <td className="px-3 py-2 text-center">
+                                                        <a
+                                                            href={
+                                                                SUNAT_CONSULTA_2
+                                                            }
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="inline-flex whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-semibold text-green-600 hover:bg-green-50 dark:text-green-500 dark:hover:bg-gray-700"
+                                                        >
+                                                            CONSULTA SUNAT 2
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        )}
                                     </tbody>
-                                    <tfoot className="bg-slate-50 text-slate-800 dark:bg-gray-900 dark:text-white">
-                                        <tr>
-                                            <td
-                                                colSpan={4}
-                                                className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
-                                            >
-                                                {detailRows.length} documentos
-                                            </td>
-                                            <td className="px-4 py-2 text-right font-semibold tabular-nums">
-                                                {money(detailTotals.taxed)}
-                                            </td>
-                                            <td className="px-4 py-2 text-right font-semibold tabular-nums">
-                                                {money(detailTotals.igv)}
-                                            </td>
-                                            <td className="px-4 py-2 text-right font-semibold tabular-nums">
-                                                {money(detailTotals.pay)}
-                                            </td>
-                                        </tr>
-                                    </tfoot>
                                 </table>
                             )}
                         </div>

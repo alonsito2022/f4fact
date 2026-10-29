@@ -6,6 +6,7 @@ import { gql, useLazyQuery } from "@apollo/client";
 import WhatsAppModal from "./WhatsAppModal";
 import { Modal } from "flowbite";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useSearchParams } from "next/navigation";
 const limaDate = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
 );
@@ -122,7 +123,18 @@ const initialStateCpe = {
     clientDoc: "",
 };
 function SalePage() {
-    const [filterObj, setFilterObj] = useState(initialStateFilterObj);
+    const searchParams = useSearchParams();
+    const serialFromUrl = searchParams.get("serial") || "";
+    const correlativeFromUrl = searchParams.get("correlative") || "";
+    const documentTypeFromUrl = searchParams.get("documentType") || "";
+    const subsidiaryFromUrl = searchParams.get("subsidiaryId") || "";
+    const [filterObj, setFilterObj] = useState({
+        ...initialStateFilterObj,
+        serial: serialFromUrl,
+        correlative: correlativeFromUrl,
+        documentType: documentTypeFromUrl || initialStateFilterObj.documentType,
+        subsidiaryId: subsidiaryFromUrl,
+    });
     const [cpe, setCpe] = useState(initialStateCpe);
     const [modalWhatsApp, setModalWhatsApp] = useState<Modal | null>(null);
 
@@ -159,15 +171,18 @@ function SalePage() {
 
     useEffect(() => {
         if (auth?.status === "authenticated" && auth?.jwtToken) {
+            const serial = serialFromUrl || filterObj.serial;
+            const correlative = correlativeFromUrl || filterObj.correlative;
             salesQuery({
                 variables: {
                     subsidiaryId: auth?.user?.isSuperuser
-                        ? Number(filterObj.subsidiaryId)
+                        ? Number(subsidiaryFromUrl || filterObj.subsidiaryId)
                         : Number(auth?.user?.subsidiaryId),
                     clientId: Number(filterObj.clientId),
                     startDate: filterObj.startDate,
                     endDate: filterObj.endDate,
-                    documentType: filterObj.documentType,
+                    documentType:
+                        documentTypeFromUrl || filterObj.documentType,
                     page: Number(filterObj.page),
                     pageSize: Number(filterObj.pageSize),
                     onlyDraft: filterObj.onlyDraft || undefined,
@@ -175,16 +190,17 @@ function SalePage() {
                     // Documento": Apollo fusiona variables entre ejecuciones y,
                     // si se omiten, el backend sigue filtrando por un unico
                     // comprobante en lugar de por rango de fechas.
-                    serial: filterObj.serial
-                        ? String(filterObj.serial)
-                        : undefined,
-                    correlative: filterObj.correlative
-                        ? Number(filterObj.correlative)
+                    serial: serial ? String(serial) : undefined,
+                    correlative: correlative
+                        ? Number(correlative)
                         : undefined,
                 },
             });
         }
-    }, [auth?.status, auth?.jwtToken]);
+        // La carga inicial toma la sesión y, si vienen en la URL, la boleta
+        // concreta abierta desde un resumen.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [auth?.status, auth?.jwtToken, serialFromUrl, correlativeFromUrl]);
 
     // Si la sesión aún está cargando, muestra un spinner en lugar de "Cargando..."
     if (auth?.status === "loading") {
