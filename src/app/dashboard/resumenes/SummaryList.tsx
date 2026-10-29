@@ -116,11 +116,19 @@ function SummaryList({
         loadDetail({ variables: { pk: id } });
     };
 
-    const downloadFile = (
-        url: string,
+    const downloadSummaryFile = (
+        item: any,
+        kind: "firma" | "cdr",
         filename: string
     ) => {
-        downloadCpeFile(url, filename);
+        const url = kind === "firma" ? item.linkXml : item.linkCdr;
+        const summaryId = Number(item.id);
+        // Prefer HTTPS Django/Drive proxy (same fix as sales report).
+        if (summaryId > 0) {
+            downloadCpeFile(url || "", filename, kind, undefined, summaryId);
+            return;
+        }
+        downloadCpeFile(url || "", filename);
     };
 
     if (!error && (loading || !data)) {
@@ -277,12 +285,13 @@ function SummaryList({
                                                 {item.ticket || "—"}
                                             </td>
                                             <td className="px-3 py-3 text-center">
-                                                {item.linkXml ? (
+                                                {item.linkXml || item.driveFirmaId ? (
                                                     <button
                                                         type="button"
                                                         onClick={() =>
-                                                            downloadFile(
-                                                                item.linkXml,
+                                                            downloadSummaryFile(
+                                                                item,
+                                                                "firma",
                                                                 xmlName
                                                             )
                                                         }
@@ -297,12 +306,13 @@ function SummaryList({
                                                 )}
                                             </td>
                                             <td className="px-3 py-3 text-center">
-                                                {item.linkCdr ? (
+                                                {item.linkCdr || item.driveCdrId ? (
                                                     <button
                                                         type="button"
                                                         onClick={() =>
-                                                            downloadFile(
-                                                                item.linkCdr,
+                                                            downloadSummaryFile(
+                                                                item,
+                                                                "cdr",
                                                                 cdrName
                                                             )
                                                         }

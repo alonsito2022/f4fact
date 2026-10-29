@@ -54,6 +54,8 @@ const SUMMARIES_QUERY = gql`
                 sunatDescription
                 linkXml
                 linkCdr
+                driveFirmaId
+                driveCdrId
                 companyName
                 companyRuc
             }

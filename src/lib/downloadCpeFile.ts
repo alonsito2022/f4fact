@@ -5,20 +5,25 @@ export function downloadCpeFile(
   filename: string,
   driveKind?: "firma" | "cdr",
   operationId?: number,
+  ticketSummaryId?: number,
 ) {
+  const useTicketSummary = Boolean(driveKind && ticketSummaryId);
   const useDrive = Boolean(driveKind && operationId);
-  if (!filename || (!useDrive && !url)) {
+  if (!filename || (!useTicketSummary && !useDrive && !url)) {
     toast.error("URL o nombre de archivo no válido");
     return;
   }
 
-  const downloadUrl = useDrive
-    ? `${process.env.NEXT_PUBLIC_BASE_API}/operations/drive_file/${operationId}/${driveKind}/`
-    : url.toString().replace("http:", "https:");
+  const downloadUrl = useTicketSummary
+    ? `${process.env.NEXT_PUBLIC_BASE_API}/operations/ticket_summary_file/${ticketSummaryId}/${driveKind}/`
+    : useDrive
+      ? `${process.env.NEXT_PUBLIC_BASE_API}/operations/drive_file/${operationId}/${driveKind}/`
+      : url.toString().replace("http:", "https:");
 
-  if (useDrive) {
+  if (useTicketSummary || useDrive) {
     console.log("[Drive] consultando archivo", {
       operationId,
+      ticketSummaryId,
       driveKind,
       downloadUrl,
     });
