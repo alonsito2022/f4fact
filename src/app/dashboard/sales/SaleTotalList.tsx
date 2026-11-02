@@ -131,6 +131,12 @@ function SaleTotalList({
         invoice?.totalDetraction,
     ]);
 
+    const optionLabelClass =
+        "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300";
+    const optionControlClass =
+        "block w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/25 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-900/60 dark:disabled:text-gray-400";
+    const showDetraction = invoice?.operationType === "1001";
+
     return (
         <>
             <div className="bg-white-100 dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
@@ -524,63 +530,134 @@ function SaleTotalList({
                 </div>
             </div>
 
-            {/* Checkboxes section with better organization */}
             {!["07", "48"].includes(invoice.documentType) && (
-                <div className="mt-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg p-4">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
-                        Opciones Adicionales
-                    </h3>
+                <fieldset className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <legend className="px-2 text-[13px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        Opciones adicionales
+                    </legend>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        {/* Each checkbox in its own card */}
-                        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg transition-all duration-300 hover:shadow-md">
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    name="hasPerception"
-                                    checked={invoice.hasPerception}
-                                    onChange={handleSale}
-                                    className="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
-                                />
-                                <span className="text-gray-700 dark:text-gray-300 font-medium">
+                    <div
+                        className={`grid grid-cols-1 gap-3 ${
+                            showDetraction ? "sm:grid-cols-3" : "sm:grid-cols-2"
+                        }`}
+                    >
+                        <label
+                            className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 transition-colors ${
+                                invoice.hasPerception
+                                    ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500/30 dark:border-blue-400 dark:bg-blue-500/10"
+                                    : "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-white dark:border-gray-600 dark:bg-gray-900/30 dark:hover:border-gray-500"
+                            }`}
+                        >
+                            <input
+                                type="checkbox"
+                                name="hasPerception"
+                                checked={invoice.hasPerception}
+                                onChange={handleSale}
+                                className="h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-500 dark:bg-gray-800"
+                            />
+                            <span className="min-w-0">
+                                <span className="block text-sm font-semibold text-gray-800 dark:text-gray-100">
                                     Percepción
                                 </span>
+                                <span className="block text-xs text-gray-500 dark:text-gray-400">
+                                    {invoice.hasPerception
+                                        ? "Activada"
+                                        : "Sin aplicar"}
+                                </span>
+                            </span>
+                        </label>
+
+                        <label
+                            className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 transition-colors ${
+                                invoice.hasRetention
+                                    ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500/30 dark:border-blue-400 dark:bg-blue-500/10"
+                                    : "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-white dark:border-gray-600 dark:bg-gray-900/30 dark:hover:border-gray-500"
+                            }`}
+                        >
+                            <input
+                                type="checkbox"
+                                name="hasRetention"
+                                checked={invoice.hasRetention}
+                                onChange={handleSale}
+                                className="h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-500 dark:bg-gray-800"
+                            />
+                            <span className="min-w-0">
+                                <span className="block text-sm font-semibold text-gray-800 dark:text-gray-100">
+                                    Retención
+                                </span>
+                                <span className="block text-xs text-gray-500 dark:text-gray-400">
+                                    {invoice.hasRetention
+                                        ? "Activada"
+                                        : "Sin aplicar"}
+                                </span>
+                            </span>
+                        </label>
+
+                        {showDetraction && (
+                            <label
+                                className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 transition-colors ${
+                                    invoice.hasDetraction
+                                        ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500/30 dark:border-blue-400 dark:bg-blue-500/10"
+                                        : "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-white dark:border-gray-600 dark:bg-gray-900/30 dark:hover:border-gray-500"
+                                }`}
+                            >
+                                <input
+                                    type="checkbox"
+                                    name="hasDetraction"
+                                    checked={invoice.hasDetraction}
+                                    onChange={handleSale}
+                                    className="h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-500 dark:bg-gray-800"
+                                />
+                                <span className="min-w-0">
+                                    <span className="block text-sm font-semibold text-gray-800 dark:text-gray-100">
+                                        Detracción
+                                    </span>
+                                    <span className="block text-xs text-gray-500 dark:text-gray-400">
+                                        {invoice.hasDetraction
+                                            ? "Activada"
+                                            : "Sin aplicar"}
+                                    </span>
+                                </span>
                             </label>
-                            {invoice?.hasPerception && (
-                                <div className="grid sm:grid-cols-1 md:grid-cols-6 gap-4 py-4">
-                                    {/* Perception fields */}
-                                    <div className="sm:col-span-2">
-                                        <label
-                                            htmlFor="perceptionType"
-                                            className="form-label text-gray-900 dark:text-gray-200"
-                                        >
-                                            Percepción Tipo
-                                        </label>
-                                        <select
-                                            name="perceptionType"
-                                            id="perceptionType"
-                                            onChange={handleSale}
-                                            value={invoice.perceptionType}
-                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
-                                        >
-                                            {perceptionTypesData?.allPerceptionTypes?.map(
-                                                (
-                                                    o: IPerceptionType,
-                                                    k: number
-                                                ) => (
-                                                    <option
-                                                        key={k}
-                                                        value={o.code}
-                                                    >
-                                                        {o.name}
-                                                    </option>
-                                                )
-                                            )}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm text-gray-600 dark:text-gray-400">
-                                            Base Imponible Percepción
+                        )}
+                    </div>
+
+                    {invoice?.hasPerception && (
+                        <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/30">
+                            <h4 className="mb-4 text-sm font-semibold text-gray-800 dark:text-gray-100">
+                                Datos de percepción
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label
+                                        htmlFor="perceptionType"
+                                        className={optionLabelClass}
+                                    >
+                                        Tipo de percepción
+                                    </label>
+                                    <select
+                                        name="perceptionType"
+                                        id="perceptionType"
+                                        onChange={handleSale}
+                                        value={invoice.perceptionType}
+                                        className={optionControlClass}
+                                    >
+                                        {perceptionTypesData?.allPerceptionTypes?.map(
+                                            (
+                                                o: IPerceptionType,
+                                                k: number
+                                            ) => (
+                                                <option key={k} value={o.code}>
+                                                    {o.name}
+                                                </option>
+                                            )
+                                        )}
+                                    </select>
+                                </div>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                    <div>
+                                        <label className={optionLabelClass}>
+                                            Base imponible
                                         </label>
                                         <input
                                             type="number"
@@ -592,12 +669,12 @@ function SaleTotalList({
                                             onChange={handleSale}
                                             onFocus={(e) => e.target.select()}
                                             disabled
-                                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                                            className={optionControlClass}
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm text-gray-600 dark:text-gray-400">
-                                            Total Percepción
+                                    <div>
+                                        <label className={optionLabelClass}>
+                                            Total percepción
                                         </label>
                                         <input
                                             type="number"
@@ -609,13 +686,12 @@ function SaleTotalList({
                                             onChange={handleSale}
                                             onFocus={(e) => e.target.select()}
                                             disabled
-                                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                                            className={optionControlClass}
                                         />
                                     </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-sm text-gray-600 dark:text-gray-400">
-                                            Total Incluido Percepción
+                                    <div>
+                                        <label className={optionLabelClass}>
+                                            Total incluido
                                         </label>
                                         <input
                                             type="number"
@@ -623,58 +699,47 @@ function SaleTotalList({
                                             value={invoice.totalToPay}
                                             onChange={handleSale}
                                             disabled
-                                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                                            className={optionControlClass}
                                         />
                                     </div>
                                 </div>
-                            )}
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    name="hasRetention"
-                                    checked={invoice.hasRetention}
-                                    onChange={handleSale}
-                                    className="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
-                                />
-                                <span className="text-gray-700 dark:text-gray-300">
-                                    ¿Retención?
-                                </span>
-                            </label>
+                            </div>
+                        </div>
+                    )}
 
-                            {invoice?.hasRetention && (
-                                <div className="grid sm:grid-cols-1 md:grid-cols-6 gap-4 py-4">
-                                    <div className="sm:col-span-2">
-                                        <label
-                                            htmlFor="retentionType"
-                                            className="form-label text-gray-900 dark:text-gray-200"
-                                        >
-                                            Retencion Tipo
-                                        </label>
-                                        <select
-                                            name="retentionType"
-                                            id="retentionType"
-                                            onChange={handleSale}
-                                            value={invoice.retentionType}
-                                            className="form-control dark:bg-gray-800 dark:text-gray-200"
-                                        >
-                                            {retentionTypesData?.allRetentionTypes?.map(
-                                                (
-                                                    o: IRetentionType,
-                                                    k: number
-                                                ) => (
-                                                    <option
-                                                        key={k}
-                                                        value={o.code}
-                                                    >
-                                                        {o.name}
-                                                    </option>
-                                                )
-                                            )}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm text-gray-600 dark:text-gray-400">
-                                            Base Imponible Retención
+                    {invoice?.hasRetention && (
+                        <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/30">
+                            <h4 className="mb-4 text-sm font-semibold text-gray-800 dark:text-gray-100">
+                                Datos de retención
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label
+                                        htmlFor="retentionType"
+                                        className={optionLabelClass}
+                                    >
+                                        Tipo de retención
+                                    </label>
+                                    <select
+                                        name="retentionType"
+                                        id="retentionType"
+                                        onChange={handleSale}
+                                        value={invoice.retentionType}
+                                        className={optionControlClass}
+                                    >
+                                        {retentionTypesData?.allRetentionTypes?.map(
+                                            (o: IRetentionType, k: number) => (
+                                                <option key={k} value={o.code}>
+                                                    {o.name}
+                                                </option>
+                                            )
+                                        )}
+                                    </select>
+                                </div>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label className={optionLabelClass}>
+                                            Base imponible
                                         </label>
                                         <input
                                             type="number"
@@ -686,12 +751,12 @@ function SaleTotalList({
                                             onChange={handleSale}
                                             onFocus={(e) => e.target.select()}
                                             disabled
-                                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                                            className={optionControlClass}
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm text-gray-600 dark:text-gray-400">
-                                            Total Retención
+                                    <div>
+                                        <label className={optionLabelClass}>
+                                            Total retención
                                         </label>
                                         <input
                                             type="number"
@@ -703,141 +768,111 @@ function SaleTotalList({
                                             onChange={handleSale}
                                             onFocus={(e) => e.target.select()}
                                             disabled
-                                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                                            className={optionControlClass}
                                         />
                                     </div>
                                 </div>
-                            )}
-
-                            {invoice?.operationType === "1001" && (
-                                <>
-                                    <label className="flex items-center space-x-3 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            name="hasDetraction"
-                                            checked={invoice.hasDetraction}
-                                            onChange={handleSale}
-                                            className="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
-                                        />
-                                        <span className="text-gray-700 dark:text-gray-300">
-                                            ¿Detracción?
-                                        </span>
-                                    </label>
-
-                                    {invoice?.hasDetraction && (
-                                        <div className="grid sm:grid-cols-1 md:grid-cols-6 gap-4 py-4">
-                                            <div className="sm:col-span-2">
-                                                <label
-                                                    htmlFor="detractionType"
-                                                    className="form-label text-gray-900 dark:text-gray-200"
-                                                >
-                                                    Tipo de detracción
-                                                </label>
-                                                <select
-                                                    name="detractionType"
-                                                    id="detractionType"
-                                                    onChange={handleSale}
-                                                    value={
-                                                        invoice.detractionType
-                                                    }
-                                                    className="form-control dark:bg-gray-800 dark:text-gray-200"
-                                                    required
-                                                >
-                                                    {detractionTypesData?.allDetractionTypes?.map(
-                                                        (
-                                                            o: IDetractionType,
-                                                            k: number
-                                                        ) => (
-                                                            <option
-                                                                key={k}
-                                                                value={o.code}
-                                                            >
-                                                                {o.name}
-                                                            </option>
-                                                        )
-                                                    )}
-                                                </select>
-                                            </div>
-                                            <div className="sm:col-span-2">
-                                                <label
-                                                    htmlFor="detractionPaymentMethod"
-                                                    className="form-label text-gray-900 dark:text-gray-200"
-                                                >
-                                                    Medio de Pago
-                                                </label>
-                                                <select
-                                                    name="detractionPaymentMethod"
-                                                    id="detractionPaymentMethod"
-                                                    onChange={handleSale}
-                                                    value={
-                                                        invoice.detractionPaymentMethod
-                                                    }
-                                                    className="form-control dark:bg-gray-800 dark:text-gray-200"
-                                                    required
-                                                >
-                                                    {detractionPaymentMethodsData?.allDetractionPaymentMethods?.map(
-                                                        (
-                                                            o: IDetractionPaymentMethod,
-                                                            k: number
-                                                        ) => (
-                                                            <option
-                                                                key={k}
-                                                                value={o.code}
-                                                            >
-                                                                {o.name}
-                                                            </option>
-                                                        )
-                                                    )}
-                                                </select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm text-gray-600 dark:text-gray-400">
-                                                    Porcentaje detracción (%)
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    name="detractionPercentage"
-                                                    onWheel={(e) =>
-                                                        e.currentTarget.blur()
-                                                    }
-                                                    value={
-                                                        invoice.detractionPercentage
-                                                    }
-                                                    onChange={handleSale}
-                                                    onFocus={(e) =>
-                                                        e.target.select()
-                                                    }
-                                                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm text-gray-600 dark:text-gray-400">
-                                                    Total detracción
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    name="totalDetraction"
-                                                    onWheel={(e) =>
-                                                        e.currentTarget.blur()
-                                                    }
-                                                    value={
-                                                        invoice.totalDetraction
-                                                    }
-                                                    onChange={handleSale}
-                                                    onFocus={(e) =>
-                                                        e.target.select()
-                                                    }
-                                                    disabled
-                                                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    )}
+
+                    {showDetraction && invoice?.hasDetraction && (
+                        <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/30">
+                            <h4 className="mb-4 text-sm font-semibold text-gray-800 dark:text-gray-100">
+                                Datos de detracción
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label
+                                        htmlFor="detractionType"
+                                        className={optionLabelClass}
+                                    >
+                                        Tipo de detracción
+                                    </label>
+                                    <select
+                                        name="detractionType"
+                                        id="detractionType"
+                                        onChange={handleSale}
+                                        value={invoice.detractionType}
+                                        className={optionControlClass}
+                                        required
+                                    >
+                                        {detractionTypesData?.allDetractionTypes?.map(
+                                            (
+                                                o: IDetractionType,
+                                                k: number
+                                            ) => (
+                                                <option key={k} value={o.code}>
+                                                    {o.name}
+                                                </option>
+                                            )
+                                        )}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label
+                                        htmlFor="detractionPaymentMethod"
+                                        className={optionLabelClass}
+                                    >
+                                        Medio de pago
+                                    </label>
+                                    <select
+                                        name="detractionPaymentMethod"
+                                        id="detractionPaymentMethod"
+                                        onChange={handleSale}
+                                        value={invoice.detractionPaymentMethod}
+                                        className={optionControlClass}
+                                        required
+                                    >
+                                        {detractionPaymentMethodsData?.allDetractionPaymentMethods?.map(
+                                            (
+                                                o: IDetractionPaymentMethod,
+                                                k: number
+                                            ) => (
+                                                <option key={k} value={o.code}>
+                                                    {o.name}
+                                                </option>
+                                            )
+                                        )}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label
+                                        htmlFor="detractionPercentage"
+                                        className={optionLabelClass}
+                                    >
+                                        Porcentaje (%)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="detractionPercentage"
+                                        name="detractionPercentage"
+                                        onWheel={(e) => e.currentTarget.blur()}
+                                        value={invoice.detractionPercentage}
+                                        onChange={handleSale}
+                                        onFocus={(e) => e.target.select()}
+                                        className={optionControlClass}
+                                    />
+                                </div>
+                                <div>
+                                    <label className={optionLabelClass}>
+                                        Total detracción
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="totalDetraction"
+                                        onWheel={(e) => e.currentTarget.blur()}
+                                        value={invoice.totalDetraction}
+                                        onChange={handleSale}
+                                        onFocus={(e) => e.target.select()}
+                                        disabled
+                                        className={optionControlClass}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </fieldset>
             )}
         </>
     );
