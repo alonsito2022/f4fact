@@ -97,6 +97,7 @@ function SaleTotalList({
         }
     }, [invoice?.retentionType, invoice?.totalAmount]);
     useEffect(() => {
+        if (invoice?.currencyType === "USD") return;
         if (invoice?.detractionPercentage) {
             let detractionPercentage = Number(invoice?.detractionPercentage);
             // Redondear al entero más cercano usando Math.round
@@ -129,6 +130,74 @@ function SaleTotalList({
         invoice?.detractionPercentage,
         invoice?.totalAmount,
         invoice?.totalDetraction,
+        invoice?.currencyType,
+    ]);
+    useEffect(() => {
+        if (invoice?.currencyType !== "USD") return;
+        if (
+            !invoice?.hasRetention &&
+            !invoice?.hasPerception &&
+            !invoice?.hasDetraction
+        ) {
+            return;
+        }
+        const total = Number(invoice?.totalAmount) || 0;
+        const exchangeRate = Number(invoice?.saleExchangeRate) || 0;
+        let net = total;
+        const patch: Record<string, string> = {};
+        if (invoice?.hasRetention) {
+            const rate =
+                Number(invoice?.retentionType) === 1
+                    ? 0.03
+                    : Number(invoice?.retentionType) === 2
+                    ? 0.06
+                    : 0;
+            const amount = total * rate;
+            net -= amount;
+            patch.totalRetention = amount.toFixed(2);
+            patch.retentionPercentage = (rate * 100).toFixed(3);
+        }
+        if (invoice?.hasPerception) {
+            const rate =
+                Number(invoice?.perceptionType) === 1
+                    ? 0.02
+                    : Number(invoice?.perceptionType) === 2
+                    ? 0.01
+                    : Number(invoice?.perceptionType) === 3
+                    ? 0.005
+                    : 0;
+            const amount = total * rate;
+            net += amount;
+            patch.totalPerception = amount.toFixed(2);
+            patch.perceptionPercentage = (rate * 100).toFixed(3);
+        }
+        if (
+            invoice?.hasDetraction &&
+            Number(invoice?.detractionPercentage) > 0 &&
+            exchangeRate > 0
+        ) {
+            const detractionPen = Math.round(
+                (total * exchangeRate * Number(invoice.detractionPercentage)) /
+                    100,
+            );
+            net -= detractionPen / exchangeRate;
+            patch.totalDetraction = detractionPen.toFixed(2);
+        }
+        patch.totalToPay = net.toFixed(2);
+        setSale((prevSale: IOperation) => ({
+            ...prevSale,
+            ...patch,
+        }));
+    }, [
+        invoice?.currencyType,
+        invoice?.totalAmount,
+        invoice?.saleExchangeRate,
+        invoice?.hasRetention,
+        invoice?.retentionType,
+        invoice?.hasPerception,
+        invoice?.perceptionType,
+        invoice?.hasDetraction,
+        invoice?.detractionPercentage,
     ]);
 
     const optionLabelClass =
@@ -856,7 +925,9 @@ function SaleTotalList({
                                 </div>
                                 <div>
                                     <label className={optionLabelClass}>
-                                        Total detracción
+                                        {invoice.currencyType === "USD"
+                                            ? "Total detracción (S/)"
+                                            : "Total detracción"}
                                     </label>
                                     <input
                                         type="number"

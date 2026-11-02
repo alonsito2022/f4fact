@@ -465,6 +465,9 @@ export interface IOperation {
     clientDocumentType: string;
     clientId: number;
     detractionPercentage: string;
+    purchaseOrder?: string;
+    vehiclePlate?: string;
+    additionalSaleType?: string;
     user: IUser;
 }
 

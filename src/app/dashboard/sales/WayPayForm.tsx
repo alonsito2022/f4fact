@@ -75,6 +75,9 @@ const CREATE_SALE_MUTATION = gql`
         $totalDetraction: Float
         $detractionPercentage: Float
         $observation: String
+        $purchaseOrder: String
+        $vehiclePlate: String
+        $additionalSaleType: String
         $isAnticipationSet: [Boolean!]!
         $relatedDocumentSerialSet: [String!]!
         $relatedDocumentCorrelativeSet: [Int!]!
@@ -140,6 +143,9 @@ const CREATE_SALE_MUTATION = gql`
             totalDetraction: $totalDetraction
             detractionPercentage: $detractionPercentage
             observation: $observation
+            purchaseOrder: $purchaseOrder
+            vehiclePlate: $vehiclePlate
+            additionalSaleType: $additionalSaleType
             isAnticipationSet: $isAnticipationSet
             relatedDocumentSerialSet: $relatedDocumentSerialSet
             relatedDocumentCorrelativeSet: $relatedDocumentCorrelativeSet
@@ -437,6 +443,9 @@ function WayPayForm({
                 detractionPercentage: Number(invoice.detractionPercentage),
 
                 observation: invoice.observation || "",
+                purchaseOrder: invoice.purchaseOrder || "",
+                vehiclePlate: invoice.vehiclePlate || "",
+                additionalSaleType: invoice.additionalSaleType || "",
                 isAnticipationSet: invoice.operationdetailSet.map(
                     (item: any) => item.isAnticipation || false,
                 ),

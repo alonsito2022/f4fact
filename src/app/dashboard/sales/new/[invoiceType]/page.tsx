@@ -39,6 +39,7 @@ import ClientForm from "../../ClientForm";
 import SaleDetailList from "../../SaleDetailList";
 import SaleTotalList from "../../SaleTotalList";
 import PdfFormatModal from "../../PdfFormatModal";
+import SaleAdditionalsModal from "../../SaleAdditionalsModal";
 // Replace the current today constant with this:
 const limaDate = new Date(
   new Date().toLocaleString("en-US", { timeZone: "America/Lima" }),
@@ -249,6 +250,9 @@ const initialStateSale = {
   detractionPaymentMethod: 0,
   totalDetraction: "",
   detractionPercentage: "",
+  purchaseOrder: "",
+  vehiclePlate: "",
+  additionalSaleType: "",
   nextTemporaryId: 1,
   pdfFormatForInvoices: 0,
 };
@@ -402,6 +406,7 @@ function NewSalePage() {
   const [modalAddDetail, setModalAddDetail] = useState<Modal | any>(null);
   const [modalWayPay, setModalWayPay] = useState<Modal | any>(null);
   const [modalPdfFormat, setModalPdfFormat] = useState<Modal | any>(null);
+  const [modalAdditionals, setModalAdditionals] = useState<Modal | any>(null);
   const [barcodeInput, setBarcodeInput] = useState("");
   const auth = useAuth();
   // Add this near the top of your component with other refs
@@ -964,6 +969,18 @@ const productsHint =
         break;
     }
 
+    if (sale.currencyType === "USD" && sale.hasDetraction) {
+      const exchangeRate = Number(sale.saleExchangeRate);
+      if (!exchangeRate || exchangeRate <= 0) {
+        toast("Para detracción en dólares ingrese el tipo de cambio.", {
+          hideProgressBar: true,
+          autoClose: 2000,
+          type: "warning",
+        });
+        return false;
+      }
+    }
+
     // Validar la fecha de emisión (solo día calendario en America/Lima; sin horas)
     const parseDateOnly = (dateStr: string) => {
       const [year, month, day] = dateStr.split("-").map(Number);
@@ -1119,6 +1136,17 @@ const productsHint =
                   </p>
                 </div>
 
+                <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => modalAdditionals?.show()}
+                  className="inline-flex h-9 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 text-[13px] font-medium uppercase tracking-wide text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-700/70 dark:focus:ring-gray-700"
+                >
+                  Adicionales
+                  {(sale.purchaseOrder || sale.vehiclePlate) && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                  )}
+                </button>
                 {/* Configuración del formato del PDF */}
                 <button
                   type="button"
@@ -1157,6 +1185,7 @@ const productsHint =
                     />
                   </svg>
                 </button>
+                </div>
               </div>
 
               <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700/70 dark:bg-gray-900/40 sm:p-5">
@@ -1848,7 +1877,15 @@ const productsHint =
                           >
                             {auth?.user?.companyDisableContinuePay
                               ? "FINALIZAR VENTA"
-                              : "CONTINUAR CON EL PAGO S/"}
+                              : `CONTINUAR CON EL PAGO ${
+                                  sale.currencyType === "USD"
+                                    ? "US$"
+                                    : sale.currencyType === "EUR"
+                                    ? "€"
+                                    : sale.currencyType === "GBP"
+                                    ? "£"
+                                    : "S/"
+                                }`}
                           </button>
                         </div>
                       </div>
@@ -1917,6 +1954,13 @@ const productsHint =
         isProcessing={isProcessing}
         setIsProcessing={setIsProcessing}
         onSaveSaleRef={(fn: any) => (saveSaleRef.current = fn)}
+      />
+      <SaleAdditionalsModal
+        modalAdditionals={modalAdditionals}
+        setModalAdditionals={setModalAdditionals}
+        purchaseOrder={sale.purchaseOrder || ""}
+        vehiclePlate={sale.vehiclePlate || ""}
+        onChange={handleSale}
       />
       <PdfFormatModal
         modalPdfFormat={modalPdfFormat}
