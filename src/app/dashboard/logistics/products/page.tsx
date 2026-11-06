@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import ProductList from "./ProductList";
 import ProductForm from "./ProductForm";
 import ProductFilter from "./ProductFilter";
@@ -202,9 +202,10 @@ function ProductPage() {
 
     return (
         <>
-            <div className="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-                <div className="w-full">
-                    <Breadcrumb section={"Productos"} article={"Productos"} />
+            <div className="min-h-full bg-slate-50 dark:bg-gray-900">
+                <div className="mx-auto max-w-[1600px] space-y-5 px-4 py-5 sm:px-6 lg:px-8">
+                    <Breadcrumb section={"Logística"} article={"Productos"} />
+
                     <ProductFilter
                         productFilterObj={productFilterObj}
                         setProductFilterObj={setProductFilterObj}
@@ -219,29 +220,25 @@ function ProductPage() {
                         jwtToken={auth?.jwtToken}
                         filteredProducts={filteredProducts}
                     />
-                </div>
-            </div>
 
-            <div className="flex flex-col">
-                <div className="overflow-x-auto">
-                    <div className="inline-block min-w-full align-middle">
-                        <div className="overflow-hidden shadow">
-                            {filteredProductsLoading ? (
-                                <div>Cargando...</div>
-                            ) : filteredProductsError ? (
-                                <div className="p-4 text-red-500 text-center">
-                                    {filteredProductsError.message}
-                                </div>
-                            ) : (
-                                <ProductList
-                                    filteredProducts={filteredProducts}
-                                    modalProduct={modalProduct}
-                                    setProduct={setProduct}
-                                    authContext={authContext}
-                                />
-                            )}
+                    {filteredProductsLoading ? (
+                        <div className="flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-16 text-sm text-slate-500 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                            Cargando productos...
                         </div>
-                    </div>
+                    ) : filteredProductsError ? (
+                        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">
+                            No se pudieron cargar los productos.{" "}
+                            {filteredProductsError.message}
+                        </div>
+                    ) : (
+                        <ProductList
+                            filteredProducts={filteredProducts}
+                            modalProduct={modalProduct}
+                            setProduct={setProduct}
+                            authContext={authContext}
+                        />
+                    )}
                 </div>
             </div>
 
