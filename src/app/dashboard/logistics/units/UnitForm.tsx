@@ -66,6 +66,15 @@ function UnitForm({ modal, setModal, unit, setUnit, initialState, jwtToken, UNIT
 
     const handleSaveSubLine = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        const code = String(unit.code || "").trim().toUpperCase();
+        const shortName = String(unit.shortName || "").trim().toUpperCase();
+        if (code === "BG" || shortName === "BG") {
+            toast(
+                "La unidad BG no está en el catálogo de SUNAT. Use BX (caja).",
+                { hideProgressBar: true, autoClose: 3000, type: "error" }
+            );
+            return;
+        }
         if (Number(unit.id) !== 0) {
             const { data, errors } = await updateUnit({
                 variables: { unitId: unit.id, shortName: unit.shortName, description: unit.description, code: unit.code }
