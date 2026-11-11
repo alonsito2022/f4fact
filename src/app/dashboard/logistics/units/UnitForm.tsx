@@ -68,11 +68,18 @@ function UnitForm({ modal, setModal, unit, setUnit, initialState, jwtToken, UNIT
         e.preventDefault();
         const code = String(unit.code || "").trim().toUpperCase();
         const shortName = String(unit.shortName || "").trim().toUpperCase();
-        if (code === "BG" || shortName === "BG") {
-            toast(
-                "La unidad BG no está en el catálogo de SUNAT. Use BX (caja).",
-                { hideProgressBar: true, autoClose: 3000, type: "error" }
-            );
+        const invalidUnit =
+            code === "BG" || shortName === "BG"
+                ? "La unidad BG no está en el catálogo de SUNAT. Use BX (caja)."
+                : code === "M2" || (shortName === "M2" && code !== "MTK")
+                  ? "La unidad M2 no está en el catálogo de SUNAT. Use MTK (metro cuadrado)."
+                  : "";
+        if (invalidUnit) {
+            toast(invalidUnit, {
+                hideProgressBar: true,
+                autoClose: 3000,
+                type: "error",
+            });
             return;
         }
         if (Number(unit.id) !== 0) {
