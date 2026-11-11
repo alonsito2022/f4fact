@@ -111,6 +111,9 @@ const getStatusClassName = (status: string) => {
     if (status === "06") {
         return `${baseClasses} bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 text-nowrap`;
     }
+    if (status === "05") {
+        return `${baseClasses} text-amber-700 text-xs font-medium px-2.5 py-0.5 rounded-full dark:text-amber-300 text-nowrap`;
+    }
     if (status === "07") {
         return `${baseClasses} text-red-600 text-xs font-medium px-2.5 py-0.5 rounded-full dark:text-red-400`;
     }
@@ -128,6 +131,7 @@ const getStatusContent = (status: string, documentType: string) => {
             return <SunatCheck />;
         return "-";
     }
+    if (status === "05") return <span>Anulación con ticket</span>;
     if (status === "06") return <SunatCancel />;
     if (status === "07") return <LoadingIcon className="text-red-600" />;
     return "";
@@ -141,6 +145,7 @@ const getStatusMessage = (item: IOperation) => {
             "Los documentos no aceptados por la SUNAT se consideran como documentos ANULADOS para efectos tributarios en la mayoría de casos."
         );
     }
+    if (item.operationStatus === "05") return "Anulación con ticket";
     if (item.sunatDescription) return item.sunatDescription;
     if (item.operationStatus === "07") {
         return "El comprobante ya esta informado y se encuentra con estado anulado o rechazado.";
@@ -162,6 +167,12 @@ const getStatusTone = (status: string) => {
       label: "En proceso de envio",
       dot: "bg-blue-500 dark:bg-blue-400 animate-pulse",
       accent: "text-blue-600 dark:text-blue-400",
+    };
+  if (status === "05")
+    return {
+      label: "Anulación con ticket",
+      dot: "bg-amber-500 dark:bg-amber-400",
+      accent: "text-amber-700 dark:text-amber-300",
     };
   if (status === "06")
     return {
@@ -1182,9 +1193,11 @@ const SaleRow = memo(function SaleRow({
         <td className="p-0.5 text-center">{item?.user?.fullName}</td>
       )}
       <td className="p-0.5">
-        {item?.operationStatus === "01" ||
-        item?.operationStatus === "02" ||
-        item?.operationStatus === "06" ? (
+        {item?.operationStatus === "05" ? (
+          "Anulación con ticket"
+        ) : item?.operationStatus === "01" ||
+          item?.operationStatus === "02" ||
+          item?.operationStatus === "06" ? (
           <OptionsMenu item={item} onWhatsApp={onWhatsApp} onCancel={onCancel} />
         ) : (
           item?.operationStatusReadable
