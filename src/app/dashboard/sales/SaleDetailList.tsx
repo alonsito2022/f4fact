@@ -150,10 +150,48 @@ function SaleDetailList({
         }
 
         // 5. Totales finales (el anticipo se resta al final)
-        const subtotal = safeNumber(
+        let headerTaxed = newTotalTaxed;
+        let headerIgv = newTotalIgv;
+        let subtotal = safeNumber(
             totalExonerated + totalUnaffected + newTotalTaxed + newTotalIgv
         );
-        const totalAmount = safeNumber(subtotal); // ← Anticipo se resta aquí
+
+        // Nota de crédito: el total es la suma de lo cobrado en cada línea
+        // (precio con IGV, redondeado por línea). Base e IGV se obtienen de
+        // ese total para que coincidan con la factura relacionada.
+        // Recalcular IGV como suma de (valor * tasa) redondeado por línea
+        // desplaza el comprobante por varios céntimos.
+        if (
+            invoice?.documentType === "07" &&
+            discountGlobal === 0 &&
+            totalAnticipation === 0
+        ) {
+            let taxedGross = 0;
+            let exoneratedGross = 0;
+            let unaffectedGross = 0;
+            for (const detail of invoice.operationdetailSet ?? []) {
+                if (detail.isAnticipation) continue;
+                const affectation = Number(detail.typeAffectationId);
+                if (affectation === 3) {
+                    unaffectedGross += safeNumber(detail.totalValue);
+                } else if (affectation === 2) {
+                    exoneratedGross += safeNumber(detail.totalValue);
+                } else if (affectation === 1) {
+                    taxedGross += safeNumber(detail.totalAmount);
+                }
+            }
+            taxedGross = safeNumber(taxedGross);
+            exoneratedGross = safeNumber(exoneratedGross);
+            unaffectedGross = safeNumber(unaffectedGross);
+            headerTaxed =
+                igvRate > 0 ? safeNumber(taxedGross / (1 + igvRate)) : taxedGross;
+            headerIgv = safeNumber(taxedGross - headerTaxed);
+            subtotal = safeNumber(
+                taxedGross + exoneratedGross + unaffectedGross
+            );
+        }
+
+        const totalAmount = safeNumber(subtotal);
         const totalPerception = safeNumber(invoice?.totalPerception);
         const totalToPay = safeNumber(totalAmount + totalPerception);
 
@@ -168,8 +206,8 @@ function SaleDetailList({
             totalAnticipation: totalAnticipation.toFixed(2),
             totalUnaffected: totalUnaffected.toFixed(2),
             totalExonerated: totalExonerated.toFixed(2),
-            totalTaxed: newTotalTaxed.toFixed(2),
-            totalIgv: newTotalIgv.toFixed(2),
+            totalTaxed: headerTaxed.toFixed(2),
+            totalIgv: headerIgv.toFixed(2),
             totalAmount: totalAmount.toFixed(2),
             totalPerception: totalPerception.toFixed(2),
             totalToPay: totalToPay.toFixed(2),
@@ -235,7 +273,7 @@ function SaleDetailList({
                                     {item.unitValue}
                                 </td>
                                 <td className="px-3 py-0 text-gray-700 dark:text-gray-300 text-center">
-                                    {item.totalValue}
+                                    {Number(item.totalValue).toFixed(2)}
                                 </td>
                                 <td className="px-3 py-0 text-gray-700 dark:text-gray-300 text-center">
                                     {(

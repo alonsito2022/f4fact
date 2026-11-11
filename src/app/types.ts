@@ -501,6 +501,11 @@ export interface IOperationDetail {
     totalDiscount?: number;
     quantityReturned?: number; // for credit note
     quantityAvailable?: number; // for credit note
+    // Importes de la línea original. La nota de crédito los escala; no los recalcula.
+    sourceQuantity?: number;
+    sourceTotalValue?: number;
+    sourceTotalIgv?: number;
+    sourceTotalAmount?: number;
     temporaryId?: number; // for credit note
     typeAffectationId?: number;
     productTariffId?: number;

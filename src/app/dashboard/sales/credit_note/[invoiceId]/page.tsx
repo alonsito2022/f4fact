@@ -27,6 +27,48 @@ const today =
     String(limaDate.getMonth() + 1).padStart(2, "0") +
     "-" +
     String(limaDate.getDate()).padStart(2, "0");
+
+// La nota de crédito debe repetir los importes de la factura. Recalcular
+// valor * cantidad * IGV y redondear cada línea por separado desplaza
+// subtotal, IGV y total respecto del comprobante relacionado.
+const roundMoney = (value: number) => {
+    const n = Number(value) || 0;
+    return Math.round((n + Math.sign(n) * 1e-8) * 100) / 100;
+};
+
+const creditLineAmounts = (detail: IOperationDetail, quantity: number) => {
+    const sourceQty = Number(detail.quantity);
+    const sourceValue = Number(detail.totalValue) || 0;
+    const sourceIgv = Number(detail.totalIgv) || 0;
+    const sourceAmount = Number(detail.totalAmount) || 0;
+    const fullLine =
+        sourceQty > 0 && Math.abs(quantity - sourceQty) < 0.0000005;
+
+    if (fullLine) {
+        return {
+            totalValue: sourceValue.toFixed(6),
+            totalIgv: sourceIgv.toFixed(6),
+            totalAmount: sourceAmount.toFixed(6),
+            sourceQuantity: sourceQty,
+            sourceTotalValue: sourceValue,
+            sourceTotalIgv: sourceIgv,
+            sourceTotalAmount: sourceAmount,
+        };
+    }
+
+    const ratio = sourceQty > 0 ? quantity / sourceQty : 0;
+    const totalAmount = roundMoney(sourceAmount * ratio);
+    const totalValue = roundMoney(sourceValue * ratio);
+    return {
+        totalValue: totalValue.toFixed(2),
+        totalIgv: roundMoney(totalAmount - totalValue).toFixed(2),
+        totalAmount: totalAmount.toFixed(2),
+        sourceQuantity: sourceQty,
+        sourceTotalValue: sourceValue,
+        sourceTotalIgv: sourceIgv,
+        sourceTotalAmount: sourceAmount,
+    };
+};
 const initialStateCreditNote = {
     id: 0,
     serial: "",
@@ -430,7 +472,6 @@ function CreditPage() {
         fetchPolicy: "network-only",
         onCompleted: (data) => {
             const dataSale = data.getSaleById;
-            const igv = Number(dataSale?.igvPercentage) / 100;
 
             // Crear una copia del objeto para poder modificarlo
             const dataSaleCopy = {
@@ -443,39 +484,31 @@ function CreditPage() {
                     (detail: IOperationDetail) =>
                         Number(detail.quantityAvailable) > 0
                 )
-                .map((detail: IOperationDetail, index: number) => ({
-                    ...detail,
-                    quantity: Number(detail.quantityAvailable).toString(),
-                    quantityReturned: Number(detail.quantityReturned),
-                    quantityAvailable: Number(detail.quantityAvailable),
-                    unitValue: Number(detail.unitValue).toFixed(6),
-                    unitPrice: Number(detail.unitPrice).toFixed(6),
-                    igvPercentage: Number(detail.igvPercentage).toFixed(2),
-                    discountPercentage: Number(
-                        detail.discountPercentage
-                    ).toFixed(2),
-                    totalDiscount: Number(detail.totalDiscount).toFixed(2),
-                    totalValue: Number(
-                        Number(detail.unitValue) *
-                            Number(detail.quantityAvailable)
-                    ).toFixed(2),
-                    totalIgv: Number(
-                        Number(detail.unitValue) *
-                            Number(detail.quantityAvailable) *
-                            igv
-                    ).toFixed(2),
-                    totalAmount: Number(
-                        Number(detail.unitValue) *
-                            Number(detail.quantityAvailable) *
-                            (1 + igv)
-                    ).toFixed(2),
-                    totalPerception: Number(detail.totalPerception).toFixed(2),
-                    totalToPay: Number(detail.totalToPay).toFixed(2),
-                    temporaryId: index + 1,
-                    productTariffId: Number(detail.productTariffId),
-                    id: Number(detail.id),
-                    stock: 0,
-                }));
+                .map((detail: IOperationDetail, index: number) => {
+                    const quantity = Number(detail.quantityAvailable);
+                    return {
+                        ...detail,
+                        quantity: quantity.toString(),
+                        quantityReturned: Number(detail.quantityReturned),
+                        quantityAvailable: quantity,
+                        unitValue: Number(detail.unitValue).toFixed(6),
+                        unitPrice: Number(detail.unitPrice).toFixed(6),
+                        igvPercentage: Number(detail.igvPercentage).toFixed(2),
+                        discountPercentage: Number(
+                            detail.discountPercentage
+                        ).toFixed(2),
+                        totalDiscount: Number(detail.totalDiscount).toFixed(2),
+                        ...creditLineAmounts(detail, quantity),
+                        totalPerception: Number(
+                            detail.totalPerception
+                        ).toFixed(2),
+                        totalToPay: Number(detail.totalToPay).toFixed(2),
+                        temporaryId: index + 1,
+                        productTariffId: Number(detail.productTariffId),
+                        id: Number(detail.id),
+                        stock: 0,
+                    };
+                });
 
             setCreditNote((prevSale) => ({
                 ...prevSale,

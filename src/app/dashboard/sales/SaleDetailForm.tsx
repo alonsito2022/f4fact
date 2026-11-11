@@ -355,6 +355,41 @@ function SaleDetailForm({
                 ? `${integerPart.slice(0, 6)}.${decimalPart.slice(0, 4)}`
                 : integerPart.slice(0, 6);
 
+            // En una nota de crédito la cantidad solo escala los importes de
+            // la línea original. Recalcular desde el valor unitario no cuadra
+            // con la factura.
+            if (
+                invoice?.documentType === "07" &&
+                Number(invoiceDetail.sourceQuantity) > 0
+            ) {
+                const qty = Number(formattedQuantity);
+                const sourceQty = Number(invoiceDetail.sourceQuantity);
+                const fullLine =
+                    sourceQty > 0 && Math.abs(qty - sourceQty) < 0.0000005;
+                const sourceAmount = Number(invoiceDetail.sourceTotalAmount) || 0;
+                const sourceValue = Number(invoiceDetail.sourceTotalValue) || 0;
+                const sourceIgv = Number(invoiceDetail.sourceTotalIgv) || 0;
+                const ratio = sourceQty > 0 ? qty / sourceQty : 0;
+                const totalAmount = fullLine
+                    ? sourceAmount
+                    : Math.round((sourceAmount * ratio + 1e-8) * 100) / 100;
+                const totalValue = fullLine
+                    ? sourceValue
+                    : Math.round((sourceValue * ratio + 1e-8) * 100) / 100;
+                const totalIgv = fullLine
+                    ? sourceIgv
+                    : Math.round((totalAmount - totalValue + 1e-8) * 100) / 100;
+                const digits = fullLine ? 6 : 2;
+                setInvoiceDetail({
+                    ...invoiceDetail,
+                    quantity: formattedQuantity,
+                    totalValue: totalValue.toFixed(digits),
+                    totalIgv: totalIgv.toFixed(digits),
+                    totalAmount: totalAmount.toFixed(digits),
+                });
+                return;
+            }
+
             const {
                 wholesaleQuantityThreshold,
                 wholesalePriceWithIgv,
