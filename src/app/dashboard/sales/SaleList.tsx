@@ -120,13 +120,12 @@ const getStatusClassName = (status: string) => {
 const getStatusContent = (status: string, documentType: string) => {
     if (status === "01") return <LoadingIcon />;
     if (status === "02") {
-        if (documentType === "01")
-            return (
-                <>
-                    <SunatCheck />
-                </>
-            );
-        if (documentType === "03") return <SunatCheck />;
+        if (
+            documentType === "01" ||
+            documentType === "03" ||
+            documentType === "07"
+        )
+            return <SunatCheck />;
         return "-";
     }
     if (status === "06") return <SunatCancel />;
