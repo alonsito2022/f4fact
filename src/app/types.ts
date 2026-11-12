@@ -220,6 +220,7 @@ export interface ISubsidiary {
     pdfFormatForReceiptInvoices?: string;
     pdfFormatForGuides?: string;
     fillColor?: string;
+    logo?: string;
 }
 
 export interface IWarehouse {
