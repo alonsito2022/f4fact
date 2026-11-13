@@ -226,23 +226,16 @@ const formatEmitTime = (emitTime: string) => {
 
 // ── Pie de página del reporte ────────────────────────────────────────────────
 function ReportFooter({ filterObj, user, filteredSalesData }: any) {
-    // Nombre de empresa: para superusuario lo saca de la primera venta del
-    // resultado actual (refleja la sede filtrada); para usuario normal usa el
-    // dato de sesión.
-    const companyName = user?.isSuperuser
-        ? filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.company
-              ?.businessName || filterObj?.subsidiaryName || "—"
-        : filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.company
-              ?.businessName || "—";
+    // companyName viene como campo directo en subsidiary (query de page.tsx)
+    const companyName =
+        filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.companyName || "—";
 
-    // Local: serie + nombre de sucursal. Para superusuario usa el filtro
-    // activo; para usuario normal usa los datos de sesión.
+    // Para el local: serie + nombre de sucursal.
+    // Usuario normal → datos de sesión. Superusuario → filtro activo.
     const subsidiarySerial = user?.isSuperuser
-        ? filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.id
-            ? (filteredSalesData.allSales.sales[0].subsidiary as any)?.serial ||
-              filterObj?.subsidiarySerial ||
-              ""
-            : filterObj?.subsidiarySerial || ""
+        ? filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.serial ||
+          filterObj?.subsidiarySerial ||
+          ""
         : user?.subsidiarySerial || "";
 
     const subsidiaryName = user?.isSuperuser
@@ -269,7 +262,6 @@ function ReportFooter({ filterObj, user, filteredSalesData }: any) {
                     </span>
                 </div>
 
-                {/* separador */}
                 <div className="hidden h-10 w-px bg-gray-200 dark:bg-gray-700 sm:block" />
 
                 {/* LOCAL */}
@@ -282,7 +274,6 @@ function ReportFooter({ filterObj, user, filteredSalesData }: any) {
                     </span>
                 </div>
 
-                {/* separador */}
                 <div className="hidden h-10 w-px bg-gray-200 dark:bg-gray-700 sm:block" />
 
                 {/* USUARIO */}
