@@ -46,6 +46,7 @@ const SUBSIDIARIES_WITH_SALES_QUERY = gql`
     query {
         subsidiariesWithSales {
             id
+            name
             serial
             company {
                 id
@@ -203,7 +204,7 @@ function SaleFilter({
         subsidiariesData?.subsidiariesWithSales || [];
 
     const getSubsidiaryLabel = (s: ISubsidiary) =>
-        `${s.company?.businessName || ""} ${s.serial || ""}`.trim();
+        s.name || `${s.company?.businessName || ""} ${s.serial || ""}`.trim();
 
     const filteredSubsidiaries = useMemo(() => {
         if (!subsidiarySearch.trim()) return subsidiaries;
@@ -691,7 +692,7 @@ function SaleFilter({
                                                         }
                                                     >
                                                         <span className="truncate text-sm font-medium text-gray-800 dark:text-gray-200">
-                                                            {s.serial}
+                                                            {s.name || s.serial}
                                                         </span>
                                                         {s.company?.doc && (
                                                             <div className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
