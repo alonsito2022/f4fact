@@ -690,20 +690,25 @@ function SaleFilter({
                                                             )
                                                         }
                                                     >
-                                                        <div className="flex items-center justify-between gap-2">
-                                                            <span className="truncate text-sm font-medium text-gray-800 dark:text-gray-200">
-                                                                {s.company
-                                                                    ?.businessName ||
-                                                                    ""}
-                                                            </span>
-                                                            <span className="whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
-                                                                {s.serial}
-                                                            </span>
-                                                        </div>
+                                                        <span className="truncate text-sm font-medium text-gray-800 dark:text-gray-200">
+                                                            {s.serial}
+                                                        </span>
                                                         {s.company?.doc && (
                                                             <div className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
                                                                 RUC:{" "}
                                                                 {s.company.doc}
+                                                                {s.company
+                                                                    ?.businessName && (
+                                                                    <>
+                                                                        {" "}
+                                                                        -{" "}
+                                                                        {
+                                                                            s
+                                                                                .company
+                                                                                .businessName
+                                                                        }
+                                                                    </>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
