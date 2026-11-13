@@ -226,20 +226,29 @@ const formatEmitTime = (emitTime: string) => {
 
 // ── Pie de página del reporte ────────────────────────────────────────────────
 function ReportFooter({ filterObj, user, filteredSalesData }: any) {
-    // companyName viene como campo directo en subsidiary (query de page.tsx)
-    const companyName =
-        filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.companyName || "—";
+    // Empresa: siempre desde sesión (el superusuario también tiene companyName).
+    // Si hay un filtro de sede activo en superusuario, se prefiere el nombre
+    // de empresa que viene en los resultados filtrados.
+    const companyName = user?.isSuperuser
+        ? (filterObj?.subsidiaryId
+              ? filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.companyName
+              : undefined) || user?.companyName || "—"
+        : user?.companyName || "—";
 
-    // Para el local: serie + nombre de sucursal.
-    // Usuario normal → datos de sesión. Superusuario → filtro activo.
+    // Local: siempre desde sesión para cualquier rol.
+    // El superusuario que filtra por sede muestra esa sede; si no ha filtrado,
+    // muestra su propia sede de sesión.
     const subsidiarySerial = user?.isSuperuser
-        ? filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.serial ||
-          filterObj?.subsidiarySerial ||
-          ""
+        ? (filterObj?.subsidiaryId
+              ? filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.serial ||
+                filterObj?.subsidiarySerial
+              : undefined) || user?.subsidiarySerial || ""
         : user?.subsidiarySerial || "";
 
     const subsidiaryName = user?.isSuperuser
-        ? filterObj?.subsidiaryName || "LOCAL PRINCIPAL"
+        ? (filterObj?.subsidiaryId ? filterObj?.subsidiaryName : undefined) ||
+          user?.subsidiaryName ||
+          "LOCAL PRINCIPAL"
         : user?.subsidiaryName || "LOCAL PRINCIPAL";
 
     const localLabel = subsidiarySerial
@@ -249,46 +258,46 @@ function ReportFooter({ filterObj, user, filteredSalesData }: any) {
     const userEmail = user?.email || "—";
 
     return (
-        <div className="mt-6 flex flex-col items-center gap-4 border-t border-gray-200 pt-5 dark:border-gray-700">
-            {/* Bloque de información de sesión */}
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
+        <div className="mt-6 border-t border-gray-200 pt-5 pb-2 dark:border-gray-700">
+            {/* Bloque de información: apilado verticalmente y centrado */}
+            <div className="flex flex-col items-center gap-1.5 mb-4">
                 {/* EMPRESA */}
-                <div className="flex flex-col items-center gap-0.5">
+                <div className="flex flex-col items-center">
                     <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
                         Empresa
                     </span>
-                    <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-200">
+                    <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-200 text-center">
                         {companyName}
                     </span>
                 </div>
 
-                <div className="hidden h-10 w-px bg-gray-200 dark:bg-gray-700 sm:block" />
+                <div className="w-24 h-px bg-gray-200 dark:bg-gray-700" />
 
                 {/* LOCAL */}
-                <div className="flex flex-col items-center gap-0.5">
+                <div className="flex flex-col items-center">
                     <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
                         Local
                     </span>
-                    <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-200">
+                    <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-200 text-center">
                         {localLabel}
                     </span>
                 </div>
 
-                <div className="hidden h-10 w-px bg-gray-200 dark:bg-gray-700 sm:block" />
+                <div className="w-24 h-px bg-gray-200 dark:bg-gray-700" />
 
                 {/* USUARIO */}
-                <div className="flex flex-col items-center gap-0.5">
+                <div className="flex flex-col items-center">
                     <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
                         Usuario
                     </span>
-                    <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-200">
+                    <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-200 text-center">
                         {userEmail}
                     </span>
                 </div>
             </div>
 
             {/* Branding */}
-            <div className="flex flex-col items-center gap-0.5 pb-2">
+            <div className="flex flex-col items-center gap-0.5">
                 <span className="text-[11px] font-bold tracking-wide text-gray-400 dark:text-gray-500">
                     SISTEMAS DE TECNOLOGÍA 4 SOLUCIONES S.A.C.
                 </span>
