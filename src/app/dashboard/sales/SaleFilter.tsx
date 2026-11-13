@@ -210,9 +210,14 @@ function SaleFilter({
         if (!subsidiarySearch.trim()) return subsidiaries;
         const term = subsidiarySearch.toLowerCase();
         return subsidiaries.filter((s: ISubsidiary) => {
-            const label = getSubsidiaryLabel(s).toLowerCase();
+            const subsidiaryName = (s.name || s.serial || "").toLowerCase();
+            const businessName = (s.company?.businessName || "").toLowerCase();
             const doc = s.company?.doc || "";
-            return label.includes(term) || doc.includes(term);
+            return (
+                subsidiaryName.includes(term) ||
+                businessName.includes(term) ||
+                doc.includes(term)
+            );
         });
     }, [subsidiaries, subsidiarySearch]);
 
