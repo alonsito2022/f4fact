@@ -224,6 +224,96 @@ const formatEmitTime = (emitTime: string) => {
     }
 };
 
+// ── Pie de página del reporte ────────────────────────────────────────────────
+function ReportFooter({ filterObj, user, filteredSalesData }: any) {
+    // Nombre de empresa: para superusuario lo saca de la primera venta del
+    // resultado actual (refleja la sede filtrada); para usuario normal usa el
+    // dato de sesión.
+    const companyName = user?.isSuperuser
+        ? filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.company
+              ?.businessName || filterObj?.subsidiaryName || "—"
+        : filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.company
+              ?.businessName || "—";
+
+    // Local: serie + nombre de sucursal. Para superusuario usa el filtro
+    // activo; para usuario normal usa los datos de sesión.
+    const subsidiarySerial = user?.isSuperuser
+        ? filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.id
+            ? (filteredSalesData.allSales.sales[0].subsidiary as any)?.serial ||
+              filterObj?.subsidiarySerial ||
+              ""
+            : filterObj?.subsidiarySerial || ""
+        : user?.subsidiarySerial || "";
+
+    const subsidiaryName = user?.isSuperuser
+        ? filterObj?.subsidiaryName || "LOCAL PRINCIPAL"
+        : user?.subsidiaryName || "LOCAL PRINCIPAL";
+
+    const localLabel = subsidiarySerial
+        ? `${subsidiarySerial} · ${subsidiaryName}`
+        : subsidiaryName;
+
+    const userEmail = user?.email || "—";
+
+    return (
+        <div className="mt-6 flex flex-col items-center gap-4 border-t border-gray-200 pt-5 dark:border-gray-700">
+            {/* Bloque de información de sesión */}
+            <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
+                {/* EMPRESA */}
+                <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                        Empresa
+                    </span>
+                    <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-200">
+                        {companyName}
+                    </span>
+                </div>
+
+                {/* separador */}
+                <div className="hidden h-10 w-px bg-gray-200 dark:bg-gray-700 sm:block" />
+
+                {/* LOCAL */}
+                <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                        Local
+                    </span>
+                    <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-200">
+                        {localLabel}
+                    </span>
+                </div>
+
+                {/* separador */}
+                <div className="hidden h-10 w-px bg-gray-200 dark:bg-gray-700 sm:block" />
+
+                {/* USUARIO */}
+                <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                        Usuario
+                    </span>
+                    <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-200">
+                        {userEmail}
+                    </span>
+                </div>
+            </div>
+
+            {/* Branding */}
+            <div className="flex flex-col items-center gap-0.5 pb-2">
+                <span className="text-[11px] font-bold tracking-wide text-gray-400 dark:text-gray-500">
+                    SISTEMAS DE TECNOLOGÍA 4 SOLUCIONES S.A.C.
+                </span>
+                <a
+                    href="https://www.4soluciones.net"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-blue-500 hover:text-blue-600 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                    www.4soluciones.net
+                </a>
+            </div>
+        </div>
+    );
+}
+
 function SaleList({
   filteredSalesData,
   setFilterObj,
@@ -744,6 +834,9 @@ function SaleList({
           filteredSalesData={filteredSalesData}
           compact
         />
+
+        {/* ── Footer del reporte ───────────────────────────────────── */}
+        <ReportFooter filterObj={filterObj} user={user} filteredSalesData={filteredSalesData} />
       </div>
       <PdfPreviewModal
         pdfModal={pdfModal}
