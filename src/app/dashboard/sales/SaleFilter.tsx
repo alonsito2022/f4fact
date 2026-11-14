@@ -200,8 +200,15 @@ function SaleFilter({
         skip: !auth?.jwtToken,
     });
 
-    const subsidiaries: ISubsidiary[] =
-        subsidiariesData?.subsidiariesWithSales || [];
+    const subsidiaries: ISubsidiary[] = useMemo(() => {
+        const all: ISubsidiary[] = subsidiariesData?.subsidiariesWithSales || [];
+        if (auth?.user?.isSuperuser) return all;
+        const companyId = Number(auth?.user?.companyId);
+        if (!companyId) return all;
+        return all.filter(
+            (s: ISubsidiary) => Number(s.company?.id) === companyId
+        );
+    }, [subsidiariesData, auth?.user?.isSuperuser, auth?.user?.companyId]);
 
     const getSubsidiaryLabel = (s: ISubsidiary) =>
         s.name || `${s.company?.businessName || ""} ${s.serial || ""}`.trim();
@@ -252,30 +259,87 @@ function SaleFilter({
 
         skip: !auth?.jwtToken || !filterObj.subsidiaryId,
     });
+    const didDefaultSubsidiary = useRef(false);
     useEffect(() => {
-        // El usuario normal siempre queda atado a su sede: la consulta inicial
-        // ya usa auth.user.subsidiaryId, asi que si aqui se dejara en "" la
-        // paginacion enviaria subsidiaryId=0 y mostraria ventas de otras sedes.
-        if (
-            auth?.user?.subsidiaryId &&
-            !auth?.user?.isSuperuser &&
-            Number(filterObj.subsidiaryId) !== Number(auth.user.subsidiaryId)
-        ) {
-            const subsidiaryFound = subsidiaries.find(
-                (s: ISubsidiary) =>
-                    Number(s.id) === Number(auth?.user?.subsidiaryId),
-            );
-            const label = subsidiaryFound
-                ? getSubsidiaryLabel(subsidiaryFound)
-                : "";
+        // El usuario de empresa elige entre las sedes de su empresa.
+        // Si todavía no hay una sede válida, se deja marcada la primera
+        // y con esa se cargan los comprobantes.
+        if (auth?.user?.isSuperuser || didDefaultSubsidiary.current) return;
+        // Con la consulta omitida (aún sin token) loading es false y no hay
+        // datos: hay que esperar la respuesta real antes de elegir la sede.
+        if (subsidiariesError && !subsidiariesData) {
+            didDefaultSubsidiary.current = true;
+            const subsidiaryId = Number(auth?.user?.subsidiaryId) || 0;
             setFilterObj((prev: any) => ({
                 ...prev,
-                subsidiaryId: auth?.user?.subsidiaryId,
-                subsidiaryName: label || prev?.subsidiaryName || "",
+                subsidiaryId,
             }));
-            if (label) setSubsidiarySearch(label);
+            salesQuery({
+                variables: {
+                    subsidiaryId,
+                    clientId: Number(filterObj.clientId),
+                    startDate: filterObj.startDate,
+                    endDate: filterObj.endDate,
+                    documentType: filterObj.documentType,
+                    page: Number(filterObj.page) || 1,
+                    pageSize: Number(filterObj.pageSize),
+                    onlyDraft: filterObj.onlyDraft || undefined,
+                    serial: filterObj.serial
+                        ? String(filterObj.serial)
+                        : undefined,
+                    correlative: filterObj.correlative
+                        ? Number(filterObj.correlative)
+                        : undefined,
+                },
+                fetchPolicy: "network-only",
+            });
+            return;
         }
-    }, [auth?.user?.subsidiaryId, subsidiaries.length]);
+        if (!auth?.jwtToken || subsidiariesLoading || !subsidiariesData) return;
+
+        didDefaultSubsidiary.current = true;
+        const requestedId = Number(filterObj.subsidiaryId);
+        const chosen =
+            subsidiaries.find(
+                (s: ISubsidiary) => Number(s.id) === requestedId
+            ) || subsidiaries[0];
+
+        const label = chosen ? getSubsidiaryLabel(chosen) : "";
+        const subsidiaryId = chosen
+            ? Number(chosen.id)
+            : Number(auth?.user?.subsidiaryId) || 0;
+        if (label) setSubsidiarySearch(label);
+        setFilterObj((prev: any) => ({
+            ...prev,
+            subsidiaryId,
+            subsidiaryName: label,
+        }));
+        salesQuery({
+            variables: {
+                subsidiaryId,
+                clientId: Number(filterObj.clientId),
+                startDate: filterObj.startDate,
+                endDate: filterObj.endDate,
+                documentType: filterObj.documentType,
+                page: Number(filterObj.page) || 1,
+                pageSize: Number(filterObj.pageSize),
+                onlyDraft: filterObj.onlyDraft || undefined,
+                serial: filterObj.serial ? String(filterObj.serial) : undefined,
+                correlative: filterObj.correlative
+                    ? Number(filterObj.correlative)
+                    : undefined,
+            },
+            fetchPolicy: "network-only",
+        });
+        // Solo la carga inicial: después el usuario cambia la sede a mano.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        subsidiariesLoading,
+        subsidiaries.length,
+        subsidiariesError,
+        auth?.user?.isSuperuser,
+        auth?.jwtToken,
+    ]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -322,6 +386,10 @@ function SaleFilter({
     };
 
     const handleClearSubsidiary = () => {
+        if (!auth?.user?.isSuperuser && subsidiaries[0]) {
+            handleSubsidiarySelect(subsidiaries[0]);
+            return;
+        }
         setSubsidiarySearch("");
         setFilterObj({
             ...filterObj,
@@ -613,7 +681,6 @@ function SaleFilter({
                             </option>
                         </select>
                         {/* Buscar por sede va antes que buscar por entidad */}
-                        {auth?.user?.isSuperuser ? (
                             <div
                                 className="relative col-span-2 min-w-0 md:col-start-2 md:col-span-1"
                                 ref={subsidiaryDropdownRef}
@@ -625,7 +692,10 @@ function SaleFilter({
                                     onChange={(e) => {
                                         setSubsidiarySearch(e.target.value);
                                         setShowSubsidiaryDropdown(true);
-                                        if (!e.target.value.trim()) {
+                                        if (
+                                            !e.target.value.trim() &&
+                                            auth?.user?.isSuperuser
+                                        ) {
                                             setFilterObj({
                                                 ...filterObj,
                                                 subsidiaryId: 0,
@@ -731,17 +801,7 @@ function SaleFilter({
                                         </div>
                                     )}
                             </div>
-                        ) : null}
-                        {/* Buscar por entidad ocupa ahora el ancho de
-                            "Filtrar + Buscar Documento". Sin filtro por sede
-                            (usuario normal) se estira hasta esa misma columna. */}
-                        <div
-                            className={`col-span-2 min-w-0 ${
-                                auth?.user?.isSuperuser
-                                    ? "md:col-start-3 md:col-span-2"
-                                    : "md:col-start-2 md:col-span-3"
-                            }`}
-                        >
+                        <div className="col-span-2 min-w-0 md:col-start-3 md:col-span-2">
                             <input
                                 type="text"
                                 list="clientList"

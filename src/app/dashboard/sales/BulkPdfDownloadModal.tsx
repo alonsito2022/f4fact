@@ -78,11 +78,14 @@ function BulkPdfDownloadModal({
             },
         };
         const baseVariables = {
-            // Misma regla que sales/page.tsx: el superusuario usa la sucursal
-            // elegida (0 = todas); el resto, siempre la de su usuario.
-            subsidiaryId: auth?.user?.isSuperuser
-                ? Number(filterObj.subsidiaryId) || 0
-                : Number(auth?.user?.subsidiaryId),
+            // 0 = todas las sedes que el backend permite ver.
+            // El usuario de empresa queda acotado a las sedes de su empresa.
+            subsidiaryId:
+                filterObj.subsidiaryId === "" ||
+                filterObj.subsidiaryId === null ||
+                filterObj.subsidiaryId === undefined
+                    ? 0
+                    : Number(filterObj.subsidiaryId) || 0,
             clientId: Number(filterObj.clientId),
             startDate: filterObj.startDate,
             endDate: filterObj.endDate,

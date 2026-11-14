@@ -238,18 +238,15 @@ function ReportFooter({ filterObj, user, filteredSalesData }: any) {
     // Local: siempre desde sesión para cualquier rol.
     // El superusuario que filtra por sede muestra esa sede; si no ha filtrado,
     // muestra su propia sede de sesión.
-    const subsidiarySerial = user?.isSuperuser
-        ? (filterObj?.subsidiaryId
-              ? filteredSalesData?.allSales?.sales?.[0]?.subsidiary?.serial ||
-                filterObj?.subsidiarySerial
-              : undefined) || user?.subsidiarySerial || ""
+    const selectedSubsidiaryName = filterObj?.subsidiaryId
+        ? filterObj?.subsidiaryName
+        : "";
+    const subsidiarySerial = selectedSubsidiaryName
+        ? ""
         : user?.subsidiarySerial || "";
 
-    const subsidiaryName = user?.isSuperuser
-        ? (filterObj?.subsidiaryId ? filterObj?.subsidiaryName : undefined) ||
-          user?.subsidiaryName ||
-          "LOCAL PRINCIPAL"
-        : user?.subsidiaryName || "LOCAL PRINCIPAL";
+    const subsidiaryName =
+        selectedSubsidiaryName || user?.subsidiaryName || "LOCAL PRINCIPAL";
 
     const localLabel = subsidiarySerial
         ? `${subsidiarySerial} · ${subsidiaryName}`
@@ -369,7 +366,9 @@ function SaleList({
             const currentFilter = filterRef.current;
             salesQuery({
               variables: {
-                subsidiaryId: Number(user?.subsidiaryId),
+                subsidiaryId:
+                  Number(currentFilter.subsidiaryId) ||
+                  Number(user?.subsidiaryId),
                 clientId: Number(currentFilter.clientId),
                 startDate: currentFilter.startDate,
                 endDate: currentFilter.endDate,

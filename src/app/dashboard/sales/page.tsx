@@ -172,13 +172,17 @@ function SalePage() {
 
     useEffect(() => {
         if (auth?.status === "authenticated" && auth?.jwtToken) {
+            // El usuario de empresa espera a que el filtro elija su primera
+            // sede. Si se consulta aquí con subsidiaryId vacío, el backend
+            // devolvería comprobantes de todas sus sedes antes de esa elección.
+            if (!auth?.user?.isSuperuser) {
+                return;
+            }
             const serial = serialFromUrl || filterObj.serial;
             const correlative = correlativeFromUrl || filterObj.correlative;
             salesQuery({
                 variables: {
-                    subsidiaryId: auth?.user?.isSuperuser
-                        ? Number(subsidiaryFromUrl || filterObj.subsidiaryId)
-                        : Number(auth?.user?.subsidiaryId),
+                    subsidiaryId: Number(subsidiaryFromUrl || filterObj.subsidiaryId),
                     clientId: Number(filterObj.clientId),
                     startDate: filterObj.startDate,
                     endDate: filterObj.endDate,
@@ -291,8 +295,9 @@ function SalePage() {
                                                     </div>
                                                 )}
 
-                                                {filteredSalesLoading &&
-                                                    !filteredSalesData && (
+                                                {(filteredSalesLoading ||
+                                                    !filteredSalesData) &&
+                                                    !filteredSalesError && (
                                                         <div className="p-8">
                                                             <div className="flex items-center justify-center mb-6">
                                                                 <div className="relative">

@@ -121,9 +121,6 @@ function SubsidiaryPage() {
             const user = auth?.user as IUser;
             setFilterObj((prev) => ({
                 ...prev,
-                subsidiaryId:
-                    prev.subsidiaryId ||
-                    (user.isSuperuser ? "0" : user.subsidiaryId!),
                 isSuperuser: user.isSuperuser ?? false,
             }));
         }

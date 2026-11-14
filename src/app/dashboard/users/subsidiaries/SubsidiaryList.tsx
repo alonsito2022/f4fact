@@ -121,14 +121,10 @@ function SubsidiaryList({
     }
 
     const displayedSubsidiaries = useMemo(() => {
-        return (
-            filteredSubsidiaries?.filter(
-                (s: ISubsidiary) =>
-                    filterObj.subsidiaryId === "0" ||
-                    Number(s?.id) === Number(filterObj.subsidiaryId)
-            ) || []
-        );
-    }, [filteredSubsidiaries, filterObj?.subsidiaryId]);
+        // La consulta ya viene acotada: superusuario ve todas las sedes,
+        // el resto ve todas las sedes de su empresa.
+        return filteredSubsidiaries || [];
+    }, [filteredSubsidiaries]);
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200/80 dark:border-gray-700/70 overflow-hidden">
@@ -152,7 +148,7 @@ function SubsidiaryList({
                             Vista Administrador (Todos los locales)
                         </span>
                     ) : (
-                        <span>Local asignado</span>
+                        <span>Locales de tu empresa</span>
                     )}
                 </div>
             </div>
@@ -193,7 +189,7 @@ function SubsidiaryList({
                             displayedSubsidiaries.map((item: ISubsidiary) => {
                                 const canEdit =
                                     filterObj?.isSuperuser ||
-                                    Number(user?.subsidiaryId) === Number(item.id);
+                                    Number(user?.companyId) === Number(item.companyId);
 
                                 return (
                                     <tr
