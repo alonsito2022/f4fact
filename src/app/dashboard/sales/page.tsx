@@ -172,8 +172,8 @@ function SalePage() {
 
     useEffect(() => {
         if (auth?.status === "authenticated" && auth?.jwtToken) {
-            // El usuario de empresa espera a que el filtro elija su primera
-            // sede. Si se consulta aquí con subsidiaryId vacío, el backend
+            // El usuario de empresa espera a que el filtro elija su sede
+            // asignada. Si se consulta aquí con subsidiaryId vacío, el backend
             // devolvería comprobantes de todas sus sedes antes de esa elección.
             if (!auth?.user?.isSuperuser) {
                 return;

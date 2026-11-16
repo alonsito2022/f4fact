@@ -262,8 +262,8 @@ function SaleFilter({
     const didDefaultSubsidiary = useRef(false);
     useEffect(() => {
         // El usuario de empresa elige entre las sedes de su empresa.
-        // Si todavía no hay una sede válida, se deja marcada la primera
-        // y con esa se cargan los comprobantes.
+        // Al entrar se marca la sede asignada a su usuario, no la primera
+        // de la empresa.
         if (auth?.user?.isSuperuser || didDefaultSubsidiary.current) return;
         // Con la consulta omitida (aún sin token) loading es false y no hay
         // datos: hay que esperar la respuesta real antes de elegir la sede.
@@ -299,10 +299,15 @@ function SaleFilter({
 
         didDefaultSubsidiary.current = true;
         const requestedId = Number(filterObj.subsidiaryId);
+        const assignedId = Number(auth?.user?.subsidiaryId);
         const chosen =
             subsidiaries.find(
                 (s: ISubsidiary) => Number(s.id) === requestedId
-            ) || subsidiaries[0];
+            ) ||
+            subsidiaries.find(
+                (s: ISubsidiary) => Number(s.id) === assignedId
+            ) ||
+            subsidiaries[0];
 
         const label = chosen ? getSubsidiaryLabel(chosen) : "";
         const subsidiaryId = chosen
@@ -386,8 +391,13 @@ function SaleFilter({
     };
 
     const handleClearSubsidiary = () => {
-        if (!auth?.user?.isSuperuser && subsidiaries[0]) {
-            handleSubsidiarySelect(subsidiaries[0]);
+        if (!auth?.user?.isSuperuser && subsidiaries.length) {
+            const assignedId = Number(auth?.user?.subsidiaryId);
+            const own =
+                subsidiaries.find(
+                    (s: ISubsidiary) => Number(s.id) === assignedId
+                ) || subsidiaries[0];
+            handleSubsidiarySelect(own);
             return;
         }
         setSubsidiarySearch("");
