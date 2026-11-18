@@ -10,7 +10,8 @@ import React, {
 import { createPortal } from "react-dom";
 import { IOperation } from "@/app/types";
 import { toast } from "react-toastify";
-import { gql, useMutation } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
+import { useAuth } from "@/components/providers/AuthProvider";
 import SunatCheck from "@/components/icons/SunatCheck";
 import SunatCancel from "@/components/icons/SunatCancel";
 import Link from "next/link";
@@ -28,6 +29,17 @@ const today =
   String(limaTodayDate.getMonth() + 1).padStart(2, "0") +
   "-" +
   String(limaTodayDate.getDate()).padStart(2, "0");
+
+const SUBSIDIARIES_WITH_SALES_QUERY = gql`
+  query {
+    subsidiariesWithSales {
+      id
+    }
+  }
+`;
+
+const subsidiaryLabel = (item: IOperation) =>
+  item.subsidiary?.name?.trim() || "";
 
 const CANCEL_INVOICE = gql`
   mutation CancelInvoice($operationId: Int!, $lowDate: Date!) {
@@ -343,6 +355,22 @@ function SaleList({
   salesQuery,
   user,
 }: any) {
+  const auth = useAuth();
+  const { data: subsidiariesData } = useQuery(SUBSIDIARIES_WITH_SALES_QUERY, {
+    context: {
+      headers: {
+        Authorization: auth?.jwtToken ? `JWT ${auth.jwtToken}` : "",
+      },
+    },
+    skip: !auth?.jwtToken || Boolean(user?.isSuperuser),
+    fetchPolicy: "cache-first",
+  });
+  // Superusuario ve todas las sedes. Un usuario de empresa, como Jesaka,
+  // la ve solo si su empresa tiene más de una sucursal.
+  const showSubsidiaryColumn = Boolean(
+    user?.isSuperuser ||
+      (subsidiariesData?.subsidiariesWithSales?.length ?? 0) > 1,
+  );
   const [pdfModal, setPdfModal] = useState<Modal | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [pdfFileName, setPdfFileName] = useState<string>("");
@@ -565,6 +593,7 @@ function SaleList({
           item={item}
           index={index}
           isSuperuser={Boolean(user?.isSuperuser)}
+          showSubsidiaryColumn={showSubsidiaryColumn}
           showUserColumn={Boolean(
             user?.isSuperuser || user?.companyShowUser,
           )}
@@ -580,6 +609,7 @@ function SaleList({
     [
       transformedSalesData,
       user?.isSuperuser,
+      showSubsidiaryColumn,
       user?.companyShowUser,
       hasCreditNote,
       openPdf,
@@ -677,8 +707,15 @@ function SaleList({
                 <>
                   <th className="w-4 dark:border-gray-600">Id</th>
                   <th className="w-80 dark:border-gray-600">Empresa</th>
-                  <th className="w-4 dark:border-gray-600">Hora</th>
                 </>
+              )}
+              {showSubsidiaryColumn && (
+                <th className="w-40 dark:border-gray-600 text-left">
+                  Sucursal
+                </th>
+              )}
+              {user?.isSuperuser && (
+                <th className="w-4 dark:border-gray-600">Hora</th>
               )}
               <th className="pl-2 w-8 dark:border-gray-600 text-left">Fecha</th>
               <th className="w-4 dark:border-gray-600">Tipo</th>
@@ -731,12 +768,12 @@ function SaleList({
             <tr>
               {user?.isSuperuser && (
                 <td
-                  colSpan={3}
+                  colSpan={showSubsidiaryColumn ? 4 : 3}
                   className="p-1 text-sm font-bold text-nowrap text-right"
                 ></td>
               )}
               <td
-                colSpan={7}
+                colSpan={!user?.isSuperuser && showSubsidiaryColumn ? 8 : 7}
                 className="p-1 text-sm font-bold text-nowrap text-right"
               >
                 Total de FACTURAS:
@@ -759,12 +796,12 @@ function SaleList({
             <tr>
               {user?.isSuperuser && (
                 <td
-                  colSpan={3}
+                  colSpan={showSubsidiaryColumn ? 4 : 3}
                   className="p-1 text-sm font-bold text-nowrap text-right"
                 ></td>
               )}
               <td
-                colSpan={7}
+                colSpan={!user?.isSuperuser && showSubsidiaryColumn ? 8 : 7}
                 className="p-1 text-sm font-bold text-nowrap text-right"
               >
                 Total de BOLETAS DE VENTA:
@@ -787,12 +824,12 @@ function SaleList({
             <tr>
               {user?.isSuperuser && (
                 <td
-                  colSpan={3}
+                  colSpan={showSubsidiaryColumn ? 4 : 3}
                   className="p-1 text-sm font-bold text-nowrap text-right"
                 ></td>
               )}
               <td
-                colSpan={7}
+                colSpan={!user?.isSuperuser && showSubsidiaryColumn ? 8 : 7}
                 className="p-1 text-sm font-bold text-nowrap text-right"
               >
                 Total de NOTAS DE CRÉDITO:
@@ -1116,6 +1153,7 @@ const SaleRow = memo(function SaleRow({
   item,
   index,
   isSuperuser,
+  showSubsidiaryColumn,
   showUserColumn,
   hasCreditNote,
   onPdf,
@@ -1128,6 +1166,7 @@ const SaleRow = memo(function SaleRow({
   item: IOperation;
   index: number;
   isSuperuser: boolean;
+  showSubsidiaryColumn: boolean;
   showUserColumn: boolean;
   hasCreditNote: boolean;
   onPdf: (item: IOperation) => void;
@@ -1176,10 +1215,17 @@ const SaleRow = memo(function SaleRow({
           <td className="p-0.5 font-bold text-blue-600 dark:text-blue-500">
             {item.subsidiary?.companyName}
           </td>
-          <td className="p-0.5 pl-2 text-nowrap font-bold text-blue-600 dark:text-blue-500">
-            {formatEmitTime(item.emitTime)}
-          </td>
         </>
+      )}
+      {showSubsidiaryColumn && (
+        <td className="p-0.5 font-bold text-blue-600 dark:text-blue-500">
+          {subsidiaryLabel(item)}
+        </td>
+      )}
+      {isSuperuser && (
+        <td className="p-0.5 pl-2 text-nowrap font-bold text-blue-600 dark:text-blue-500">
+          {formatEmitTime(item.emitTime)}
+        </td>
       )}
 
       <td className="p-0.5 pl-2 text-nowrap">{item.emitDate}</td>

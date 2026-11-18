@@ -97,6 +97,8 @@ const SALES_QUERY = gql`
                 }
                 subsidiary {
                     id
+                    name
+                    serial
                     companyName
                     company {
                         id
