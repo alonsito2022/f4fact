@@ -103,8 +103,16 @@ const canCancelInvoice = (
     return { allowed: true, message: "" };
 };
 
-const getStatusClassName = (status: string) => {
+const MENSAJE_MODO_PRUEBA = "Empresa en modo prueba";
+
+const esModoPrueba = (descriptionLow?: string | null) =>
+    descriptionLow === MENSAJE_MODO_PRUEBA;
+
+const getStatusClassName = (status: string, descriptionLow?: string | null) => {
     const baseClasses = "flex items-center justify-center";
+    if (esModoPrueba(descriptionLow)) {
+        return `${baseClasses} text-amber-700 text-xs font-medium px-2.5 py-0.5 rounded-full dark:text-amber-300 text-nowrap`;
+    }
     if (status === "02") {
         return `${baseClasses} text-green-600 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300`;
     }
@@ -120,7 +128,14 @@ const getStatusClassName = (status: string) => {
     return `${baseClasses} text-gray-400`;
 };
 
-const getStatusContent = (status: string, documentType: string) => {
+const getStatusContent = (
+    status: string,
+    documentType: string,
+    descriptionLow?: string | null,
+) => {
+    if (esModoPrueba(descriptionLow)) {
+        return <span className="text-nowrap">{MENSAJE_MODO_PRUEBA}</span>;
+    }
     if (status === "01") return <LoadingIcon />;
     if (status === "02") {
         if (
@@ -138,6 +153,7 @@ const getStatusContent = (status: string, documentType: string) => {
 };
 
 const getStatusMessage = (item: IOperation) => {
+    if (esModoPrueba(item.sunatDescriptionLow)) return MENSAJE_MODO_PRUEBA;
     if (item.operationStatus === "02") return item.sunatDescription || "";
     if (item.operationStatus === "06") {
         return (
@@ -155,7 +171,13 @@ const getStatusMessage = (item: IOperation) => {
 
 // Encabezado y color del tooltip de estado. Solo/presentation: el texto del
 // mensaje sigue saliendo de getStatusMessage, sin cambios en su logica.
-const getStatusTone = (status: string) => {
+const getStatusTone = (status: string, descriptionLow?: string | null) => {
+  if (esModoPrueba(descriptionLow))
+    return {
+      label: MENSAJE_MODO_PRUEBA,
+      dot: "bg-amber-500 dark:bg-amber-400",
+      accent: "text-amber-700 dark:text-amber-300",
+    };
   if (status === "02")
     return {
       label: "Aceptado por la SUNAT",
@@ -589,7 +611,9 @@ function SaleList({
           };
         })()
       : null;
-  const tipTone = statusTip ? getStatusTone(statusTip.item.operationStatus) : null;
+  const tipTone = statusTip
+    ? getStatusTone(statusTip.item.operationStatus, statusTip.item.sunatDescriptionLow)
+    : null;
 
   if (!transformedSalesData || transformedSalesData.length === 0) {
     return (
@@ -1273,11 +1297,13 @@ const SaleRow = memo(function SaleRow({
           aria-label={`Estado SUNAT: ${getStatusMessage(item)}`}
           className={`${getStatusClassName(
             item?.operationStatus,
+            item?.sunatDescriptionLow,
           )} cursor-help outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1 dark:focus-visible:ring-blue-500 dark:focus-visible:ring-offset-gray-800`}
         >
           {getStatusContent(
             item?.operationStatus,
             String(item?.documentType),
+            item?.sunatDescriptionLow,
           )}
         </span>
       </td>
@@ -1285,7 +1311,9 @@ const SaleRow = memo(function SaleRow({
         <td className="p-0.5 text-center">{item?.user?.fullName}</td>
       )}
       <td className="p-0.5">
-        {item?.operationStatus === "05" ? (
+        {esModoPrueba(item?.sunatDescriptionLow) ? (
+          MENSAJE_MODO_PRUEBA
+        ) : item?.operationStatus === "05" ? (
           "Anulación con ticket"
         ) : item?.operationStatus === "01" ||
           item?.operationStatus === "02" ||

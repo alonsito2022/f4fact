@@ -3,7 +3,7 @@
 // import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { IUser } from "@/app/types";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
 // import ImageCircle from "./images/ImageCircle";
 // import UserCircle from "./icons/UserCircle";
@@ -16,6 +16,28 @@ function Navbar() {
     const { data: session, update } = useSession();
     const u = session?.user as IUser;
     const { isSidebarOpen, toggleSidebar } = useSidebar();
+    const menuRef = useRef<HTMLDivElement>(null);
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    useEffect(() => {
+        if (!menuOpen) return;
+
+        const onPointerDown = (event: MouseEvent) => {
+            if (!menuRef.current?.contains(event.target as Node)) {
+                setMenuOpen(false);
+            }
+        };
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setMenuOpen(false);
+        };
+
+        document.addEventListener("mousedown", onPointerDown);
+        document.addEventListener("keydown", onKeyDown);
+        return () => {
+            document.removeEventListener("mousedown", onPointerDown);
+            document.removeEventListener("keydown", onKeyDown);
+        };
+    }, [menuOpen]);
 
     // useEffect(() => {
     //     setMounted(true)
@@ -26,8 +48,19 @@ function Navbar() {
     //   }
 
     const handleLogout = async () => {
+        setMenuOpen(false);
         await signOut({ redirect: true });
     };
+
+    const avatarSrc =
+        u?.avatar != null && u?.avatar != ""
+            ? `${process.env.NEXT_PUBLIC_BASE_API}/media/users/${u?.avatar}`
+            : "/images/users/user-profile-avatar.png";
+    const roleLabel = u?.isSuperuser ? "Superusuario" : "Usuario";
+    const branchLabel =
+        u?.subsidiaryName && u?.subsidiarySerial
+            ? `${u.subsidiaryName} (${u.subsidiarySerial})`
+            : "Sin asignar";
 
     return (
         <div className="sticky top-0 z-30 w-full">
@@ -592,106 +625,140 @@ function Navbar() {
 
                             <ThemeToggle />
 
-                            {/* <!-- Profile --> */}
-                            <div className="flex items-center ml-3">
-                                <div>
-                                    <button
-                                        type="button"
-                                        className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                                        id="user-menu-button-2"
-                                        aria-expanded="false"
-                                        data-dropdown-toggle="dropdown-2"
-                                    >
-                                        <span className="sr-only">
-                                            Open user menu
-                                        </span>
-                                        <img
-                                            className="w-8 h-8 rounded-full"
-                                            src={
-                                                u?.avatar != null &&
-                                                u?.avatar != ""
-                                                    ? `${process.env.NEXT_PUBLIC_BASE_API}/media/users/${u?.avatar}`
-                                                    : "/images/users/user-profile-avatar.png"
-                                            }
-                                            alt="user photo"
-                                        />
-                                        {/* {u?.avatarUrl?  
-                                    <>
-                                    <ImageCircle image={ u?.id&&(u?.avatarUrl as string).search("base64")==-1?`${process.env.NEXT_PUBLIC_BASE_API}/${u?.avatarUrl}`:u?.avatarUrl as string}/>                   
-                                    </>                                 
-                                    :
-                                    <>
-                                    <UserCircle/>                 
-                                    </> */}
-                                    </button>
-                                </div>
-
-                                <div
-                                    suppressHydrationWarning
-                                    className="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600"
-                                    id="dropdown-2"
+                            {/* Perfil: estado propio, sin data-dropdown-toggle de Flowbite */}
+                            <div className="relative ml-3" ref={menuRef}>
+                                <button
+                                    type="button"
+                                    className="flex items-center gap-2 rounded-full border border-gray-200 bg-white py-1 pl-1 pr-2 text-left shadow-sm transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+                                    id="user-menu-button-2"
+                                    aria-expanded={menuOpen}
+                                    aria-haspopup="menu"
+                                    aria-controls="dropdown-2"
+                                    onClick={() => setMenuOpen((open) => !open)}
                                 >
-                                    <div className="px-4 py-3" role="none">
-                                        <p
-                                            className="text-sm text-gray-900 dark:text-white"
-                                            role="none"
-                                        >
-                                            {u?.fullName}
-                                        </p>
-                                        <p
-                                            className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
-                                            role="none"
-                                        >
-                                            {u?.email}
-                                        </p>
-                                        <p
-                                            className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
-                                            role="none"
-                                        >
-                                            {u?.isSuperuser
-                                                ? "Superusuario"
-                                                : "Usuario"}
-                                        </p>
+                                    <span className="sr-only">
+                                        Abrir menú de usuario
+                                    </span>
+                                    <img
+                                        className="h-8 w-8 rounded-full object-cover ring-2 ring-white dark:ring-gray-800"
+                                        src={avatarSrc}
+                                        alt="Foto de usuario"
+                                    />
+                                    <span className="hidden max-w-[9rem] truncate text-sm font-medium text-gray-800 dark:text-gray-100 md:block">
+                                        {u?.fullName || "Cuenta"}
+                                    </span>
+                                    <svg
+                                        className={`h-4 w-4 shrink-0 text-gray-500 transition-transform dark:text-gray-300 ${
+                                            menuOpen ? "rotate-180" : ""
+                                        }`}
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                </button>
+
+                                {menuOpen && (
+                                <div
+                                    className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-80 origin-top-right overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/10 dark:border-gray-700 dark:bg-gray-800 dark:shadow-black/50"
+                                    id="dropdown-2"
+                                    role="menu"
+                                    aria-labelledby="user-menu-button-2"
+                                >
+                                    <div className="bg-gradient-to-br from-slate-800 to-blue-900 px-4 py-4 text-white">
+                                        <div className="flex items-center gap-3">
+                                            <img
+                                                className="h-12 w-12 rounded-full object-cover ring-2 ring-white/30"
+                                                src={avatarSrc}
+                                                alt=""
+                                            />
+                                            <div className="min-w-0">
+                                                <p className="truncate text-sm font-semibold">
+                                                    {u?.fullName || "Cuenta"}
+                                                </p>
+                                                <p className="truncate text-xs text-blue-100/80">
+                                                    {u?.email || "Sin correo"}
+                                                </p>
+                                                <span className="mt-1.5 inline-flex items-center rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-medium tracking-wide text-white">
+                                                    {roleLabel}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <ul className="py-1" role="none">
-                                        {/* <li>
-                                        <a
-                                            href="#"
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-                                            role="menuitem"
-                                        >
-                                            Dashboard
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-                                            role="menuitem"
-                                        >
-                                            Settings
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="/dashboard/profile"
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-                                            role="menuitem"
-                                        >
-                                            Earnings
-                                        </a>
-                                    </li> */}
-                                        <li>
-                                            <a
-                                                onClick={handleLogout}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer"
-                                                role="menuitem"
+
+                                    <div className="space-y-2 px-4 py-3 text-sm">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <span className="text-gray-500 dark:text-gray-400">
+                                                Empresa
+                                            </span>
+                                            <span className="max-w-[11rem] truncate text-right font-medium text-gray-900 dark:text-gray-100">
+                                                {u?.companyName || "Sin empresa"}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <span className="text-gray-500 dark:text-gray-400">
+                                                Ambiente
+                                            </span>
+                                            <span
+                                                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                                    u?.companyIsProduction
+                                                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                                                        : "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
+                                                }`}
                                             >
-                                                Cerrar Sesión
-                                            </a>
-                                        </li>
-                                    </ul>
+                                                <span
+                                                    className={`h-1.5 w-1.5 rounded-full ${
+                                                        u?.companyIsProduction
+                                                            ? "bg-emerald-500"
+                                                            : "bg-amber-500"
+                                                    }`}
+                                                />
+                                                {u?.companyIsProduction
+                                                    ? "Producción"
+                                                    : "Demo"}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-start justify-between gap-3">
+                                            <span className="text-gray-500 dark:text-gray-400">
+                                                Sucursal
+                                            </span>
+                                            <span className="max-w-[11rem] text-right font-medium text-gray-900 dark:text-gray-100">
+                                                {branchLabel}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="border-t border-gray-100 p-2 dark:border-gray-700">
+                                        <button
+                                            type="button"
+                                            onClick={handleLogout}
+                                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                                            role="menuitem"
+                                        >
+                                            <svg
+                                                className="h-4 w-4"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="1.8"
+                                                aria-hidden="true"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
+                                                />
+                                            </svg>
+                                            Cerrar sesión
+                                        </button>
+                                    </div>
                                 </div>
+                                )}
                             </div>
                         </div>
                     </div>
